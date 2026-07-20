@@ -50,19 +50,36 @@ class KitsugiUpdateRepository(
                 return@runCatching null // No newer update
             }
 
-            // Find APK asset
+            // Find APK asset matching the installed flavor (foss vs gms)
             val assets = json.optJSONArray("assets") ?: JSONArray()
+            val currentFlavor = BuildConfig.FLAVOR.lowercase()
             var downloadUrl = ""
             var apkSize = 0L
+            var fallbackUrl = ""
+            var fallbackSize = 0L
 
             for (i in 0 until assets.length()) {
                 val asset = assets.optJSONObject(i) ?: continue
-                val name = asset.optString("name", "")
-                if (name.endsWith(".apk", ignoreCase = true) || asset.optString("content_type") == "application/vnd.android.package-archive") {
-                    downloadUrl = asset.optString("browser_download_url", "")
-                    apkSize = asset.optLong("size", 0L)
-                    break
+                val name = asset.optString("name", "").lowercase()
+                val url = asset.optString("browser_download_url", "")
+                val size = asset.optLong("size", 0L)
+
+                if (name.endsWith(".apk") || asset.optString("content_type") == "application/vnd.android.package-archive") {
+                    if (fallbackUrl.isEmpty()) {
+                        fallbackUrl = url
+                        fallbackSize = size
+                    }
+                    if (currentFlavor.isNotEmpty() && name.contains(currentFlavor)) {
+                        downloadUrl = url
+                        apkSize = size
+                        break
+                    }
                 }
+            }
+
+            if (downloadUrl.isEmpty()) {
+                downloadUrl = fallbackUrl
+                apkSize = fallbackSize
             }
 
             if (downloadUrl.isEmpty()) {
