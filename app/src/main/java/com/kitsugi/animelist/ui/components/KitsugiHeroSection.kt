@@ -89,14 +89,15 @@ internal data class HomeHeroLayout(
 @Composable
 fun KitsugiHeroSection(
     items: List<JikanSearchResult>,
-    currentEntries: List<MediaEntry>,
+    alreadyInList: (JikanSearchResult) -> Boolean,
     onInfoClick: (JikanSearchResult) -> Unit,
     modifier: Modifier = Modifier,
     scrollValue: Float = 0f,
     titleLanguage: String = "ROMAJI",
     scoreFormat: String = "POINT_10",
     hideScores: Boolean = false,
-    showAnimeLogos: Boolean = false
+    showAnimeLogos: Boolean = false,
+    isVisible: Boolean = true
 ) {
     if (items.isEmpty()) return
 
@@ -243,14 +244,12 @@ fun KitsugiHeroSection(
 
     var isFocused by remember { mutableStateOf(false) }
 
-    LaunchedEffect(isTv, items.size) {
-        if (isTv && items.size > 1) {
-            while (true) {
-                delay(8000L)
-                if (!isFocused) {
-                    val nextPage = (pagerState.currentPage + 1) % items.size
-                    pagerState.animateScrollToPage(nextPage)
-                }
+    LaunchedEffect(isVisible, isFocused, pagerState.currentPage, pagerState.isScrollInProgress, items.size) {
+        if (items.size > 1 && isVisible && !isFocused && !pagerState.isScrollInProgress) {
+            delay(5000L)
+            val nextPage = (pagerState.currentPage + 1) % items.size
+            coroutineScope.launch {
+                pagerState.animateScrollToPage(nextPage)
             }
         }
     }
@@ -441,9 +440,7 @@ fun KitsugiHeroSection(
                 visiblePages.forEach { layer ->
                     val item = items[layer.page]
                     val displayTitle = item.getDisplayTitle(titleLanguage)
-                    val alreadyInList = currentEntries.any { entry ->
-                        entry.matches(item)
-                    }
+                    val alreadyInList = alreadyInList(item)
 
                     val context = LocalContext.current
                     val copyTitleGesture = Modifier.copyOnDoubleTap(context, displayTitle)

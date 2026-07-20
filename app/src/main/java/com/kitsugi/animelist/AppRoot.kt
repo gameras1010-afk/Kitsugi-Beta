@@ -928,6 +928,7 @@ private fun AppNavigationContent(
                     authViewModel = authViewModel,
                     mediaRepository = mediaRepository,
                     coroutineScope = coroutineScope,
+                    updateViewModel = updateViewModel,
                     onEditEntry = onEditEntry,
                     onDeleteEntry = onDeleteEntry,
                     onIncrementEntryProgress = onIncrementEntryProgress,

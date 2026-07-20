@@ -98,34 +98,19 @@ fun SettingsScreen(
         ) {
         Spacer(modifier = Modifier.height(22.dp))
 
-        SettingsProfileSection(
-            profileName = profile.profileName,
-            onEditProfileClick = { activeDialog = SettingsDialog.Account },
-            isAniListConnected = profile.isAniListConnected,
-            anilistUsername = profile.anilistUsername,
-            isAniListImportRunning = profile.isAniListImportRunning,
-            onAniListImportClick = profile.onAniListImportClick,
-            onAniListAuthClick = profile.onAniListAuthClick,
-            isMalConnected = profile.isMalConnected,
-            malUsername = profile.malUsername,
-            isMalImportRunning = profile.isMalImportRunning,
-            onMalImportClick = profile.onMalImportClick,
-            onMalAuthClick = profile.onMalAuthClick,
-            isSimklConnected = profile.isSimklConnected,
-            simklUsername = profile.simklUsername,
-            isSimklImportRunning = profile.isSimklImportRunning,
-            isSimklSessionExpired = profile.isSimklSessionExpired,
-            onSimklImportClick = profile.onSimklImportClick,
-            onSimklAuthClick = profile.onSimklAuthClick,
-            isCrossSyncRunning = profile.isCrossSyncRunning,
-            onCrossSyncClick = profile.onCrossSyncClick
-        )
-
-        Spacer(modifier = Modifier.height(22.dp))
-
         KitsugiSettingsSection(
-            title = "Uygulama Ayarları"
+            title = "Hesap & Profil"
         ) {
+            KitsugiSettingsItem(
+                title = "Hesap ve Eşitleme Ayarları",
+                description = "Profil bilgileri, görsel seçimi ve AniList / MAL / Simkl hesap eşitlemeleri",
+                icon = Icons.Rounded.Person,
+                iconColor = KitsugiColors.AccentBlue,
+                onClick = { activeDialog = SettingsDialog.Account }
+            )
+
+            KitsugiSettingsDivider()
+
             KitsugiSettingsItem(
                 title = "Kütüphane İstatistikleri",
                 description = "Kütüphanenizin detaylı durumu, puan dağılımları ve analizleri",
@@ -137,6 +122,20 @@ fun SettingsScreen(
             KitsugiSettingsDivider()
 
             KitsugiSettingsItem(
+                title = "Favorilerim",
+                description = "Favorilerinize eklediğiniz anime ve mangaları görüntüleyin",
+                icon = Icons.Rounded.Favorite,
+                iconColor = KitsugiColors.AccentPink,
+                onClick = integrations.onOpenFavourites
+            )
+        }
+
+        Spacer(modifier = Modifier.height(22.dp))
+
+        KitsugiSettingsSection(
+            title = "Uygulama Ayarları"
+        ) {
+            KitsugiSettingsItem(
                 title = "Görünüm ve Tercihler",
                 description = "Tema, liste görünümü, puanlama ve dil ayarları",
                 icon = Icons.Rounded.Palette,
@@ -147,21 +146,21 @@ fun SettingsScreen(
             KitsugiSettingsDivider()
 
             KitsugiSettingsItem(
-                title = "Eklenti & Akış Ayarları",
-                description = "Torrent, video sağlayıcıları, debrid ve manga kaynakları",
-                icon = Icons.Rounded.Extension,
-                iconColor = KitsugiColors.AccentPurple,
-                onClick = { activeDialog = SettingsDialog.Addons }
-            )
-
-            KitsugiSettingsDivider()
-
-            KitsugiSettingsItem(
                 title = "Oynatıcı Ayarları",
                 description = "Gelişmiş video oynatıcı, altyazı, ses ve arabellek ayarları",
                 icon = Icons.Rounded.PlayCircle,
                 iconColor = KitsugiColors.AccentOrange,
                 onClick = { activeDialog = SettingsDialog.PlayerSettings }
+            )
+
+            KitsugiSettingsDivider()
+
+            KitsugiSettingsItem(
+                title = "Eklenti & Akış Ayarları",
+                description = "Torrent, video sağlayıcıları, debrid ve manga kaynakları",
+                icon = Icons.Rounded.Extension,
+                iconColor = KitsugiColors.AccentPurple,
+                onClick = { activeDialog = SettingsDialog.Addons }
             )
 
             KitsugiSettingsDivider()
@@ -190,16 +189,6 @@ fun SettingsScreen(
         KitsugiSettingsSection(
             title = "Destek & Hakkında"
         ) {
-            KitsugiSettingsItem(
-                title = "Favorilerim",
-                description = "Favorilerinize eklediğiniz anime ve mangaları görüntüleyin",
-                icon = Icons.Rounded.Favorite,
-                iconColor = KitsugiColors.AccentPink,
-                onClick = integrations.onOpenFavourites
-            )
-
-            KitsugiSettingsDivider()
-
             KitsugiSettingsItem(
                 title = "Geri Bildirim Gönder",
                 description = "Uygulamayla ilgili hata bildirin veya önerilerinizi paylaşın",
@@ -239,8 +228,25 @@ fun SettingsScreen(
                         newProfileName,
                         newListTitle
                     )
-                    activeDialog = null
                 },
+                isAniListConnected = profile.isAniListConnected,
+                anilistUsername = profile.anilistUsername,
+                isAniListImportRunning = profile.isAniListImportRunning,
+                onAniListImportClick = profile.onAniListImportClick,
+                onAniListAuthClick = profile.onAniListAuthClick,
+                isMalConnected = profile.isMalConnected,
+                malUsername = profile.malUsername,
+                isMalImportRunning = profile.isMalImportRunning,
+                onMalImportClick = profile.onMalImportClick,
+                onMalAuthClick = profile.onMalAuthClick,
+                isSimklConnected = profile.isSimklConnected,
+                simklUsername = profile.simklUsername,
+                isSimklImportRunning = profile.isSimklImportRunning,
+                isSimklSessionExpired = profile.isSimklSessionExpired,
+                onSimklImportClick = profile.onSimklImportClick,
+                onSimklAuthClick = profile.onSimklAuthClick,
+                isCrossSyncRunning = profile.isCrossSyncRunning,
+                onCrossSyncClick = profile.onCrossSyncClick,
                 onDismiss = {
                     activeDialog = null
                 }
@@ -287,22 +293,8 @@ fun SettingsScreen(
                 },
                 dnsChoice = params.integrations.dnsChoice,
                 onDnsChoiceSelected = params.integrations.onDnsChoiceSelected,
-                onDeveloperLogsClick = {
-                    activeDialog = SettingsDialog.DeveloperLogs
-                },
                 onDismiss = {
                     activeDialog = null
-                },
-                autoUpdateCheckEnabled = params.general.autoUpdateCheckEnabled,
-                onAutoUpdateCheckEnabledChanged = params.general.onAutoUpdateCheckEnabledChanged,
-                onCheckForUpdatesClick = params.general.onCheckForUpdatesClick
-            )
-        }
-
-        SettingsDialog.DeveloperLogs -> {
-            DeveloperLogsDialog(
-                onDismiss = {
-                    activeDialog = SettingsDialog.SystemSettings
                 }
             )
         }
@@ -378,7 +370,6 @@ private enum class SettingsDialog {
     Addons,
     PlayerSettings,
     SystemSettings,
-    DeveloperLogs,
     Integrations,
     Feedback
 }

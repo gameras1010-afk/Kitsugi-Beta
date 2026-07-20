@@ -39,6 +39,7 @@ fun AppRootDetailPages(
     authViewModel: AuthViewModel,
     mediaRepository: MediaEntryRepository,
     coroutineScope: CoroutineScope,
+    updateViewModel: com.kitsugi.animelist.core.update.AppUpdateViewModel,
     onEditEntry: (MediaEntry) -> Unit,
     onDeleteEntry: (MediaEntry) -> Unit,
     onIncrementEntryProgress: (MediaEntry) -> Unit,
@@ -342,6 +343,15 @@ fun AppRootDetailPages(
         is AppStateKey.About -> {
             navState.stateHolder.SaveableStateProvider(key = "about_${key.depth}") {
                 com.kitsugi.animelist.ui.screens.more.AboutScreen(
+                    autoUpdateCheckEnabled = appSettings.autoUpdateCheckEnabled,
+                    onAutoUpdateCheckEnabledChanged = { enabled ->
+                        coroutineScope.launch {
+                            settingsDataStore.setAutoUpdateCheckEnabled(enabled)
+                        }
+                    },
+                    onCheckForUpdatesClick = {
+                        updateViewModel.checkForUpdates(silent = false, force = true)
+                    },
                     onBackClick = { navState.popDetailStack() }
                 )
             }

@@ -30,6 +30,8 @@ import androidx.compose.ui.graphics.asImageBitmap
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.utils.tvClickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 
 // Glassmorphism renk sabitleri — tüm player kontrolleri için
 private val GlassWhite   = Color.White.copy(alpha = 0.08f)
@@ -292,13 +294,16 @@ fun PlayerBottomActions(
     onAspectClick: () -> Unit,
     onSpeedClick: () -> Unit,
     onStreamInfoClick: () -> Unit,
+    onRotateClick: () -> Unit,
     onSkipSettingsClick: (() -> Unit)? = null,
     showMediaInfo: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.End,
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (hasEpisodes) {
@@ -307,7 +312,6 @@ fun PlayerBottomActions(
                 label = "Bölümler",
                 onClick = onEpisodesClick
             )
-            Spacer(modifier = Modifier.width(8.dp))
         }
         if (hasTextTracks) {
             PlayerActionButton(
@@ -315,7 +319,6 @@ fun PlayerBottomActions(
                 label = "Altyazı",
                 onClick = onSubtitleClick
             )
-            Spacer(modifier = Modifier.width(8.dp))
         }
         if (hasMultiAudio) {
             PlayerActionButton(
@@ -323,7 +326,6 @@ fun PlayerBottomActions(
                 label = "Ses",
                 onClick = onAudioClick
             )
-            Spacer(modifier = Modifier.width(8.dp))
         }
         if (hasSources) {
             PlayerActionButton(
@@ -331,7 +333,6 @@ fun PlayerBottomActions(
                 label = "Kaynak",
                 onClick = onSourcesClick
             )
-            Spacer(modifier = Modifier.width(8.dp))
         }
         if (showMediaInfo) {
             PlayerActionButton(
@@ -339,7 +340,6 @@ fun PlayerBottomActions(
                 label = "Bilgi",
                 onClick = onStreamInfoClick
             )
-            Spacer(modifier = Modifier.width(8.dp))
         }
         if (onSkipSettingsClick != null) {
             PlayerActionButton(
@@ -347,14 +347,17 @@ fun PlayerBottomActions(
                 label = "Atlama",
                 onClick = onSkipSettingsClick
             )
-            Spacer(modifier = Modifier.width(8.dp))
         }
+        PlayerActionButton(
+            icon = Icons.Rounded.ScreenRotation,
+            label = "Döndür",
+            onClick = onRotateClick
+        )
         PlayerActionButton(
             icon = Icons.Rounded.AspectRatio,
             label = currentResizeModeLabel,
             onClick = onAspectClick
         )
-        Spacer(modifier = Modifier.width(8.dp))
         PlayerActionButton(
             icon = Icons.Rounded.Speed,
             label = currentSpeedLabel,

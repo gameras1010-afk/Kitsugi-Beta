@@ -303,8 +303,8 @@ fun MediaEntry.matches(result: JikanSearchResult): Boolean {
 
     // 4. Göreceli başlık + yıl + tip eşleşmesi (Fuzzy fallback)
     if (this.type == result.type) {
-        val entryTitleNorm = this.title.lowercase().replace(Regex("[^a-z0-9]"), "").trim()
-        val resultTitleNorm = result.title.lowercase().replace(Regex("[^a-z0-9]"), "").trim()
+        val entryTitleNorm = this.title.lowercase().filter { it in 'a'..'z' || it in '0'..'9' }.trim()
+        val resultTitleNorm = result.title.lowercase().filter { it in 'a'..'z' || it in '0'..'9' }.trim()
         if (entryTitleNorm.isNotEmpty() && entryTitleNorm == resultTitleNorm) {
             val y1 = this.year
             val y2 = result.year

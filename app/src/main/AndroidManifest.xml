@@ -120,7 +120,7 @@
             android:name=".ui.screens.fullscreen.KitsugiFullscreenPlayerActivity"
             android:exported="false"
             android:launchMode="singleTop"
-            android:screenOrientation="sensorLandscape"
+            android:screenOrientation="fullSensor"
             android:supportsPictureInPicture="true"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|colorMode|density|keyboard|keyboardHidden|navigation|uiMode|fontScale"
             android:theme="@style/Theme.KitsugiAnimeList" />

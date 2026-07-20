@@ -1,6 +1,7 @@
 package com.kitsugi.animelist.ui.screens.fullscreen
 
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.*
@@ -258,6 +259,7 @@ fun KitsugiFullscreenPlayerScreen(
     var audioBoostLevel by remember { mutableStateOf(0f) }
 
     var currentAspectMode by remember { mutableStateOf(com.kitsugi.animelist.core.player.PlayerAspectMode.ORIGINAL) }
+    var screenOrientationState by remember { mutableStateOf(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR) }
 
     LaunchedEffect(appSettings) {
         if (appSettings != null && !isSettingsLoaded) {
@@ -1153,6 +1155,22 @@ fun KitsugiFullscreenPlayerScreen(
                                             com.kitsugi.animelist.core.player.PlayerAspectMode.CROP_4_3 -> "Kırp 4:3"
                                         }
                                         aspectFeedback = "Ekran Modu: $newModeText"
+                                    },
+                                    onRotateClick = {
+                                        val nextOrientation = when (screenOrientationState) {
+                                            ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                                            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
+                                            else -> ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
+                                        }
+                                        screenOrientationState = nextOrientation
+                                        activity?.requestedOrientation = nextOrientation
+                                        val text = when (nextOrientation) {
+                                            ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR -> "Yönlendirme: Otomatik"
+                                            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE -> "Yönlendirme: Yatay (Kilitli)"
+                                            ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT -> "Yönlendirme: Dikey (Kilitli)"
+                                            else -> ""
+                                        }
+                                        aspectFeedback = text
                                     },
                                     onSpeedClick = { activePanel = PlayerPanel.SPEED },
                                     onStreamInfoClick = { activePanel = PlayerPanel.STREAM_INFO },

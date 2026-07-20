@@ -144,7 +144,7 @@ fun ExploreScreen(
                 keys.add("mal_${entry.malId}")
                 keys.add("jikan_${entry.malId}")
             }
-            val normTitle = entry.title.lowercase().replace(Regex("[^a-z0-9]"), "").trim()
+            val normTitle = entry.title.lowercase().filter { it in 'a'..'z' || it in '0'..'9' }.trim()
             if (normTitle.isNotEmpty()) {
                 keys.add("${entry.type}_$normTitle")
             }
@@ -157,7 +157,7 @@ fun ExploreScreen(
             val directKey = "${result.source.lowercase()}_${result.malId}"
             val tmdbId = result.tmdbId ?: if (result.source.equals("tmdb", ignoreCase = true)) result.malId else null
             val rMal = if (result.source.equals("jikan", ignoreCase = true) || result.source.equals("mal", ignoreCase = true)) result.malId else result.realMalId
-            val normTitle = result.title.lowercase().replace(Regex("[^a-z0-9]"), "").trim()
+            val normTitle = result.title.lowercase().filter { it in 'a'..'z' || it in '0'..'9' }.trim()
 
             entryKeysSet.contains(directKey) ||
                     (tmdbId != null && entryKeysSet.contains("tmdb_$tmdbId")) ||
@@ -230,18 +230,18 @@ fun ExploreScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = 100.dp)
                 ) {
-                    // Hero banner (yalnızca veri geldiyse)
                         if (heroItems.isNotEmpty()) {
                             item {
                                 KitsugiHeroSection(
                                     items = heroItems,
-                                    currentEntries = currentEntries,
+                                    alreadyInList = isAlreadyInList,
                                     onInfoClick = onOpenApiDetail,
                                     scrollValue = lazyListState.firstVisibleItemScrollOffset.toFloat(),
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
                                     hideScores = hideScores,
-                                    showAnimeLogos = showAnimeLogos
+                                    showAnimeLogos = showAnimeLogos,
+                                    isVisible = lazyListState.firstVisibleItemIndex == 0
                                 )
                                 Spacer(modifier = Modifier.height(26.dp))
                             }

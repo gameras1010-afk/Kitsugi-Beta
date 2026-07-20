@@ -41,14 +41,10 @@ fun KitsugiSystemSettingsDialog(
     onDeleteAllClick: () -> Unit,
     dnsChoice: Int,
     onDnsChoiceSelected: (Int) -> Unit,
-    onDeveloperLogsClick: () -> Unit,
-    onDismiss: () -> Unit,
-    autoUpdateCheckEnabled: Boolean = true,
-    onAutoUpdateCheckEnabledChanged: (Boolean) -> Unit = {},
-    onCheckForUpdatesClick: () -> Unit = {}
+    onDismiss: () -> Unit
 ) {
     val accentColor = LocalKitsugiAccent.current
-    val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { 2 })
     val scope = rememberCoroutineScope()
 
     KitsugiSheetOrDialog(
@@ -107,19 +103,6 @@ fun KitsugiSystemSettingsDialog(
                             )
                         }
                     )
-                    Tab(
-                        selected = pagerState.currentPage == 2,
-                        onClick = {
-                            scope.launch { pagerState.animateScrollToPage(2) }
-                        },
-                        text = {
-                            Text(
-                                "Hakkında",
-                                fontWeight = if (pagerState.currentPage == 2) FontWeight.Bold else FontWeight.Normal,
-                                fontSize = 13.sp
-                            )
-                        }
-                    )
                 }
             }
 
@@ -142,13 +125,6 @@ fun KitsugiSystemSettingsDialog(
                     1 -> DnsSettingsTab(
                         dnsChoice = dnsChoice,
                         onDnsChoiceSelected = onDnsChoiceSelected,
-                        accentColor = accentColor
-                    )
-                    2 -> SystemInfoTab(
-                        autoUpdateCheckEnabled = autoUpdateCheckEnabled,
-                        onAutoUpdateCheckEnabledChanged = onAutoUpdateCheckEnabledChanged,
-                        onCheckForUpdatesClick = onCheckForUpdatesClick,
-                        onDeveloperLogsClick = onDeveloperLogsClick,
                         accentColor = accentColor
                     )
                 }
@@ -309,257 +285,6 @@ private fun DnsSettingsTab(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun SystemInfoTab(
-    autoUpdateCheckEnabled: Boolean,
-    onAutoUpdateCheckEnabledChanged: (Boolean) -> Unit,
-    onCheckForUpdatesClick: () -> Unit,
-    onDeveloperLogsClick: () -> Unit,
-    accentColor: Color
-) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val scrollState = rememberScrollState()
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        KitsugiSettingsSection(title = "Uygulama Güncellemeleri") {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Text(
-                    text = "Yeni sürümleri otomatik veya manuel olarak kontrol edin.",
-                    color = KitsugiColors.TextSecondary,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Left element: Auto Update toggle
-                    Row(
-                        modifier = Modifier
-                            .weight(1.1f)
-                            .background(
-                                color = KitsugiColors.SurfaceSoft,
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "Otomatik Kontrol",
-                                color = KitsugiColors.TextPrimary,
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                text = if (autoUpdateCheckEnabled) "Açık" else "Kapalı",
-                                color = KitsugiColors.TextMuted,
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        }
-                        Switch(
-                            checked = autoUpdateCheckEnabled,
-                            onCheckedChange = onAutoUpdateCheckEnabledChanged,
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = KitsugiColors.Background,
-                                checkedTrackColor = accentColor
-                            )
-                        )
-                    }
-
-                    // Right element: Manual check button
-                    Button(
-                        onClick = onCheckForUpdatesClick,
-                        colors = ButtonDefaults.buttonColors(containerColor = accentColor),
-                        shape = RoundedCornerShape(12.dp),
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 12.dp),
-                        modifier = Modifier.weight(0.9f)
-                    ) {
-                        Text(
-                            text = "Şimdi Denetle",
-                            color = KitsugiColors.Background,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
-                        )
-                    }
-                }
-            }
-        }
-
-        KitsugiSettingsSection(title = "Uygulama Hakkında") {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Text(
-                    text = "Native Kotlin + Jetpack Compose ile geliştirilmiş anime/manga liste uygulaması.",
-                    color = KitsugiColors.TextSecondary,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                AboutInfoRow("Sürüm", BuildConfig.VERSION_NAME)
-                AboutInfoRow("Version Code", BuildConfig.VERSION_CODE.toString())
-                AboutInfoRow("Paket", BuildConfig.APPLICATION_ID)
-                AboutInfoRow("Build", BuildConfig.BUILD_TYPE_LABEL)
-                AboutInfoRow("Veri", "Room + DataStore")
-                AboutInfoRow("API", "Jikan + AniList")
-
-                HorizontalDivider(color = KitsugiColors.SurfaceSoft)
-
-        Button(
-            onClick = onDeveloperLogsClick,
-            colors = ButtonDefaults.buttonColors(containerColor = accentColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Geliştirici Günlüklerini Gör", color = KitsugiColors.Background, fontWeight = FontWeight.Bold)
-        }
-
-        OutlinedButton(
-            onClick = {
-                scope.launch {
-                    try {
-                        val filesToShare = ArrayList<android.net.Uri>()
-
-                        // 1. Cihaz Bilgisi
-                        val infoFile = File(context.filesDir, "device_info.txt")
-                        val infoText = buildString {
-                            append("Uygulama Sürümü: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})\n")
-                            append("Cihaz Markası: ${android.os.Build.BRAND}\n")
-                            append("Cihaz Modeli: ${android.os.Build.MODEL}\n")
-                            append("Android Sürümü: ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})\n")
-                            append("Üretici: ${android.os.Build.MANUFACTURER}\n")
-                            append("Zaman Dilimi: ${java.util.TimeZone.getDefault().id}\n")
-                            append("Yerel Saat: ${java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())}\n")
-                        }
-                        infoFile.writeText(infoText)
-                        val infoUri = androidx.core.content.FileProvider.getUriForFile(
-                            context,
-                            "com.kitsugi.animelist.fileprovider",
-                            infoFile
-                        )
-                        filesToShare.add(infoUri)
-
-                        // 2. Çökme Raporu
-                        val crashFile = File(context.filesDir, "crash_log.txt")
-                        if (crashFile.exists()) {
-                            val crashUri = androidx.core.content.FileProvider.getUriForFile(
-                                context,
-                                "com.kitsugi.animelist.fileprovider",
-                                crashFile
-                            )
-                            filesToShare.add(crashUri)
-                        }
-
-                        // 3. Arka Plan Günlükleri
-                        val logFiles = listOf("app_logs.txt", "app_logs.txt.1", "app_logs.txt.2")
-                        for (fileName in logFiles) {
-                            val logFile = File(context.filesDir, fileName)
-                            if (logFile.exists() && logFile.length() > 0) {
-                                val logUri = androidx.core.content.FileProvider.getUriForFile(
-                                    context,
-                                    "com.kitsugi.animelist.fileprovider",
-                                    logFile
-                                )
-                                filesToShare.add(logUri)
-                            }
-                        }
-
-                        // 4. Canlı Logcat Dökümü
-                        val currentLogcatFile = File(context.filesDir, "current_logcat.txt")
-                        withContext(Dispatchers.IO) {
-                            try {
-                                val process = Runtime.getRuntime().exec(arrayOf("logcat", "-d", "-v", "time", "*:D"))
-                                val reader = BufferedReader(InputStreamReader(process.inputStream))
-                                val writer = currentLogcatFile.bufferedWriter()
-                                var line: String?
-                                while (reader.readLine().also { line = it } != null) {
-                                    writer.write(line)
-                                    writer.newLine()
-                                }
-                                writer.close()
-                                reader.close()
-                            } catch (e: Exception) {
-                                currentLogcatFile.writeText("Anlık log alınamadı: ${e.localizedMessage}")
-                            }
-                        }
-                        if (currentLogcatFile.exists() && currentLogcatFile.length() > 0) {
-                            val currentUri = androidx.core.content.FileProvider.getUriForFile(
-                                context,
-                                "com.kitsugi.animelist.fileprovider",
-                                currentLogcatFile
-                            )
-                            filesToShare.add(currentUri)
-                        }
-
-                        if (filesToShare.isNotEmpty()) {
-                            val intent = android.content.Intent().apply {
-                                action = android.content.Intent.ACTION_SEND_MULTIPLE
-                                type = "text/plain"
-                                putParcelableArrayListExtra(android.content.Intent.EXTRA_STREAM, filesToShare)
-                                addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                            }
-                            context.startActivity(android.content.Intent.createChooser(intent, "Hata Raporunu Paylaş"))
-                        } else {
-                            Toast.makeText(context, "Paylaşılacak log dosyası bulunamadı", Toast.LENGTH_SHORT).show()
-                        }
-                    } catch (e: Exception) {
-                        Toast.makeText(context, "Paylaşım Hatası: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            },
-            border = androidx.compose.foundation.BorderStroke(1.dp, accentColor),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = accentColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Hata Raporunu Geliştiriciye Gönder", fontWeight = FontWeight.Bold)
-        }
-            }
-        }
-    }
-}
-
-@Composable
-private fun AboutInfoRow(
-    label: String,
-    value: String
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = label.uppercase(),
-            color = KitsugiColors.TextMuted,
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(
-            text = value,
-            color = KitsugiColors.TextPrimary,
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.SemiBold
-        )
-        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
