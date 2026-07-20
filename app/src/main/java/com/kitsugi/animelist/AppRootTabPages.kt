@@ -30,6 +30,8 @@ import com.kitsugi.animelist.ui.screens.search.SearchScreen
 import com.kitsugi.animelist.ui.components.BackupImportMode
 import kotlinx.coroutines.CoroutineScope
 
+import com.kitsugi.animelist.ui.app.KitsugiProfileViewModel
+
 data class TabPagesContext(
     val mediaEntries: List<MediaEntry>,
     val appSettings: AppSettings,
@@ -39,6 +41,7 @@ data class TabPagesContext(
     val searchViewModel: SearchViewModel,
     val authViewModel: AuthViewModel,
     val profileViewModel: ProfileViewModel,
+    val kitsugiProfileViewModel: KitsugiProfileViewModel,
     val playerSettingsViewModel: PlayerSettingsViewModel,
     val updateViewModel: com.kitsugi.animelist.core.update.AppUpdateViewModel,
     val addonViewModel: AddonViewModel,
@@ -89,6 +92,27 @@ fun AppRootTabPages(
 
         MainTab.Search -> {
             SearchTabPage(ctx)
+        }
+
+        MainTab.Profile -> {
+            com.kitsugi.animelist.ui.screens.profile.KitsugiProfileScreen(
+                viewModel = ctx.kitsugiProfileViewModel,
+                mediaEntries = ctx.mediaEntries,
+                isAniListConnected = ctx.authViewModel.isAniListConnected,
+                isMalConnected = ctx.authViewModel.isMalConnected,
+                isSimklConnected = ctx.authViewModel.isSimklConnected,
+                profileName = ctx.appSettings.profileName,
+                listTitle = ctx.appSettings.listTitle,
+                profileImageUri = ctx.appSettings.profileImageUri,
+                bannerImageUri = ctx.appSettings.bannerImageUri,
+                appSettings = ctx.appSettings,
+                onEntryClick = { entry ->
+                    ctx.navState.navigateToDetail(DetailScreen.MediaDetail(entry.id))
+                },
+                onOpenSettingsClick = {
+                    ctx.appViewModel.selectTab(MainTab.Settings)
+                }
+            )
         }
 
         MainTab.Settings -> {

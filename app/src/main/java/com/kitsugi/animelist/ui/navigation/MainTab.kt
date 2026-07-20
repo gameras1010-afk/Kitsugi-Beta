@@ -5,6 +5,7 @@ import androidx.compose.material.icons.automirrored.rounded.ListAlt
 import androidx.compose.material.icons.rounded.Explore
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 
 import androidx.annotation.StringRes
@@ -17,5 +18,6 @@ enum class MainTab(
     Explore(R.string.tab_explore, Icons.Rounded.Explore),
     MyList(R.string.tab_mylist, Icons.AutoMirrored.Rounded.ListAlt),
     Search(R.string.tab_search, Icons.Rounded.Search),
+    Profile(R.string.tab_profile, Icons.Rounded.Person),
     Settings(R.string.tab_settings, Icons.Rounded.Settings)
 }

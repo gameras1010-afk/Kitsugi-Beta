@@ -98,6 +98,7 @@ import com.kitsugi.animelist.ui.app.AppViewModel
 import com.kitsugi.animelist.ui.app.AuthViewModel
 import com.kitsugi.animelist.ui.app.PlayerSettingsViewModel
 import com.kitsugi.animelist.ui.app.ProfileViewModel
+import com.kitsugi.animelist.ui.app.KitsugiProfileViewModel
 import com.kitsugi.animelist.ui.app.AddonViewModel
 import com.kitsugi.animelist.ui.app.MangaViewModel
 import com.kitsugi.animelist.ui.app.rememberAppNavigationState
@@ -160,6 +161,7 @@ fun AppRoot(
     val searchViewModel: SearchViewModel = viewModel()
     val authViewModel: AuthViewModel = viewModel()
     val profileViewModel: ProfileViewModel = viewModel()
+    val kitsugiProfileViewModel: KitsugiProfileViewModel = viewModel()
     val playerSettingsViewModel: PlayerSettingsViewModel = viewModel()
     val addonViewModel: AddonViewModel = viewModel()
     val mangaViewModel: MangaViewModel = viewModel()
@@ -738,6 +740,7 @@ fun AppRoot(
                     searchViewModel = searchViewModel,
                     authViewModel = authViewModel,
                     profileViewModel = profileViewModel,
+                    kitsugiProfileViewModel = kitsugiProfileViewModel,
                     playerSettingsViewModel = playerSettingsViewModel,
                     updateViewModel = updateViewModel,
                     addonViewModel = addonViewModel,
@@ -869,6 +872,7 @@ private fun AppNavigationContent(
     searchViewModel: SearchViewModel,
     authViewModel: AuthViewModel,
     profileViewModel: ProfileViewModel,
+    kitsugiProfileViewModel: KitsugiProfileViewModel,
     playerSettingsViewModel: PlayerSettingsViewModel,
     updateViewModel: AppUpdateViewModel,
     addonViewModel: AddonViewModel,
@@ -1003,6 +1007,7 @@ private fun AppNavigationContent(
                         searchViewModel = searchViewModel,
                         authViewModel = authViewModel,
                         profileViewModel = profileViewModel,
+                        kitsugiProfileViewModel = kitsugiProfileViewModel,
                         playerSettingsViewModel = playerSettingsViewModel,
                         updateViewModel = updateViewModel,
                         addonViewModel = addonViewModel,

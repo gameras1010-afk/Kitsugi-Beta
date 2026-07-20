@@ -34,7 +34,7 @@ android {
         minSdk = 26
         targetSdk = 36
         // Her derlemede otomatik artan benzersiz sÃ¼rÃ¼m kodu (Dakika bazlÄ± zaman damgasÄ±)
-        val appVersionName = "2.4.13"
+        val appVersionName = "2.4.14"
 
         val timeVersionCode = (System.currentTimeMillis() / 60000).toInt()
         versionCode = timeVersionCode
