@@ -1,7 +1,11 @@
 package com.kitsugi.animelist.ui.components
 
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import com.kitsugi.animelist.ui.utils.tvClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -11,25 +15,24 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.documentfile.provider.DocumentFile
 import com.kitsugi.animelist.BuildConfig
-import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
-import kotlinx.coroutines.launch
-import androidx.compose.ui.platform.LocalContext
-import android.widget.Toast
-import java.io.File
-import java.io.BufferedReader
-import java.io.InputStreamReader
+import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
+import com.kitsugi.animelist.ui.utils.tvClickable
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,106 +44,126 @@ fun KitsugiSystemSettingsDialog(
     onDeleteAllClick: () -> Unit,
     dnsChoice: Int,
     onDnsChoiceSelected: (Int) -> Unit,
+    customImageDownloadUri: String = "",
+    onCustomImageDownloadUriChanged: (String) -> Unit = {},
     onDismiss: () -> Unit
 ) {
     val accentColor = LocalKitsugiAccent.current
-    val pagerState = rememberPagerState(initialPage = 0, pageCount = { 2 })
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
     val scope = rememberCoroutineScope()
 
     KitsugiSheetOrDialog(
         onDismiss = onDismiss,
         heightFraction = 0.85f
     ) {
-            // Header
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Sistem & Veri Ayarları",
-                        color = KitsugiColors.TextPrimary,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Rounded.Close, contentDescription = "Kapat", tint = KitsugiColors.TextSecondary)
-                    }
-                }
-                TabRow(
-                    selectedTabIndex = pagerState.currentPage,
-                    containerColor = KitsugiColors.Surface,
-                    contentColor = accentColor
-                ) {
-                    Tab(
-                        selected = pagerState.currentPage == 0,
-                        onClick = {
-                            scope.launch { pagerState.animateScrollToPage(0) }
-                        },
-                        text = {
-                            Text(
-                                "Veri Yönetimi",
-                                fontWeight = if (pagerState.currentPage == 0) FontWeight.Bold else FontWeight.Normal,
-                                fontSize = 13.sp
-                            )
-                        }
-                    )
-                    Tab(
-                        selected = pagerState.currentPage == 1,
-                        onClick = {
-                            scope.launch { pagerState.animateScrollToPage(1) }
-                        },
-                        text = {
-                            Text(
-                                "DNS (DoH)",
-                                fontWeight = if (pagerState.currentPage == 1) FontWeight.Bold else FontWeight.Normal,
-                                fontSize = 13.sp
-                            )
-                        }
-                    )
-                }
-            }
-
-            // Body
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(horizontal = 16.dp)
-            ) { page ->
-                when (page) {
-                    0 -> DataManagementTab(
-                        totalEntryCount = totalEntryCount,
-                        onExportFileClick = onExportFileClick,
-                        onImportFileClick = onImportFileClick,
-                        onDeleteAllClick = onDeleteAllClick,
-                        accentColor = accentColor
-                    )
-                    1 -> DnsSettingsTab(
-                        dnsChoice = dnsChoice,
-                        onDnsChoiceSelected = onDnsChoiceSelected,
-                        accentColor = accentColor
-                    )
-                }
-            }
-
-            // Footer
+        // Header
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.End
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(onClick = onDismiss) {
-                    Text("Tamam", color = accentColor, fontWeight = FontWeight.SemiBold)
+                Text(
+                    text = "Sistem & Veri Ayarları",
+                    color = KitsugiColors.TextPrimary,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Rounded.Close, contentDescription = "Kapat", tint = KitsugiColors.TextSecondary)
                 }
             }
+            TabRow(
+                selectedTabIndex = pagerState.currentPage,
+                containerColor = KitsugiColors.Surface,
+                contentColor = accentColor
+            ) {
+                Tab(
+                    selected = pagerState.currentPage == 0,
+                    onClick = {
+                        scope.launch { pagerState.animateScrollToPage(0) }
+                    },
+                    text = {
+                        Text(
+                            "Veri Yönetimi",
+                            fontWeight = if (pagerState.currentPage == 0) FontWeight.Bold else FontWeight.Normal,
+                            fontSize = 13.sp
+                        )
+                    }
+                )
+                Tab(
+                    selected = pagerState.currentPage == 1,
+                    onClick = {
+                        scope.launch { pagerState.animateScrollToPage(1) }
+                    },
+                    text = {
+                        Text(
+                            "DNS (DoH)",
+                            fontWeight = if (pagerState.currentPage == 1) FontWeight.Bold else FontWeight.Normal,
+                            fontSize = 13.sp
+                        )
+                    }
+                )
+                Tab(
+                    selected = pagerState.currentPage == 2,
+                    onClick = {
+                        scope.launch { pagerState.animateScrollToPage(2) }
+                    },
+                    text = {
+                        Text(
+                            "İndirmeler",
+                            fontWeight = if (pagerState.currentPage == 2) FontWeight.Bold else FontWeight.Normal,
+                            fontSize = 13.sp
+                        )
+                    }
+                )
+            }
+        }
+
+        // Body
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .padding(horizontal = 16.dp)
+        ) { page ->
+            when (page) {
+                0 -> DataManagementTab(
+                    totalEntryCount = totalEntryCount,
+                    onExportFileClick = onExportFileClick,
+                    onImportFileClick = onImportFileClick,
+                    onDeleteAllClick = onDeleteAllClick,
+                    accentColor = accentColor
+                )
+                1 -> DnsSettingsTab(
+                    dnsChoice = dnsChoice,
+                    onDnsChoiceSelected = onDnsChoiceSelected,
+                    accentColor = accentColor
+                )
+                2 -> StorageSettingsTab(
+                    customImageDownloadUri = customImageDownloadUri,
+                    onCustomImageDownloadUriChanged = onCustomImageDownloadUriChanged,
+                    accentColor = accentColor
+                )
+            }
+        }
+
+        // Footer
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
+            TextButton(onClick = onDismiss) {
+                Text("Tamam", color = accentColor, fontWeight = FontWeight.SemiBold)
+            }
+        }
     }
 }
 
@@ -281,6 +304,118 @@ private fun DnsSettingsTab(
                                 style = MaterialTheme.typography.bodySmall
                             )
                         }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StorageSettingsTab(
+    customImageDownloadUri: String,
+    onCustomImageDownloadUriChanged: (String) -> Unit,
+    accentColor: Color
+) {
+    val context = LocalContext.current
+    val scrollState = rememberScrollState()
+
+    val folderPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        uri?.let {
+            try {
+                val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                context.contentResolver.takePersistableUriPermission(it, takeFlags)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            onCustomImageDownloadUriChanged(it.toString())
+        }
+    }
+
+    val displayPath = if (customImageDownloadUri.isBlank()) {
+        "Varsayılan (İndirilenler / Kitsugi)"
+    } else {
+        try {
+            val treeUri = Uri.parse(customImageDownloadUri)
+            val docFile = DocumentFile.fromTreeUri(context, treeUri)
+            docFile?.name ?: treeUri.lastPathSegment ?: customImageDownloadUri
+        } catch (e: Exception) {
+            customImageDownloadUri
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+            .padding(vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        KitsugiSettingsSection(title = "Resim & Medya İndirmeleri") {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Uygulama içinden indirilen poster, galeri ve duvar kağıdı resimlerinin kaydedileceği hedef klasörü seçebilirsiniz.",
+                    color = KitsugiColors.TextSecondary,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(KitsugiColors.SurfaceSoft, shape = RoundedCornerShape(12.dp))
+                        .padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Folder,
+                        contentDescription = null,
+                        tint = accentColor,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Mevcut İndirme Konumu",
+                            color = KitsugiColors.TextMuted,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = displayPath,
+                            color = KitsugiColors.TextPrimary,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Button(
+                    onClick = { folderPickerLauncher.launch(null) },
+                    colors = ButtonDefaults.buttonColors(containerColor = accentColor),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Rounded.Folder, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("İndirme Klasörü Seç", color = KitsugiColors.Background, fontWeight = FontWeight.Bold)
+                }
+
+                if (customImageDownloadUri.isNotBlank()) {
+                    OutlinedButton(
+                        onClick = { onCustomImageDownloadUriChanged("") },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Varsayılana Sıfırla (Downloads/Kitsugi)", color = KitsugiColors.TextSecondary)
                     }
                 }
             }

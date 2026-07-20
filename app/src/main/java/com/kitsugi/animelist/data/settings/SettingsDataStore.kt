@@ -158,6 +158,7 @@ class SettingsDataStore(
         val LiveHelperEnabled = booleanPreferencesKey("live_helper_enabled")
         val EnableAssExtractor = booleanPreferencesKey("enable_ass_extractor")
         val AutoUpdateCheckEnabled = booleanPreferencesKey("auto_update_check_enabled")
+        val CustomImageDownloadUri = stringPreferencesKey("custom_image_download_uri")
     }
 
     val settingsFlow: Flow<AppSettings> = kotlinx.coroutines.flow.flow {
@@ -290,9 +291,16 @@ class SettingsDataStore(
                     splashSoundEnabled = preferences[Keys.SplashSoundEnabled] ?: true,
                     liveHelperEnabled = preferences[Keys.LiveHelperEnabled] ?: false,
                     enableAssExtractor = preferences[Keys.EnableAssExtractor] ?: false,
-                    autoUpdateCheckEnabled = preferences[Keys.AutoUpdateCheckEnabled] ?: true
+                    autoUpdateCheckEnabled = preferences[Keys.AutoUpdateCheckEnabled] ?: true,
+                    customImageDownloadUri = preferences[Keys.CustomImageDownloadUri] ?: ""
                 )
             )
+        }
+    }
+
+    suspend fun setCustomImageDownloadUri(uri: String) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[Keys.CustomImageDownloadUri] = uri
         }
     }
 

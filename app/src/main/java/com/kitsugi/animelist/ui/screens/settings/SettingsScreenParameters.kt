@@ -66,7 +66,9 @@ data class GeneralSettings(
     // ─── Otomatik & Manuel Güncelleme Kontrolü ─────────────────────────
     val autoUpdateCheckEnabled: Boolean = true,
     val onAutoUpdateCheckEnabledChanged: (Boolean) -> Unit = {},
-    val onCheckForUpdatesClick: () -> Unit = {}
+    val onCheckForUpdatesClick: () -> Unit = {},
+    val customImageDownloadUri: String = "",
+    val onCustomImageDownloadUriChanged: (String) -> Unit = {}
 )
 
 data class ProfileSettings(

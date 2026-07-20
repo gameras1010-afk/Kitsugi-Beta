@@ -273,6 +273,8 @@ fun SettingsScreen(
                 },
                 dnsChoice = params.integrations.dnsChoice,
                 onDnsChoiceSelected = params.integrations.onDnsChoiceSelected,
+                customImageDownloadUri = params.general.customImageDownloadUri,
+                onCustomImageDownloadUriChanged = params.general.onCustomImageDownloadUriChanged,
                 onDismiss = {
                     activeDialog = null
                 }

@@ -65,7 +65,9 @@ internal fun SettingsContext.buildSettingsParams() =
             onMangaBrightnessChanged = { onMangaBrightnessChanged(it) },
             autoUpdateCheckEnabled = appSettings.autoUpdateCheckEnabled,
             onAutoUpdateCheckEnabledChanged = { onAutoUpdateCheckEnabledChanged(it) },
-            onCheckForUpdatesClick = { onCheckForUpdatesClick() }
+            onCheckForUpdatesClick = { onCheckForUpdatesClick() },
+            customImageDownloadUri = appSettings.customImageDownloadUri,
+            onCustomImageDownloadUriChanged = { onCustomImageDownloadUriChanged(it) }
         ),
         profile = com.kitsugi.animelist.ui.screens.settings.ProfileSettings(
             profileName = appSettings.profileName,
@@ -727,5 +729,13 @@ internal fun SettingsContext.onAutoUpdateCheckEnabledChanged(enabled: Boolean) {
 internal fun SettingsContext.onCheckForUpdatesClick() {
     updateViewModel.checkForUpdates(silent = false, force = true)
 }
+
+internal fun SettingsContext.onCustomImageDownloadUriChanged(uri: String) {
+    coroutineScope.launch {
+        settingsDataStore.setCustomImageDownloadUri(uri)
+        appViewModel.showSnackbarMessage(if (uri.isNotBlank()) "İndirme klasörü güncellendi" else "İndirme klasörü varsayılana sıfırlandı")
+    }
+}
+
 
 
