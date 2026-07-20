@@ -16,7 +16,7 @@ set "GH_EXE=C:\Program Files\GitHub CLI\gh.exe"
 if not exist "!GIT_EXE!" set "GIT_EXE=git"
 if not exist "!GH_EXE!" set "GH_EXE=gh"
 
-echo [+] 1. Surum ve Release Notlari otomatik yukseltiliyor...
+echo [+] 1. Surum numarasi ve Release Notlari otomatik yukseltiliyor...
 FOR /F "usebackq tokens=*" %%V IN (`powershell -ExecutionPolicy Bypass -File scripts\bump_version.ps1`) DO SET "NEW_VER=%%V"
 
 if not defined NEW_VER (
@@ -47,8 +47,16 @@ if exist "!FOSS_APK!" (
     
     if exist "!GMS_APK!" (
         "!GH_EXE!" release create !TAG_NAME! "!FOSS_APK!" "!GMS_APK!" --title "Kitsugi !TAG_NAME!" --notes-file RELEASE_NOTES.md
+        if !errorlevel! neq 0 (
+            echo [!] Release zaten mevcut, APK'lar guncelleniyor...
+            "!GH_EXE!" release upload !TAG_NAME! "!FOSS_APK!" "!GMS_APK!" --clobber
+        )
     ) else (
         "!GH_EXE!" release create !TAG_NAME! "!FOSS_APK!" --title "Kitsugi !TAG_NAME!" --notes-file RELEASE_NOTES.md
+        if !errorlevel! neq 0 (
+            echo [!] Release zaten mevcut, APK yukleniyor...
+            "!GH_EXE!" release upload !TAG_NAME! "!FOSS_APK!" --clobber
+        )
     )
 
     echo.
