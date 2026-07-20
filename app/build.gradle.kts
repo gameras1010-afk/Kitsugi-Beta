@@ -33,15 +33,15 @@ android {
         applicationId = "com.kitsugi.animelist"
         minSdk = 26
         targetSdk = 36
-        // Her derlemede otomatik artan benzersiz sürüm kodu (Dakika bazlı zaman damgası)
-        val appVersionName = "2.4.3"
+        // Her derlemede otomatik artan benzersiz sÃ¼rÃ¼m kodu (Dakika bazlÄ± zaman damgasÄ±)
+        val appVersionName = "2.4.5"
 
         val timeVersionCode = (System.currentTimeMillis() / 60000).toInt()
         versionCode = timeVersionCode
         versionName = "$appVersionName-beta.$timeVersionCode"
 
         buildConfigField("String", "TMDB_API_KEY", "\"$tmdbApiKey\"")
-        // ── T3-01: OAuth / API secret'ları — local.properties'den okunur ──────
+        // â”€â”€ T3-01: OAuth / API secret'larÄ± â€” local.properties'den okunur â”€â”€â”€â”€â”€â”€
         buildConfigField("String", "ANILIST_CLIENT_ID",      "\"$anilistClientId\"")
         buildConfigField("String", "ANILIST_CLIENT_SECRET",  "\"$anilistSecret\"")
         buildConfigField("String", "MAL_CLIENT_ID",          "\"$malClientId\"")
@@ -83,7 +83,7 @@ android {
     buildTypes {
         debug {
             buildConfigField("String", "BUILD_TYPE_LABEL", "\"Debug\"")
-            // Debug'ta minify kapalı — hızlı iterasyon
+            // Debug'ta minify kapalÄ± â€” hÄ±zlÄ± iterasyon
             isMinifyEnabled = false
         }
 
@@ -134,15 +134,15 @@ android {
     }
 
     packaging {
-        // ── 16 KB page-size uyumluluğu ────────────────────────────────────────────
-        // lib-decoder-iamf-release.aar içindeki prebuilt libiamf.so ve libiamfJNI.so
-        // dosyaları henüz 16 KB ELF segment hizalamasına (PT_LOAD alignment=0x4000)
-        // sahip değil. useLegacyPackaging=true ile SO'lar APK içinde *sıkıştırılmış*
-        // paketlenir; bu durumda Android runtime mmap yerine decompress ederek yükler
-        // ve alignment kontrolü atlanır. Google Play bu APK biçimini kabul eder.
+        // â”€â”€ 16 KB page-size uyumluluÄŸu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // lib-decoder-iamf-release.aar iÃ§indeki prebuilt libiamf.so ve libiamfJNI.so
+        // dosyalarÄ± henÃ¼z 16 KB ELF segment hizalamasÄ±na (PT_LOAD alignment=0x4000)
+        // sahip deÄŸil. useLegacyPackaging=true ile SO'lar APK iÃ§inde *sÄ±kÄ±ÅŸtÄ±rÄ±lmÄ±ÅŸ*
+        // paketlenir; bu durumda Android runtime mmap yerine decompress ederek yÃ¼kler
+        // ve alignment kontrolÃ¼ atlanÄ±r. Google Play bu APK biÃ§imini kabul eder.
         //
-        // Uzun vadeli çözüm: media3 IAMF decoder AAR'ı 16 KB uyumlu bir upstream
-        // sürümüyle değiştirmek veya libiamf.so'yu objcopy ile yeniden hizalamak.
+        // Uzun vadeli Ã§Ã¶zÃ¼m: media3 IAMF decoder AAR'Ä± 16 KB uyumlu bir upstream
+        // sÃ¼rÃ¼mÃ¼yle deÄŸiÅŸtirmek veya libiamf.so'yu objcopy ile yeniden hizalamak.
         jniLibs {
             useLegacyPackaging = true
             pickFirsts.add("**/libc++_shared.so")
@@ -161,10 +161,10 @@ android {
     }
 }
 
-// ── T3-03 / TASK-106: Room schema export ─────────────────────────────────────
-// KSP'ye schema JSON'larının yazılacağı dizini bildir.
-// KitsugiDatabase'deki exportSchema = true ile birlikte çalışır.
-// Schema dosyaları VCS'e eklenmeli → migration testlerinde referans olarak kullanılır.
+// â”€â”€ T3-03 / TASK-106: Room schema export â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// KSP'ye schema JSON'larÄ±nÄ±n yazÄ±lacaÄŸÄ± dizini bildir.
+// KitsugiDatabase'deki exportSchema = true ile birlikte Ã§alÄ±ÅŸÄ±r.
+// Schema dosyalarÄ± VCS'e eklenmeli â†’ migration testlerinde referans olarak kullanÄ±lÄ±r.
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
 }
@@ -265,13 +265,13 @@ dependencies {
         exclude(group = "org.mozilla", module = "rhino")
         exclude(group = "com.github.AmaryllisVFX", module = "newpipeextractor")
         exclude(group = "info.debatty", module = "java-string-similarity")
-        // Exclude old Jackson bundled in cloudstream library — we force 2.18.3 below
+        // Exclude old Jackson bundled in cloudstream library â€” we force 2.18.3 below
         exclude(group = "com.fasterxml.jackson.core")
         exclude(group = "com.fasterxml.jackson.module")
     }
     implementation("org.jsoup:jsoup:1.17.2")
     // Jackson 2.18.3: first version with full Kotlin 2.0.x support.
-    // Previous 2.13.1 compiled against Kotlin 1.6 → AssertionError: Built-in class kotlin.Any is not found
+    // Previous 2.13.1 compiled against Kotlin 1.6 â†’ AssertionError: Built-in class kotlin.Any is not found
     implementation("com.fasterxml.jackson.core:jackson-core:2.18.3")
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.18.3")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.18.3")
@@ -283,8 +283,8 @@ dependencies {
 
     // RxJava for dynamic Manga extension loading compatibility
     implementation("io.reactivex:rxjava:1.3.8")
-    // androidx.preference: Mihon ConfigurableSource kaynaklarının setupPreferenceScreen'i
-    // gerçek androidx.preference.PreferenceScreen/EditTextPreference sınıflarını kullanır.
+    // androidx.preference: Mihon ConfigurableSource kaynaklarÄ±nÄ±n setupPreferenceScreen'i
+    // gerÃ§ek androidx.preference.PreferenceScreen/EditTextPreference sÄ±nÄ±flarÄ±nÄ± kullanÄ±r.
     implementation("androidx.preference:preference-ktx:1.2.1")
 
     // Subsampling and zoomable image support for manga pages
@@ -319,13 +319,13 @@ dependencies {
     // ZXing
     implementation(libs.zxing.core)
 
-    // NanoHTTPD – TV Companion Server
+    // NanoHTTPD â€“ TV Companion Server
     implementation(libs.nanohttpd)
 
-    // ── Kotatsu-Parsers-Redo (Futon) ────────────────────────────────────────
-    // 1300+ built-in manga kaynağı (TR dahil 74 Türkçe)
-    // Futon'un kullandığı aynı entegrasyon: com.github.clquwu:kotatsu-parsers-redo
-    // SHA güncellemek için: https://api.github.com/repos/Kotatsu-Redo/kotatsu-parsers-redo/commits/master
+    // â”€â”€ Kotatsu-Parsers-Redo (Futon) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // 1300+ built-in manga kaynaÄŸÄ± (TR dahil 74 TÃ¼rkÃ§e)
+    // Futon'un kullandÄ±ÄŸÄ± aynÄ± entegrasyon: com.github.clquwu:kotatsu-parsers-redo
+    // SHA gÃ¼ncellemek iÃ§in: https://api.github.com/repos/Kotatsu-Redo/kotatsu-parsers-redo/commits/master
     implementation("com.github.clquwu:kotatsu-parsers-redo:f287c414a6") {
         exclude(group = "org.json", module = "json")
     }
@@ -336,9 +336,9 @@ dependencies {
     // mpv-android-lib
     implementation("io.github.abdallahmehiz:mpv-android-lib:0.1.12")
 
-    // ── T1.10 – Libass / ASS Extractor ───────────────────────────────────────
+    // â”€â”€ T1.10 â€“ Libass / ASS Extractor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // peerless2012/ass-android: Media3-uyumlu libass JNI wrapper.
-    // İçinde arm64-v8a + armeabi-v7a için pre-compiled libass.so bulunur.
+    // Ä°Ã§inde arm64-v8a + armeabi-v7a iÃ§in pre-compiled libass.so bulunur.
     // Feature flag: AppSettings.enableAssExtractor (default=false) ile korunur.
     implementation("io.github.peerless2012:ass-media:0.4.0")
 

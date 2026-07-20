@@ -1,27 +1,27 @@
-# Kitsugi v2.4.1-beta Release Notes 🚀
+# Kitsugi v2.4.5-beta Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
 ### 🎉 Yenilikler ve Eklenen Özellikler
+- **Genişletilmiş Alt Sayfa (Bottom Sheet)**: Güncelleme diyaloğu ekranın altından yumuşakça açılan, yüksekliği artırılmış modern bir Bottom Sheet mimarisine dönüştürüldü.
+- **Otomatik Oturum Sürüm Yükseltme (Auto-Increment)**: `.bat` betiği her çalıştırıldığında projenin sürüm numarası (`appVersionName`) ve release notları otomatik yükseltilir.
 - **Çift Dilli Sürüm Bildirimleri**: Uygulama içi otomatik güncelleme diyaloğu ve GitHub Releases için hem Türkçe hem İngilizce sürüm notları desteği sağlandı.
-- **Logos & Orijinal Görsel Güncellemesi**: Uygulama logosu ve marka görselleri yüksek çözünürlüklü transparent PNG ile yenilendi.
-- **Otomatik Sürüm Testi**: Sürüm kod yükseltmesi (`versionCode`) ve canlı GitHub Releases API senkronizasyonu doğrulandı.
 
 ### 🛠️ Hata Düzeltmeleri
-- **Resurs Çakışmaları**: Drawable klasöründeki mükerrer logo kaynak isimleri temizlendi.
-- **Derleme Kararlılığı**: Gradle resource merger ve KSP bağımlılık yüklemeleri optimize edildi.
+- **Sürüm Döngüsü Düzeltildi**: Derlenen APK içerisindeki sürüm ismi ile GitHub Release etiket ismi %100 senkronize edildi.
+- **Biçimlendirilmiş Notlar**: Markdown sembolleri temizlendi ve vurgulu madde işaretleri ile okuma kolaylaştırıldı.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
 ### 🎉 New Features & Enhancements
-- **Bilingual Release Notes**: Full dual-language (TR/ENG) update notifications in both GitHub Releases and the in-app update dialog.
-- **Branding & Logo Polish**: Updated application logo assets with crisp high-resolution transparent PNG.
-- **Automatic Release Test**: Verified automated version code increments and live GitHub Releases API synchronization.
+- **Sleek Bottom Sheet UI**: The update dialog now smoothly slides up from the bottom with expanded height and clean typography.
+- **Automatic Version Increment**: Running `.bat` automatically bumps the application patch version and synchronizes release metadata.
+- **Bilingual Release Notes**: Full dual-language (TR/ENG) release notifications.
 
 ### 🛠️ Bug Fixes
-- **Resource Merger**: Cleaned duplicate image assets across drawable folders.
-- **Build Stability**: Optimized Gradle resource merger and KSP incremental compilation tasks.
+- **Version Loop Resolution**: Ensured internal APK metadata perfectly matches the remote GitHub release tag.
+- **Formatted Changelog**: Cleaned raw markdown tags for clear bullet point readability.
