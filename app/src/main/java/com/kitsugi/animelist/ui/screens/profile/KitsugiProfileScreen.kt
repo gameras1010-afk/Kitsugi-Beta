@@ -2,6 +2,12 @@ package com.kitsugi.animelist.ui.screens.profile
 
 import android.content.res.Configuration
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -38,6 +45,8 @@ import com.kitsugi.animelist.ui.components.KitsugiMediaEntryCard
 import com.kitsugi.animelist.data.settings.AppSettings
 import com.kitsugi.animelist.ui.app.KitsugiProfileViewModel
 import com.kitsugi.animelist.ui.app.AniListProfileState
+import com.kitsugi.animelist.utils.rememberScrollConnection
+import com.kitsugi.animelist.utils.rememberScrollVisibilityState
 import com.kitsugi.animelist.ui.app.MalProfileState
 import com.kitsugi.animelist.ui.app.SimklProfileState
 import com.kitsugi.animelist.ui.app.ProfileFavoriteItem
@@ -71,84 +80,91 @@ fun KitsugiProfileScreen(
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-    var activeSubTab by remember { mutableStateOf(0) } // 0: Local, 1: AniList, 2: MAL, 3: Simkl
-    val subTabs = listOf("Yerel", "AniList", "MyAnimeList", "Simkl")
+    var activeSubTab by remember { mutableStateOf(0) } // 0: AniList, 1: MAL, 2: Simkl
+    val subTabs = listOf("AniList", "MyAnimeList", "Simkl")
 
     val aniListState by viewModel.aniListState.collectAsState()
     val malState by viewModel.malState.collectAsState()
     val simklState by viewModel.simklState.collectAsState()
 
-    // Initialize local statistics
-    LaunchedEffect(mediaEntries) {
-        viewModel.initLocalStats(mediaEntries)
+    val scrollState = rememberScrollVisibilityState(initialVisible = true)
+    val scrollConnection = rememberScrollConnection(scrollState)
+
+    LaunchedEffect(activeSubTab) {
+        scrollState.show()
     }
 
     // Trigger API fetches on tab switch if connected
     LaunchedEffect(activeSubTab, isAniListConnected, isMalConnected, isSimklConnected) {
         when (activeSubTab) {
-            1 -> if (isAniListConnected && aniListState.userId == null) viewModel.fetchAniListProfile()
-            2 -> if (isMalConnected && malState.name.isBlank()) viewModel.fetchMalProfile()
-            3 -> if (isSimklConnected && simklState.name.isBlank()) viewModel.fetchSimklProfile()
+            0 -> if (isAniListConnected && aniListState.userId == null) viewModel.fetchAniListProfile()
+            1 -> if (isMalConnected && malState.name.isBlank()) viewModel.fetchMalProfile()
+            2 -> if (isSimklConnected && simklState.name.isBlank()) viewModel.fetchSimklProfile()
         }
     }
 
-    Scaffold(
-        containerColor = KitsugiColors.Background,
-        modifier = modifier.fillMaxSize()
-    ) { innerPadding ->
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(KitsugiColors.Background)
+            .nestedScroll(scrollConnection)
+    ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .statusBarsPadding()
+            modifier = Modifier.fillMaxSize()
         ) {
-            // Profile Sub-tab selector
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = if (isLandscape) 18.dp else 16.dp, vertical = 12.dp)
-                    .clip(RoundedCornerShape(22.dp))
-                    .background(KitsugiColors.Surface),
-                horizontalArrangement = Arrangement.spacedBy(0.dp)
+            AnimatedVisibility(
+                visible = scrollState.isVisible || isLandscape,
+                enter = expandVertically(animationSpec = tween(200)) + fadeIn(animationSpec = tween(200)),
+                exit = shrinkVertically(animationSpec = tween(150)) + fadeOut(animationSpec = tween(150))
             ) {
-                subTabs.forEachIndexed { index, label ->
-                    val isSelected = activeSubTab == index
-                    val isServiceConnected = when (index) {
-                        1 -> isAniListConnected
-                        2 -> isMalConnected
-                        3 -> isSimklConnected
-                        else -> true
-                    }
+                // Profile Sub-tab selector
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = if (isLandscape) 18.dp else 16.dp, vertical = 12.dp)
+                        .clip(RoundedCornerShape(22.dp))
+                        .background(KitsugiColors.Surface),
+                    horizontalArrangement = Arrangement.spacedBy(0.dp)
+                ) {
+                    subTabs.forEachIndexed { index, label ->
+                        val isSelected = activeSubTab == index
+                        val isServiceConnected = when (index) {
+                            0 -> isAniListConnected
+                            1 -> isMalConnected
+                            2 -> isSimklConnected
+                            else -> true
+                        }
 
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(22.dp))
-                            .background(
-                                if (isSelected) accentColor else KitsugiColors.Surface
-                            )
-                            .tvClickable(shape = RoundedCornerShape(22.dp), onClick = { activeSubTab = index })
-                            .padding(vertical = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = label,
-                                color = if (isSelected) KitsugiColors.Background else if (isServiceConnected) KitsugiColors.TextPrimary else KitsugiColors.TextMuted,
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = if (isSelected) FontWeight.Black else FontWeight.Medium
-                            )
-                            if (index > 0 && isServiceConnected) {
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .size(6.dp)
-                                        .clip(CircleShape)
-                                        .background(if (isSelected) KitsugiColors.Background else KitsugiColors.AccentGreen)
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(22.dp))
+                                .background(
+                                    if (isSelected) accentColor else KitsugiColors.Surface
                                 )
+                                .tvClickable(shape = RoundedCornerShape(22.dp), onClick = { activeSubTab = index })
+                                .padding(vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = label,
+                                    color = if (isSelected) KitsugiColors.Background else if (isServiceConnected) KitsugiColors.TextPrimary else KitsugiColors.TextMuted,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = if (isSelected) FontWeight.Black else FontWeight.Medium
+                                )
+                                if (isServiceConnected) {
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .size(6.dp)
+                                            .clip(CircleShape)
+                                            .background(if (isSelected) KitsugiColors.Background else KitsugiColors.AccentGreen)
+                                    )
+                                }
                             }
                         }
                     }
@@ -162,20 +178,7 @@ fun KitsugiProfileScreen(
                     .weight(1f)
             ) {
                 when (activeSubTab) {
-                    0 -> LocalProfileContent(
-                        profileName = profileName,
-                        listTitle = listTitle,
-                        profileImageUri = profileImageUri,
-                        bannerImageUri = bannerImageUri,
-                        localStats = viewModel.localStats,
-                        mediaEntries = mediaEntries,
-                        appSettings = appSettings,
-                        onEntryClick = onEntryClick,
-                        onOpenSettingsClick = onOpenSettingsClick,
-                        isLandscape = isLandscape,
-                        accentColor = accentColor
-                    )
-                    1 -> ExternalProfileWrapper(
+                    0 -> ExternalProfileWrapper(
                         isConnected = isAniListConnected,
                         isLoading = aniListState.isLoading,
                         error = aniListState.error,
@@ -196,7 +199,7 @@ fun KitsugiProfileScreen(
                             accentColor = accentColor
                         )
                     }
-                    2 -> ExternalProfileWrapper(
+                    1 -> ExternalProfileWrapper(
                         isConnected = isMalConnected,
                         isLoading = malState.isLoading,
                         error = malState.error,
@@ -216,7 +219,7 @@ fun KitsugiProfileScreen(
                             accentColor = accentColor
                         )
                     }
-                    3 -> ExternalProfileWrapper(
+                    2 -> ExternalProfileWrapper(
                         isConnected = isSimklConnected,
                         isLoading = simklState.isLoading,
                         error = simklState.error,
@@ -319,150 +322,7 @@ fun ExternalProfileWrapper(
     }
 }
 
-@Composable
-fun LocalProfileContent(
-    profileName: String,
-    listTitle: String,
-    profileImageUri: String,
-    bannerImageUri: String,
-    localStats: com.kitsugi.animelist.ui.app.LocalStats,
-    mediaEntries: List<MediaEntry>,
-    appSettings: AppSettings,
-    onEntryClick: (MediaEntry) -> Unit,
-    onOpenSettingsClick: () -> Unit,
-    isLandscape: Boolean,
-    accentColor: Color
-) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = if (isLandscape) 18.dp else 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            KitsugiProfileHeaderCard(
-                profileName = profileName,
-                listTitle = listTitle,
-                anilistUsername = "",
-                profileImageUri = profileImageUri,
-                bannerImageUri = bannerImageUri,
-                totalCount = localStats.totalAnime + localStats.totalManga,
-                favoriteCount = mediaEntries.count { it.isFavorite && it.source == "manual" },
-                averageScoreText = "%.1f".format(
-                    if (localStats.avgAnimeScore > 0 && localStats.avgMangaScore > 0) {
-                        (localStats.avgAnimeScore + localStats.avgMangaScore) / 2.0
-                    } else if (localStats.avgAnimeScore > 0) {
-                        localStats.avgAnimeScore
-                    } else {
-                        localStats.avgMangaScore
-                    }
-                ),
-                platformName = "Kitsugi",
-                onSettingsClick = onOpenSettingsClick
-            )
-        }
 
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(KitsugiColors.Surface)
-                    .padding(18.dp)
-            ) {
-                Text(
-                    text = "Anime İstatistikleri",
-                    color = KitsugiColors.TextPrimary,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(14.dp))
-                StatItemRow(
-                    label = "İzleniyor",
-                    count = localStats.watchingAnime,
-                    total = localStats.totalAnime,
-                    color = KitsugiColors.AccentBlue
-                )
-                StatItemRow(
-                    label = "Tamamlandı",
-                    count = localStats.completedAnime,
-                    total = localStats.totalAnime,
-                    color = KitsugiColors.AccentGreen
-                )
-                StatItemRow(
-                    label = "Planlanıyor",
-                    count = localStats.plannedAnime,
-                    total = localStats.totalAnime,
-                    color = KitsugiColors.TextMuted
-                )
-                StatItemRow(
-                    label = "Durduruldu",
-                    count = localStats.pausedAnime,
-                    total = localStats.totalAnime,
-                    color = KitsugiColors.AccentOrange
-                )
-                StatItemRow(
-                    label = "Bırakıldı",
-                    count = localStats.droppedAnime,
-                    total = localStats.totalAnime,
-                    color = KitsugiColors.AccentPink
-                )
-            }
-        }
-
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(KitsugiColors.Surface)
-                    .padding(18.dp)
-            ) {
-                Text(
-                    text = "Manga İstatistikleri",
-                    color = KitsugiColors.TextPrimary,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(14.dp))
-                StatItemRow(
-                    label = "Okuyor",
-                    count = localStats.readingManga,
-                    total = localStats.totalManga,
-                    color = KitsugiColors.AccentBlue
-                )
-                StatItemRow(
-                    label = "Tamamlandı",
-                    count = localStats.completedManga,
-                    total = localStats.totalManga,
-                    color = KitsugiColors.AccentGreen
-                )
-                StatItemRow(
-                    label = "Planlanıyor",
-                    count = localStats.plannedManga,
-                    total = localStats.totalManga,
-                    color = KitsugiColors.TextMuted
-                )
-                StatItemRow(
-                    label = "Durduruldu",
-                    count = localStats.pausedManga,
-                    total = localStats.totalManga,
-                    color = KitsugiColors.AccentOrange
-                )
-                StatItemRow(
-                    label = "Bırakıldı",
-                    count = localStats.droppedManga,
-                    total = localStats.totalManga,
-                    color = KitsugiColors.AccentPink
-                )
-            }
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(80.dp))
-        }
-    }
-}
 
 @Composable
 fun AniListProfileContent(
@@ -689,12 +549,12 @@ fun AniListProfileContent(
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         FavoritesHorizontalSection("Favori Animeler", state.favoriteAnime) { item ->
                             item.id.toIntOrNull()?.let { id ->
-                                onFavoriteMediaClick(id, MediaType.Anime, "anilist")
+                                onFavoriteMediaClick(id + 100_000_000, MediaType.Anime, "anilist")
                             }
                         }
                         FavoritesHorizontalSection("Favori Mangalar", state.favoriteManga) { item ->
                             item.id.toIntOrNull()?.let { id ->
-                                onFavoriteMediaClick(id, MediaType.Manga, "anilist")
+                                onFavoriteMediaClick(id + 100_000_000, MediaType.Manga, "anilist")
                             }
                         }
                         FavoritesHorizontalSection("Favori Karakterler", state.favoriteCharacters) { item ->
