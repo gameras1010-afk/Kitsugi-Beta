@@ -24,6 +24,7 @@ class KitsugiUpdateRepository(
             val url = String.format(GITHUB_RELEASES_API, repoOwner, repoName)
             val request = Request.Builder()
                 .url(url)
+                .header("User-Agent", "KitsugiApp/${BuildConfig.VERSION_NAME}")
                 .header("Accept", "application/vnd.github.v3+json")
                 .build()
 
