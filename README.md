@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="app/src/main/res/drawable/kitsugi_logo.jpg" alt="Kitsugi Logo" width="160" style="border-radius: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
+  <img src="app/src/main/res/drawable/kitsugi_logo.webp" alt="Kitsugi Logo" width="160" />
 
   # 🎌 Kitsugi Beta
 
