@@ -35,6 +35,9 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
     var localStats by mutableStateOf(LocalStats())
         private set
 
+    // Selected sub-tab persistence (0: AniList, 1: MAL, 2: Simkl)
+    var activeSubTab by mutableStateOf(0)
+
     // AniList profile UI state
     private val _aniListState = MutableStateFlow(AniListProfileState())
     val aniListState: StateFlow<AniListProfileState> = _aniListState.asStateFlow()
@@ -604,20 +607,24 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
 
     private suspend fun fetchMalJikanData(username: String) {
         withContext(Dispatchers.IO) {
+            var animeStats: AniListStats? = null
+            var mangaStats: AniListStats? = null
+            val favAnime = mutableListOf<ProfileFavoriteItem>()
+            val favManga = mutableListOf<ProfileFavoriteItem>()
+            val favChar = mutableListOf<ProfileFavoriteItem>()
+            val favStaff = mutableListOf<ProfileFavoriteItem>()
+
+            // 1. Fetch Jikan User Stats (independent try-catch — failure won't block favorites)
             try {
-                // 1. Fetch Jikan User Stats
-                val statsUrl = "https://api.jikan.moe/v4/users/$username/statistics"
-                val statsRequest = Request.Builder().url(statsUrl).build()
-                var animeStats: AniListStats? = null
-                var mangaStats: AniListStats? = null
+                val statsRequest = Request.Builder()
+                    .url("https://api.jikan.moe/v4/users/$username/statistics")
+                    .build()
 
                 client.newCall(statsRequest).execute().use { response ->
                     if (response.isSuccessful) {
-                        val statsText = response.body?.string().orEmpty()
-                        val dataObj = JSONObject(statsText).optJSONObject("data")
-                        
-                        val animeObj = dataObj?.optJSONObject("anime")
-                        if (animeObj != null) {
+                        val dataObj = JSONObject(response.body?.string().orEmpty()).optJSONObject("data")
+
+                        dataObj?.optJSONObject("anime")?.let { animeObj ->
                             animeStats = AniListStats(
                                 count = animeObj.optInt("total_entries", 0),
                                 episodesWatched = animeObj.optInt("episodes_watched", 0),
@@ -631,12 +638,11 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                             )
                         }
 
-                        val mangaObj = dataObj?.optJSONObject("manga")
-                        if (mangaObj != null) {
+                        dataObj?.optJSONObject("manga")?.let { mangaObj ->
                             mangaStats = AniListStats(
                                 count = mangaObj.optInt("total_entries", 0),
                                 episodesWatched = mangaObj.optInt("chapters_read", 0),
-                                minutesWatched = mangaObj.optInt("volumes_read", 0), // volumes read as second parameter
+                                minutesWatched = mangaObj.optInt("volumes_read", 0),
                                 meanScore = mangaObj.optDouble("mean_score", 0.0),
                                 watching = mangaObj.optInt("reading", 0),
                                 completed = mangaObj.optInt("completed", 0),
@@ -647,94 +653,91 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                         }
                     }
                 }
+            } catch (e: Exception) {
+                android.util.Log.w("ProfileViewModel", "Jikan stats fetch failed (non-fatal): ${e.message}")
+            }
 
-                // 2. Fetch Jikan Favorites
-                val favUrl = "https://api.jikan.moe/v4/users/$username/favorites"
-                val favRequest = Request.Builder().url(favUrl).build()
-                val favAnime = mutableListOf<ProfileFavoriteItem>()
-                val favManga = mutableListOf<ProfileFavoriteItem>()
-                val favChar = mutableListOf<ProfileFavoriteItem>()
-                val favStaff = mutableListOf<ProfileFavoriteItem>()
+            // Jikan rate limit: wait 1s between requests
+            kotlinx.coroutines.delay(1000)
+
+            // 2. Fetch Jikan Favorites (independent try-catch — runs even if stats failed)
+            try {
+                val favRequest = Request.Builder()
+                    .url("https://api.jikan.moe/v4/users/$username/favorites")
+                    .build()
 
                 client.newCall(favRequest).execute().use { response ->
                     if (response.isSuccessful) {
-                        val favText = response.body?.string().orEmpty()
-                        val dataObj = JSONObject(favText).optJSONObject("data")
+                        val dataObj = JSONObject(response.body?.string().orEmpty()).optJSONObject("data")
+
+                        // Helper to extract image URL from Jikan item
+                        fun extractImageUrl(item: JSONObject): String =
+                            item.optJSONObject("images")?.optJSONObject("webp")?.optString("image_url", "")?.takeIf { it.isNotBlank() }
+                                ?: item.optJSONObject("images")?.optJSONObject("jpg")?.optString("image_url", "") ?: ""
 
                         dataObj?.optJSONArray("anime")?.let { arr ->
                             for (i in 0 until minOf(arr.length(), 12)) {
                                 val item = arr.getJSONObject(i)
-                                favAnime.add(
-                                    ProfileFavoriteItem(
-                                        id = item.getInt("mal_id").toString(),
-                                        title = item.optNullableString("title") ?: "İsimsiz",
-                                        imageUrl = item.optJSONObject("images")?.optJSONObject("webp")?.optNullableString("image_url")
-                                            ?: item.optJSONObject("images")?.optJSONObject("jpg")?.optNullableString("image_url") ?: ""
-                                    )
-                                )
+                                favAnime.add(ProfileFavoriteItem(
+                                    id = item.optInt("mal_id").toString(),
+                                    title = item.optString("title", "İsimsiz"),
+                                    imageUrl = extractImageUrl(item)
+                                ))
                             }
                         }
 
                         dataObj?.optJSONArray("manga")?.let { arr ->
                             for (i in 0 until minOf(arr.length(), 12)) {
                                 val item = arr.getJSONObject(i)
-                                favManga.add(
-                                    ProfileFavoriteItem(
-                                        id = item.getInt("mal_id").toString(),
-                                        title = item.optNullableString("title") ?: "İsimsiz",
-                                        imageUrl = item.optJSONObject("images")?.optJSONObject("webp")?.optNullableString("image_url")
-                                            ?: item.optJSONObject("images")?.optJSONObject("jpg")?.optNullableString("image_url") ?: ""
-                                    )
-                                )
+                                favManga.add(ProfileFavoriteItem(
+                                    id = item.optInt("mal_id").toString(),
+                                    title = item.optString("title", "İsimsiz"),
+                                    imageUrl = extractImageUrl(item)
+                                ))
                             }
                         }
 
                         dataObj?.optJSONArray("characters")?.let { arr ->
                             for (i in 0 until minOf(arr.length(), 12)) {
                                 val item = arr.getJSONObject(i)
-                                favChar.add(
-                                    ProfileFavoriteItem(
-                                        id = item.getInt("mal_id").toString(),
-                                        title = item.optNullableString("name") ?: "İsimsiz",
-                                        imageUrl = item.optJSONObject("images")?.optJSONObject("webp")?.optNullableString("image_url")
-                                            ?: item.optJSONObject("images")?.optJSONObject("jpg")?.optNullableString("image_url") ?: ""
-                                    )
-                                )
+                                favChar.add(ProfileFavoriteItem(
+                                    id = item.optInt("mal_id").toString(),
+                                    title = item.optString("name", "İsimsiz"),
+                                    imageUrl = extractImageUrl(item)
+                                ))
                             }
                         }
 
-                        // Fetch favorite staff/people
+                        // "people" = voice actors / staff
                         dataObj?.optJSONArray("people")?.let { arr ->
                             for (i in 0 until minOf(arr.length(), 12)) {
                                 val item = arr.getJSONObject(i)
-                                favStaff.add(
-                                    ProfileFavoriteItem(
-                                        id = item.getInt("mal_id").toString(),
-                                        title = item.optNullableString("name") ?: "İsimsiz",
-                                        imageUrl = item.optJSONObject("images")?.optJSONObject("webp")?.optNullableString("image_url")
-                                            ?: item.optJSONObject("images")?.optJSONObject("jpg")?.optNullableString("image_url") ?: ""
-                                    )
-                                )
+                                favStaff.add(ProfileFavoriteItem(
+                                    id = item.optInt("mal_id").toString(),
+                                    title = item.optString("name", "İsimsiz"),
+                                    imageUrl = extractImageUrl(item)
+                                ))
                             }
                         }
+                    } else {
+                        android.util.Log.w("ProfileViewModel", "Jikan favorites HTTP ${response.code} for user: $username")
                     }
                 }
-
-                _malState.update {
-                    it.copy(
-                        isLoading = false,
-                        animeStats = animeStats ?: it.animeStats,
-                        mangaStats = mangaStats ?: it.mangaStats,
-                        favoriteAnime = favAnime,
-                        favoriteManga = favManga,
-                        favoriteCharacters = favChar,
-                        favoriteStaff = favStaff
-                    )
-                }
-
             } catch (e: Exception) {
-                android.util.Log.e("ProfileViewModel", "Jikan Jikan fetch error: ${e.message}")
-                _malState.update { it.copy(isLoading = false) }
+                android.util.Log.e("ProfileViewModel", "Jikan favorites fetch failed: ${e.message}")
+            }
+
+            // Always update state — partial data is better than no data
+            _malState.update {
+                it.copy(
+                    isLoading = false,
+                    animeStats = animeStats ?: it.animeStats,
+                    mangaStats = mangaStats ?: it.mangaStats,
+                    favoriteAnime = favAnime,
+                    favoriteManga = favManga,
+                    favoriteCharacters = favChar,
+                    favoriteStaff = favStaff
+                )
             }
         }
     }

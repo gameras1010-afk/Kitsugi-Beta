@@ -113,6 +113,9 @@ fun AppRootTabPages(
                 onOpenSettingsClick = {
                     ctx.appViewModel.selectTab(MainTab.Settings)
                 },
+                onLoginAniList = { ctx.authViewModel.startExternalAuth("anilist") },
+                onLoginMal = { ctx.authViewModel.startExternalAuth("mal") },
+                onLoginSimkl = { ctx.authViewModel.startExternalAuth("simkl") },
                 onFavoriteMediaClick = { mediaId, mediaType, source ->
                     // Navigate to ApiResultDetail by building a minimal JikanSearchResult
                     val result = com.kitsugi.animelist.data.remote.JikanSearchResult(

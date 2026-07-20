@@ -79,13 +79,16 @@ fun KitsugiProfileScreen(
     onFavoriteCharacterClick: (charId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
     onFavoriteStaffClick: (staffId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
     onOpenStatsClick: (() -> Unit)? = null,
+    onLoginAniList: () -> Unit = {},
+    onLoginMal: () -> Unit = {},
+    onLoginSimkl: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val accentColor = LocalKitsugiAccent.current
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-    var activeSubTab by remember { mutableStateOf(0) } // 0: AniList, 1: MAL, 2: Simkl
+    val activeSubTab = viewModel.activeSubTab // 0: AniList, 1: MAL, 2: Simkl
     val subTabs = listOf("AniList", "MyAnimeList", "Simkl")
 
     val aniListState by viewModel.aniListState.collectAsState()
@@ -154,7 +157,7 @@ fun KitsugiProfileScreen(
                                 .background(
                                     if (isSelected) accentColor else KitsugiColors.Surface
                                 )
-                                .tvClickable(shape = RoundedCornerShape(22.dp), onClick = { activeSubTab = index })
+                                .tvClickable(shape = RoundedCornerShape(22.dp), onClick = { viewModel.activeSubTab = index })
                                 .padding(vertical = 10.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -212,7 +215,7 @@ fun KitsugiProfileScreen(
                         isConnected = isAniListConnected,
                         isLoading = aniListState.isLoading,
                         error = aniListState.error,
-                        onOpenSettingsClick = onOpenSettingsClick,
+                        onConnectClick = onLoginAniList,
                         accentColor = accentColor,
                         platformName = "AniList"
                     ) {
@@ -235,7 +238,7 @@ fun KitsugiProfileScreen(
                         isConnected = isMalConnected,
                         isLoading = malState.isLoading,
                         error = malState.error,
-                        onOpenSettingsClick = onOpenSettingsClick,
+                        onConnectClick = onLoginMal,
                         accentColor = accentColor,
                         platformName = "MyAnimeList"
                     ) {
@@ -257,7 +260,7 @@ fun KitsugiProfileScreen(
                         isConnected = isSimklConnected,
                         isLoading = simklState.isLoading,
                         error = simklState.error,
-                        onOpenSettingsClick = onOpenSettingsClick,
+                        onConnectClick = onLoginSimkl,
                         accentColor = accentColor,
                         platformName = "Simkl"
                     ) {
@@ -298,7 +301,7 @@ fun ExternalProfileWrapper(
     isConnected: Boolean,
     isLoading: Boolean,
     error: String?,
-    onOpenSettingsClick: () -> Unit,
+    onConnectClick: () -> Unit,
     accentColor: Color,
     platformName: String,
     content: @Composable () -> Unit
@@ -344,7 +347,7 @@ fun ExternalProfileWrapper(
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
-                        onClick = onOpenSettingsClick,
+                        onClick = onConnectClick,
                         colors = ButtonDefaults.buttonColors(containerColor = accentColor)
                     ) {
                         Text(text = "Hesabı Bağla", color = KitsugiColors.Background, fontWeight = FontWeight.Bold)
@@ -1171,7 +1174,7 @@ fun MalProfileContent(
             // AKTİVİTE
             item {
                 val malEntries = remember(mediaEntries) {
-                    mediaEntries.filter { it.source == "myanimelist" || it.malId != null }
+                    mediaEntries.filter { it.source == "myanimelist" }
                 }
                 if (malEntries.isEmpty()) {
                     Box(

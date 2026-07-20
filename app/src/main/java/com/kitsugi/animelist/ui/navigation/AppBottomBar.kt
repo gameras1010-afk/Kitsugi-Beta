@@ -79,6 +79,7 @@ fun AppNavigationRail(
             Spacer(modifier = androidx.compose.ui.Modifier.height(16.dp))
         }
     ) {
+        Spacer(modifier = androidx.compose.ui.Modifier.weight(1f))
         MainTab.entries.forEach { tab ->
             androidx.compose.material3.NavigationRailItem(
                 selected = selectedTab == tab,
@@ -107,6 +108,7 @@ fun AppNavigationRail(
                     unselectedTextColor = KitsugiColors.TextSecondary
                 )
             )
+            Spacer(modifier = androidx.compose.ui.Modifier.weight(1f))
         }
     }
 }

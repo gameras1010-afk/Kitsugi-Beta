@@ -1,4 +1,4 @@
-# Kitsugi v2.4.26 Release Notes 🚀
+# Kitsugi v2.4.27 Release Notes 🚀
 
 ---
 
@@ -11,6 +11,12 @@
 - **Görsel Dağılım Çubukları (`SegmentedDistributionBar`)**: İzleme ve okuma durumlarının (İzliyor, Tamamlandı, Planlandı vb.) oranlarını görsel olarak gösteren renkli, segmentli dağılım çubukları eklendi.
 - **Sabit Platform Seçici (Sticky Sub-Tab Bar)**: Kaydırma yapıldığında platform seçici barın (`AniList`, `MyAnimeList`, `Simkl`) gizlenmesi engellenerek ekranın üstünde sabit kalması sağlandı.
 - **Tıklanabilir Aktivite & Geçmiş Kartları**: AniList aktivite akışındaki kartlar ile Simkl izleme geçmişindeki ögeler tıklanabilir hale getirilerek doğrudan ilgili medya detay sayfalarına yönlendirme (Deep-linking) sağlandı.
+- **Otomatik Hesap Bağlantı Yönlendirmesi**: Profil sekmesinde AniList, MAL veya Simkl hesabı bağlı değilken "Hesabı Bağla" butonuna tıklandığında artık ayarlar ekranı yerine doğrudan tarayıcıdaki OAuth giriş sayfası açılıyor (Listem sekmesiyle aynı davranış).
+- **MAL Aktivite Filtresi Düzeltmesi**: MAL aktivite sekmesinde yalnızca gerçekten MyAnimeList kaynağından gelen kayıtlar görüntüleniyor; Simkl senkronizasyonundan gelen çapraz-platform kayıtların sızması engellendi.
+- **Profil Alt Sekmesi Kalıcılığı**: Profil sekmesinde AniList, MAL veya Simkl alt sekmelerinden birine geçip herhangi bir içeriğin detay sayfasına gidip geri döndüğünde, aktif sekme AniList'e sıfırlanmak yerine son seçilen sekme korunuyor.
+
+### 📱 Yatay Mod & Tablet Navigasyonu
+- **Navigasyon Barı Buton Dağılımı**: Tablet ve geniş ekranlarda yatay (landscape) modda sol navigasyon barındaki butonlar (Keşfet, Listem, Arama, Profil, Ayarlar) ekranın üstüne yığılmak yerine ekran yüksekliğine göre otomatik ve dengeli biçimde dağılıyor.
 
 ### ⚡ Arama Sayfası İyileştirmeleri (Göreceli Arama & Fuzzy)
 - **Göreceli Arama (Tümü) Tekilleştirme Düzeltmesi**: Farklı platformlardan gelen benzer isimli sonuçların (MAL, AniList, TMDB) tekilleştirme sırasında yanlışlıkla silinmesi sorunu çözüldü; sonuçlar artık adil şekilde harmanlanarak listeleniyor.
@@ -31,6 +37,12 @@
 - **Segmented Distribution Bars**: Added beautiful visual color-coded distribution bars showing watch/read status ratios (Watching, Completed, Planned, etc.) on profile stats cards.
 - **Sticky Platform Sub-Tab Bar**: Locked the platform selector tab bar (`AniList`, `MyAnimeList`, `Simkl`) at the top of the Profile screen so it stays fixed upon scrolling.
 - **Interactive Activity & History Feeds**: Enabled clickability on AniList activity cards and Simkl recent history items to navigate directly to their respective media detail pages.
+- **Direct Account Connection Redirect**: On the Profile tab, tapping "Connect Account" when a service (AniList, MAL, Simkl) is not linked now opens the browser OAuth page directly instead of navigating to Settings — matching the behavior from the My List tab.
+- **MAL Activity Feed Fix**: The MAL activity tab now exclusively shows entries whose source is `myanimelist`, preventing cross-platform Simkl-synced entries (which may carry a MAL ID) from appearing there.
+- **Profile Sub-Tab Persistence**: When navigating from AniList, MAL, or Simkl sub-tabs into a media detail page and back, the active sub-tab is now preserved instead of resetting to AniList.
+
+### 📱 Landscape Mode & Tablet Navigation
+- **Navigation Rail Button Distribution**: On tablets and wide screens in landscape mode, the left-side navigation rail buttons (Explore, My List, Search, Profile, Settings) now spread evenly and dynamically across the full screen height instead of stacking at the top.
 
 ### ⚡ Search Enhancements (Fuzzy & Relative Blending)
 - **Deduplication Fix in Relative Search**: Fixed a critical issue where TMDB and AniList results were erroneously scrubbed by the title deduplication logic when MAL results matched. They are now harmoniously blended side-by-side.
