@@ -332,12 +332,6 @@ fun LocalProfileContent(
     isLandscape: Boolean,
     accentColor: Color
 ) {
-    var activeTab by remember { mutableStateOf(0) } // 0: Profil, 1: Listem
-    val tabs = listOf("Profil", "Listem")
-
-    var selectedStatus by remember { mutableStateOf("all") }
-    var selectedType by remember { mutableStateOf("all") }
-
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -367,204 +361,99 @@ fun LocalProfileContent(
             )
         }
 
-        // Sub-tabs row
         item {
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
+                    .clip(RoundedCornerShape(24.dp))
                     .background(KitsugiColors.Surface)
+                    .padding(18.dp)
             ) {
-                tabs.forEachIndexed { index, label ->
-                    val isSelected = activeTab == index
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { activeTab = index }
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = label,
-                            color = if (isSelected) accentColor else KitsugiColors.TextMuted,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                }
+                Text(
+                    text = "Anime İstatistikleri",
+                    color = KitsugiColors.TextPrimary,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(14.dp))
+                StatItemRow(
+                    label = "İzleniyor",
+                    count = localStats.watchingAnime,
+                    total = localStats.totalAnime,
+                    color = KitsugiColors.AccentBlue
+                )
+                StatItemRow(
+                    label = "Tamamlandı",
+                    count = localStats.completedAnime,
+                    total = localStats.totalAnime,
+                    color = KitsugiColors.AccentGreen
+                )
+                StatItemRow(
+                    label = "Planlanıyor",
+                    count = localStats.plannedAnime,
+                    total = localStats.totalAnime,
+                    color = KitsugiColors.TextMuted
+                )
+                StatItemRow(
+                    label = "Durduruldu",
+                    count = localStats.pausedAnime,
+                    total = localStats.totalAnime,
+                    color = KitsugiColors.AccentOrange
+                )
+                StatItemRow(
+                    label = "Bırakıldı",
+                    count = localStats.droppedAnime,
+                    total = localStats.totalAnime,
+                    color = KitsugiColors.AccentPink
+                )
             }
         }
 
-        if (activeTab == 0) {
-            // PROFIL
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(KitsugiColors.Surface)
-                        .padding(18.dp)
-                ) {
-                    Text(
-                        text = "Anime İstatistikleri",
-                        color = KitsugiColors.TextPrimary,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(14.dp))
-                    StatItemRow(
-                        label = "İzleniyor",
-                        count = localStats.watchingAnime,
-                        total = localStats.totalAnime,
-                        color = KitsugiColors.AccentBlue
-                    )
-                    StatItemRow(
-                        label = "Tamamlandı",
-                        count = localStats.completedAnime,
-                        total = localStats.totalAnime,
-                        color = KitsugiColors.AccentGreen
-                    )
-                    StatItemRow(
-                        label = "Planlanıyor",
-                        count = localStats.plannedAnime,
-                        total = localStats.totalAnime,
-                        color = KitsugiColors.TextMuted
-                    )
-                    StatItemRow(
-                        label = "Durduruldu",
-                        count = localStats.pausedAnime,
-                        total = localStats.totalAnime,
-                        color = KitsugiColors.AccentOrange
-                    )
-                    StatItemRow(
-                        label = "Bırakıldı",
-                        count = localStats.droppedAnime,
-                        total = localStats.totalAnime,
-                        color = KitsugiColors.AccentPink
-                    )
-                }
-            }
-
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(KitsugiColors.Surface)
-                        .padding(18.dp)
-                ) {
-                    Text(
-                        text = "Manga İstatistikleri",
-                        color = KitsugiColors.TextPrimary,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(14.dp))
-                    StatItemRow(
-                        label = "Okuyor",
-                        count = localStats.readingManga,
-                        total = localStats.totalManga,
-                        color = KitsugiColors.AccentBlue
-                    )
-                    StatItemRow(
-                        label = "Tamamlandı",
-                        count = localStats.completedManga,
-                        total = localStats.totalManga,
-                        color = KitsugiColors.AccentGreen
-                    )
-                    StatItemRow(
-                        label = "Planlanıyor",
-                        count = localStats.plannedManga,
-                        total = localStats.totalManga,
-                        color = KitsugiColors.TextMuted
-                    )
-                    StatItemRow(
-                        label = "Durduruldu",
-                        count = localStats.pausedManga,
-                        total = localStats.totalManga,
-                        color = KitsugiColors.AccentOrange
-                    )
-                    StatItemRow(
-                        label = "Bırakıldı",
-                        count = localStats.droppedManga,
-                        total = localStats.totalManga,
-                        color = KitsugiColors.AccentPink
-                    )
-                }
-            }
-        } else {
-            // LISTEM
-            val localEntries = mediaEntries.filter { it.source == "manual" }
-            val filtered = localEntries.filter { entry ->
-                val matchesStatus = when (selectedStatus) {
-                    "all" -> true
-                    "watching" -> entry.status == WatchStatus.Watching || entry.status == WatchStatus.Repeating
-                    "completed" -> entry.status == WatchStatus.Completed
-                    "planned" -> entry.status == WatchStatus.Planned
-                    "dropped" -> entry.status == WatchStatus.Dropped
-                    "paused" -> entry.status == WatchStatus.Paused
-                    else -> true
-                }
-                val matchesType = when (selectedType) {
-                    "all" -> true
-                    "anime" -> entry.type == MediaType.Anime || entry.type == MediaType.Movie || entry.type == MediaType.TvShow
-                    "manga" -> entry.type == MediaType.Manga
-                    else -> true
-                }
-                matchesStatus && matchesType
-            }
-
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        ProfileFilterChip("Tümü", selectedStatus == "all", accentColor) { selectedStatus = "all" }
-                        ProfileFilterChip("İzleniyor", selectedStatus == "watching", accentColor) { selectedStatus = "watching" }
-                        ProfileFilterChip("Tamamlandı", selectedStatus == "completed", accentColor) { selectedStatus = "completed" }
-                        ProfileFilterChip("Planlandı", selectedStatus == "planned", accentColor) { selectedStatus = "planned" }
-                        ProfileFilterChip("Durduruldu", selectedStatus == "paused", accentColor) { selectedStatus = "paused" }
-                        ProfileFilterChip("Bırakıldı", selectedStatus == "dropped", accentColor) { selectedStatus = "dropped" }
-                    }
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        ProfileFilterChip("Tüm Tipler", selectedType == "all", accentColor) { selectedType = "all" }
-                        ProfileFilterChip("Anime", selectedType == "anime", accentColor) { selectedType = "anime" }
-                        ProfileFilterChip("Manga", selectedType == "manga", accentColor) { selectedType = "manga" }
-                    }
-                }
-            }
-
-            if (filtered.isEmpty()) {
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "Listede içerik bulunamadı", color = KitsugiColors.TextMuted)
-                    }
-                }
-            } else {
-                items(filtered) { entry ->
-                    KitsugiMediaEntryCard(
-                        entry = entry,
-                        layoutId = appSettings.selectedListLayoutId,
-                        onClick = { onEntryClick(entry) },
-                        titleLanguage = appSettings.titleLanguage,
-                        scoreFormat = appSettings.scoreFormat,
-                        hideScores = appSettings.hideScores
-                    )
-                }
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(KitsugiColors.Surface)
+                    .padding(18.dp)
+            ) {
+                Text(
+                    text = "Manga İstatistikleri",
+                    color = KitsugiColors.TextPrimary,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(14.dp))
+                StatItemRow(
+                    label = "Okuyor",
+                    count = localStats.readingManga,
+                    total = localStats.totalManga,
+                    color = KitsugiColors.AccentBlue
+                )
+                StatItemRow(
+                    label = "Tamamlandı",
+                    count = localStats.completedManga,
+                    total = localStats.totalManga,
+                    color = KitsugiColors.AccentGreen
+                )
+                StatItemRow(
+                    label = "Planlanıyor",
+                    count = localStats.plannedManga,
+                    total = localStats.totalManga,
+                    color = KitsugiColors.TextMuted
+                )
+                StatItemRow(
+                    label = "Durduruldu",
+                    count = localStats.pausedManga,
+                    total = localStats.totalManga,
+                    color = KitsugiColors.AccentOrange
+                )
+                StatItemRow(
+                    label = "Bırakıldı",
+                    count = localStats.droppedManga,
+                    total = localStats.totalManga,
+                    color = KitsugiColors.AccentPink
+                )
             }
         }
 
@@ -587,11 +476,8 @@ fun AniListProfileContent(
     isLandscape: Boolean,
     accentColor: Color
 ) {
-    var activeTab by remember { mutableStateOf(0) } // 0: Profil, 1: Listem, 2: Aktivite
-    val tabs = listOf("Profil", "Listem", "Aktivite")
-
-    var selectedStatus by remember { mutableStateOf("all") }
-    var selectedType by remember { mutableStateOf("all") }
+    var activeTab by remember { mutableStateOf(0) } // 0: Profil, 1: Aktivite
+    val tabs = listOf("Profil", "Aktivite")
 
     LazyColumn(
         modifier = Modifier
@@ -824,81 +710,6 @@ fun AniListProfileContent(
                 }
             }
             1 -> {
-                // LISTEM
-                val aniListEntries = mediaEntries.filter { it.source == "anilist" || it.aniListEntryId != null }
-                val filtered = aniListEntries.filter { entry ->
-                    val matchesStatus = when (selectedStatus) {
-                        "all" -> true
-                        "watching" -> entry.status == WatchStatus.Watching || entry.status == WatchStatus.Repeating
-                        "completed" -> entry.status == WatchStatus.Completed
-                        "planned" -> entry.status == WatchStatus.Planned
-                        "dropped" -> entry.status == WatchStatus.Dropped
-                        "paused" -> entry.status == WatchStatus.Paused
-                        else -> true
-                    }
-                    val matchesType = when (selectedType) {
-                        "all" -> true
-                        "anime" -> entry.type == MediaType.Anime || entry.type == MediaType.Movie || entry.type == MediaType.TvShow
-                        "manga" -> entry.type == MediaType.Manga
-                        else -> true
-                    }
-                    matchesStatus && matchesType
-                }
-
-                item {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            ProfileFilterChip("Tümü", selectedStatus == "all", accentColor) { selectedStatus = "all" }
-                            ProfileFilterChip("İzleniyor", selectedStatus == "watching", accentColor) { selectedStatus = "watching" }
-                            ProfileFilterChip("Tamamlandı", selectedStatus == "completed", accentColor) { selectedStatus = "completed" }
-                            ProfileFilterChip("Planlandı", selectedStatus == "planned", accentColor) { selectedStatus = "planned" }
-                            ProfileFilterChip("Durduruldu", selectedStatus == "paused", accentColor) { selectedStatus = "paused" }
-                            ProfileFilterChip("Bırakıldı", selectedStatus == "dropped", accentColor) { selectedStatus = "dropped" }
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            ProfileFilterChip("Tüm Tipler", selectedType == "all", accentColor) { selectedType = "all" }
-                            ProfileFilterChip("Anime", selectedType == "anime", accentColor) { selectedType = "anime" }
-                            ProfileFilterChip("Manga", selectedType == "manga", accentColor) { selectedType = "manga" }
-                        }
-                    }
-                }
-
-                if (filtered.isEmpty()) {
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(24.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = "Listede içerik bulunamadı", color = KitsugiColors.TextMuted)
-                        }
-                    }
-                } else {
-                    items(filtered) { entry ->
-                        KitsugiMediaEntryCard(
-                            entry = entry,
-                            layoutId = appSettings.selectedListLayoutId,
-                            onClick = { onEntryClick(entry) },
-                            titleLanguage = appSettings.titleLanguage,
-                            scoreFormat = appSettings.scoreFormat,
-                            hideScores = appSettings.hideScores
-                        )
-                    }
-                }
-            }
-            2 -> {
                 // ACTIVITY
                 if (state.activities.isEmpty()) {
                     item {
@@ -947,12 +758,6 @@ fun MalProfileContent(
     isLandscape: Boolean,
     accentColor: Color
 ) {
-    var activeTab by remember { mutableStateOf(0) } // 0: Profil, 1: Listem
-    val tabs = listOf("Profil", "Listem")
-
-    var selectedStatus by remember { mutableStateOf("all") }
-    var selectedType by remember { mutableStateOf("all") }
-
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -1022,206 +827,98 @@ fun MalProfileContent(
             }
         }
 
-        // Sub-tabs row
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(KitsugiColors.Surface)
-            ) {
-                tabs.forEachIndexed { index, label ->
-                    val isSelected = activeTab == index
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { activeTab = index }
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
+        // PROFIL
+        state.animeStats?.let { stats ->
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(KitsugiColors.Surface)
+                        .padding(18.dp)
+                ) {
+                    Text(
+                        text = "Anime İstatistikleri",
+                        color = KitsugiColors.TextPrimary,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                    StatItemRow("İzleniyor", stats.watching, stats.count, KitsugiColors.AccentBlue)
+                    StatItemRow("Tamamlandı", stats.completed, stats.count, KitsugiColors.AccentGreen)
+                    StatItemRow("Planlanıyor", stats.planned, stats.count, KitsugiColors.TextMuted)
+                    StatItemRow("Durduruldu", stats.paused, stats.count, KitsugiColors.AccentOrange)
+                    StatItemRow("Bırakıldı", stats.dropped, stats.count, KitsugiColors.AccentPink)
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(color = KitsugiColors.SurfaceStrong)
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            text = label,
-                            color = if (isSelected) accentColor else KitsugiColors.TextMuted,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                        StatCard("Toplam Anime", stats.count.toString())
+                        StatCard("Ortalama Skor", "%.1f".format(stats.meanScore))
+                        StatCard("Süre", "${stats.minutesWatched / 60 / 24} Gün")
                     }
                 }
             }
         }
 
-        // Sub-tab contents
-        when (activeTab) {
-            0 -> {
-                // PROFIL
-                state.animeStats?.let { stats ->
-                    item {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(24.dp))
-                                .background(KitsugiColors.Surface)
-                                .padding(18.dp)
-                        ) {
-                            Text(
-                                text = "Anime İstatistikleri",
-                                color = KitsugiColors.TextPrimary,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.height(14.dp))
-                            StatItemRow("İzleniyor", stats.watching, stats.count, KitsugiColors.AccentBlue)
-                            StatItemRow("Tamamlandı", stats.completed, stats.count, KitsugiColors.AccentGreen)
-                            StatItemRow("Planlanıyor", stats.planned, stats.count, KitsugiColors.TextMuted)
-                            StatItemRow("Durduruldu", stats.paused, stats.count, KitsugiColors.AccentOrange)
-                            StatItemRow("Bırakıldı", stats.dropped, stats.count, KitsugiColors.AccentPink)
+        state.mangaStats?.let { stats ->
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(KitsugiColors.Surface)
+                        .padding(18.dp)
+                ) {
+                    Text(
+                        text = "Manga İstatistikleri",
+                        color = KitsugiColors.TextPrimary,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                    StatItemRow("Okuyor", stats.watching, stats.count, KitsugiColors.AccentBlue)
+                    StatItemRow("Tamamlandı", stats.completed, stats.count, KitsugiColors.AccentGreen)
+                    StatItemRow("Planlanıyor", stats.planned, stats.count, KitsugiColors.TextMuted)
+                    StatItemRow("Durduruldu", stats.paused, stats.count, KitsugiColors.AccentOrange)
+                    StatItemRow("Bırakıldı", stats.dropped, stats.count, KitsugiColors.AccentPink)
 
-                            Spacer(modifier = Modifier.height(16.dp))
-                            HorizontalDivider(color = KitsugiColors.SurfaceStrong)
-                            Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(color = KitsugiColors.SurfaceStrong)
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                StatCard("Toplam Anime", stats.count.toString())
-                                StatCard("Ortalama Skor", "%.1f".format(stats.meanScore))
-                                StatCard("Süre", "${stats.minutesWatched / 60 / 24} Gün")
-                            }
-                        }
-                    }
-                }
-
-                state.mangaStats?.let { stats ->
-                    item {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(24.dp))
-                                .background(KitsugiColors.Surface)
-                                .padding(18.dp)
-                        ) {
-                            Text(
-                                text = "Manga İstatistikleri",
-                                color = KitsugiColors.TextPrimary,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.height(14.dp))
-                            StatItemRow("Okuyor", stats.watching, stats.count, KitsugiColors.AccentBlue)
-                            StatItemRow("Tamamlandı", stats.completed, stats.count, KitsugiColors.AccentGreen)
-                            StatItemRow("Planlanıyor", stats.planned, stats.count, KitsugiColors.TextMuted)
-                            StatItemRow("Durduruldu", stats.paused, stats.count, KitsugiColors.AccentOrange)
-                            StatItemRow("Bırakıldı", stats.dropped, stats.count, KitsugiColors.AccentPink)
-
-                            Spacer(modifier = Modifier.height(16.dp))
-                            HorizontalDivider(color = KitsugiColors.SurfaceStrong)
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                StatCard("Toplam Manga", stats.count.toString())
-                                StatCard("Ortalama Skor", "%.1f".format(stats.meanScore))
-                                StatCard("Bölümler", stats.episodesWatched.toString())
-                            }
-                        }
-                    }
-                }
-
-                item {
-                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        FavoritesHorizontalSection("Favori Animeler", state.favoriteAnime) { item ->
-                            item.id.toIntOrNull()?.let { id ->
-                                onFavoriteMediaClick(id, MediaType.Anime, "jikan")
-                            }
-                        }
-                        FavoritesHorizontalSection("Favori Mangalar", state.favoriteManga) { item ->
-                            item.id.toIntOrNull()?.let { id ->
-                                onFavoriteMediaClick(id, MediaType.Manga, "jikan")
-                            }
-                        }
-                        FavoritesHorizontalSection("Favori Karakterler", state.favoriteCharacters) { item ->
-                            item.id.toIntOrNull()?.let { id ->
-                                onFavoriteCharacterClick(id, "jikan", item.title, item.imageUrl)
-                            }
-                        }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        StatCard("Toplam Manga", stats.count.toString())
+                        StatCard("Ortalama Skor", "%.1f".format(stats.meanScore))
+                        StatCard("Bölümler", stats.episodesWatched.toString())
                     }
                 }
             }
-            1 -> {
-                // LISTEM
-                val malEntries = mediaEntries.filter { it.source == "mal" || it.source == "jikan" || it.malId != null }
-                val filtered = malEntries.filter { entry ->
-                    val matchesStatus = when (selectedStatus) {
-                        "all" -> true
-                        "watching" -> entry.status == WatchStatus.Watching || entry.status == WatchStatus.Repeating
-                        "completed" -> entry.status == WatchStatus.Completed
-                        "planned" -> entry.status == WatchStatus.Planned
-                        "dropped" -> entry.status == WatchStatus.Dropped
-                        "paused" -> entry.status == WatchStatus.Paused
-                        else -> true
-                    }
-                    val matchesType = when (selectedType) {
-                        "all" -> true
-                        "anime" -> entry.type == MediaType.Anime || entry.type == MediaType.Movie || entry.type == MediaType.TvShow
-                        "manga" -> entry.type == MediaType.Manga
-                        else -> true
-                    }
-                    matchesStatus && matchesType
-                }
+        }
 
-                item {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            ProfileFilterChip("Tümü", selectedStatus == "all", accentColor) { selectedStatus = "all" }
-                            ProfileFilterChip("İzleniyor", selectedStatus == "watching", accentColor) { selectedStatus = "watching" }
-                            ProfileFilterChip("Tamamlandı", selectedStatus == "completed", accentColor) { selectedStatus = "completed" }
-                            ProfileFilterChip("Planlandı", selectedStatus == "planned", accentColor) { selectedStatus = "planned" }
-                            ProfileFilterChip("Durduruldu", selectedStatus == "paused", accentColor) { selectedStatus = "paused" }
-                            ProfileFilterChip("Bırakıldı", selectedStatus == "dropped", accentColor) { selectedStatus = "dropped" }
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            ProfileFilterChip("Tüm Tipler", selectedType == "all", accentColor) { selectedType = "all" }
-                            ProfileFilterChip("Anime", selectedType == "anime", accentColor) { selectedType = "anime" }
-                            ProfileFilterChip("Manga", selectedType == "manga", accentColor) { selectedType = "manga" }
-                        }
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                FavoritesHorizontalSection("Favori Animeler", state.favoriteAnime) { item ->
+                    item.id.toIntOrNull()?.let { id ->
+                        onFavoriteMediaClick(id, MediaType.Anime, "jikan")
                     }
                 }
-
-                if (filtered.isEmpty()) {
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(24.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = "Listede içerik bulunamadı", color = KitsugiColors.TextMuted)
-                        }
+                FavoritesHorizontalSection("Favori Mangalar", state.favoriteManga) { item ->
+                    item.id.toIntOrNull()?.let { id ->
+                        onFavoriteMediaClick(id, MediaType.Manga, "jikan")
                     }
-                } else {
-                    items(filtered) { entry ->
-                        KitsugiMediaEntryCard(
-                            entry = entry,
-                            layoutId = appSettings.selectedListLayoutId,
-                            onClick = { onEntryClick(entry) },
-                            titleLanguage = appSettings.titleLanguage,
-                            scoreFormat = appSettings.scoreFormat,
-                            hideScores = appSettings.hideScores
-                        )
+                }
+                FavoritesHorizontalSection("Favori Karakterler", state.favoriteCharacters) { item ->
+                    item.id.toIntOrNull()?.let { id ->
+                        onFavoriteCharacterClick(id, "jikan", item.title, item.imageUrl)
                     }
                 }
             }
@@ -1242,12 +939,6 @@ fun SimklProfileContent(
     isLandscape: Boolean,
     accentColor: Color
 ) {
-    var activeTab by remember { mutableStateOf(0) } // 0: Profil, 1: Listem
-    val tabs = listOf("Profil", "Listem")
-
-    var selectedStatus by remember { mutableStateOf("all") }
-    var selectedType by remember { mutableStateOf("all") }
-
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -1334,220 +1025,112 @@ fun SimklProfileContent(
             }
         }
 
-        // Sub-tabs row
+        // PROFIL
         item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(KitsugiColors.Surface)
-            ) {
-                tabs.forEachIndexed { index, label ->
-                    val isSelected = activeTab == index
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { activeTab = index }
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = label,
-                            color = if (isSelected) accentColor else KitsugiColors.TextMuted,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                }
+            // Önce ViewModel'den API istatistikleri kullan (Simkl profil fetch'i sırasında hesaplanmış)
+            // Yoksa yerel listeden hesapla (fallback)
+            val hasApiStats = state.totalAnime > 0 || state.totalShows > 0 || state.totalMovies > 0
+
+            val simklEntries = if (!hasApiStats) remember(mediaEntries) { mediaEntries.filter { it.source == "simkl" || it.simklId != null } } else emptyList()
+
+            val totalCount = if (hasApiStats) state.totalAnime + state.totalShows + state.totalMovies else simklEntries.size
+            val animeCount = if (hasApiStats) state.totalAnime else simklEntries.count { it.type == MediaType.Anime }
+            val tvCount = if (hasApiStats) state.totalShows else simklEntries.count { it.type == MediaType.TvShow }
+            val movieCount = if (hasApiStats) state.totalMovies else simklEntries.count { it.type == MediaType.Movie }
+
+            val watching = if (hasApiStats) state.watching else simklEntries.count { it.status == WatchStatus.Watching || it.status == WatchStatus.Repeating }
+            val completed = if (hasApiStats) state.completed else simklEntries.count { it.status == WatchStatus.Completed }
+            val planned = if (hasApiStats) state.planned else simklEntries.count { it.status == WatchStatus.Planned }
+            val paused = if (hasApiStats) state.paused else simklEntries.count { it.status == WatchStatus.Paused }
+            val dropped = if (hasApiStats) state.dropped else simklEntries.count { it.status == WatchStatus.Dropped }
+
+            val avgScore = if (hasApiStats) state.avgScore else {
+                val scored = simklEntries.mapNotNull { it.score }
+                if (scored.isNotEmpty()) scored.average() else 0.0
             }
-        }
 
-        // Sub-tab contents
-        when (activeTab) {
-            0 -> {
-                // PROFIL
-                item {
-                    // Önce ViewModel'den API istatistikleri kullan (Simkl profil fetch'i sırasında hesaplanmış)
-                    // Yoksa yerel listeden hesapla (fallback)
-                    val hasApiStats = state.totalAnime > 0 || state.totalShows > 0 || state.totalMovies > 0
-
-                    val simklEntries = if (!hasApiStats) remember(mediaEntries) { mediaEntries.filter { it.source == "simkl" || it.simklId != null } } else emptyList()
-
-                    val totalCount = if (hasApiStats) state.totalAnime + state.totalShows + state.totalMovies else simklEntries.size
-                    val animeCount = if (hasApiStats) state.totalAnime else simklEntries.count { it.type == MediaType.Anime }
-                    val tvCount = if (hasApiStats) state.totalShows else simklEntries.count { it.type == MediaType.TvShow }
-                    val movieCount = if (hasApiStats) state.totalMovies else simklEntries.count { it.type == MediaType.Movie }
-
-                    val watching = if (hasApiStats) state.watching else simklEntries.count { it.status == WatchStatus.Watching || it.status == WatchStatus.Repeating }
-                    val completed = if (hasApiStats) state.completed else simklEntries.count { it.status == WatchStatus.Completed }
-                    val planned = if (hasApiStats) state.planned else simklEntries.count { it.status == WatchStatus.Planned }
-                    val paused = if (hasApiStats) state.paused else simklEntries.count { it.status == WatchStatus.Paused }
-                    val dropped = if (hasApiStats) state.dropped else simklEntries.count { it.status == WatchStatus.Dropped }
-
-                    val avgScore = if (hasApiStats) state.avgScore else {
-                        val scored = simklEntries.mapNotNull { it.score }
-                        if (scored.isNotEmpty()) scored.average() else 0.0
-                    }
-
-                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        // Connection Status Card
-                        Card(
-                            shape = RoundedCornerShape(24.dp),
-                            colors = CardDefaults.cardColors(containerColor = KitsugiColors.Surface),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(20.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.CheckCircle,
-                                        contentDescription = null,
-                                        tint = KitsugiColors.AccentGreen,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = "Simkl Bağlantısı Aktif",
-                                        color = KitsugiColors.TextPrimary,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                                if (!state.bio.isNullOrBlank()) {
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                    Text(
-                                        text = state.bio,
-                                        color = KitsugiColors.TextSecondary,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-                            }
-                        }
-
-                        // Statistics Section
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(24.dp))
-                                .background(KitsugiColors.Surface)
-                                .padding(18.dp)
-                        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                // Connection Status Card
+                Card(
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = KitsugiColors.Surface),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Rounded.CheckCircle,
+                                contentDescription = null,
+                                tint = KitsugiColors.AccentGreen,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Kütüphane İstatistikleri",
+                                text = "Simkl Bağlantısı Aktif",
                                 color = KitsugiColors.TextPrimary,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            // Stats Cards Grid
-                            Row(modifier = Modifier.fillMaxWidth()) {
-                                StatCard("Toplam", totalCount.toString())
-                                StatCard("Ort. Skor", if (avgScore > 0) "%.2f".format(avgScore) else "-")
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(modifier = Modifier.fillMaxWidth()) {
-                                StatCard("Animeler", animeCount.toString())
-                                StatCard("Diziler", tvCount.toString())
-                                StatCard("Filmler", movieCount.toString())
-                            }
-
-                            Spacer(modifier = Modifier.height(20.dp))
+                        }
+                        if (!state.bio.isNullOrBlank()) {
+                            Spacer(modifier = Modifier.height(12.dp))
                             Text(
-                                text = "İzleme Durumu Dağılımı",
-                                color = KitsugiColors.TextPrimary,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Bold
+                                text = state.bio,
+                                color = KitsugiColors.TextSecondary,
+                                style = MaterialTheme.typography.bodySmall,
+                                textAlign = TextAlign.Center
                             )
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            StatItemRow("İzleniyor", watching, totalCount, accentColor)
-                            StatItemRow("Tamamlandı", completed, totalCount, KitsugiColors.AccentGreen)
-                            StatItemRow("Planlandı", planned, totalCount, KitsugiColors.TextMuted)
-                            StatItemRow("Durduruldu", paused, totalCount, KitsugiColors.AccentOrange)
-                            StatItemRow("Bırakıldı", dropped, totalCount, KitsugiColors.AccentPink)
-                        }
-                    }
-                }
-            }
-            1 -> {
-                // LISTEM
-                val simklEntries = mediaEntries.filter { it.source == "simkl" || it.simklId != null }
-                val filtered = simklEntries.filter { entry ->
-                    val matchesStatus = when (selectedStatus) {
-                        "all" -> true
-                        "watching" -> entry.status == WatchStatus.Watching || entry.status == WatchStatus.Repeating
-                        "completed" -> entry.status == WatchStatus.Completed
-                        "planned" -> entry.status == WatchStatus.Planned
-                        "dropped" -> entry.status == WatchStatus.Dropped
-                        "paused" -> entry.status == WatchStatus.Paused
-                        else -> true
-                    }
-                    val matchesType = when (selectedType) {
-                        "all" -> true
-                        "anime" -> entry.type == MediaType.Anime || entry.type == MediaType.Movie || entry.type == MediaType.TvShow
-                        "manga" -> entry.type == MediaType.Manga
-                        else -> true
-                    }
-                    matchesStatus && matchesType
-                }
-
-                item {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            ProfileFilterChip("Tümü", selectedStatus == "all", accentColor) { selectedStatus = "all" }
-                            ProfileFilterChip("İzleniyor", selectedStatus == "watching", accentColor) { selectedStatus = "watching" }
-                            ProfileFilterChip("Tamamlandı", selectedStatus == "completed", accentColor) { selectedStatus = "completed" }
-                            ProfileFilterChip("Planlandı", selectedStatus == "planned", accentColor) { selectedStatus = "planned" }
-                            ProfileFilterChip("Durduruldu", selectedStatus == "paused", accentColor) { selectedStatus = "paused" }
-                            ProfileFilterChip("Bırakıldı", selectedStatus == "dropped", accentColor) { selectedStatus = "dropped" }
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            ProfileFilterChip("Tüm Tipler", selectedType == "all", accentColor) { selectedType = "all" }
-                            ProfileFilterChip("Anime", selectedType == "anime", accentColor) { selectedType = "anime" }
-                            ProfileFilterChip("Manga", selectedType == "manga", accentColor) { selectedType = "manga" }
                         }
                     }
                 }
 
-                if (filtered.isEmpty()) {
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(24.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = "Listede içerik bulunamadı", color = KitsugiColors.TextMuted)
-                        }
+                // Statistics Section
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(KitsugiColors.Surface)
+                        .padding(18.dp)
+                ) {
+                    Text(
+                        text = "Kütüphane İstatistikleri",
+                        color = KitsugiColors.TextPrimary,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Stats Cards Grid
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        StatCard("Toplam", totalCount.toString())
+                        StatCard("Ort. Skor", if (avgScore > 0) "%.2f".format(avgScore) else "-")
                     }
-                } else {
-                    items(filtered) { entry ->
-                        KitsugiMediaEntryCard(
-                            entry = entry,
-                            layoutId = appSettings.selectedListLayoutId,
-                            onClick = { onEntryClick(entry) },
-                            titleLanguage = appSettings.titleLanguage,
-                            scoreFormat = appSettings.scoreFormat,
-                            hideScores = appSettings.hideScores
-                        )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        StatCard("Animeler", animeCount.toString())
+                        StatCard("Diziler", tvCount.toString())
+                        StatCard("Filmler", movieCount.toString())
                     }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+                    Text(
+                        text = "İzleme Durumu Dağılımı",
+                        color = KitsugiColors.TextPrimary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    StatItemRow("İzleniyor", watching, totalCount, accentColor)
+                    StatItemRow("Tamamlandı", completed, totalCount, KitsugiColors.AccentGreen)
+                    StatItemRow("Planlandı", planned, totalCount, KitsugiColors.TextMuted)
+                    StatItemRow("Durduruldu", paused, totalCount, KitsugiColors.AccentOrange)
+                    StatItemRow("Bırakıldı", dropped, totalCount, KitsugiColors.AccentPink)
                 }
             }
         }

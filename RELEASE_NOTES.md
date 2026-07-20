@@ -1,35 +1,29 @@
-# Kitsugi v2.4.15 Release Notes 🚀
+# Kitsugi v2.4.16 Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
 ### ⚡ Performans ve İyileştirmeler
-- **Profil Dashboard Tam Entegrasyonu**: AniList, MyAnimeList ve Simkl profil sekmeleri artık eksiksiz ve interaktif veri ile çalışıyor.
-- **AniList & MAL Favorilere Tıklanabilirlik**: Profil sekmesindeki favori animeler, mangalar, karakterler ve staff öğelerine artık tıklanabiliyor; doğrudan ilgili detay sayfasına yönlendirme yapılıyor.
-- **MyAnimeList Manga İstatistikleri**: MAL profilinde artık hem anime hem manga istatistikleri (tamamlanan, planlanan, ortalama skor vb.) ayrı ayrı doğru şekilde gösteriliyor.
-- **Simkl Profil İstatistikleri**: Simkl sekmesi artık toplam anime/dizi/film sayıları, izleme durumu dağılımı ve ortalama skor bilgilerini gerçek API verisinden çekiyor; boş profil sorunu çözüldü.
+- **Profil Dashboard Sadeleştirmesi**: Profil ekranlarındaki (Yerel, AniList, MAL, Simkl) mükerrer ve gereksiz "Listem" sekmeleri kaldırıldı. Profil sekmesi artık tamamen istatistiklere ve favorilere odaklanıyor.
+- **Daha Temiz Navigasyon**: AniList profilinde "Profil" ve "Aktivite" sekmeleri korunarak kütüphane navigasyonunun tekrarlanması önlendi.
+- **Favorilere Tıklanabilirlik**: Profil sekmesindeki favori animeler, mangalar, karakterler ve staff öğelerine tıklanarak doğrudan detay sayfalarına gidilmesi korundu.
 
 ### 🛠️ Hata Düzeltmeleri
-- Profil sekmesine eklenen favori navigasyon callback'leri sayesinde `onFavoriteMediaClick`, `onFavoriteCharacterClick`, `onFavoriteStaffClick` bağlantıları tamamlandı.
-- `FavoritesHorizontalSection` bileşenine tıklama desteği (`onItemClick` lambda) eklenerek daha önce tıklanamayan favori kartlar düzeltildi.
+- Yerel, AniList, MAL ve Simkl profil arayüzlerindeki aktif sekme logic'leri ve filtre durumları, kaldırılan listem görünümüne göre optimize edilip temizlendi.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
 ### ⚡ Performance & Improvements
-- **Full Profile Dashboard Integration**: AniList, MyAnimeList, and Simkl profile tabs now display complete, interactive data.
-- **Clickable Favorites (AniList & MAL)**: Favorite anime, manga, characters, and staff items in the profile are now tappable, navigating directly to their respective detail screens.
-- **MyAnimeList Manga Statistics**: MAL profile now correctly displays both anime and manga statistics (completed, planned, mean score, etc.) in separate sections.
-- **Simkl Profile Statistics**: The Simkl tab now fetches real stats (total anime/shows/movies, status distribution, average score) directly from the API — empty profile issue resolved.
+- **Profile Dashboard Streamlining**: Removed the redundant "My List" ("Listem") sub-tabs from all profile views (Local, AniList, MAL, Simkl). The profile dashboard now focuses exclusively on stats and favorites.
+- **Cleaner Navigation Flow**: Preserved the "Profile" and "Activity" tabs for AniList, preventing duplicate library navigation options.
+- **Clickable Favorites**: Kept full support for clicking favorite anime, manga, characters, and staff items to navigate to details.
 
 ### 🛠️ Bug Fixes
-- Wired `onFavoriteMediaClick`, `onFavoriteCharacterClick`, and `onFavoriteStaffClick` navigation callbacks through the full composable chain.
-- Added `onItemClick` lambda to `FavoritesHorizontalSection`, enabling previously non-clickable favorite cards.
+- Optimized active tab logic and filter states across all platform profile views to align with the removal of library sections.
 
 ---
 
 > **📥 APK İndir / Download APK**: [Releases Sayfası / Releases Page](https://github.com/gameras1010-afk/Kitsugi-Beta/releases/latest)
-
-
