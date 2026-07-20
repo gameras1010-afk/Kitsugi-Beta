@@ -175,7 +175,7 @@ fun ApiResultDetailPage(
     var showAuthWarningDialog by remember { mutableStateOf(false) }
 
     // Obtain ViewModel
-    val viewModel: ApiResultDetailViewModel = viewModel()
+    val viewModel: ApiResultDetailViewModel = viewModel(key = "api_${result.source}_${result.malId}_${result.type.name}")
 
     // Load result in ViewModel
     LaunchedEffect(result.source, result.malId, result.type, showAnimeLogos) {

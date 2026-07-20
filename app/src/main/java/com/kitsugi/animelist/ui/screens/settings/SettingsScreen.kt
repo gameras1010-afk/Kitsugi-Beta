@@ -312,7 +312,7 @@ fun SettingsScreen(
                 onSubmit = { title, type, description ->
                     val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {
                         data = android.net.Uri.parse("mailto:")
-                        putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf("feedback@kitsugi.app"))
+                        putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf("kitsugibeta@gmail.com"))
                         val subject = "[Kitsugi Beta Feedback] [$type] $title"
                         val body = """
                             Tür: $type
@@ -334,7 +334,7 @@ fun SettingsScreen(
                     }.onFailure {
                         android.widget.Toast.makeText(
                             context,
-                            "E-posta uygulaması bulunamadı. Lütfen feedback@kitsugi.app adresine yazın.",
+                            "E-posta uygulaması bulunamadı. Lütfen kitsugibeta@gmail.com adresine yazın.",
                             android.widget.Toast.LENGTH_LONG
                         ).show()
                     }

@@ -25,17 +25,15 @@ android {
     val simklSecret       = localProperties.getProperty("simkl_client_secret")   ?: "81d3253f90d1f2c0c4ea55af6ca317861e5f40d43c16255eeabd57fc51c73f1c"
     val animeSkipClientId = localProperties.getProperty("anime_skip_client_id")  ?: "5mpKIMeowxmJ4UvAWacdPEzNbfXEjZDv"
 
-    compileSdk {
-        version = release(36)
-    }
+    val appVersionName = "2.4.20"
+
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.kitsugi.animelist"
         minSdk = 26
         targetSdk = 36
-        // Her derlemede otomatik artan benzersiz sÃ¼rÃ¼m kodu (Dakika bazlÄ± zaman damgasÄ±)
-        val appVersionName = "2.4.19"
-
+        // Her derlemede otomatik artan benzersiz sürüm kodu (Dakika bazlı zaman damgası)
         val timeVersionCode = (System.currentTimeMillis() / 60000).toInt()
         versionCode = timeVersionCode
         versionName = "$appVersionName-beta.$timeVersionCode"
@@ -130,6 +128,14 @@ android {
     testOptions {
         unitTests {
             isReturnDefaultValues = true
+        }
+    }
+
+    applicationVariants.all {
+        val flavor = flavorName
+        outputs.all {
+            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            output.outputFileName = "Kitsugi-Beta-v${appVersionName}-${flavor}.apk"
         }
     }
 

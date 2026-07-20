@@ -256,33 +256,36 @@ fun ExploreScreen(
                             }
                         }
 
-                        // Header / Title and Toggle
-                        item {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 20.dp)
-                            ) {
-                                if (!isLandscape || isTvDevice) {
-                                    Row(
+                        // Header / Title and Toggle as STICKY HEADER
+                        stickyHeader(key = "explore_platform_toggle") {
+                            if (!isLandscape || isTvDevice) {
+                                androidx.compose.material3.Surface(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    color = KitsugiColors.Background.copy(alpha = 0.95f)
+                                ) {
+                                    Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(bottom = 16.dp),
-                                        horizontalArrangement = if (isTvDevice) Arrangement.SpaceBetween else Arrangement.Center,
-                                        verticalAlignment = Alignment.CenterVertically
+                                            .padding(horizontal = 20.dp, vertical = 8.dp)
                                     ) {
                                         if (isTvDevice) {
-                                            Text(
-                                                text = "Keşfet",
-                                                style = MaterialTheme.typography.titleLarge,
-                                                fontWeight = FontWeight.Black,
-                                                color = KitsugiColors.TextPrimary
-                                            )
-                                            ExplorePlatformToggle(
-                                                selectedPlatform = viewModel.selectedPlatform,
-                                                onPlatformSelected = { platform -> viewModel.selectPlatform(platform) },
-                                                modifier = Modifier.width(300.dp)
-                                            )
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(
+                                                    text = "Keşfet",
+                                                    style = MaterialTheme.typography.titleLarge,
+                                                    fontWeight = FontWeight.Black,
+                                                    color = KitsugiColors.TextPrimary
+                                                )
+                                                ExplorePlatformToggle(
+                                                    selectedPlatform = viewModel.selectedPlatform,
+                                                    onPlatformSelected = { platform -> viewModel.selectPlatform(platform) },
+                                                    modifier = Modifier.width(300.dp)
+                                                )
+                                            }
                                         } else {
                                             ExplorePlatformToggle(
                                                 selectedPlatform = viewModel.selectedPlatform,
@@ -291,16 +294,22 @@ fun ExploreScreen(
                                             )
                                         }
                                     }
-                                    Spacer(modifier = Modifier.height(8.dp))
                                 }
+                            }
+                        }
 
-                                // Hata mesajı
-                                if (viewModel.errorMessage != null) {
+                        // Hata mesajı
+                        if (viewModel.errorMessage != null) {
+                            item(key = "error_message") {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp, vertical = 8.dp)
+                                ) {
                                     KitsugiErrorState(
                                         message = viewModel.errorMessage.orEmpty(),
                                         onRetryClick = { viewModel.loadData(forceRefresh = true) }
                                     )
-                                    Spacer(modifier = Modifier.height(18.dp))
                                 }
                             }
                         }
@@ -615,38 +624,6 @@ fun ExploreScreen(
                             }
                         }
                     }
-            }
-
-            // Sticky Top Bar — vitrin tamamen geçince yumuşakça detay sayfasındaki gibi üstten expand ederek gelir
-            androidx.compose.animation.AnimatedVisibility(
-                visible = isHeroGone && !isLandscape && !isTvDevice,
-                enter = expandVertically(animationSpec = tween(300)) + fadeIn(animationSpec = tween(300)),
-                exit = shrinkVertically(animationSpec = tween(250)) + fadeOut(animationSpec = tween(250))
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(KitsugiColors.Background.copy(alpha = 0.82f))
-                        .padding(top = 6.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        ExplorePlatformToggle(
-                            selectedPlatform = viewModel.selectedPlatform,
-                            onPlatformSelected = { platform -> viewModel.selectPlatform(platform) },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                    androidx.compose.material3.HorizontalDivider(
-                        color = KitsugiColors.Border.copy(alpha = 0.25f),
-                        thickness = 0.5.dp
-                    )
-                }
             }
         }
 

@@ -28,6 +28,11 @@ import androidx.compose.material3.Text
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.ui.zIndex
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -284,6 +289,7 @@ fun MyListScreen(
     val horizontalPadding = if (isLandscape) 12.dp else 20.dp
 
     val isTvDevice = com.kitsugi.animelist.ui.theme.LocalIsTvDevice.current
+    val accentColor = com.kitsugi.animelist.ui.theme.LocalKitsugiAccent.current
 
     Box(
         modifier = Modifier
@@ -399,41 +405,50 @@ fun MyListScreen(
             Spacer(modifier = Modifier.height(18.dp))
         }
 
-        item {
+        stickyHeader(key = "platform_tabs") {
             val tabs = listOf("AniList", "MAL", "Simkl")
-            val accentColor = LocalKitsugiAccent.current
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(22.dp))
-                    .background(KitsugiColors.surface),
-                horizontalArrangement = Arrangement.spacedBy(0.dp)
+            androidx.compose.material3.Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = KitsugiColors.background
             ) {
-                tabs.forEachIndexed { index, label ->
-                    val isSelected = selectedTabIndex == index
-
-                    Box(
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    Row(
                         modifier = Modifier
-                            .weight(1f)
+                            .fillMaxWidth()
                             .clip(RoundedCornerShape(22.dp))
-                            .background(
-                                if (isSelected) accentColor else KitsugiColors.surface
-                            )
-                            .tvClickable(shape = RoundedCornerShape(22.dp), onClick = { onTabIndexChange(index) })
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
+                            .background(KitsugiColors.surface),
+                        horizontalArrangement = Arrangement.spacedBy(0.dp)
                     ) {
-                        Text(
-                            text = label,
-                            color = if (isSelected) KitsugiColors.background else KitsugiColors.textMuted,
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = if (isSelected) FontWeight.Black else FontWeight.Medium
-                        )
+                        tabs.forEachIndexed { index, label ->
+                            val isSelected = selectedTabIndex == index
+
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(22.dp))
+                                    .background(
+                                        if (isSelected) accentColor else KitsugiColors.surface
+                                    )
+                                    .tvClickable(shape = RoundedCornerShape(22.dp), onClick = { onTabIndexChange(index) })
+                                    .padding(vertical = 12.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = label,
+                                    color = if (isSelected) KitsugiColors.background else KitsugiColors.textMuted,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = if (isSelected) FontWeight.Black else FontWeight.Medium
+                                )
+                            }
+                        }
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(18.dp))
         }
 
         val isConnected = when (selectedTabIndex) {

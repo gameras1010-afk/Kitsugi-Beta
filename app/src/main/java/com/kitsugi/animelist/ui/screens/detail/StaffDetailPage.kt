@@ -98,7 +98,7 @@ fun StaffDetailPage(
     val context = LocalContext.current
 
     // Obtain ViewModel
-    val viewModel: StaffDetailViewModel = viewModel()
+    val viewModel: StaffDetailViewModel = viewModel(key = "staff_${source}_${staffId}")
 
     // Load staff in ViewModel
     LaunchedEffect(staffId, source) {

@@ -148,7 +148,7 @@ fun MediaEntryDetailPage(
     val apiClient = remember { JikanApiClient() }
 
     // Obtain ViewModel
-    val viewModel: MediaEntryDetailViewModel = viewModel()
+    val viewModel: MediaEntryDetailViewModel = viewModel(key = "entry_${entry.source}_${entry.id}")
 
     // Load entry in ViewModel
     LaunchedEffect(entry.id, entry.source, entry.malId, showAnimeLogos) {

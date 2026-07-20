@@ -99,7 +99,7 @@ fun CharacterDetailPage(
     val context = LocalContext.current
 
     // Obtain ViewModel
-    val viewModel: CharacterDetailViewModel = viewModel()
+    val viewModel: CharacterDetailViewModel = viewModel(key = "character_${source}_${characterId}")
 
     // Load character in ViewModel
     LaunchedEffect(characterId, source) {

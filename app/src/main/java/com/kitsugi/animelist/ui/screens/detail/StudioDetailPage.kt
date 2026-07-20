@@ -69,7 +69,7 @@ fun StudioDetailPage(
     val accentColor = LocalKitsugiAccent.current
 
     // Obtain ViewModel
-    val viewModel: StudioDetailViewModel = viewModel()
+    val viewModel: StudioDetailViewModel = viewModel(key = "studio_${source}_${studioId}")
 
     // Load studio in ViewModel
     LaunchedEffect(studioId, source) {

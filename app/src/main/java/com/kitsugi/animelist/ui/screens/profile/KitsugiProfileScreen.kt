@@ -806,6 +806,51 @@ fun SimklProfileContent(
     isLandscape: Boolean,
     accentColor: Color
 ) {
+    // Memoize stats calculations so scrolling is 100% smooth without re-computing on every frame
+    val hasApiStats = remember(state.totalAnime, state.totalShows, state.totalMovies) {
+        state.totalAnime > 0 || state.totalShows > 0 || state.totalMovies > 0
+    }
+
+    val simklEntries = remember(hasApiStats, mediaEntries) {
+        if (!hasApiStats) mediaEntries.filter { it.source == "simkl" || it.simklId != null } else emptyList()
+    }
+
+    val totalCount = remember(hasApiStats, state.totalAnime, state.totalShows, state.totalMovies, simklEntries) {
+        if (hasApiStats) state.totalAnime + state.totalShows + state.totalMovies else simklEntries.size
+    }
+    val animeCount = remember(hasApiStats, state.totalAnime, simklEntries) {
+        if (hasApiStats) state.totalAnime else simklEntries.count { it.type == MediaType.Anime }
+    }
+    val tvCount = remember(hasApiStats, state.totalShows, simklEntries) {
+        if (hasApiStats) state.totalShows else simklEntries.count { it.type == MediaType.TvShow }
+    }
+    val movieCount = remember(hasApiStats, state.totalMovies, simklEntries) {
+        if (hasApiStats) state.totalMovies else simklEntries.count { it.type == MediaType.Movie }
+    }
+
+    val watching = remember(hasApiStats, state.watching, simklEntries) {
+        if (hasApiStats) state.watching else simklEntries.count { it.status == WatchStatus.Watching || it.status == WatchStatus.Repeating }
+    }
+    val completed = remember(hasApiStats, state.completed, simklEntries) {
+        if (hasApiStats) state.completed else simklEntries.count { it.status == WatchStatus.Completed }
+    }
+    val planned = remember(hasApiStats, state.planned, simklEntries) {
+        if (hasApiStats) state.planned else simklEntries.count { it.status == WatchStatus.Planned }
+    }
+    val paused = remember(hasApiStats, state.paused, simklEntries) {
+        if (hasApiStats) state.paused else simklEntries.count { it.status == WatchStatus.Paused }
+    }
+    val dropped = remember(hasApiStats, state.dropped, simklEntries) {
+        if (hasApiStats) state.dropped else simklEntries.count { it.status == WatchStatus.Dropped }
+    }
+
+    val avgScore = remember(hasApiStats, state.avgScore, simklEntries) {
+        if (hasApiStats) state.avgScore else {
+            val scored = simklEntries.mapNotNull { it.score }
+            if (scored.isNotEmpty()) scored.average() else 0.0
+        }
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -874,13 +919,15 @@ fun SimklProfileContent(
                                 }
                             }
                         }
-                        val details = buildList {
-                            if (!state.location.isNullOrBlank()) add(state.location)
-                            if (!state.joinedAt.isNullOrBlank()) {
-                                val dateStr = state.joinedAt.substringBefore(" ")
-                                add("Katılım: $dateStr")
-                            }
-                        }.joinToString(" • ")
+                        val details = remember(state.location, state.joinedAt) {
+                            buildList {
+                                if (!state.location.isNullOrBlank()) add(state.location)
+                                if (!state.joinedAt.isNullOrBlank()) {
+                                    val dateStr = state.joinedAt.substringBefore(" ")
+                                    add("Katılım: $dateStr")
+                                }
+                            }.joinToString(" • ")
+                        }
 
                         Text(
                             text = if (details.isNotBlank()) details else "Simkl Üyesi",
@@ -894,28 +941,6 @@ fun SimklProfileContent(
 
         // PROFIL
         item {
-            // Önce ViewModel'den API istatistikleri kullan (Simkl profil fetch'i sırasında hesaplanmış)
-            // Yoksa yerel listeden hesapla (fallback)
-            val hasApiStats = state.totalAnime > 0 || state.totalShows > 0 || state.totalMovies > 0
-
-            val simklEntries = if (!hasApiStats) remember(mediaEntries) { mediaEntries.filter { it.source == "simkl" || it.simklId != null } } else emptyList()
-
-            val totalCount = if (hasApiStats) state.totalAnime + state.totalShows + state.totalMovies else simklEntries.size
-            val animeCount = if (hasApiStats) state.totalAnime else simklEntries.count { it.type == MediaType.Anime }
-            val tvCount = if (hasApiStats) state.totalShows else simklEntries.count { it.type == MediaType.TvShow }
-            val movieCount = if (hasApiStats) state.totalMovies else simklEntries.count { it.type == MediaType.Movie }
-
-            val watching = if (hasApiStats) state.watching else simklEntries.count { it.status == WatchStatus.Watching || it.status == WatchStatus.Repeating }
-            val completed = if (hasApiStats) state.completed else simklEntries.count { it.status == WatchStatus.Completed }
-            val planned = if (hasApiStats) state.planned else simklEntries.count { it.status == WatchStatus.Planned }
-            val paused = if (hasApiStats) state.paused else simklEntries.count { it.status == WatchStatus.Paused }
-            val dropped = if (hasApiStats) state.dropped else simklEntries.count { it.status == WatchStatus.Dropped }
-
-            val avgScore = if (hasApiStats) state.avgScore else {
-                val scored = simklEntries.mapNotNull { it.score }
-                if (scored.isNotEmpty()) scored.average() else 0.0
-            }
-
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 // Connection Status Card
                 Card(
@@ -1137,7 +1162,10 @@ fun FavoritesHorizontalSection(
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            items(items) { item ->
+            items(
+                items = items,
+                key = { item -> item.id.ifBlank { item.title } }
+            ) { item ->
                 Column(
                     modifier = Modifier
                         .width(90.dp)
