@@ -1,30 +1,32 @@
-# Kitsugi v2.4.21 Release Notes 🚀
+# Kitsugi v2.4.22 Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### ⚡ Performans ve Tasarım İyileştirmeleri
-- **Doğal Sabit Platform Barı (Sticky Header Bar)**: Keşfet (`ExploreScreen`) ve Listem (`MyListScreen`) ekranlarındaki AniList / MAL / Simkl platform geçiş barları Jetpack Compose `stickyHeader` mimarisine taşındı.
-- **Geri Bildirim Sistemi Yenilendi**: Uygulama içi geri bildirim penceresi responsive `KitsugiSheetOrDialog` (alttan yukarı açılan bottom sheet) yapısına geçirildi ve tüm bildirimler `kitsugibeta@gmail.com` e-posta adresine bağlandı.
-- **Dinamik Sürüm ve APK İsimlendirmesi**: Otomatik derleme sistemleri artık APK çıktılarını sürüm numarası ve flavor etiketiyle üretir (örn. `Kitsugi-Beta-v2.4.21-gms.apk`).
+### ⚡ Profil ve Arama Ekranı Modernizasyonu
+- **Göreceli Arama & Çoklu Platform Harmanlama**: Arama sayfasında "Tümü" seçildiğinde MAL, AniList ve TMDB sonuçlarının adil harmanlanması sağlandı. AniList ve TMDB sonuçlarının gizlenmesine yol açan katı isim filtresi kaldırılarak platform etiketli (MAL, AniList, TMDB) tam arama listesi sunuldu.
+- **Akıllı Esnek Arama & Yazım Toleransı (Fuzzy Search)**: İsimlerin birleşik, tireli veya yazım hatalı girildiği durumlarda (`attackontitan`, `demon-slayer`, `OnePiece`) otomatik sorgu temizleme ve ikinci şans (fallback) araması eklendi.
+- **AniList Alaka Düzeyi (Relevance) Sıralaması**: Metin araması yapıldığında AniList sıralaması alaka düzeyine göre düzenlenerek nokta atışı sonuçlar elde etmesi sağlandı.
+- **Profil Kartları Etkileşimi (Deep-Linking)**: AniList aktivite akışındaki medya kartları ile Simkl ve MAL profil sekmelerindeki favori/geçmiş kartları tıklanabilir hale getirildi ve doğrudan medya detayına bağlandı.
+- **Görsel İstatistik Dağılımı (`SegmentedDistributionBar`)**: Profil sekmelerindeki izleme durumları (İzlenen, Tamamlanan, Planlanan vb.) modern ve oranlı renk çubuğuyla görselleştirildi.
 
 ### 🛠️ Hata Düzeltmeleri
-- **Profil Sayfası Kaydırma Kilitlenmesi Çözüldü**: Profil sekmesinde (Simkl / MAL / AniList) yukarı kaydırıp üst başlık gizlendiğinde, listenin en tepesinden tekrar aşağı kaydırmayı engelleyen `NestedScrollConnection` offset tüketim mantığı düzeltildi. Artık kaydırma her iki yönde de %100 pürüzsüz ve takılmasız çalışıyor.
-- **Deep-Link ve Yapım Geçişleri Düzeltildi**: Detay sayfalarında yapım şirketi (Stüdyo), Karakter, Personel ve ilişkili medyalara tıklandığında ViewModel nesnelerinin çakışması önlendi (benzersiz ViewModel keying).
+- **Simkl ve MAL Profil Navigasyon Hataları Düzeltildi**: Eksik callback parametreleri giderilerek derleme ve gezinme kararlılığı sağlandı.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### ⚡ Performance & Design Improvements
-- **Native Sticky Platform Header**: Platform tab bars (AniList / MAL / Simkl) on Explore and My List screens refactored to native `stickyHeader`.
-- **Modernized Feedback Bottom Sheet**: In-app feedback dialog transformed into a responsive bottom sheet (`KitsugiSheetOrDialog`), routing all user submissions to `kitsugibeta@gmail.com`.
-- **Dynamic APK Naming**: Build pipelines now produce versioned and flavor-tagged APK filenames (e.g., `Kitsugi-Beta-v2.4.21-gms.apk`).
+### ⚡ Profile & Search Dashboard Modernization
+- **Multi-Platform Search Blending**: Fixed "All" search tab logic to fairly blend and present results across MAL, AniList, and TMDB without discarding AniList or TMDB entries due to aggressive title deduplication.
+- **Smart Fuzzy Search & Typo Tolerance**: Added automated query splitting and fallback execution for concatenated, hyphenated, or misspelled search queries (e.g. `attackontitan`, `demon-slayer`, `OnePiece`).
+- **AniList Search Relevance Ranking**: Improved AniList text query sorting by utilizing native GraphQL relevance search match instead of strict popularity overrides.
+- **Interactive Profile Media Cards (Deep-Linking)**: Enabled direct navigation to detail pages across AniList activity feeds, Simkl recent history, and MAL favorites.
+- **Segmented Stats Distribution**: Visualized watch status breakdown across all platform profiles using responsive `SegmentedDistributionBar` components.
 
 ### 🛠️ Bug Fixes
-- **Profile Scroll Locking Fixed**: Resolved nested scroll connection logic where pulling down at the top of the profile screen (Simkl / MAL / AniList) failed to restore top bar visibility, locking scroll state. Scrolling is now 100% fluid in both directions.
-- **Deep-Link Navigation Fixed**: Resolved ViewModel key collisions when navigating into studios, characters, staff, and related media items.
+- **Profile Navigation Callbacks Resolved**: Fixed missing navigation callback parameters in Simkl and MAL profile views to ensure clean compilation and smooth UI interactions.
 
 ---
 

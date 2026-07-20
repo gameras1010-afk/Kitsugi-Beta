@@ -366,6 +366,7 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                                     }
                                     media {
                                         id
+                                        type
                                         title {
                                             romaji
                                             english
@@ -417,6 +418,8 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                         )
                     } else if (typename == "ListActivity") {
                         val media = act.optJSONObject("media")
+                        val mediaId = media?.optInt("id")
+                        val mediaType = media?.optNullableString("type")
                         val mediaTitle = media?.optJSONObject("title")?.optNullableString("romaji") ?: media?.optJSONObject("title")?.optNullableString("english") ?: "Medya"
                         val mediaImage = media?.optJSONObject("coverImage")?.optNullableString("large")
                         val status = act.optNullableString("status") ?: "güncelledi"
@@ -433,7 +436,9 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                                 progress = progress,
                                 createdAt = createdAt,
                                 likeCount = likeCount,
-                                isLiked = isLiked
+                                isLiked = isLiked,
+                                mediaId = mediaId,
+                                mediaType = mediaType
                             )
                         )
                     }
@@ -927,7 +932,9 @@ sealed class ProfileActivityItem {
         val progress: String?,
         override val createdAt: Long,
         override val likeCount: Int,
-        override val isLiked: Boolean
+        override val isLiked: Boolean,
+        val mediaId: Int? = null,
+        val mediaType: String? = null
     ) : ProfileActivityItem()
 }
 

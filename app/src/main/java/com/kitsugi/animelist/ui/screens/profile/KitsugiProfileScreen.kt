@@ -15,6 +15,9 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -23,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import com.kitsugi.animelist.ui.components.KitsugiSheetOrDialog
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -90,6 +94,14 @@ fun KitsugiProfileScreen(
     val scrollState = rememberScrollVisibilityState(initialVisible = true)
     val scrollConnection = rememberScrollConnection(scrollState)
 
+    var activeFavoriteSheet by remember { mutableStateOf<Pair<String, List<ProfileFavoriteItem>>?>(null) }
+    var onSheetItemClick by remember { mutableStateOf<((ProfileFavoriteItem) -> Unit)?>(null) }
+
+    val openFavoriteSheet: (String, List<ProfileFavoriteItem>, (ProfileFavoriteItem) -> Unit) -> Unit = { title, items, onClick ->
+        activeFavoriteSheet = title to items
+        onSheetItemClick = onClick
+    }
+
     LaunchedEffect(activeSubTab) {
         scrollState.show()
     }
@@ -107,64 +119,57 @@ fun KitsugiProfileScreen(
         modifier = modifier
             .fillMaxSize()
             .background(KitsugiColors.Background)
-            .nestedScroll(scrollConnection)
     ) {
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            AnimatedVisibility(
-                visible = scrollState.isVisible || isLandscape,
-                enter = expandVertically(animationSpec = tween(200)) + fadeIn(animationSpec = tween(200)),
-                exit = shrinkVertically(animationSpec = tween(150)) + fadeOut(animationSpec = tween(150))
+            // Profile Sub-tab selector (Fixed at top)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = if (isLandscape) 18.dp else 16.dp, vertical = 12.dp)
+                    .clip(RoundedCornerShape(22.dp))
+                    .background(KitsugiColors.Surface),
+                horizontalArrangement = Arrangement.spacedBy(0.dp)
             ) {
-                // Profile Sub-tab selector
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = if (isLandscape) 18.dp else 16.dp, vertical = 12.dp)
-                        .clip(RoundedCornerShape(22.dp))
-                        .background(KitsugiColors.Surface),
-                    horizontalArrangement = Arrangement.spacedBy(0.dp)
-                ) {
-                    subTabs.forEachIndexed { index, label ->
-                        val isSelected = activeSubTab == index
-                        val isServiceConnected = when (index) {
-                            0 -> isAniListConnected
-                            1 -> isMalConnected
-                            2 -> isSimklConnected
-                            else -> true
-                        }
+                subTabs.forEachIndexed { index, label ->
+                    val isSelected = activeSubTab == index
+                    val isServiceConnected = when (index) {
+                        0 -> isAniListConnected
+                        1 -> isMalConnected
+                        2 -> isSimklConnected
+                        else -> true
+                    }
 
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(22.dp))
-                                .background(
-                                    if (isSelected) accentColor else KitsugiColors.Surface
-                                )
-                                .tvClickable(shape = RoundedCornerShape(22.dp), onClick = { activeSubTab = index })
-                                .padding(vertical = 10.dp),
-                            contentAlignment = Alignment.Center
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(22.dp))
+                            .background(
+                                if (isSelected) accentColor else KitsugiColors.Surface
+                            )
+                            .tvClickable(shape = RoundedCornerShape(22.dp), onClick = { activeSubTab = index })
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Text(
-                                    text = label,
-                                    color = if (isSelected) KitsugiColors.Background else if (isServiceConnected) KitsugiColors.TextPrimary else KitsugiColors.TextMuted,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = if (isSelected) FontWeight.Black else FontWeight.Medium
+                            Text(
+                                text = label,
+                                color = if (isSelected) KitsugiColors.Background else if (isServiceConnected) KitsugiColors.TextPrimary else KitsugiColors.TextMuted,
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = if (isSelected) FontWeight.Black else FontWeight.Medium
+                            )
+                            if (isServiceConnected) {
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .clip(CircleShape)
+                                        .background(if (isSelected) KitsugiColors.Background else KitsugiColors.AccentGreen)
                                 )
-                                if (isServiceConnected) {
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Box(
-                                        modifier = Modifier
-                                            .size(6.dp)
-                                            .clip(CircleShape)
-                                            .background(if (isSelected) KitsugiColors.Background else KitsugiColors.AccentGreen)
-                                    )
-                                }
                             }
                         }
                     }
@@ -195,6 +200,7 @@ fun KitsugiProfileScreen(
                             onFavoriteCharacterClick = onFavoriteCharacterClick,
                             onFavoriteStaffClick = onFavoriteStaffClick,
                             onLoadMoreActivities = { viewModel.loadNextAniListActivitiesPage() },
+                            onOpenFavoriteSheet = openFavoriteSheet,
                             isLandscape = isLandscape,
                             accentColor = accentColor
                         )
@@ -215,6 +221,7 @@ fun KitsugiProfileScreen(
                             onFavoriteMediaClick = onFavoriteMediaClick,
                             onFavoriteCharacterClick = onFavoriteCharacterClick,
                             onFavoriteStaffClick = onFavoriteStaffClick,
+                            onOpenFavoriteSheet = openFavoriteSheet,
                             isLandscape = isLandscape,
                             accentColor = accentColor
                         )
@@ -232,6 +239,8 @@ fun KitsugiProfileScreen(
                             mediaEntries = mediaEntries,
                             appSettings = appSettings,
                             onEntryClick = onEntryClick,
+                            onFavoriteMediaClick = onFavoriteMediaClick,
+                            onOpenFavoriteSheet = openFavoriteSheet,
                             isLandscape = isLandscape,
                             accentColor = accentColor
                         )
@@ -239,6 +248,20 @@ fun KitsugiProfileScreen(
                 }
             }
         }
+    }
+
+    if (activeFavoriteSheet != null) {
+        FavoritesExpandedBottomSheet(
+            title = activeFavoriteSheet!!.first,
+            items = activeFavoriteSheet!!.second,
+            onItemClick = { item ->
+                onSheetItemClick?.invoke(item)
+            },
+            onDismiss = {
+                activeFavoriteSheet = null
+                onSheetItemClick = null
+            }
+        )
     }
 }
 
@@ -334,6 +357,7 @@ fun AniListProfileContent(
     onFavoriteCharacterClick: (charId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
     onFavoriteStaffClick: (staffId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
     onLoadMoreActivities: () -> Unit,
+    onOpenFavoriteSheet: (title: String, items: List<ProfileFavoriteItem>, onClick: (ProfileFavoriteItem) -> Unit) -> Unit,
     isLandscape: Boolean,
     accentColor: Color
 ) {
@@ -484,6 +508,16 @@ fun AniListProfileContent(
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            SegmentedDistributionBar(
+                                watching = stats.watching,
+                                completed = stats.completed,
+                                planned = stats.planned,
+                                paused = stats.paused,
+                                dropped = stats.dropped,
+                                total = stats.count,
+                                accentColor = KitsugiColors.AccentBlue
+                            )
                             Spacer(modifier = Modifier.height(14.dp))
                             StatItemRow("İzleniyor", stats.watching, stats.count, KitsugiColors.AccentBlue)
                             StatItemRow("Tamamlandı", stats.completed, stats.count, KitsugiColors.AccentGreen)
@@ -522,6 +556,16 @@ fun AniListProfileContent(
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            SegmentedDistributionBar(
+                                watching = stats.watching,
+                                completed = stats.completed,
+                                planned = stats.planned,
+                                paused = stats.paused,
+                                dropped = stats.dropped,
+                                total = stats.count,
+                                accentColor = KitsugiColors.AccentBlue
+                            )
                             Spacer(modifier = Modifier.height(14.dp))
                             StatItemRow("Okuyor", stats.watching, stats.count, KitsugiColors.AccentBlue)
                             StatItemRow("Tamamlandı", stats.completed, stats.count, KitsugiColors.AccentGreen)
@@ -545,28 +589,145 @@ fun AniListProfileContent(
                     }
                 }
 
+                if (state.animeStats == null && state.mangaStats == null && mediaEntries.isNotEmpty()) {
+                    item {
+                        val animeEntries = remember(mediaEntries) { mediaEntries.filter { it.type == MediaType.Anime || it.type == MediaType.Movie || it.type == MediaType.TvShow } }
+                        val mangaEntries = remember(mediaEntries) { mediaEntries.filter { it.type == MediaType.Manga } }
+                        val totalCount = mediaEntries.size
+                        val avgScore = remember(mediaEntries) {
+                            val scored = mediaEntries.mapNotNull { it.score }
+                            if (scored.isNotEmpty()) scored.average() else 0.0
+                        }
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(24.dp))
+                                .background(KitsugiColors.Surface)
+                                .padding(18.dp)
+                        ) {
+                            Text(
+                                text = "Kütüphane İstatistikleri",
+                                color = KitsugiColors.TextPrimary,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                StatCard("Toplam Kayıt", totalCount.toString())
+                                StatCard("Ort. Skor", if (avgScore > 0) "%.1f".format(avgScore) else "-")
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                StatCard("Animeler", animeEntries.size.toString())
+                                StatCard("Mangalar", mangaEntries.size.toString())
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+                            HorizontalDivider(color = KitsugiColors.SurfaceStrong)
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            StatItemRow("İzleniyor / Okunuyor", mediaEntries.count { it.status == WatchStatus.Watching || it.status == WatchStatus.Repeating }, totalCount, accentColor)
+                            StatItemRow("Tamamlandı", mediaEntries.count { it.status == WatchStatus.Completed }, totalCount, KitsugiColors.AccentGreen)
+                            StatItemRow("Planlandı", mediaEntries.count { it.status == WatchStatus.Planned }, totalCount, KitsugiColors.TextMuted)
+                            StatItemRow("Durduruldu", mediaEntries.count { it.status == WatchStatus.Paused }, totalCount, KitsugiColors.AccentOrange)
+                            StatItemRow("Bırakıldı", mediaEntries.count { it.status == WatchStatus.Dropped }, totalCount, KitsugiColors.AccentPink)
+                        }
+                    }
+                }
+
                 item {
+                    val localFavs = remember(mediaEntries) {
+                        mediaEntries.filter { it.isFavorite }.map { entry ->
+                            ProfileFavoriteItem(
+                                id = entry.id.toString(),
+                                title = entry.title,
+                                imageUrl = entry.imageUrl ?: ""
+                            ) to entry
+                        }
+                    }
+
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        FavoritesHorizontalSection("Favori Animeler", state.favoriteAnime) { item ->
-                            item.id.toIntOrNull()?.let { id ->
-                                onFavoriteMediaClick(id + 100_000_000, MediaType.Anime, "anilist")
-                            }
+                        if (localFavs.isNotEmpty()) {
+                            val localFavItems = localFavs.map { it.first }
+                            FavoritesHorizontalSection(
+                                title = "Yerel Favoriler",
+                                items = localFavItems,
+                                onSeeAllClick = {
+                                    onOpenFavoriteSheet("Yerel Favoriler", localFavItems) { item ->
+                                        localFavs.find { it.first.id == item.id }?.second?.let { onEntryClick(it) }
+                                    }
+                                },
+                                onItemClick = { item ->
+                                    localFavs.find { it.first.id == item.id }?.second?.let { onEntryClick(it) }
+                                }
+                            )
                         }
-                        FavoritesHorizontalSection("Favori Mangalar", state.favoriteManga) { item ->
-                            item.id.toIntOrNull()?.let { id ->
-                                onFavoriteMediaClick(id + 100_000_000, MediaType.Manga, "anilist")
+                        FavoritesHorizontalSection(
+                            title = "Favori Animeler",
+                            items = state.favoriteAnime,
+                            onSeeAllClick = {
+                                onOpenFavoriteSheet("Favori Animeler", state.favoriteAnime) { item ->
+                                    item.id.toIntOrNull()?.let { id ->
+                                        onFavoriteMediaClick(id + 100_000_000, MediaType.Anime, "anilist")
+                                    }
+                                }
+                            },
+                            onItemClick = { item ->
+                                item.id.toIntOrNull()?.let { id ->
+                                    onFavoriteMediaClick(id + 100_000_000, MediaType.Anime, "anilist")
+                                }
                             }
-                        }
-                        FavoritesHorizontalSection("Favori Karakterler", state.favoriteCharacters) { item ->
-                            item.id.toIntOrNull()?.let { id ->
-                                onFavoriteCharacterClick(id, "anilist", item.title, item.imageUrl)
+                        )
+                        FavoritesHorizontalSection(
+                            title = "Favori Mangalar",
+                            items = state.favoriteManga,
+                            onSeeAllClick = {
+                                onOpenFavoriteSheet("Favori Mangalar", state.favoriteManga) { item ->
+                                    item.id.toIntOrNull()?.let { id ->
+                                        onFavoriteMediaClick(id + 100_000_000, MediaType.Manga, "anilist")
+                                    }
+                                }
+                            },
+                            onItemClick = { item ->
+                                item.id.toIntOrNull()?.let { id ->
+                                    onFavoriteMediaClick(id + 100_000_000, MediaType.Manga, "anilist")
+                                }
                             }
-                        }
-                        FavoritesHorizontalSection("Favori Ekip (Staff)", state.favoriteStaff) { item ->
-                            item.id.toIntOrNull()?.let { id ->
-                                onFavoriteStaffClick(id, "anilist", item.title, item.imageUrl)
+                        )
+                        FavoritesHorizontalSection(
+                            title = "Favori Karakterler",
+                            items = state.favoriteCharacters,
+                            onSeeAllClick = {
+                                onOpenFavoriteSheet("Favori Karakterler", state.favoriteCharacters) { item ->
+                                    item.id.toIntOrNull()?.let { id ->
+                                        onFavoriteCharacterClick(id, "anilist", item.title, item.imageUrl)
+                                    }
+                                }
+                            },
+                            onItemClick = { item ->
+                                item.id.toIntOrNull()?.let { id ->
+                                    onFavoriteCharacterClick(id, "anilist", item.title, item.imageUrl)
+                                }
                             }
-                        }
+                        )
+                        FavoritesHorizontalSection(
+                            title = "Favori Ekip (Staff)",
+                            items = state.favoriteStaff,
+                            onSeeAllClick = {
+                                onOpenFavoriteSheet("Favori Ekip (Staff)", state.favoriteStaff) { item ->
+                                    item.id.toIntOrNull()?.let { id ->
+                                        onFavoriteStaffClick(id, "anilist", item.title, item.imageUrl)
+                                    }
+                                }
+                            },
+                            onItemClick = { item ->
+                                item.id.toIntOrNull()?.let { id ->
+                                    onFavoriteStaffClick(id, "anilist", item.title, item.imageUrl)
+                                }
+                            }
+                        )
                     }
                 }
             }
@@ -585,7 +746,13 @@ fun AniListProfileContent(
                     }
                 } else {
                     items(state.activities) { activity ->
-                        ActivityCard(activity = activity, accentColor = accentColor)
+                        ActivityCard(
+                            activity = activity,
+                            accentColor = accentColor,
+                            onMediaClick = { mediaId, mediaType ->
+                                onFavoriteMediaClick(mediaId + 100_000_000, mediaType, "anilist")
+                            }
+                        )
                     }
                     item {
                         if (state.activitiesHasNext) {
@@ -617,6 +784,7 @@ fun MalProfileContent(
     onFavoriteMediaClick: (mediaId: Int, mediaType: MediaType, source: String) -> Unit,
     onFavoriteCharacterClick: (charId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
     onFavoriteStaffClick: (staffId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
+    onOpenFavoriteSheet: (title: String, items: List<ProfileFavoriteItem>, onClick: (ProfileFavoriteItem) -> Unit) -> Unit,
     isLandscape: Boolean,
     accentColor: Color
 ) {
@@ -705,6 +873,16 @@ fun MalProfileContent(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    SegmentedDistributionBar(
+                        watching = stats.watching,
+                        completed = stats.completed,
+                        planned = stats.planned,
+                        paused = stats.paused,
+                        dropped = stats.dropped,
+                        total = stats.count,
+                        accentColor = KitsugiColors.AccentBlue
+                    )
                     Spacer(modifier = Modifier.height(14.dp))
                     StatItemRow("İzleniyor", stats.watching, stats.count, KitsugiColors.AccentBlue)
                     StatItemRow("Tamamlandı", stats.completed, stats.count, KitsugiColors.AccentGreen)
@@ -743,6 +921,16 @@ fun MalProfileContent(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    SegmentedDistributionBar(
+                        watching = stats.watching,
+                        completed = stats.completed,
+                        planned = stats.planned,
+                        paused = stats.paused,
+                        dropped = stats.dropped,
+                        total = stats.count,
+                        accentColor = KitsugiColors.AccentBlue
+                    )
                     Spacer(modifier = Modifier.height(14.dp))
                     StatItemRow("Okuyor", stats.watching, stats.count, KitsugiColors.AccentBlue)
                     StatItemRow("Tamamlandı", stats.completed, stats.count, KitsugiColors.AccentGreen)
@@ -768,26 +956,70 @@ fun MalProfileContent(
 
         item {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                FavoritesHorizontalSection("Favori Animeler", state.favoriteAnime) { item ->
-                    item.id.toIntOrNull()?.let { id ->
-                        onFavoriteMediaClick(id, MediaType.Anime, "jikan")
+                FavoritesHorizontalSection(
+                    title = "Favori Animeler",
+                    items = state.favoriteAnime,
+                    onSeeAllClick = {
+                        onOpenFavoriteSheet("Favori Animeler", state.favoriteAnime) { item ->
+                            item.id.toIntOrNull()?.let { id ->
+                                onFavoriteMediaClick(id, MediaType.Anime, "jikan")
+                            }
+                        }
+                    },
+                    onItemClick = { item ->
+                        item.id.toIntOrNull()?.let { id ->
+                            onFavoriteMediaClick(id, MediaType.Anime, "jikan")
+                        }
                     }
-                }
-                FavoritesHorizontalSection("Favori Mangalar", state.favoriteManga) { item ->
-                    item.id.toIntOrNull()?.let { id ->
-                        onFavoriteMediaClick(id, MediaType.Manga, "jikan")
+                )
+                FavoritesHorizontalSection(
+                    title = "Favori Mangalar",
+                    items = state.favoriteManga,
+                    onSeeAllClick = {
+                        onOpenFavoriteSheet("Favori Mangalar", state.favoriteManga) { item ->
+                            item.id.toIntOrNull()?.let { id ->
+                                onFavoriteMediaClick(id, MediaType.Manga, "jikan")
+                            }
+                        }
+                    },
+                    onItemClick = { item ->
+                        item.id.toIntOrNull()?.let { id ->
+                            onFavoriteMediaClick(id, MediaType.Manga, "jikan")
+                        }
                     }
-                }
-                FavoritesHorizontalSection("Favori Karakterler", state.favoriteCharacters) { item ->
-                    item.id.toIntOrNull()?.let { id ->
-                        onFavoriteCharacterClick(id, "jikan", item.title, item.imageUrl)
+                )
+                FavoritesHorizontalSection(
+                    title = "Favori Karakterler",
+                    items = state.favoriteCharacters,
+                    onSeeAllClick = {
+                        onOpenFavoriteSheet("Favori Karakterler", state.favoriteCharacters) { item ->
+                            item.id.toIntOrNull()?.let { id ->
+                                onFavoriteCharacterClick(id, "jikan", item.title, item.imageUrl)
+                            }
+                        }
+                    },
+                    onItemClick = { item ->
+                        item.id.toIntOrNull()?.let { id ->
+                            onFavoriteCharacterClick(id, "jikan", item.title, item.imageUrl)
+                        }
                     }
-                }
-                FavoritesHorizontalSection("Favori Personeller", state.favoriteStaff) { item ->
-                    item.id.toIntOrNull()?.let { id ->
-                        onFavoriteStaffClick(id, "jikan", item.title, item.imageUrl)
+                )
+                FavoritesHorizontalSection(
+                    title = "Favori Personeller",
+                    items = state.favoriteStaff,
+                    onSeeAllClick = {
+                        onOpenFavoriteSheet("Favori Personeller", state.favoriteStaff) { item ->
+                            item.id.toIntOrNull()?.let { id ->
+                                onFavoriteStaffClick(id, "jikan", item.title, item.imageUrl)
+                            }
+                        }
+                    },
+                    onItemClick = { item ->
+                        item.id.toIntOrNull()?.let { id ->
+                            onFavoriteStaffClick(id, "jikan", item.title, item.imageUrl)
+                        }
                     }
-                }
+                )
             }
         }
 
@@ -803,6 +1035,8 @@ fun SimklProfileContent(
     mediaEntries: List<MediaEntry>,
     appSettings: AppSettings,
     onEntryClick: (MediaEntry) -> Unit,
+    onFavoriteMediaClick: (mediaId: Int, mediaType: MediaType, source: String) -> Unit,
+    onOpenFavoriteSheet: (title: String, items: List<ProfileFavoriteItem>, onClick: (ProfileFavoriteItem) -> Unit) -> Unit,
     isLandscape: Boolean,
     accentColor: Color
 ) {
@@ -1017,6 +1251,16 @@ fun SimklProfileContent(
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(10.dp))
+                    SegmentedDistributionBar(
+                        watching = watching,
+                        completed = completed,
+                        planned = planned,
+                        paused = paused,
+                        dropped = dropped,
+                        total = totalCount,
+                        accentColor = accentColor
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
 
                     StatItemRow("İzleniyor", watching, totalCount, accentColor)
                     StatItemRow("Tamamlandı", completed, totalCount, KitsugiColors.AccentGreen)
@@ -1030,9 +1274,22 @@ fun SimklProfileContent(
         // Son İzlenenler (Simkl history)
         if (state.recentHistory.isNotEmpty()) {
             item {
-                FavoritesHorizontalSection("Son İzlenenler", state.recentHistory) {
-                    // Simkl öğelerine tıklama; simklId ile arama yapılabilir ama şimdilik no-op
-                }
+                FavoritesHorizontalSection(
+                    title = "Son İzlenenler",
+                    items = state.recentHistory,
+                    onSeeAllClick = {
+                        onOpenFavoriteSheet("Son İzlenenler", state.recentHistory) { item ->
+                            item.id.toIntOrNull()?.let { id ->
+                                onFavoriteMediaClick(id, MediaType.Anime, "simkl")
+                            }
+                        }
+                    },
+                    onItemClick = { item ->
+                        item.id.toIntOrNull()?.let { id ->
+                            onFavoriteMediaClick(id, MediaType.Anime, "simkl")
+                        }
+                    }
+                )
             }
         }
 
@@ -1063,6 +1320,39 @@ fun ProfileFilterChip(
             style = MaterialTheme.typography.labelMedium,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
         )
+    }
+}
+
+@Composable
+fun SegmentedDistributionBar(
+    watching: Int,
+    completed: Int,
+    planned: Int,
+    paused: Int,
+    dropped: Int,
+    total: Int,
+    accentColor: Color
+) {
+    if (total <= 0) return
+
+    val wPct = watching.toFloat() / total.toFloat()
+    val cPct = completed.toFloat() / total.toFloat()
+    val plPct = planned.toFloat() / total.toFloat()
+    val paPct = paused.toFloat() / total.toFloat()
+    val dPct = dropped.toFloat() / total.toFloat()
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(10.dp)
+            .clip(RoundedCornerShape(5.dp))
+            .background(KitsugiColors.Background)
+    ) {
+        if (wPct > 0) Box(modifier = Modifier.weight(wPct).fillMaxHeight().background(accentColor))
+        if (cPct > 0) Box(modifier = Modifier.weight(cPct).fillMaxHeight().background(KitsugiColors.AccentGreen))
+        if (plPct > 0) Box(modifier = Modifier.weight(plPct).fillMaxHeight().background(KitsugiColors.TextMuted))
+        if (paPct > 0) Box(modifier = Modifier.weight(paPct).fillMaxHeight().background(KitsugiColors.AccentOrange))
+        if (dPct > 0) Box(modifier = Modifier.weight(dPct).fillMaxHeight().background(KitsugiColors.AccentPink))
     }
 }
 
@@ -1141,6 +1431,7 @@ fun RowScope.StatCard(
 fun FavoritesHorizontalSection(
     title: String,
     items: List<ProfileFavoriteItem>,
+    onSeeAllClick: (() -> Unit)? = null,
     onItemClick: (ProfileFavoriteItem) -> Unit
 ) {
     if (items.isEmpty()) return
@@ -1152,13 +1443,42 @@ fun FavoritesHorizontalSection(
             .background(KitsugiColors.Surface)
             .padding(16.dp)
     ) {
-        Text(
-            text = title,
-            color = KitsugiColors.TextPrimary,
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(12.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title,
+                color = KitsugiColors.TextPrimary,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold
+            )
+
+            if (items.size > 1 && onSeeAllClick != null) {
+                TextButton(
+                    onClick = onSeeAllClick,
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "Tümünü Gör (${items.size})",
+                            color = LocalKitsugiAccent.current,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            imageVector = Icons.Rounded.ChevronRight,
+                            contentDescription = null,
+                            tint = LocalKitsugiAccent.current,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(10.dp))
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
@@ -1211,10 +1531,127 @@ fun FavoritesHorizontalSection(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FavoritesExpandedBottomSheet(
+    title: String,
+    items: List<ProfileFavoriteItem>,
+    onItemClick: (ProfileFavoriteItem) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val accentColor = LocalKitsugiAccent.current
+
+    KitsugiSheetOrDialog(
+        onDismiss = onDismiss
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 24.dp)
+        ) {
+            // Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "$title (${items.size})",
+                    color = KitsugiColors.TextPrimary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                IconButton(
+                    onClick = onDismiss,
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = KitsugiColors.SurfaceStrong
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Close,
+                        contentDescription = "Kapat",
+                        tint = KitsugiColors.TextPrimary
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = 100.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 520.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(
+                    items = items,
+                    key = { item -> item.id.ifBlank { item.title } }
+                ) { item ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                onItemClick(item)
+                                onDismiss()
+                            },
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(0.7f)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(KitsugiColors.Background)
+                        ) {
+                            if (item.imageUrl.isNotBlank()) {
+                                AsyncImage(
+                                    model = item.imageUrl,
+                                    contentDescription = item.title,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            } else {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(imageVector = Icons.Rounded.Favorite, contentDescription = null, tint = KitsugiColors.TextMuted)
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = item.title,
+                            color = KitsugiColors.TextPrimary,
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center,
+                            fontSize = 11.sp
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Composable
 fun ActivityCard(
     activity: ProfileActivityItem,
-    accentColor: Color
+    accentColor: Color,
+    onMediaClick: ((mediaId: Int, type: MediaType) -> Unit)? = null
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -1264,11 +1701,20 @@ fun ActivityCard(
                     )
                 }
                 is ProfileActivityItem.ListActivity -> {
+                    val isClickable = activity.mediaId != null && onMediaClick != null
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
                             .background(KitsugiColors.Background)
+                            .then(
+                                if (isClickable) {
+                                    Modifier.clickable {
+                                        val mType = if (activity.mediaType == "MANGA") MediaType.Manga else MediaType.Anime
+                                        onMediaClick?.invoke(activity.mediaId!!, mType)
+                                    }
+                                } else Modifier
+                            )
                             .padding(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {

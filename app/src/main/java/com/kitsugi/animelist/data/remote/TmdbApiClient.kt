@@ -76,7 +76,9 @@ class TmdbApiClient(
     private suspend fun isTmdbEnabled(): Boolean {
         val context = com.kitsugi.animelist.KitsugiApplication.getInstance()?.applicationContext ?: return true
         return try {
-            com.kitsugi.animelist.data.settings.SettingsDataStore(context).settingsFlow.first().tmdbEnabled
+            kotlinx.coroutines.withTimeoutOrNull(800L) {
+                com.kitsugi.animelist.data.settings.SettingsDataStore(context).settingsFlow.first().tmdbEnabled
+            } ?: true
         } catch (e: Exception) {
             true
         }

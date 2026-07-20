@@ -108,26 +108,6 @@ fun SettingsScreen(
                 iconColor = KitsugiColors.AccentBlue,
                 onClick = { activeDialog = SettingsDialog.Account }
             )
-
-            KitsugiSettingsDivider()
-
-            KitsugiSettingsItem(
-                title = "Kütüphane İstatistikleri",
-                description = "Kütüphanenizin detaylı durumu, puan dağılımları ve analizleri",
-                icon = Icons.Rounded.PieChart,
-                iconColor = KitsugiColors.AccentBlue,
-                onClick = integrations.onOpenStats
-            )
-
-            KitsugiSettingsDivider()
-
-            KitsugiSettingsItem(
-                title = "Favorilerim",
-                description = "Favorilerinize eklediğiniz anime ve mangaları görüntüleyin",
-                icon = Icons.Rounded.Favorite,
-                iconColor = KitsugiColors.AccentPink,
-                onClick = integrations.onOpenFavourites
-            )
         }
 
         Spacer(modifier = Modifier.height(22.dp))

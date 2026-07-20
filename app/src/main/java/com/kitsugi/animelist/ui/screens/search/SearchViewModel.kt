@@ -136,6 +136,18 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     private fun getAniListGenreNames(genres: List<String>): List<String> =
         genres.mapNotNull { getAniListGenreName(it) }
 
+    private fun cleanSearchQuery(query: String): String {
+        return query
+            .replace(Regex("([a-z])([A-Z])"), "$1 $2")
+            .replace(Regex("([a-zA-Z])([0-9])"), "$1 $2")
+            .replace(Regex("([0-9])([a-zA-Z])"), "$1 $2")
+            .replace("-", " ")
+            .replace("_", " ")
+            .replace(".", " ")
+            .replace(Regex("\\s+"), " ")
+            .trim()
+    }
+
     fun search() {
         val state = _uiState.value
         if (state.query.isBlank() && state.activeFilters.isDefault()) {
@@ -157,224 +169,189 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
         searchJob = viewModelScope.launch {
-            runCatching {
-                if (newHistoryItem != null && searchHistoryEnabledState) {
-                    searchHistoryRepository.insertSearchQuery(newHistoryItem)
-                }
+            val rawQuery = state.query.trim()
+            val cleanedQuery = cleanSearchQuery(rawQuery)
 
-                val showAdult = showAdultContentState
-                val filters = state.activeFilters
+            var results = executeSearchForQuery(rawQuery)
+            if (results.isEmpty() && cleanedQuery.isNotBlank() && cleanedQuery != rawQuery) {
+                results = executeSearchForQuery(cleanedQuery)
+            }
 
-                // Jikan filters
-                val jikanStatus = when (filters.status) {
-                    "AIRING" -> "airing"
-                    "PUBLISHING" -> "publishing"
-                    "FINISHED" -> "complete"
-                    "UPCOMING" -> "upcoming"
-                    "HIATUS" -> "hiatus"
-                    "DISCONTINUED" -> "discontinued"
-                    else -> null
-                }
-                val jikanFormat = filters.format?.lowercase()
-                val jikanGenreId = getJikanGenreId(filters.genres.firstOrNull())
-                val jikanSort = when (filters.sort) {
-                    "SCORE_DESC" -> "desc"
-                    "POPULARITY_DESC" -> "desc"
-                    "TITLE_ROMAJI_DESC" -> "desc"
-                    "TITLE_ROMAJI_ASC" -> "asc"
-                    else -> "desc"
-                }
-                val jikanOrderBy = when (filters.sort) {
-                    "SCORE_DESC" -> "score"
-                    "POPULARITY_DESC" -> "popularity"
-                    "TITLE_ROMAJI_DESC", "TITLE_ROMAJI_ASC" -> "title"
-                    else -> "popularity"
-                }
+            if (newHistoryItem != null && searchHistoryEnabledState && results.isNotEmpty()) {
+                searchHistoryRepository.insertSearchQuery(newHistoryItem)
+            }
 
-                // AniList filters
-                val aniListStatus = when (filters.status) {
-                    "AIRING" -> "RELEASING"
-                    "PUBLISHING" -> "RELEASING"
-                    "FINISHED" -> "FINISHED"
-                    "UPCOMING" -> "NOT_YET_RELEASED"
-                    "HIATUS" -> "HIATUS"
-                    "DISCONTINUED" -> "CANCELLED"
-                    else -> null
-                }
-                val aniListFormat = filters.format
-                val aniListGenres = getAniListGenreNames(filters.genres)
-                val aniListExcludedGenres = getAniListGenreNames(filters.excludedGenres)
-                val aniListTags = filters.tags
-                val aniListSort = when (filters.sort) {
-                    "SCORE_DESC" -> listOf("SCORE_DESC")
-                    "POPULARITY_DESC" -> listOf("POPULARITY_DESC")
-                    "TITLE_ROMAJI_DESC" -> listOf("TITLE_DESC")
-                    "TITLE_ROMAJI_ASC" -> listOf("TITLE_ASC")
-                    else -> listOf("POPULARITY_DESC")
-                }
-
-                when (state.selectedPlatform) {
-                    SearchPlatform.MAL -> {
-                        apiClient.searchMALOnly(
-                            query = state.query.trim(),
-                            mediaType = state.selectedMediaType,
-                            showAdultContent = showAdult,
-                            status = jikanStatus,
-                            format = jikanFormat,
-                            genreId = jikanGenreId,
-                            sort = jikanSort,
-                            orderBy = jikanOrderBy
-                        )
-                    }
-                    SearchPlatform.AniList -> {
-                        apiClient.searchAniList(
-                            query = state.query.trim(),
-                            mediaType = state.selectedMediaType,
-                            showAdultContent = showAdult,
-                            status = aniListStatus,
-                            format = aniListFormat,
-                            season = filters.season,
-                            genres = aniListGenres,
-                            excludedGenres = aniListExcludedGenres,
-                            tags = aniListTags,
-                            minYear = filters.minYear,
-                            maxYear = filters.maxYear,
-                            minScore = filters.minScore,
-                            maxScore = filters.maxScore,
-                            sort = aniListSort
-                        )
-                    }
-                    SearchPlatform.TMDB -> {
-                        if (state.query.isBlank()) emptyList() else TmdbApiClient().search(state.query.trim())
-                    }
-                    SearchPlatform.All -> {
-                        coroutineScope {
-                            val malDeferred = async {
-                                runCatching {
-                                    apiClient.searchMALOnly(
-                                        query = state.query.trim(),
-                                        mediaType = state.selectedMediaType,
-                                        showAdultContent = showAdult,
-                                        status = jikanStatus,
-                                        format = jikanFormat,
-                                        genreId = jikanGenreId,
-                                        sort = jikanSort,
-                                        orderBy = jikanOrderBy
-                                    )
-                                }.getOrDefault(emptyList())
-                            }
-                            val aniListDeferred = async {
-                                runCatching {
-                                    apiClient.searchAniList(
-                                        query = state.query.trim(),
-                                        mediaType = state.selectedMediaType,
-                                        showAdultContent = showAdult,
-                                        status = aniListStatus,
-                                        format = aniListFormat,
-                                        season = filters.season,
-                                        genres = aniListGenres,
-                                        excludedGenres = aniListExcludedGenres,
-                                        tags = aniListTags,
-                                        minYear = filters.minYear,
-                                        maxYear = filters.maxYear,
-                                        minScore = filters.minScore,
-                                        maxScore = filters.maxScore,
-                                        sort = aniListSort
-                                    )
-                                }.getOrDefault(emptyList())
-                            }
-                            val tmdbDeferred = async {
-                                if (state.selectedMediaType == MediaType.Manga || state.query.isBlank()) {
-                                    emptyList()
-                                } else {
-                                    runCatching {
-                                        TmdbApiClient().search(state.query.trim())
-                                    }.getOrDefault(emptyList())
-                                }
-                            }
-                            val mal = malDeferred.await()
-                            val aniList = aniListDeferred.await()
-                            val tmdb = tmdbDeferred.await()
-
-                            val combined = mutableListOf<JikanSearchResult>()
-                            val maxLen = maxOf(mal.size, aniList.size, tmdb.size)
-                            for (i in 0 until maxLen) {
-                                if (i < mal.size) combined.add(mal[i])
-                                if (i < aniList.size) combined.add(aniList[i])
-                                if (i < tmdb.size) combined.add(tmdb[i])
-                            }
-
-                            // Akıllı Göreceli Arama & Tekilleştirme (Deduplication)
-                            val seenKeys = mutableSetOf<String>()
-                            val uniqueResults = mutableListOf<JikanSearchResult>()
-
-                            for (result in combined) {
-                                val keys = mutableListOf<String>()
-
-                                // 1. ID tabanlı anahtarlar
-                                val malIdKey = if (result.source == "jikan" || result.source == "mal") result.malId else result.realMalId
-                                if (malIdKey != null && malIdKey > 0) {
-                                    keys.add("mal:$malIdKey")
-                                } else if (result.source == "tmdb" && result.tmdbId != null) {
-                                    keys.add("tmdb:${result.tmdbId}")
-                                } else {
-                                    keys.add("${result.source}:${result.malId}")
-                                }
-
-                                // 2. Göreceli İsim/Yıl/Tip tabanlı anahtarlar (Alias ve dil toleranslı)
-                                val typeKey = when (result.type) {
-                                    MediaType.Anime, MediaType.TvShow -> "show"
-                                    MediaType.Movie -> "movie"
-                                    MediaType.Manga -> "manga"
-                                }
-                                val yearVal = result.year
-                                val titles = listOfNotNull(result.title, result.titleEnglish, result.titleJapanese)
-                                for (t in titles) {
-                                    val norm = t.lowercase().replace(Regex("[^a-z0-9]"), "").trim()
-                                    if (norm.isNotEmpty()) {
-                                        if (yearVal != null) {
-                                            keys.add("title:$norm:$typeKey:$yearVal")
-                                            keys.add("title:$norm:$typeKey:${yearVal - 1}")
-                                            keys.add("title:$norm:$typeKey:${yearVal + 1}")
-                                        } else {
-                                            keys.add("title:$norm:$typeKey:any")
-                                        }
-                                    }
-                                }
-
-                                // Eğer bu anahtarlardan herhangi biri daha önce görüldüyse mükerrer say ve atla
-                                val isDuplicate = keys.any { seenKeys.contains(it) }
-                                if (!isDuplicate) {
-                                    uniqueResults.add(result)
-                                    seenKeys.addAll(keys)
-                                }
-                            }
-                            uniqueResults
-                        }
-                    }
-                }
-            }.onSuccess { results ->
-                _uiState.update {
-                    it.copy(
-                        results = results,
-                        isLoading = false,
-                        hasSearched = true,
-                        errorMessage = if (results.isEmpty()) "Sonuç bulunamadı." else null
-                    )
-                }
-            }.onFailure { error ->
-                if (error is kotlinx.coroutines.CancellationException) {
-                    return@onFailure
-                }
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        hasSearched = true,
-                        errorMessage = error.message ?: "Arama sırasında bir hata oluştu."
-                    )
-                }
+            _uiState.update {
+                it.copy(
+                    results = results,
+                    isLoading = false,
+                    hasSearched = true,
+                    errorMessage = if (results.isEmpty()) "Sonuç bulunamadı." else null
+                )
             }
         }
+    }
+
+    private suspend fun executeSearchForQuery(queryText: String): List<JikanSearchResult> {
+        val state = _uiState.value
+        val showAdult = showAdultContentState
+        val filters = state.activeFilters
+
+        // Jikan filters
+        val jikanStatus = when (filters.status) {
+            "AIRING" -> "airing"
+            "PUBLISHING" -> "publishing"
+            "FINISHED" -> "complete"
+            "UPCOMING" -> "upcoming"
+            "HIATUS" -> "hiatus"
+            "DISCONTINUED" -> "discontinued"
+            else -> null
+        }
+        val jikanFormat = filters.format?.lowercase()
+        val jikanGenreId = getJikanGenreId(filters.genres.firstOrNull())
+        val jikanSort = when (filters.sort) {
+            "SCORE_DESC" -> "desc"
+            "POPULARITY_DESC" -> "desc"
+            "TITLE_ROMAJI_DESC" -> "desc"
+            "TITLE_ROMAJI_ASC" -> "asc"
+            else -> "desc"
+        }
+        val jikanOrderBy = when (filters.sort) {
+            "SCORE_DESC" -> "score"
+            "POPULARITY_DESC" -> "popularity"
+            "TITLE_ROMAJI_DESC", "TITLE_ROMAJI_ASC" -> "title"
+            else -> "popularity"
+        }
+
+        // AniList filters
+        val aniListStatus = when (filters.status) {
+            "AIRING" -> "RELEASING"
+            "PUBLISHING" -> "RELEASING"
+            "FINISHED" -> "FINISHED"
+            "UPCOMING" -> "NOT_YET_RELEASED"
+            "HIATUS" -> "HIATUS"
+            "DISCONTINUED" -> "CANCELLED"
+            else -> null
+        }
+        val aniListFormat = filters.format
+        val aniListGenres = getAniListGenreNames(filters.genres)
+        val aniListExcludedGenres = getAniListGenreNames(filters.excludedGenres)
+        val aniListTags = filters.tags
+        val aniListSort = when (filters.sort) {
+            "SCORE_DESC" -> listOf("SCORE_DESC")
+            "TITLE_ROMAJI_DESC" -> listOf("TITLE_DESC")
+            "TITLE_ROMAJI_ASC" -> listOf("TITLE_ASC")
+            "POPULARITY_DESC" -> if (queryText.isNotBlank()) emptyList() else listOf("POPULARITY_DESC")
+            else -> if (queryText.isNotBlank()) emptyList() else listOf("POPULARITY_DESC")
+        }
+
+        return runCatching {
+            when (state.selectedPlatform) {
+                SearchPlatform.MAL -> {
+                    apiClient.searchMALOnly(
+                        query = queryText,
+                        mediaType = state.selectedMediaType,
+                        showAdultContent = showAdult,
+                        status = jikanStatus,
+                        format = jikanFormat,
+                        genreId = jikanGenreId,
+                        sort = jikanSort,
+                        orderBy = jikanOrderBy
+                    )
+                }
+                SearchPlatform.AniList -> {
+                    apiClient.searchAniList(
+                        query = queryText,
+                        mediaType = state.selectedMediaType,
+                        showAdultContent = showAdult,
+                        status = aniListStatus,
+                        format = aniListFormat,
+                        season = filters.season,
+                        genres = aniListGenres,
+                        excludedGenres = aniListExcludedGenres,
+                        tags = aniListTags,
+                        minYear = filters.minYear,
+                        maxYear = filters.maxYear,
+                        minScore = filters.minScore,
+                        maxScore = filters.maxScore,
+                        sort = aniListSort
+                    )
+                }
+                SearchPlatform.TMDB -> {
+                    if (queryText.isBlank()) emptyList() else TmdbApiClient().search(queryText)
+                }
+                SearchPlatform.All -> {
+                    coroutineScope {
+                        val malDeferred = async {
+                            runCatching {
+                                apiClient.searchMALOnly(
+                                    query = queryText,
+                                    mediaType = state.selectedMediaType,
+                                    showAdultContent = showAdult,
+                                    status = jikanStatus,
+                                    format = jikanFormat,
+                                    genreId = jikanGenreId,
+                                    sort = jikanSort,
+                                    orderBy = jikanOrderBy
+                                )
+                            }.getOrDefault(emptyList())
+                        }
+                        val aniListDeferred = async {
+                            runCatching {
+                                apiClient.searchAniList(
+                                    query = queryText,
+                                    mediaType = state.selectedMediaType,
+                                    showAdultContent = showAdult,
+                                    status = aniListStatus,
+                                    format = aniListFormat,
+                                    season = filters.season,
+                                    genres = aniListGenres,
+                                    excludedGenres = aniListExcludedGenres,
+                                    tags = aniListTags,
+                                    minYear = filters.minYear,
+                                    maxYear = filters.maxYear,
+                                    minScore = filters.minScore,
+                                    maxScore = filters.maxScore,
+                                    sort = aniListSort
+                                )
+                            }.getOrDefault(emptyList())
+                        }
+                        val tmdbDeferred = async {
+                            if (state.selectedMediaType == MediaType.Manga || queryText.isBlank()) {
+                                emptyList()
+                            } else {
+                                runCatching {
+                                    TmdbApiClient().search(queryText)
+                                }.getOrDefault(emptyList())
+                            }
+                        }
+                        val mal = malDeferred.await()
+                        val aniList = aniListDeferred.await()
+                        val tmdb = tmdbDeferred.await()
+
+                        val combined = mutableListOf<JikanSearchResult>()
+                        val maxLen = maxOf(mal.size, aniList.size, tmdb.size)
+                        for (i in 0 until maxLen) {
+                            if (i < mal.size) combined.add(mal[i])
+                            if (i < aniList.size) combined.add(aniList[i])
+                            if (i < tmdb.size) combined.add(tmdb[i])
+                        }
+
+                        val seenKeys = mutableSetOf<String>()
+                        val uniqueResults = mutableListOf<JikanSearchResult>()
+
+                        for (result in combined) {
+                            val itemKey = "${result.source.lowercase()}:${result.tmdbId ?: result.malId}"
+                            if (!seenKeys.contains(itemKey)) {
+                                seenKeys.add(itemKey)
+                                uniqueResults.add(result)
+                            }
+                        }
+                        uniqueResults
+                    }
+                }
+            }
+        }.getOrDefault(emptyList())
     }
 
 
