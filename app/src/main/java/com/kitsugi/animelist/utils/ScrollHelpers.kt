@@ -66,13 +66,24 @@ fun rememberScrollConnection(
 ): NestedScrollConnection {
     return remember(state) {
         object : NestedScrollConnection {
+            override fun onPreScroll(
+                available: Offset,
+                source: NestedScrollSource
+            ): Offset {
+                if (available.y < 0f) {
+                    state.onScroll(available.y)
+                }
+                return Offset.Zero
+            }
+
             override fun onPostScroll(
                 consumed: Offset,
                 available: Offset,
                 source: NestedScrollSource
             ): Offset {
-                if (consumed.y != 0f) {
-                    state.onScroll(consumed.y)
+                val dy = if (consumed.y > 0f) consumed.y else if (available.y > 0f) available.y else 0f
+                if (dy > 0f) {
+                    state.onScroll(dy)
                 }
                 return Offset.Zero
             }
