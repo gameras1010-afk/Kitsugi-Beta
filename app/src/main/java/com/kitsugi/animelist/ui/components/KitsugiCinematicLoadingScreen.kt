@@ -2,8 +2,10 @@ package com.kitsugi.animelist.ui.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import com.kitsugi.animelist.ui.utils.tvClickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -17,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -48,7 +49,7 @@ fun KitsugiCinematicLoadingScreen(
         initialValue = 0.98f,
         targetValue = 1.02f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2200, easing = FastOutSlowInEasing),
+            animation = tween(durationMillis = 2000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "scale_pulse"
@@ -59,7 +60,7 @@ fun KitsugiCinematicLoadingScreen(
             .fillMaxSize()
             .background(KitsugiColors.Background)
     ) {
-        // 1. Fullscreen blurred background image with premium zoom-pulse animation
+        // 1. Fullscreen blurred background image with subtle pulse
         if (!imageUrl.isNullOrBlank()) {
             AsyncImage(
                 model = imageUrl,
@@ -70,36 +71,36 @@ fun KitsugiCinematicLoadingScreen(
                     .graphicsLayer {
                         scaleX = scalePulse * 1.05f
                         scaleY = scalePulse * 1.05f
-                        alpha = 0.5f
+                        alpha = 0.35f
                     }
-                    .blur(8.dp) // Soft blur for depth and legibility
+                    .blur(16.dp)
             )
         }
 
-        // 2. High-quality dark overlay gradient for depth of field & contrast
+        // 2. High-quality dark overlay gradient
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            Color.Black.copy(alpha = 0.4f),
-                            Color.Black.copy(alpha = 0.7f),
-                            Color.Black.copy(alpha = 0.95f)
+                            Color.Black.copy(alpha = 0.5f),
+                            Color.Black.copy(alpha = 0.8f),
+                            KitsugiColors.Background
                         )
                     )
                 )
         )
 
-        // 3. Top-left back button (Premium capsule look)
+        // 3. Top-left back button
         Row(
             modifier = Modifier
                 .statusBarsPadding()
                 .padding(start = 16.dp, top = 16.dp)
                 .clip(RoundedCornerShape(99.dp))
-                .background(Color.Black.copy(alpha = 0.5f))
+                .background(Color.Black.copy(alpha = 0.6f))
                 .tvClickable(shape = RoundedCornerShape(99.dp)) { onBackClick() }
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -117,7 +118,7 @@ fun KitsugiCinematicLoadingScreen(
             )
         }
 
-        // 4. Center Cinematic Content (Clean, Apple/Netflix TV styled)
+        // 4. Center Content: Poster + Title + Fluid Circular Loader
         Column(
             modifier = Modifier
                 .align(Alignment.Center)
@@ -125,8 +126,7 @@ fun KitsugiCinematicLoadingScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Pulsing thumbnail icon or cover if desired, but clean typography is preferred.
-            // Let's add a small, highly elevated card in the center to anchor the page
+            // Poster thumbnail card
             if (!imageUrl.isNullOrBlank()) {
                 Box(
                     modifier = Modifier
@@ -134,10 +134,11 @@ fun KitsugiCinematicLoadingScreen(
                             scaleX = scalePulse
                             scaleY = scalePulse
                         }
-                        .shadow(32.dp, shape = RoundedCornerShape(24.dp), spotColor = accentColor)
-                        .clip(RoundedCornerShape(24.dp))
+                        .shadow(24.dp, shape = RoundedCornerShape(20.dp), spotColor = accentColor)
+                        .clip(RoundedCornerShape(20.dp))
+                        .border(1.dp, KitsugiColors.Border.copy(alpha = 0.4f), RoundedCornerShape(20.dp))
                         .background(KitsugiColors.Surface)
-                        .size(width = 120.dp, height = 180.dp)
+                        .size(width = 130.dp, height = 190.dp)
                 ) {
                     AsyncImage(
                         model = imageUrl,
@@ -146,10 +147,10 @@ fun KitsugiCinematicLoadingScreen(
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // Page/Content Title or Logo
+            // Title or Logo
             var logoFailed by remember(logoUrl) { mutableStateOf(false) }
             val showLogo = !logoUrl.isNullOrBlank() && !logoFailed
 
@@ -159,8 +160,8 @@ fun KitsugiCinematicLoadingScreen(
                     contentDescription = title,
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
-                        .fillMaxWidth(0.7f)
-                        .height(70.dp),
+                        .fillMaxWidth(0.65f)
+                        .height(65.dp),
                     onError = { logoFailed = true }
                 )
                 Spacer(modifier = Modifier.height(20.dp))
@@ -168,100 +169,45 @@ fun KitsugiCinematicLoadingScreen(
                 Text(
                     text = title,
                     color = KitsugiColors.TextPrimary,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Black,
                     textAlign = TextAlign.Center,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.fillMaxWidth(0.85f)
                 )
-
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
-            // Spinner & Loading Text Group with new neon Torii Gate logo
+            // Sleek CircularProgressIndicator + Text
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(Color.White.copy(alpha = 0.04f))
-                    .padding(horizontal = 32.dp, vertical = 24.dp)
+                verticalArrangement = Arrangement.Center
             ) {
-                // Neon Torii Gate logo from assets
-                AsyncImage(
-                    model = "file:///android_asset/kitsugi_current_logo.png",
-                    contentDescription = "Kitsugi Torii Gate Logo",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .size(80.dp)
-                        .graphicsLayer {
-                            // Subtle pulse scale effect matching the splash
-                            scaleX = scalePulse
-                            scaleY = scalePulse
-                        }
-                        .shadow(
-                            elevation = 16.dp,
-                            shape = RoundedCornerShape(12.dp),
-                            spotColor = Color(0xFFFF2020),
-                            ambientColor = Color(0xFFFF2020)
-                        )
-                )
-
-                Spacer(modifier = Modifier.height(18.dp))
-
-                // Custom neon loading sweep bar instead of circular progress indicator
-                val sweepTransition = rememberInfiniteTransition(label = "sweep_bar")
-                val sweepOffset by sweepTransition.animateFloat(
-                    initialValue = -1f,
-                    targetValue = 1f,
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(durationMillis = 1500, easing = LinearEasing),
-                        repeatMode = RepeatMode.Restart
-                    ),
-                    label = "sweep_offset"
-                )
-
                 Box(
                     modifier = Modifier
-                        .width(140.dp)
-                        .height(3.dp)
-                        .clip(RoundedCornerShape(99.dp))
-                        .background(Color.White.copy(alpha = 0.12f))
+                        .size(52.dp)
+                        .clip(CircleShape)
+                        .background(KitsugiColors.Surface.copy(alpha = 0.6f))
+                        .padding(10.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(0.5f)
-                            .align(
-                                when {
-                                    sweepOffset < -0.3f -> Alignment.CenterStart
-                                    sweepOffset > 0.3f  -> Alignment.CenterEnd
-                                    else               -> Alignment.Center
-                                }
-                            )
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        Color(0xFFFF2020),
-                                        Color(0xFFFF6666),
-                                        Color(0xFFFF2020),
-                                        Color.Transparent
-                                    )
-                                )
-                            )
+                    CircularProgressIndicator(
+                        modifier = Modifier.fillMaxSize(),
+                        color = accentColor,
+                        strokeWidth = 3.dp,
+                        trackColor = KitsugiColors.Border.copy(alpha = 0.3f)
                     )
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
                     text = "Yükleniyor...",
-                    color = KitsugiColors.TextPrimary.copy(alpha = 0.85f),
-                    style = MaterialTheme.typography.bodyMedium,
+                    color = KitsugiColors.TextSecondary,
+                    style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp
+                    letterSpacing = 1.5.sp
                 )
             }
         }
