@@ -1,0 +1,23 @@
+# local.properties.example
+# Bu dosyayı local.properties olarak kopyalayın ve gerçek değerleri girin.
+# local.properties git'e dahil edilmez (.gitignore'da).
+
+# ── ZORUNLU ─────────────────────────────────────────────────────────────────────
+# TMDB API Key — https://www.themoviedb.org/settings/api
+tmdb_api_key=YOUR_TMDB_API_KEY_HERE
+
+# ── OPSİYONEL (geliştirme varsayılanları build.gradle.kts'te tanımlı) ──────────
+
+# AniList OAuth — https://anilist.co/settings/developer
+anilist_client_id=YOUR_ANILIST_CLIENT_ID
+anilist_client_secret=YOUR_ANILIST_CLIENT_SECRET
+
+# MyAnimeList OAuth — https://myanimelist.net/apiconfig
+mal_client_id=YOUR_MAL_CLIENT_ID
+
+# Simkl OAuth — https://simkl.com/settings/developer
+simkl_client_id=YOUR_SIMKL_CLIENT_ID
+simkl_client_secret=YOUR_SIMKL_CLIENT_SECRET
+
+# AnimeSkip — https://animeskip.app
+anime_skip_client_id=YOUR_ANIME_SKIP_CLIENT_ID

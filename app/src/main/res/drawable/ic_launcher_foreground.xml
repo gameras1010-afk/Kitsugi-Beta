@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- === ARKA PLAN: Koyu siyah-indigo (#050510) === -->
+    <path
+        android:fillColor="#050510"
+        android:pathData="M0,0h108v108h-108z"/>
+
+    <!-- === NEON ARKA PLAN IŞIMASI (Subtle Ambient Glow) === -->
+    <path
+        android:fillColor="#FF0000"
+        android:fillAlpha="0.08"
+        android:pathData="M0,0h108v108h-108z"/>
+
+    <path
+        android:fillColor="#FF0000"
+        android:fillAlpha="0.12"
+        android:pathData="M24,24h60v60h-60z"/>
+
+    <!-- === KATMAN 1: DIŞ NEON GLOW (Geniş, Yarı Saydam Kırmızı) === -->
+    <group>
+        <!-- Üst eğri 1 -->
+        <path
+            android:strokeColor="#FF0000"
+            android:strokeWidth="7.0"
+            android:strokeAlpha="0.25"
+            android:strokeLineCap="round"
+            android:fillColor="#00000000"
+            android:pathData="M24,29 Q54,22 86,29"/>
+        <!-- Üst eğri 2 -->
+        <path
+            android:strokeColor="#FF0000"
+            android:strokeWidth="7.0"
+            android:strokeAlpha="0.25"
+            android:strokeLineCap="round"
+            android:fillColor="#00000000"
+            android:pathData="M22,33 Q54,30 86,33"/>
+        <!-- Sol sütun -->
+        <path
+            android:strokeColor="#FF0000"
+            android:strokeWidth="7.0"
+            android:strokeAlpha="0.25"
+            android:strokeLineCap="round"
+            android:fillColor="#00000000"
+            android:pathData="M33.5,32 L33.5,82.5"/>
+        <!-- Sağ sütun -->
+        <path
+            android:strokeColor="#FF0000"
+            android:strokeWidth="7.0"
+            android:strokeAlpha="0.25"
+            android:strokeLineCap="round"
+            android:fillColor="#00000000"
+            android:pathData="M74.5,32 L74.5,82.5"/>
+        <!-- Yatay kiriş -->
+        <path
+            android:strokeColor="#FF0000"
+            android:strokeWidth="7.0"
+            android:strokeAlpha="0.25"
+            android:strokeLineCap="round"
+            android:fillColor="#00000000"
+            android:pathData="M33.5,51 L74.5,51"/>
+    </group>
+
+    <!-- === KATMAN 2: NEON TÜP (Orta Kalınlıkta Canlı Kırmızı) === -->
+    <group>
+        <!-- Üst eğri 1 -->
+        <path
+            android:strokeColor="#FF3333"
+            android:strokeWidth="3.0"
+            android:strokeAlpha="0.9"
+            android:strokeLineCap="round"
+            android:fillColor="#00000000"
+            android:pathData="M24,29 Q54,22 86,29"/>
+        <!-- Üst eğri 2 -->
+        <path
+            android:strokeColor="#FF3333"
+            android:strokeWidth="3.0"
+            android:strokeAlpha="0.9"
+            android:strokeLineCap="round"
+            android:fillColor="#00000000"
+            android:pathData="M22,33 Q54,30 86,33"/>
+        <!-- Sol sütun -->
+        <path
+            android:strokeColor="#FF3333"
+            android:strokeWidth="3.0"
+            android:strokeAlpha="0.9"
+            android:strokeLineCap="round"
+            android:fillColor="#00000000"
+            android:pathData="M33.5,32 L33.5,82.5"/>
+        <!-- Sağ sütun -->
+        <path
+            android:strokeColor="#FF3333"
+            android:strokeWidth="3.0"
+            android:strokeAlpha="0.9"
+            android:strokeLineCap="round"
+            android:fillColor="#00000000"
+            android:pathData="M74.5,32 L74.5,82.5"/>
+        <!-- Yatay kiriş -->
+        <path
+            android:strokeColor="#FF3333"
+            android:strokeWidth="3.0"
+            android:strokeAlpha="0.9"
+            android:strokeLineCap="round"
+            android:fillColor="#00000000"
+            android:pathData="M33.5,51 L74.5,51"/>
+    </group>
+
+    <!-- === KATMAN 3: ELEKTRİK ÇEKİRDEĞİ (İnce Parlak Beyaz/Pembe Tel) === -->
+    <group>
+        <!-- Üst eğri 1 -->
+        <path
+            android:strokeColor="#FFD8D8"
+            android:strokeWidth="0.8"
+            android:strokeAlpha="0.95"
+            android:strokeLineCap="round"
+            android:fillColor="#00000000"
+            android:pathData="M24,29 Q54,22 86,29"/>
+        <!-- Üst eğri 2 -->
+        <path
+            android:strokeColor="#FFD8D8"
+            android:strokeWidth="0.8"
+            android:strokeAlpha="0.95"
+            android:strokeLineCap="round"
+            android:fillColor="#00000000"
+            android:pathData="M22,33 Q54,30 86,33"/>
+        <!-- Sol sütun -->
+        <path
+            android:strokeColor="#FFD8D8"
+            android:strokeWidth="0.8"
+            android:strokeAlpha="0.95"
+            android:strokeLineCap="round"
+            android:fillColor="#00000000"
+            android:pathData="M33.5,32 L33.5,82.5"/>
+        <!-- Sağ sütun -->
+        <path
+            android:strokeColor="#FFD8D8"
+            android:strokeWidth="0.8"
+            android:strokeAlpha="0.95"
+            android:strokeLineCap="round"
+            android:fillColor="#00000000"
+            android:pathData="M74.5,32 L74.5,82.5"/>
+        <!-- Yatay kiriş -->
+        <path
+            android:strokeColor="#FFD8D8"
+            android:strokeWidth="0.8"
+            android:strokeAlpha="0.95"
+            android:strokeLineCap="round"
+            android:fillColor="#00000000"
+            android:pathData="M33.5,51 L74.5,51"/>
+    </group>
+
+</vector>

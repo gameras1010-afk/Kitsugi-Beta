@@ -1,0 +1,51 @@
+default_platform(:android)
+
+platform :android do
+  desc "Build and sign FOSS Debug APK"
+  lane :internal do
+    gradle(
+      task: "assemble",
+      flavor: "foss",
+      build_type: "debug",
+      print_command: false
+    )
+  end
+
+  desc "Build and sign FOSS Release APK"
+  lane :alpha do
+    gradle(
+      task: "assemble",
+      flavor: "foss",
+      build_type: "release",
+      print_command: false,
+      properties: {
+        "android.injected.signing.store.file" => ENV["KEYSTORE_FILE"],
+        "android.injected.signing.store.password" => ENV["KEYSTORE_PASSWORD"],
+        "android.injected.signing.key.alias" => ENV["KEY_ALIAS"],
+        "android.injected.signing.key.password" => ENV["KEY_PASSWORD"],
+      }
+    )
+  end
+
+  desc "Build and sign GMS Release APK"
+  lane :beta do
+    gradle(
+      task: "assemble",
+      flavor: "gms",
+      build_type: "release",
+      print_command: false,
+      properties: {
+        "android.injected.signing.store.file" => ENV["KEYSTORE_FILE"],
+        "android.injected.signing.store.password" => ENV["KEYSTORE_PASSWORD"],
+        "android.injected.signing.key.alias" => ENV["KEY_ALIAS"],
+        "android.injected.signing.key.password" => ENV["KEY_PASSWORD"],
+      }
+    )
+  end
+
+  desc "Build and sign both FOSS and GMS Release APKs"
+  lane :production do
+    alpha
+    beta
+  end
+end

@@ -1,0 +1,1011 @@
+@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+
+package com.kitsugi.animelist.ui.screens.detail
+
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.foundation.background
+import com.kitsugi.animelist.ui.utils.tvClickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.foundation.layout.wrapContentHeight
+import kotlinx.coroutines.launch
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import com.kitsugi.animelist.utils.rememberScrollVisibilityState
+import com.kitsugi.animelist.utils.rememberScrollConnection
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.material3.CircularProgressIndicator
+import coil3.compose.AsyncImage
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.kitsugi.animelist.data.local.TranslationManager
+import com.kitsugi.animelist.data.remote.DetailCache
+import com.kitsugi.animelist.data.remote.JikanApiClient
+import com.kitsugi.animelist.data.remote.JikanSearchResult
+import com.kitsugi.animelist.data.remote.KitsugiCharacter
+import com.kitsugi.animelist.data.remote.KitsugiEpisodeRatingsRepository
+import com.kitsugi.animelist.data.remote.KitsugiMediaDetail
+import com.kitsugi.animelist.data.remote.KitsugiRelation
+import com.kitsugi.animelist.data.remote.KitsugiReview
+import com.kitsugi.animelist.data.remote.KitsugiStaff
+import com.kitsugi.animelist.data.remote.KitsugiStreamingEpisode
+import com.kitsugi.animelist.data.remote.KitsugiStats
+import com.kitsugi.animelist.model.MediaEntry
+import com.kitsugi.animelist.model.MediaType
+import com.kitsugi.animelist.model.WatchStatus
+import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
+import androidx.compose.runtime.CompositionLocalProvider
+import com.kitsugi.animelist.ui.utils.KitsugiScrollDefaults
+import com.kitsugi.animelist.ui.utils.dpadVerticalFastScroll
+import com.kitsugi.animelist.ui.components.KitsugiPageEnter
+import com.kitsugi.animelist.ui.components.KitsugiEpisodeOptionsDialog
+import com.kitsugi.animelist.ui.components.KitsugiCinematicLoadingScreen
+import com.kitsugi.animelist.ui.components.KitsugiImageGalleryDialog
+import com.kitsugi.animelist.ui.components.KitsugiStreamSelectorBottomSheet
+import com.kitsugi.animelist.ui.screens.fullscreen.KitsugiFullscreenPlayerActivity
+import com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity
+import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
+import com.kitsugi.animelist.ui.theme.KitsugiColors
+import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
+import com.kitsugi.animelist.data.local.MangaMappingEntity
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.viewmodel.compose.viewModel
+import android.content.res.Configuration
+import androidx.compose.ui.platform.LocalConfiguration
+import com.kitsugi.animelist.ui.theme.LocalIsTv
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.runtime.remember
+
+@Composable
+fun MediaEntryDetailPage(
+    entry: MediaEntry,
+    onBackClick: () -> Unit,
+    onIncrementProgressClick: () -> Unit,
+    onToggleFavoriteClick: () -> Unit,
+    onSynopsisLoaded: (String) -> Unit,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    onRelationClick: (JikanSearchResult) -> Unit,
+    onCharacterClick: (KitsugiCharacter) -> Unit,
+    onStaffClick: (Int, String, String?, String?) -> Unit,
+    onStudioClick: (Int, String, String?, String?) -> Unit,
+    onSearchQuery: (String) -> Unit = {},
+    titleLanguage: String = "ROMAJI",
+    scoreFormat: String = "POINT_10",
+    hideScores: Boolean = false,
+    showAnimeLogos: Boolean = false,
+    onReadMangaClick: ((MangaMappingEntity?) -> Unit)? = null
+) {
+    val uriHandler = LocalUriHandler.current
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val accentColor = LocalKitsugiAccent.current
+    val isTv = LocalIsTv.current
+    val isTvDevice = com.kitsugi.animelist.ui.theme.LocalIsTvDevice.current
+    val externalUrl = buildExternalUrl(entry)
+    val apiClient = remember { JikanApiClient() }
+
+    // Obtain ViewModel
+    val viewModel: MediaEntryDetailViewModel = viewModel()
+
+    // Load entry in ViewModel
+    LaunchedEffect(entry.id, entry.source, entry.malId, showAnimeLogos) {
+        viewModel.loadEntry(entry, showAnimeLogos)
+    }
+
+    // Collect states from ViewModel
+    val detailState by viewModel.detailState.collectAsState()
+    val detailLoading by viewModel.detailLoading.collectAsState()
+    val mangaMapping by viewModel.mangaMapping.collectAsState()
+    val synopsisState by viewModel.synopsisState.collectAsState()
+    val translatedSynopsis by viewModel.translatedSynopsis.collectAsState()
+    val originalSynopsis by viewModel.originalSynopsis.collectAsState()
+    val logoUrl by viewModel.logoUrl.collectAsState()
+    val episodeRatings by viewModel.episodeRatings.collectAsState()
+    val resolvedTmdbId by viewModel.resolvedTmdbId.collectAsState()
+    val charactersState by viewModel.charactersState.collectAsState()
+    val staffState by viewModel.staffState.collectAsState()
+    val relationsState by viewModel.relationsState.collectAsState()
+    val recommendationsState by viewModel.recommendationsState.collectAsState()
+    val statsState by viewModel.statsState.collectAsState()
+    val reviewsState by viewModel.reviewsState.collectAsState()
+    val episodesState by viewModel.episodesState.collectAsState()
+    val targetSeason by viewModel.targetSeason.collectAsState()
+
+    val allImages = remember(entry.imageUrl, detailState?.pictures) {
+        buildList {
+            if (!entry.imageUrl.isNullOrBlank()) {
+                add(entry.imageUrl)
+            }
+            detailState?.pictures?.let { addAll(it) }
+        }.distinct()
+    }
+    var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
+    var activeGalleryIndex by remember { mutableStateOf(0) }
+    var activeEpisodeForOptions by remember { mutableStateOf<KitsugiStreamingEpisode?>(null) }
+    var showWatchDialog by remember { mutableStateOf(false) }
+    var watchEpisodeInput by remember { mutableStateOf("") }
+    var showWatchStreamSelector by remember { mutableStateOf<Int?>(null) } // episode number
+
+    val listState = rememberLazyListState()
+    val tabListState = rememberLazyListState()
+    val density = LocalDensity.current
+    // TV odak highway — sol panel ↔ sağ panel tab bar
+    val leftPanelFocusRequester = remember { FocusRequester() }
+    val tabBarFocusRequester = remember { FocusRequester() }
+
+    // State for tabs
+    val isAnime = entry.type == MediaType.Anime
+    val hasTvEpisodes = isAnime || entry.type == MediaType.TvShow
+    val tabs = buildList {
+        addAll(listOf("Bilgi", "Karakterler", "Ekip", "Öneriler", "İlişkiler", "Grafikler", "Yorumlar"))
+        if (hasTvEpisodes) add("Bölümler")
+    }
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
+    val selectedTab = pagerState.currentPage
+
+    // Call loadTab when tab changes
+    LaunchedEffect(entry.id, selectedTab, detailState?.realMalId) {
+        viewModel.loadTab(selectedTab, entry, detailState?.realMalId)
+    }
+
+    // Propagate original synopsis back to UI if requested
+    LaunchedEffect(originalSynopsis) {
+        val synopsis = originalSynopsis
+        if (!synopsis.isNullOrBlank()) {
+            onSynopsisLoaded(synopsis)
+        }
+    }
+
+    KitsugiPageEnter {
+        if (detailLoading) {
+            KitsugiCinematicLoadingScreen(
+                title = entry.title,
+                imageUrl = entry.imageUrl,
+                onBackClick = onBackClick,
+                logoUrl = if (showAnimeLogos) logoUrl else null
+            )
+        } else {
+            val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+            if (isLandscape) {
+                // ── LANDSCAPE: Sol panel (Hero + Actions + Stats), Sağ panel (Tablar + İçerik) ──
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Row(modifier = Modifier.fillMaxSize()) {
+                        // Sol Panel
+                        val leftScrollState = rememberScrollState()
+                        val tvSpec = KitsugiScrollDefaults.rememberTvCenteredSpec()
+                        CompositionLocalProvider(
+                            LocalBringIntoViewSpec provides if (isTvDevice) tvSpec else LocalBringIntoViewSpec.current
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .weight(0.38f)
+                                    .fillMaxSize()
+                                    .then(if (isTvDevice) Modifier.dpadVerticalFastScroll(leftScrollState) else Modifier)
+                                    .verticalScroll(leftScrollState)
+                            ) {
+                            DetailHero(
+                                entry = entry,
+                                logoUrl = if (showAnimeLogos) logoUrl else null,
+                                onBackClick = onBackClick,
+                                titleLanguage = titleLanguage,
+                                onPosterClick = { clickedUrl ->
+                                    val index = allImages.indexOf(clickedUrl).coerceAtLeast(0)
+                                    activeGalleryImages = allImages
+                                    activeGalleryIndex = index
+                                }
+                            )
+                            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                Spacer(modifier = Modifier.height(12.dp))
+                                QuickActions(
+                                    entry = entry,
+                                    externalUrl = externalUrl,
+                                    onIncrementProgressClick = onIncrementProgressClick,
+                                    onToggleFavoriteClick = onToggleFavoriteClick,
+                                    onEditClick = onEditClick,
+                                    onDeleteClick = onDeleteClick,
+                                    onOpenExternalClick = {
+                                        if (externalUrl != null) {
+                                            uriHandler.openUri(externalUrl)
+                                        }
+                                    },
+                                    onWatchClick = if (entry.type == com.kitsugi.animelist.model.MediaType.Anime || entry.type == com.kitsugi.animelist.model.MediaType.TvShow || entry.type == com.kitsugi.animelist.model.MediaType.Movie) {
+                                        {
+                                            val streamMalId = if (entry.source.lowercase() == "anilist") {
+                                                detailState?.realMalId ?: entry.malId
+                                            } else {
+                                                entry.id
+                                            }
+                                            val rawAniListId = if (entry.source.lowercase() == "anilist") entry.id else null
+                                            val streamAniListId = rawAniListId?.let {
+                                                if (it >= 100_000_000) it - 100_000_000 else it
+                                            }
+                                            KitsugiStreamActivity.start(
+                                                context = context,
+                                                malId = streamMalId,
+                                                aniListId = streamAniListId,
+                                                tmdbId = entry.tmdbId ?: detailState?.tmdbId ?: resolvedTmdbId,
+                                                episode = 1,
+                                                season = 1,
+                                                isMovie = entry.type == com.kitsugi.animelist.model.MediaType.Movie,
+                                                title = entry.title,
+                                                posterUrl = entry.imageUrl,
+                                                titleEnglish = detailState?.titleEnglish,
+                                                titleRomaji = detailState?.titleRomaji,
+                                                titleNative = detailState?.titleNative,
+                                                startYear = entry.year
+                                            )
+                                        }
+                                    } else null,
+                                    onReadClick = if (entry.type == com.kitsugi.animelist.model.MediaType.Manga) {
+                                        {
+                                            if (onReadMangaClick != null) {
+                                                onReadMangaClick(mangaMapping)
+                                            }
+                                        }
+                                    } else null,
+                                    mangaMapping = mangaMapping,
+                                    onLinkMangaClick = if (entry.type == com.kitsugi.animelist.model.MediaType.Manga) {
+                                        {
+                                            if (onReadMangaClick != null) {
+                                                onReadMangaClick(null)
+                                            }
+                                        }
+                                    } else null,
+                                    onUnlinkMangaClick = {
+                                        viewModel.deleteMangaMapping(entry.id)
+                                    },
+                                    primaryFocusRequester = leftPanelFocusRequester,
+                                    tabBarFocusRequester = tabBarFocusRequester
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                MainStatsGrid(
+                                    entry = entry,
+                                    scoreFormat = scoreFormat,
+                                    hideScores = hideScores
+                                )
+                                Spacer(modifier = Modifier.height(32.dp))
+                            }
+                        }
+                        }
+
+                        // Sağ Panel
+                        Column(
+                            modifier = Modifier
+                                .weight(0.62f)
+                                .fillMaxSize()
+                        ) {
+                            // Tablar
+                            LaunchedEffect(selectedTab) {
+                                tabListState.animateScrollToItem(selectedTab)
+                            }
+                            LazyRow(
+                                state = tabListState,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .focusRequester(tabBarFocusRequester)
+                                    .focusProperties { left = leftPanelFocusRequester }
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                itemsIndexed(tabs) { index, title ->
+                                    val isSelected = selectedTab == index
+                                    val bgColor = if (isSelected) accentColor else KitsugiColors.Surface
+                                    val textColor = if (isSelected) KitsugiColors.Background else KitsugiColors.TextSecondary
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(999.dp))
+                                            .background(bgColor)
+                                            .tvClickable(shape = RoundedCornerShape(999.dp)) {
+                                                coroutineScope.launch {
+                                                    pagerState.animateScrollToPage(index)
+                                                }
+                                            }
+                                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = title,
+                                            color = textColor,
+                                            style = MaterialTheme.typography.labelLarge,
+                                            fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
+                            // Tab İçeriği
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(KitsugiColors.Background)
+                            ) {
+                                HorizontalPager(
+                                    state = pagerState,
+                                    userScrollEnabled = !isTvDevice,
+                                    modifier = Modifier.fillMaxSize().clipToBounds()
+                                ) { page ->
+                                    val pageScrollState = rememberScrollState()
+                                    val pageTvSpec = KitsugiScrollDefaults.rememberTvCenteredSpec()
+                                    CompositionLocalProvider(
+                                        LocalBringIntoViewSpec provides if (isTvDevice) pageTvSpec else LocalBringIntoViewSpec.current
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .then(if (isTvDevice) Modifier.dpadVerticalFastScroll(pageScrollState) else Modifier)
+                                                .verticalScroll(pageScrollState)
+                                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                                        ) {
+                                        when (page) {
+                                            0 -> {
+                                                EntryDetailOverviewTab(
+                                                    entry = entry,
+                                                    detail = detailState,
+                                                    synopsisState = synopsisState,
+                                                    originalSynopsis = originalSynopsis,
+                                                    externalUrl = externalUrl,
+                                                    onSearchQuery = onSearchQuery,
+                                                    onStudioClick = onStudioClick
+                                                )
+                                            }
+                                            1 -> CharactersTabContent(state = charactersState, onCharacterClick = onCharacterClick, onStaffClick = onStaffClick)
+                                            2 -> StaffTabContent(state = staffState, onStaffClick = onStaffClick)
+                                            3 -> RecommendationsTabContent(state = recommendationsState, titleLanguage = titleLanguage, onRecommendationClick = { rel ->
+                                                val typeLabel = when (rel.mediaType) {
+                                                    MediaType.Anime -> "Anime"
+                                                    MediaType.Movie -> "Film"
+                                                    MediaType.TvShow -> "Dizi"
+                                                    MediaType.Manga -> "Manga"
+                                                }
+                                                val result = JikanSearchResult(
+                                                    malId = rel.malId,
+                                                    title = rel.title,
+                                                    subtitle = "${rel.relationType}, $typeLabel",
+                                                    type = rel.mediaType,
+                                                    total = null,
+                                                    score = null,
+                                                    isAdult = false,
+                                                    imageUrl = rel.imageUrl,
+                                                    year = null,
+                                                    realMalId = rel.malId,
+                                                    source = entry.source,
+                                                    titleEnglish = rel.titleEnglish,
+                                                    titleJapanese = rel.titleJapanese
+                                                )
+                                                onRelationClick(result)
+                                            })
+                                            4 -> RelationsTabContent(state = relationsState, titleLanguage = titleLanguage, onRelationClick = { rel ->
+                                                val typeLabel = when (rel.mediaType) {
+                                                    MediaType.Anime -> "Anime"
+                                                    MediaType.Movie -> "Film"
+                                                    MediaType.TvShow -> "Dizi"
+                                                    MediaType.Manga -> "Manga"
+                                                }
+                                                val result = JikanSearchResult(
+                                                    malId = rel.malId,
+                                                    title = rel.title,
+                                                    subtitle = "${rel.relationType}, $typeLabel",
+                                                    type = rel.mediaType,
+                                                    total = null,
+                                                    score = null,
+                                                    isAdult = false,
+                                                    imageUrl = rel.imageUrl,
+                                                    year = null,
+                                                    realMalId = rel.malId,
+                                                    source = entry.source,
+                                                    titleEnglish = rel.titleEnglish,
+                                                    titleJapanese = rel.titleJapanese
+                                                )
+                                                onRelationClick(result)
+                                            })
+                                            5 -> StatsTabContent(state = statsState)
+                                            6 -> ReviewsTabContent(
+                                                state = reviewsState,
+                                                source = entry.source,
+                                                externalId = entry.malId ?: 0,
+                                                mediaType = entry.type,
+                                                apiClient = apiClient,
+                                                titleLanguage = titleLanguage
+                                            )
+                                            7 -> {
+                                                EntryDetailEpisodesTab(
+                                                    entry = entry,
+                                                    detailState = detailState,
+                                                    state = episodesState,
+                                                    episodeRatings = episodeRatings,
+                                                    targetSeason = targetSeason,
+                                                    onSeasonSelected = { newSeason ->
+                                                        viewModel.setTargetSeason(newSeason, entry)
+                                                    },
+                                                    onEpisodeOptionsRequested = { episode ->
+                                                        activeEpisodeForOptions = episode
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                // ── PORTRAIT ──
+                Box(modifier = Modifier.fillMaxSize()) {
+                    val tvSpec = KitsugiScrollDefaults.rememberTvCenteredSpec()
+                    CompositionLocalProvider(
+                        LocalBringIntoViewSpec provides if (isTvDevice) tvSpec else LocalBringIntoViewSpec.current
+                    ) {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(KitsugiColors.Background)
+                                .then(if (isTvDevice) Modifier.dpadVerticalFastScroll(listState) else Modifier)
+                        ) {
+                    // Hero
+                    item(key = "hero") {
+                        DetailHero(
+                            entry = entry,
+                            logoUrl = if (showAnimeLogos) logoUrl else null,
+                            onBackClick = onBackClick,
+                            titleLanguage = titleLanguage,
+                            onPosterClick = { clickedUrl ->
+                                val index = allImages.indexOf(clickedUrl).coerceAtLeast(0)
+                                activeGalleryImages = allImages
+                                activeGalleryIndex = index
+                            }
+                        )
+                    }
+
+                    // Butonlar + İstatistikler
+                    item(key = "info") {
+                        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                            Spacer(modifier = Modifier.height(18.dp))
+
+                            QuickActions(
+                                entry = entry,
+                                externalUrl = externalUrl,
+                                onIncrementProgressClick = onIncrementProgressClick,
+                                onToggleFavoriteClick = onToggleFavoriteClick,
+                                onEditClick = onEditClick,
+                                onDeleteClick = onDeleteClick,
+                                onOpenExternalClick = {
+                                    if (externalUrl != null) {
+                                        uriHandler.openUri(externalUrl)
+                                    }
+                                },
+                                onWatchClick = if (entry.type == com.kitsugi.animelist.model.MediaType.Anime || entry.type == com.kitsugi.animelist.model.MediaType.TvShow || entry.type == com.kitsugi.animelist.model.MediaType.Movie) {
+                                    {
+                                        val streamMalId = if (entry.source.lowercase() == "anilist") {
+                                            detailState?.realMalId ?: entry.malId
+                                        } else {
+                                            entry.id
+                                        }
+                                        val rawAniListId = if (entry.source.lowercase() == "anilist") entry.id else null
+                                        val streamAniListId = rawAniListId?.let {
+                                            if (it >= 100_000_000) it - 100_000_000 else it
+                                        }
+                                        KitsugiStreamActivity.start(
+                                            context = context,
+                                            malId = streamMalId,
+                                            aniListId = streamAniListId,
+                                            tmdbId = entry.tmdbId ?: detailState?.tmdbId ?: resolvedTmdbId,
+                                            episode = 1,
+                                            season = 1,
+                                            isMovie = entry.type == com.kitsugi.animelist.model.MediaType.Movie,
+                                            title = entry.title,
+                                            posterUrl = entry.imageUrl,
+                                            titleEnglish = detailState?.titleEnglish,
+                                            titleRomaji = detailState?.titleRomaji,
+                                            titleNative = detailState?.titleNative,
+                                            startYear = entry.year
+                                        )
+                                    }
+                                } else null,
+                                onReadClick = if (entry.type == com.kitsugi.animelist.model.MediaType.Manga) {
+                                    {
+                                        if (onReadMangaClick != null) {
+                                            onReadMangaClick(mangaMapping)
+                                        }
+                                    }
+                                } else null,
+                                mangaMapping = mangaMapping,
+                                onLinkMangaClick = if (entry.type == com.kitsugi.animelist.model.MediaType.Manga) {
+                                    {
+                                        if (onReadMangaClick != null) {
+                                            onReadMangaClick(null)
+                                        }
+                                    }
+                                } else null,
+                                onUnlinkMangaClick = {
+                                    viewModel.deleteMangaMapping(entry.id)
+                                }
+                            )
+
+                            Spacer(modifier = Modifier.height(18.dp))
+
+                            MainStatsGrid(
+                                entry = entry,
+                                scoreFormat = scoreFormat,
+                                hideScores = hideScores
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+
+                    // Sekme Barı — NATIVE STICKY HEADER
+                    stickyHeader(key = "tabs") {
+                        val accentColor = LocalKitsugiAccent.current
+                        LaunchedEffect(selectedTab) {
+                            // Sekme değiştiğinde eğer aşağı kaydırılmışsa sekmeleri üste sabitleyecek şekilde yukarı kaydır
+                            if (listState.firstVisibleItemIndex > 2) {
+                                listState.scrollToItem(2)
+                            }
+                            val itemInfo = tabListState.layoutInfo.visibleItemsInfo
+                                .firstOrNull { it.index == selectedTab }
+                            if (itemInfo != null) {
+                                val centerOffset = (tabListState.layoutInfo.viewportEndOffset - itemInfo.size) / 2
+                                tabListState.animateScrollToItem(selectedTab, -centerOffset)
+                            } else {
+                                tabListState.animateScrollToItem(selectedTab)
+                            }
+                        }
+
+                        val showFloatingHeader = listState.firstVisibleItemIndex >= 2
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(KitsugiColors.Surface.copy(alpha = 0.97f))
+                        ) {
+                            AnimatedVisibility(
+                                visible = showFloatingHeader,
+                                enter = expandVertically() + fadeIn(),
+                                exit = shrinkVertically() + fadeOut()
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(64.dp)
+                                        .background(KitsugiColors.Surface.copy(alpha = 0.92f))
+                                        .padding(horizontal = 8.dp)
+                                ) {
+                                    IconButton(onClick = onBackClick) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                            contentDescription = "Geri",
+                                            tint = KitsugiColors.TextPrimary
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = entry.title,
+                                        color = KitsugiColors.TextPrimary,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Black,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                            }
+
+                            LazyRow(
+                                state = tabListState,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp, vertical = 10.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                itemsIndexed(tabs) { index, title ->
+                                    val isSelected = selectedTab == index
+                                    val bgColor = if (isSelected) accentColor else KitsugiColors.Background
+                                    val textColor = if (isSelected) KitsugiColors.Background else KitsugiColors.TextSecondary
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(999.dp))
+                                            .background(bgColor)
+                                            .tvClickable(shape = RoundedCornerShape(999.dp)) {
+                                                coroutineScope.launch {
+                                                    pagerState.animateScrollToPage(index)
+                                                }
+                                            }
+                                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = title,
+                                            color = textColor,
+                                            style = MaterialTheme.typography.labelLarge,
+                                            fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(1.dp)
+                                    .background(KitsugiColors.SurfaceSoft)
+                            )
+                        }
+                    }
+
+                    // Sekme İçerikleri
+                    item(key = "content") {
+                        HorizontalPager(
+                            state = pagerState,
+                            userScrollEnabled = !isTv,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .clipToBounds()
+                        ) { page ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 600.dp)
+                            ) {
+                                when (page) {
+                                    0 -> {
+                                        EntryDetailOverviewTab(
+                                            entry = entry,
+                                            detail = detailState,
+                                            synopsisState = synopsisState,
+                                            originalSynopsis = originalSynopsis,
+                                            externalUrl = externalUrl,
+                                            onSearchQuery = onSearchQuery,
+                                            onStudioClick = onStudioClick
+                                        )
+                                    }
+                                    1 -> CharactersTabContent(state = charactersState, onCharacterClick = onCharacterClick, onStaffClick = onStaffClick)
+                                    2 -> StaffTabContent(state = staffState, onStaffClick = onStaffClick)
+                                    3 -> RecommendationsTabContent(state = recommendationsState, titleLanguage = titleLanguage, onRecommendationClick = { rel ->
+                                        val typeLabel = when (rel.mediaType) {
+                                            MediaType.Anime -> "Anime"
+                                            MediaType.Movie -> "Film"
+                                            MediaType.TvShow -> "Dizi"
+                                            MediaType.Manga -> "Manga"
+                                        }
+                                        val result = JikanSearchResult(
+                                            malId = rel.malId,
+                                            title = rel.title,
+                                            subtitle = "${rel.relationType}, $typeLabel",
+                                            type = rel.mediaType,
+                                            total = null,
+                                            score = null,
+                                            isAdult = false,
+                                            imageUrl = rel.imageUrl,
+                                            year = null,
+                                            realMalId = rel.malId,
+                                            source = entry.source,
+                                            titleEnglish = rel.titleEnglish,
+                                            titleJapanese = rel.titleJapanese
+                                        )
+                                        onRelationClick(result)
+                                    })
+                                    4 -> RelationsTabContent(state = relationsState, titleLanguage = titleLanguage, onRelationClick = { rel ->
+                                        val typeLabel = when (rel.mediaType) {
+                                            MediaType.Anime -> "Anime"
+                                            MediaType.Movie -> "Film"
+                                            MediaType.TvShow -> "Dizi"
+                                            MediaType.Manga -> "Manga"
+                                        }
+                                        val result = JikanSearchResult(
+                                            malId = rel.malId,
+                                            title = rel.title,
+                                            subtitle = "${rel.relationType}, $typeLabel",
+                                            type = rel.mediaType,
+                                            total = null,
+                                            score = null,
+                                            isAdult = false,
+                                            imageUrl = rel.imageUrl,
+                                            year = null,
+                                            realMalId = rel.malId,
+                                            source = entry.source,
+                                            titleEnglish = rel.titleEnglish,
+                                            titleJapanese = rel.titleJapanese
+                                        )
+                                        onRelationClick(result)
+                                    })
+                                    5 -> StatsTabContent(state = statsState)
+                                    6 -> ReviewsTabContent(
+                                        state = reviewsState,
+                                        source = entry.source,
+                                        externalId = entry.malId ?: 0,
+                                        mediaType = entry.type,
+                                        apiClient = apiClient,
+                                        titleLanguage = titleLanguage
+                                    )
+                                    7 -> {
+                                        EntryDetailEpisodesTab(
+                                            entry = entry,
+                                            detailState = detailState,
+                                            state = episodesState,
+                                            episodeRatings = episodeRatings,
+                                            targetSeason = targetSeason,
+                                            onSeasonSelected = { newSeason ->
+                                                viewModel.setTargetSeason(newSeason, entry)
+                                            },
+                                            onEpisodeOptionsRequested = { episode ->
+                                                activeEpisodeForOptions = episode
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(90.dp))
+                    }
+                }
+                }
+
+            } // end portrait Box
+        } // end portrait else
+    } // end else (non-loading)
+
+        if (activeGalleryImages.isNotEmpty()) {
+            KitsugiImageGalleryDialog(
+                imageUrls = activeGalleryImages,
+                initialIndex = activeGalleryIndex,
+                title = entry.title,
+                onDismiss = { activeGalleryImages = emptyList() }
+            )
+        }
+
+        activeEpisodeForOptions?.let { ep ->
+            val entryMalId = if (entry.source.lowercase() == "anilist") entry.malId else entry.id
+            val entryAniListId = if (entry.source.lowercase() == "anilist") entry.id else null
+            KitsugiEpisodeOptionsDialog(
+                animeTitle = entry.title,
+                episodeNumber = ep.episodeNumber,
+                episodeTitle = ep.title,
+                originalUrl = ep.url,
+                siteName = ep.site,
+                malId = entryMalId,
+                aniListId = entryAniListId,
+                tmdbId = entry.tmdbId ?: detailState?.tmdbId ?: resolvedTmdbId,
+                posterUrl = entry.imageUrl,
+                titleEnglish = detailState?.titleEnglish,
+                titleRomaji = detailState?.titleRomaji,
+                titleNative = detailState?.titleNative,
+                startYear = entry.year,
+                isMovie = entry.type == com.kitsugi.animelist.model.MediaType.Movie,
+                onDismiss = { activeEpisodeForOptions = null }
+            )
+        }
+
+        // İzle butonu - bölüm numarası dialog
+        if (showWatchDialog) {
+            val accentColor = LocalKitsugiAccent.current
+            AlertDialog(
+                onDismissRequest = { showWatchDialog = false },
+                containerColor = KitsugiColors.Surface,
+                shape = RoundedCornerShape(24.dp),
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.PlayArrow,
+                            contentDescription = null,
+                            tint = accentColor
+                        )
+                        Text(
+                            text = entry.title,
+                            color = KitsugiColors.TextPrimary,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1
+                        )
+                    }
+                },
+                text = {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = "Hangi bölümü izlemek istiyorsunuz?",
+                            color = KitsugiColors.TextSecondary,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        OutlinedTextField(
+                            value = watchEpisodeInput,
+                            onValueChange = { watchEpisodeInput = it.filter { c -> c.isDigit() } },
+                            label = { Text("Bölüm Numarası") },
+                            placeholder = { Text("Örn: 1") },
+                            singleLine = true,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = accentColor,
+                                unfocusedBorderColor = KitsugiColors.Border,
+                                focusedLabelColor = accentColor,
+                                cursorColor = accentColor,
+                                focusedTextColor = KitsugiColors.TextPrimary,
+                                unfocusedTextColor = KitsugiColors.TextPrimary
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                },
+                confirmButton = {
+                    val epNum = watchEpisodeInput.toIntOrNull()
+                    Button(
+                        onClick = {
+                            if (epNum != null && epNum > 0) {
+                                showWatchDialog = false
+                                // For MAL entries: malId = entry.id, aniListId = null
+                                // For AniList entries: malId = detailState.realMalId, aniListId = entry.id - 100_000_000
+                                val streamMalId = if (entry.source.lowercase() == "anilist") {
+                                    detailState?.realMalId ?: entry.malId
+                                } else {
+                                    entry.id
+                                }
+                                val rawAniListId = if (entry.source.lowercase() == "anilist") entry.id else null
+                                val streamAniListId = rawAniListId?.let {
+                                    if (it >= 100_000_000) it - 100_000_000 else it
+                                }
+                                KitsugiStreamActivity.start(
+                                    context = context,
+                                    malId = streamMalId,
+                                    aniListId = streamAniListId,
+                                    tmdbId = entry.tmdbId ?: detailState?.tmdbId ?: resolvedTmdbId,
+                                    episode = epNum,
+                                    season = 1,
+                                    isMovie = entry.type == com.kitsugi.animelist.model.MediaType.Movie,
+                                    title = entry.title,
+                                    posterUrl = entry.imageUrl,
+                                    titleEnglish = detailState?.titleEnglish,
+                                    titleRomaji = detailState?.titleRomaji,
+                                    titleNative = detailState?.titleNative,
+                                    startYear = entry.year
+                                )
+                            }
+                        },
+                        enabled = (epNum ?: 0) > 0,
+                        colors = ButtonDefaults.buttonColors(containerColor = accentColor)
+                    ) {
+                        Text("İzle", color = KitsugiColors.Background, fontWeight = FontWeight.Bold)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showWatchDialog = false }) {
+                        Text("İptal", color = KitsugiColors.TextSecondary)
+                    }
+                }
+            )
+        }
+
+    } // KitsugiPageEnter
+}
+
+internal fun buildExternalUrl(entry: MediaEntry): String? {
+    val id = entry.malId ?: return null
+
+    return when (entry.source.lowercase()) {
+        "jikan", "mal" -> {
+            when (entry.type) {
+                MediaType.Anime -> "https://myanimelist.net/anime/$id"
+                MediaType.Manga -> "https://myanimelist.net/manga/$id"
+                else -> null
+            }
+        }
+
+        "anilist" -> {
+            val aniListId = if (id >= 100_000_000) {
+                id - 100_000_000
+            } else {
+                null
+            }
+
+            if (aniListId != null && aniListId > 0) {
+                when (entry.type) {
+                    MediaType.Anime -> "https://anilist.co/anime/$aniListId"
+                    MediaType.Manga -> "https://anilist.co/manga/$aniListId"
+                    else -> null
+                }
+            } else {
+                when (entry.type) {
+                    MediaType.Anime -> "https://myanimelist.net/anime/$id"
+                    MediaType.Manga -> "https://myanimelist.net/manga/$id"
+                    else -> null
+                }
+            }
+        }
+
+        else -> null
+    }
+}
+
+internal fun progressUnit(entry: MediaEntry): String {
+    return when (entry.type) {
+        MediaType.Anime -> "bölüm"
+        MediaType.Manga -> "chapter"
+        else -> "bölüm"
+    }
+}
+
+internal fun entryProgressText(entry: MediaEntry): String {
+    val totalText = entry.total?.toString() ?: "?"
+    return "${entry.progress}/$totalText ${progressUnit(entry)}"
+}
+
+internal fun scoreText(entry: MediaEntry): String {
+    return if (entry.score == null) {
+        "-"
+    } else {
+        "${entry.score}/10"
+    }
+}
+
+sealed class SynopsisState {
+    data object Loading : SynopsisState()
+    data object Error : SynopsisState()
+    data class Success(val text: String) : SynopsisState()
+}

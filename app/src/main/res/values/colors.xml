@@ -1,0 +1,5 @@
+<resources>
+    <color name="kitsugi_background">#080A10</color>
+    <color name="kitsugi_accent">#C8F4EF</color>
+    <color name="kitsugi_surface">#10131D</color>
+</resources>

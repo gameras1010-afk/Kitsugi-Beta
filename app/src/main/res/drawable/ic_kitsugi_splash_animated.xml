@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+
+    <aapt:attr name="android:drawable">
+        <vector
+            android:width="200dp"
+            android:height="200dp"
+            android:viewportWidth="108"
+            android:viewportHeight="108">
+
+            <!-- Arka plan -->
+            <path
+                android:fillColor="#050510"
+                android:pathData="M0,0h108v108h-108z"/>
+
+            <!-- Ambient background glow -->
+            <path
+                android:fillColor="#FF0000"
+                android:fillAlpha="0.08"
+                android:pathData="M0,0h108v108h-108z"/>
+
+            <!-- Neon glow group (Fade-in later) -->
+            <group android:name="glow_group" android:alpha="0">
+                <!-- Üst eğri 1 glow -->
+                <path
+                    android:strokeColor="#FF0000"
+                    android:strokeWidth="7.0"
+                    android:strokeAlpha="0.25"
+                    android:strokeLineCap="round"
+                    android:fillColor="#00000000"
+                    android:pathData="M24,29 Q54,22 86,29"/>
+                <!-- Üst eğri 2 glow -->
+                <path
+                    android:strokeColor="#FF0000"
+                    android:strokeWidth="7.0"
+                    android:strokeAlpha="0.25"
+                    android:strokeLineCap="round"
+                    android:fillColor="#00000000"
+                    android:pathData="M22,33 Q54,30 86,33"/>
+                <!-- Sol sütun glow -->
+                <path
+                    android:strokeColor="#FF0000"
+                    android:strokeWidth="7.0"
+                    android:strokeAlpha="0.25"
+                    android:strokeLineCap="round"
+                    android:fillColor="#00000000"
+                    android:pathData="M33.5,82.5 L33.5,32"/>
+                <!-- Sağ sütun glow -->
+                <path
+                    android:strokeColor="#FF0000"
+                    android:strokeWidth="7.0"
+                    android:strokeAlpha="0.25"
+                    android:strokeLineCap="round"
+                    android:fillColor="#00000000"
+                    android:pathData="M74.5,82.5 L74.5,32"/>
+                <!-- Yatay kiriş glow -->
+                <path
+                    android:strokeColor="#FF0000"
+                    android:strokeWidth="7.0"
+                    android:strokeAlpha="0.25"
+                    android:strokeLineCap="round"
+                    android:fillColor="#00000000"
+                    android:pathData="M33.5,51 L74.5,51"/>
+            </group>
+
+            <!-- White Core Highlight group (Fade-in later) -->
+            <group android:name="neon_group" android:alpha="0">
+                <!-- Üst eğri 1 core -->
+                <path
+                    android:strokeColor="#FFD8D8"
+                    android:strokeWidth="0.8"
+                    android:strokeAlpha="0.95"
+                    android:strokeLineCap="round"
+                    android:fillColor="#00000000"
+                    android:pathData="M24,29 Q54,22 86,29"/>
+                <!-- Üst eğri 2 core -->
+                <path
+                    android:strokeColor="#FFD8D8"
+                    android:strokeWidth="0.8"
+                    android:strokeAlpha="0.95"
+                    android:strokeLineCap="round"
+                    android:fillColor="#00000000"
+                    android:pathData="M22,33 Q54,30 86,33"/>
+                <!-- Sol sütun core -->
+                <path
+                    android:strokeColor="#FFD8D8"
+                    android:strokeWidth="0.8"
+                    android:strokeAlpha="0.95"
+                    android:strokeLineCap="round"
+                    android:fillColor="#00000000"
+                    android:pathData="M33.5,82.5 L33.5,32"/>
+                <!-- Sağ sütun core -->
+                <path
+                    android:strokeColor="#FFD8D8"
+                    android:strokeWidth="0.8"
+                    android:strokeAlpha="0.95"
+                    android:strokeLineCap="round"
+                    android:fillColor="#00000000"
+                    android:pathData="M74.5,82.5 L74.5,32"/>
+                <!-- Yatay kiriş core -->
+                <path
+                    android:strokeColor="#FFD8D8"
+                    android:strokeWidth="0.8"
+                    android:strokeAlpha="0.95"
+                    android:strokeLineCap="round"
+                    android:fillColor="#00000000"
+                    android:pathData="M33.5,51 L74.5,51"/>
+            </group>
+
+            <!-- Stroke drawing animation layer -->
+            <group android:name="stroke_group">
+                <!-- Sol sütun -->
+                <path
+                    android:name="s_left"
+                    android:strokeColor="#FF3333"
+                    android:strokeWidth="3.0"
+                    android:strokeLineCap="round"
+                    android:fillColor="#00000000"
+                    android:pathData="M33.5,82.5 L33.5,32"
+                    android:trimPathStart="1"
+                    android:trimPathEnd="1"/>
+
+                <!-- Sağ sütun -->
+                <path
+                    android:name="s_right"
+                    android:strokeColor="#FF3333"
+                    android:strokeWidth="3.0"
+                    android:strokeLineCap="round"
+                    android:fillColor="#00000000"
+                    android:pathData="M74.5,82.5 L74.5,32"
+                    android:trimPathStart="1"
+                    android:trimPathEnd="1"/>
+
+                <!-- Yatay kiriş -->
+                <path
+                    android:name="s_nuki"
+                    android:strokeColor="#FF3333"
+                    android:strokeWidth="3.0"
+                    android:strokeLineCap="round"
+                    android:fillColor="#00000000"
+                    android:pathData="M33.5,51 L74.5,51"
+                    android:trimPathStart="0"
+                    android:trimPathEnd="0"/>
+
+                <!-- Üst eğri 2 -->
+                <path
+                    android:name="s_kasagi_bottom"
+                    android:strokeColor="#FF3333"
+                    android:strokeWidth="3.0"
+                    android:strokeLineCap="round"
+                    android:fillColor="#00000000"
+                    android:pathData="M22,33 Q54,30 86,33"
+                    android:trimPathStart="0"
+                    android:trimPathEnd="0"/>
+
+                <!-- Üst eğri 1 -->
+                <path
+                    android:name="s_kasagi_top"
+                    android:strokeColor="#FF3333"
+                    android:strokeWidth="3.0"
+                    android:strokeLineCap="round"
+                    android:fillColor="#00000000"
+                    android:pathData="M24,29 Q54,22 86,29"
+                    android:trimPathStart="0"
+                    android:trimPathEnd="0"/>
+            </group>
+
+        </vector>
+    </aapt:attr>
+
+    <!-- Animators -->
+    <!-- 1. Left pillar draws upwards -->
+    <target android:name="s_left">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator android:propertyName="trimPathStart"
+                    android:valueFrom="1" android:valueTo="0"
+                    android:duration="600" android:startOffset="200"
+                    android:interpolator="@android:interpolator/decelerate_cubic"/>
+                <objectAnimator android:propertyName="trimPathEnd"
+                    android:valueFrom="1" android:valueTo="1"
+                    android:duration="600" android:startOffset="200"/>
+            </set>
+        </aapt:attr>
+    </target>
+
+    <!-- 2. Right pillar draws upwards -->
+    <target android:name="s_right">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator android:propertyName="trimPathStart"
+                    android:valueFrom="1" android:valueTo="0"
+                    android:duration="600" android:startOffset="380"
+                    android:interpolator="@android:interpolator/decelerate_cubic"/>
+                <objectAnimator android:propertyName="trimPathEnd"
+                    android:valueFrom="1" android:valueTo="1"
+                    android:duration="600" android:startOffset="380"/>
+            </set>
+        </aapt:attr>
+    </target>
+
+    <!-- 3. Crossbar draws left to right -->
+    <target android:name="s_nuki">
+        <aapt:attr name="android:animation">
+            <objectAnimator android:propertyName="trimPathEnd"
+                android:valueFrom="0" android:valueTo="1"
+                android:duration="450" android:startOffset="750"
+                android:interpolator="@android:interpolator/accelerate_decelerate"/>
+        </aapt:attr>
+    </target>
+
+    <!-- 4. Lower curve draws left to right -->
+    <target android:name="s_kasagi_bottom">
+        <aapt:attr name="android:animation">
+            <objectAnimator android:propertyName="trimPathEnd"
+                android:valueFrom="0" android:valueTo="1"
+                android:duration="550" android:startOffset="1000"
+                android:interpolator="@android:interpolator/accelerate_decelerate"/>
+        </aapt:attr>
+    </target>
+
+    <!-- 5. Upper curve draws left to right -->
+    <target android:name="s_kasagi_top">
+        <aapt:attr name="android:animation">
+            <objectAnimator android:propertyName="trimPathEnd"
+                android:valueFrom="0" android:valueTo="1"
+                android:duration="450" android:startOffset="1200"
+                android:interpolator="@android:interpolator/decelerate_cubic"/>
+        </aapt:attr>
+    </target>
+
+    <!-- 6. White core highlight fade-in -->
+    <target android:name="neon_group">
+        <aapt:attr name="android:animation">
+            <objectAnimator android:propertyName="alpha"
+                android:valueFrom="0" android:valueTo="1"
+                android:duration="600" android:startOffset="1400"
+                android:interpolator="@android:interpolator/decelerate_cubic"/>
+        </aapt:attr>
+    </target>
+
+    <!-- 7. Outer neon glow fade-in -->
+    <target android:name="glow_group">
+        <aapt:attr name="android:animation">
+            <objectAnimator android:propertyName="alpha"
+                android:valueFrom="0" android:valueTo="1"
+                android:duration="700" android:startOffset="1500"
+                android:interpolator="@android:interpolator/decelerate_cubic"/>
+        </aapt:attr>
+    </target>
+
+</animated-vector>

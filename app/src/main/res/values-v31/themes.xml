@@ -1,0 +1,39 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Theme.KitsugiAnimeList" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <!-- Pencere Ayarları -->
+        <item name="android:windowBackground">#080A10</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">#080A10</item>
+        <item name="android:statusBarColor">#080A10</item>
+        <item name="android:windowLightNavigationBar">false</item>
+
+        <!-- AppCompat / Diyalog Renkleri (Kitsugi Renk Paleti) -->
+        <item name="colorPrimary">#C8F4EF</item> <!-- Kitsugi Accent Teal -->
+        <item name="colorPrimaryDark">#080A10</item>
+        <item name="colorAccent">#C8F4EF</item>
+        <item name="android:textColorPrimary">#F4F7FB</item>
+        <item name="android:textColorSecondary">#A9B0C2</item>
+
+        <!-- Diyalog Panelleri ve Butonlar için Uyumlu Tema Özelleştirmeleri -->
+        <item name="alertDialogTheme">@style/Theme.KitsugiAnimeList.Dialog</item>
+        <item name="dialogTheme">@style/Theme.KitsugiAnimeList.Dialog</item>
+    </style>
+
+    <style name="Theme.KitsugiAnimeList.Splash" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <!-- Açılışta SADECE koyu arka plan — statik ikon YOK -->
+        <item name="android:windowBackground">#050510</item>
+        <item name="android:windowSplashScreenBackground">#050510</item>
+        <!-- Sistem splash ikonunu tamamen gizle — WebView animasyonu başlar -->
+        <item name="android:windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">#050510</item>
+
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">#050510</item>
+        <item name="android:statusBarColor">#050510</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+</resources>

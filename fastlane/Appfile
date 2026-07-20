@@ -1,0 +1,2 @@
+package_name("com.kitsugi.animelist")
+json_key_file("")

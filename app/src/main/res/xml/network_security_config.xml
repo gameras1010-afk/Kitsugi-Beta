@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    R2 Performance Patch: Cleartext ve Cloudflare TR domain konfigürasyonu.
+    TR manga siteleri genellikle HTTP ve karma içerik kullanıyor.
+-->
+<network-security-config>
+    <!-- Tüm trafik için varsayılan olarak cleartext (HTTP) yasaklanır, yalnızca güvenli HTTPS trafiğine izin verilir -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- Cloudflare sorunlu TR manga domainleri için özel konfigürasyon -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">mangatx.com</domain>
+        <domain includeSubdomains="true">mangatr.com</domain>
+        <domain includeSubdomains="true">mangagezgini.com</domain>
+        <domain includeSubdomains="true">turkmanga.net</domain>
+        <domain includeSubdomains="true">serimanga.com</domain>
+        <domain includeSubdomains="true">mangajet.com</domain>
+        <domain includeSubdomains="true">okumangas.com</domain>
+        <domain includeSubdomains="true">mangaoku.net</domain>
+        <domain includeSubdomains="true">webtoontr.com</domain>
+        <domain includeSubdomains="true">hentaifc.com</domain>
+        <!-- Kotatsu ve Mihon kaynak API'leri -->
+        <domain includeSubdomains="true">api.mangadex.org</domain>
+        <domain includeSubdomains="true">uploads.mangadex.org</domain>
+        <domain includeSubdomains="true">cdn.mangadex.org</domain>
+    </domain-config>
+</network-security-config>

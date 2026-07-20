@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Kitsugi Splash</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    background: #050510;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  .scene {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── Arka plan ışık halkası ── */
+  .bg-glow {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(200,10,10,0.12) 0%, transparent 70%);
+    opacity: 0;
+    animation: bgGlowIn 3s ease 0.3s forwards;
+  }
+  @keyframes bgGlowIn {
+    0%   { opacity: 0; transform: scale(0.3); }
+    60%  { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 0.7; transform: scale(1); }
+  }
+
+  /* ── Parçacık zerreler ── */
+  .particles {
+    position: absolute;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background: #FF2828;
+    opacity: 0;
+    animation: particleFly var(--dur) ease var(--delay) forwards;
+  }
+  @keyframes particleFly {
+    0%   { opacity: 0; transform: translate(0,0) scale(0); }
+    20%  { opacity: 0.8; }
+    100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(var(--s)); }
+  }
+
+  /* ── SVG Torii konteyner ── */
+  .torii-wrap {
+    position: relative;
+    z-index: 10;
+    opacity: 0;
+    transform: scale(0.6) translateY(40px);
+    animation: toriiAppear 1.2s cubic-bezier(0.16,1,0.3,1) 0.8s forwards;
+  }
+  @keyframes toriiAppear {
+    0%   { opacity: 0; transform: scale(0.6) translateY(40px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .torii-svg {
+    filter: drop-shadow(0 0 30px rgba(255,30,30,0.7))
+            drop-shadow(0 0 60px rgba(255,0,0,0.3))
+            drop-shadow(0 0 2px rgba(255,100,100,0.9));
+  }
+
+  /* Stroke çizim animasyonu */
+  .gate-stroke {
+    stroke-dasharray: 1200;
+    stroke-dashoffset: 1200;
+    animation: drawGate 1.4s ease 1.0s forwards;
+  }
+  @keyframes drawGate {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* Dolgu fade-in */
+  .gate-fill {
+    opacity: 0;
+    animation: fillIn 0.8s ease 2.0s forwards;
+  }
+  @keyframes fillIn {
+    to { opacity: 1; }
+  }
+
+  /* Glow pulse sonsuz */
+  .gate-glow {
+    opacity: 0;
+    animation: glowPulse 2s ease 2.2s infinite;
+  }
+  @keyframes glowPulse {
+    0%,100% { opacity: 0.15; }
+    50%     { opacity: 0.45; }
+  }
+
+  /* ── Isık halkası dışa yayılım ── */
+  .shockwave {
+    position: absolute;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,40,40,0.8);
+    opacity: 0;
+    animation: shockwave1 0.8s ease 2.1s forwards,
+               shockwave2 0.8s ease 2.6s forwards,
+               shockwave3 0.8s ease 3.1s forwards;
+  }
+  @keyframes shockwave1 {
+    0%   { opacity: 0.9; transform: scale(0.5); }
+    100% { opacity: 0;   transform: scale(2.5); }
+  }
+  @keyframes shockwave2 {
+    0%   { opacity: 0.6; transform: scale(0.5); }
+    100% { opacity: 0;   transform: scale(2.0); }
+  }
+  @keyframes shockwave3 {
+    0%   { opacity: 0.3; transform: scale(0.5); }
+    100% { opacity: 0;   transform: scale(1.8); }
+  }
+
+  /* ── KITSUGI yazısı ── */
+  .brand-text {
+    position: relative;
+    z-index: 10;
+    margin-top: 32px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: textAppear 1s cubic-bezier(0.16,1,0.3,1) 2.4s forwards;
+  }
+  @keyframes textAppear {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .brand-name {
+    font-size: 42px;
+    font-weight: 700;
+    letter-spacing: 12px;
+    background: linear-gradient(135deg, #FF4444 0%, #FF8080 40%, #FFFFFF 60%, #FF6060 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    filter: drop-shadow(0 0 20px rgba(255,40,40,0.5));
+  }
+
+  .brand-sub {
+    margin-top: 6px;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 7px;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+    opacity: 0;
+    animation: subAppear 0.8s ease 3.0s forwards;
+  }
+  @keyframes subAppear {
+    to { opacity: 1; }
+  }
+
+  /* ── Altta loading çizgisi ── */
+  .loader-line {
+    position: relative;
+    width: 120px;
+    height: 2px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+    opacity: 0;
+    margin-top: 40px;
+    animation: loaderShow 0.3s ease 2.8s forwards;
+  }
+  .loader-line::after {
+    content: '';
+    position: absolute;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, #FF3333, transparent);
+    animation: loaderSweep 1.2s ease-in-out 3.0s infinite;
+  }
+  @keyframes loaderShow { to { opacity: 1; } }
+  @keyframes loaderSweep {
+    0%   { left: -60%; }
+    100% { left: 140%; }
+  }
+
+  /* ── Son fade-out (Android'e geçiş için JS kullanıyor) ── */
+  .scene.fade-out {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  /* ── Yatay Mod (Landscape) Optimizasyonları (Telefonlar için) ── */
+  @media (orientation: landscape) and (max-height: 500px) {
+    .torii-svg {
+      width: 120px !important;
+      height: 120px !important;
+    }
+    .brand-name {
+      font-size: 28px !important;
+      letter-spacing: 8px !important;
+    }
+    .brand-text {
+      margin-top: 12px !important;
+    }
+    .loader-line {
+      margin-top: 15px !important;
+    }
+  }
+
+</style>
+</head>
+<body>
+<div class="scene" id="scene">
+
+  <!-- Arka plan ışık halkası -->
+  <div class="bg-glow"></div>
+
+  <!-- Parçacıklar (JS ile oluşturuluyor) -->
+  <div class="particles" id="particles"></div>
+
+  <!-- Şok dalgası halkaları -->
+  <div class="shockwave"></div>
+
+  <!-- Torii SVG -->
+  <div class="torii-wrap">
+    <svg class="torii-svg" width="200" height="200" viewBox="0 0 108 108" xmlns="http://www.w3.org/2000/svg">
+
+      <!-- Dolgu katmanı (önce gizli, sonra belirir) -->
+      <g class="gate-fill">
+        <!-- Sol sütun -->
+        <rect x="26" y="36" width="8" height="52" fill="#CC1A1A"/>
+        <!-- Sağ sütun -->
+        <rect x="74" y="36" width="8" height="52" fill="#CC1A1A"/>
+        <!-- Üst kiriş -->
+        <path d="M16,22 Q54,16 92,22 L92,32 Q54,26 16,32 Z" fill="#E02020"/>
+        <!-- Alt kiriş -->
+        <rect x="26" y="44" width="56" height="7" fill="#CC1A1A"/>
+        <!-- Sütun üstü nişler -->
+        <rect x="23" y="32" width="8"  height="14" fill="#D01818"/>
+        <rect x="77" y="32" width="8"  height="14" fill="#D01818"/>
+      </g>
+
+      <!-- Glow katmanı -->
+      <g class="gate-glow">
+        <rect x="20" y="32" width="20" height="60" rx="2" fill="#FF2020" opacity="0.3"/>
+        <rect x="68" y="32" width="20" height="60" rx="2" fill="#FF2020" opacity="0.3"/>
+        <path d="M10,18 Q54,10 98,18 L98,36 Q54,28 10,36 Z" fill="#FF1010" opacity="0.25"/>
+      </g>
+
+      <!-- Çizim stroke katmanı -->
+      <g fill="none" stroke="#FF3333" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Sol sütun -->
+        <line class="gate-stroke" x1="30" y1="88" x2="30" y2="36"/>
+        <!-- Sağ sütun -->
+        <line class="gate-stroke" x1="78" y1="88" x2="78" y2="36" style="animation-delay:1.05s"/>
+        <!-- Alt kiriş -->
+        <line class="gate-stroke" x1="30" y1="51" x2="78" y2="51" style="animation-delay:1.2s"/>
+        <!-- Üst kiriş -->
+        <path class="gate-stroke" d="M16,27 Q54,20 92,27" style="animation-delay:1.35s"/>
+        <!-- Üst kiriş üstü eğri -->
+        <path class="gate-stroke" d="M16,22 Q54,15 92,22" style="animation-delay:1.5s; stroke:#FF6B6B; stroke-width:1.5"/>
+      </g>
+
+      <!-- Merkez parlak nokta -->
+      <circle cx="54" cy="51" r="3" fill="#FF5555" opacity="0">
+        <animate attributeName="opacity" values="0;1;0.5" dur="1s" begin="2.2s" fill="freeze"/>
+        <animate attributeName="r"       values="3;6;4"   dur="1s" begin="2.2s" fill="freeze"/>
+      </circle>
+
+    </svg>
+  </div>
+
+  <!-- Marka yazısı -->
+  <div class="brand-text">
+    <div class="brand-name">KITSUGI</div>
+    <div class="brand-sub">Anime List</div>
+  </div>
+
+  <!-- Loading çizgisi -->
+  <div class="loader-line"></div>
+
+</div>
+
+<script>
+// Parçacık sistemi
+const container = document.getElementById('particles');
+const count = 30;
+for (let i = 0; i < count; i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  const size = Math.random() * 4 + 1;
+  const angle = Math.random() * Math.PI * 2;
+  const dist = 80 + Math.random() * 180;
+  p.style.cssText = `
+    width:${size}px; height:${size}px;
+    left: calc(50% + ${Math.cos(angle)*20}px);
+    top:  calc(45% + ${Math.sin(angle)*20}px);
+    --tx: ${Math.cos(angle)*dist}px;
+    --ty: ${Math.sin(angle)*dist}px;
+    --s:  ${Math.random()*1.5+0.3};
+    --dur: ${(Math.random()*1.5+1.5).toFixed(2)}s;
+    --delay: ${(Math.random()*1.5+1.8).toFixed(2)}s;
+    opacity: 0;
+  `;
+  container.appendChild(p);
+}
+
+// Animasyon bitince Android'e sinyal gönder
+setTimeout(function() {
+  document.getElementById('scene').classList.add('fade-out');
+  // Android interface'e sinyal
+  setTimeout(function() {
+    try {
+      // Android WebView'dan MainActivity'ye geçiş için
+      if (window.KitsugiSplash) {
+        window.KitsugiSplash.onAnimationComplete();
+      }
+    } catch(e) {}
+  }, 500);
+}, 5000);
+</script>
+</body>
+</html>

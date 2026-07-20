@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NuvioTV Companion - Uzaktan Yönetim</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --surface-color: rgba(255, 255, 255, 0.03);
+            --surface-strong: rgba(255, 255, 255, 0.07);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --accent-color: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.35);
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.05) 0%, transparent 40%);
+        }
+
+        /* Container & Glassmorphism */
+        .container {
+            width: 100%;
+            max-width: 680px;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        .logo-section h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-section p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface-strong);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--text-secondary);
+            box-shadow: 0 0 10px var(--text-secondary);
+        }
+
+        .status-dot.online {
+            background-color: var(--success-color);
+            box-shadow: 0 0 12px var(--success-color);
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.offline {
+            background-color: var(--error-color);
+            box-shadow: 0 0 12px var(--error-color);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            50% { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.5; }
+        }
+
+        /* Section Layout */
+        .section-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            margin-bottom: 24px;
+            transition: var(--transition);
+        }
+
+        .section-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: var(--surface-strong);
+        }
+
+        .section-card h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-card p.description {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        /* Input Controls */
+        .input-group {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .input-group input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border-color);
+            padding: 14px 16px;
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 14px;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        /* Quick Templates */
+        .quick-presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .preset-chip {
+            background: var(--surface-strong);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .preset-chip:hover {
+            color: var(--text-primary);
+            border-color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--accent-glow);
+            filter: brightness(1.1);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #475569;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Toast Notification */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .toast {
+            background: rgba(15, 23, 42, 0.95);
+            border-left: 4px solid var(--accent-color);
+            border-radius: 8px;
+            padding: 16px 24px;
+            color: var(--text-primary);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            min-width: 300px;
+            max-width: 450px;
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            backdrop-filter: blur(10px);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .toast.success { border-left-color: var(--success-color); }
+        .toast.error { border-left-color: var(--error-color); }
+        .toast.warning { border-left-color: var(--warning-color); }
+
+        .toast-close {
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* Unauthenticated view overlay */
+        .auth-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(11, 15, 25, 0.85);
+            backdrop-filter: blur(16px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 30px;
+            border-radius: var(--radius-lg);
+            z-index: 10;
+        }
+
+        .auth-overlay.hidden {
+            display: none;
+        }
+
+        .auth-overlay h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+
+        .auth-overlay p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 24px;
+            max-width: 320px;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid var(--accent-color);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Installed Items List */
+        .list-section { margin-top: 28px; }
+        .list-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        .item-list { display: flex; flex-direction: column; gap: 8px; }
+        .item-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            transition: var(--transition);
+            gap: 12px;
+        }
+        .item-card:hover { border-color: rgba(255,255,255,0.15); }
+        .item-info { flex: 1; min-width: 0; }
+        .item-name {
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .item-url {
+            font-size: 11px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 2px;
+        }
+        .item-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .toggle-switch {
+            position: relative;
+            width: 38px;
+            height: 22px;
+            cursor: pointer;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 22px;
+            transition: 0.3s;
+        }
+        .toggle-slider:before {
+            content: '';
+            position: absolute;
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        .toggle-switch input:checked + .toggle-slider { background: var(--success-color); }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(16px); }
+        .btn-icon {
+            background: rgba(239,68,68,0.15);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: var(--error-color);
+            border-radius: 8px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+        .btn-icon:hover { background: rgba(239,68,68,0.3); }
+        .empty-state {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 13px;
+            padding: 20px;
+        }
+        .refresh-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-left: 8px;
+        }
+        .refresh-btn:hover { color: var(--text-primary); border-color: var(--text-primary); }
+    </style>
+</head>
+<body>
+    <div class="container" style="position: relative;">
+        <!-- Auth Overlay for connection setup -->
+        <div id="authOverlay" class="auth-overlay">
+            <div class="spinner" style="width: 48px; height: 48px; margin-bottom: 20px;"></div>
+            <h3>Bağlantı Kuruluyor...</h3>
+            <p>Lütfen bekleyin, NuvioTV companion oturumu doğrulanıyor.</p>
+        </div>
+
+        <header>
+            <div class="logo-section">
+                <h1>NuvioTV</h1>
+                <p>Companion Web Controller</p>
+            </div>
+            <div class="status-badge">
+                <div id="statusDot" class="status-dot"></div>
+                <span id="statusText">Bağlantı Yok</span>
+            </div>
+        </header>
+
+        <!-- Stremio Addon Section -->
+        <div class="section-card">
+            <h2>🔌 Stremio Eklentisi Ekle</h2>
+            <p class="description">Eklenti manifest URL'sini girerek TV'nize kurun.</p>
+            
+            <div class="input-group">
+                <input type="text" id="addonUrl" placeholder="https://..." value="">
+            </div>
+
+            <div class="quick-presets">
+                <div class="preset-chip" onclick="setAddon('https://torrentio.strem.fun/manifest.json')">Torrentio</div>
+                <div class="preset-chip" onclick="setAddon('https://animekitsu.strem.fun/manifest.json')">AnimeKitsu</div>
+                <div class="preset-chip" onclick="setAddon('https://opensubtitles-v3.strem.fun/manifest.json')">OpenSubtitles v3</div>
+            </div>
+
+            <button class="btn" id="btnAddon" onclick="sendAddon()">
+                <span>Eklentiyi Kur</span>
+            </button>
+
+            <!-- Yüklü Eklentiler -->
+            <div class="list-section">
+                <h3>
+                    Yüklü Eklentiler
+                    <button class="refresh-btn" onclick="loadAddons()">↺ Yenile</button>
+                </h3>
+                <div class="item-list" id="addonList">
+                    <div class="empty-state">Yükleniyor...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cloudstream / Manga Repo Section -->
+        <div class="section-card">
+            <h2>📦 Kaynak Deposu (Repo) Ekle</h2>
+            <p class="description">Cloudstream veya Manga eklenti kütüphane depolarını TV'nize ekleyin.</p>
+            
+            <div class="input-group">
+                <input type="text" id="repoUrl" placeholder="https://..." value="">
+            </div>
+
+            <div class="quick-presets">
+                <div class="preset-chip" onclick="setRepo('https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.min.json')">Keiyoushi Repo</div>
+                <div class="preset-chip" onclick="setRepo('https://raw.githubusercontent.com/hexated/hexated-providers/master/repo.json')">Hexated Repo</div>
+            </div>
+
+            <button class="btn" id="btnRepo" onclick="sendRepo()" style="background: var(--warning-color); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35);">
+                <span>Depoyu Ekle</span>
+            </button>
+
+            <!-- Yüklü Depolar -->
+            <div class="list-section">
+                <h3>
+                    Yüklü Depolar
+                    <button class="refresh-btn" onclick="loadRepos()">↺ Yenile</button>
+                </h3>
+                <div class="item-list" id="repoList">
+                    <div class="empty-state">Yükleniyor...</div>
+                </div>
+            </div>
+
+            <!-- Yüklü Cloudstream Eklentileri -->
+            <div class="list-section" style="margin-top: 24px;">
+                <h3>
+                    Yüklü Cloudstream Eklentileri
+                    <button class="refresh-btn" onclick="loadCsPlugins()">↺ Yenile</button>
+                </h3>
+                <div class="item-list" id="csPluginList">
+                    <div class="empty-state">Yükleniyor...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manga Management Section -->
+        <div class="section-card" style="border-color: rgba(168, 85, 247, 0.25);">
+            <h2 style="color: #c084fc;">📖 Manga Yönetimi</h2>
+            <p class="description">Manga kaynaklarını ve depolarını telefonunuzdan yönetin.</p>
+
+            <div class="input-group">
+                <input type="text" id="mangaRepoUrl" placeholder="https://... (Mihon/Keiyoushi index.json)" value="">
+            </div>
+
+            <div class="quick-presets">
+                <div class="preset-chip" style="border-color: rgba(168, 85, 247, 0.3);" onclick="setMangaRepo('https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.min.json')">Keiyoushi Manga Repo</div>
+            </div>
+
+            <button class="btn" id="btnMangaRepo" onclick="sendMangaRepo()" style="background: #a855f7; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.35);">
+                <span>Manga Deposu Ekle</span>
+            </button>
+
+            <!-- Yüklü Manga Depoları -->
+            <div class="list-section">
+                <h3>
+                    Yüklü Manga Depoları
+                    <button class="refresh-btn" onclick="loadMangaRepos()">↺ Yenile</button>
+                </h3>
+                <div class="item-list" id="mangaRepoList">
+                    <div class="empty-state">Yükleniyor...</div>
+                </div>
+            </div>
+
+            <!-- Yüklü Manga Eklentileri -->
+            <div class="list-section" style="margin-top: 24px;">
+                <h3>
+                    Yüklü Manga Eklentileri
+                    <button class="refresh-btn" onclick="loadMangaSources()">↺ Yenile</button>
+                </h3>
+                <div class="item-list" id="mangaSourceList">
+                    <div class="empty-state">Yükleniyor...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- D4: API Anahtarları Yönetimi -->
+        <div class="section-card" style="border-color: rgba(16, 185, 129, 0.25);">
+            <h2 style="color: #34d399;">🔑 API Anahtarları</h2>
+            <p class="description">Harici servis API anahtarlarını TV'nize güvenli şekilde girin. Anahtarlar hiçbir zaman ekrana gösterilmez.</p>
+
+            <div id="apiKeyStatus" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                <div class="empty-state">Yükleniyor...</div>
+            </div>
+
+            <div class="input-group">
+                <select id="apiKeyField" style="width:100%; background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); padding: 14px 16px; border-radius: var(--radius-md); color: var(--text-primary); font-family: inherit; font-size: 14px; outline: none;">
+                    <option value="tmdb">TMDB API Anahtarı</option>
+                    <option value="mdblist">MDBList API Anahtarı</option>
+                    <option value="aniskip">AnimeSkip Client ID</option>
+                    <option value="debrid">Debrid Token (RD/AD/PM)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <input type="password" id="apiKeyValue" placeholder="Yeni değeri girin (silmek için boş bırakın)" autocomplete="off">
+            </div>
+            <button class="btn" id="btnApiKey" onclick="saveApiKey()" style="background: #10b981; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);">
+                <span>Anahtarı Kaydet</span>
+            </button>
+        </div>
+
+        <!-- D6: Oynatıcı Ayarları -->
+        <div class="section-card" style="border-color: rgba(251, 146, 60, 0.25);">
+            <h2 style="color: #fb923c;">🎬 Oynatıcı Ayarları</h2>
+            <p class="description">Temel oynatma, altyazı ve arabellek ayarlarını uzaktan yapılandırın.</p>
+
+            <div id="playerSettingsStatus" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                <div class="empty-state">Yükleniyor...</div>
+            </div>
+
+            <div class="input-group">
+                <select id="playerSettingField" style="width:100%; background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); padding: 14px 16px; border-radius: var(--radius-md); color: var(--text-primary); font-family: inherit; font-size: 14px; outline: none;">
+                    <option value="autoplay">Otomatik Oynatma (true/false)</option>
+                    <option value="skipIntroDurSec">Intro Atlama Süresi (saniye)</option>
+                    <option value="subtitleSize">Altyazı Boyutu (sp)</option>
+                    <option value="subtitleBold">Altyazı Kalın (true/false)</option>
+                    <option value="audioBoostDb">Ses Artışı (dB, örn: 0.5)</option>
+                    <option value="audioDelayMs">Ses Gecikmesi (ms)</option>
+                    <option value="minBufferMs">Min Buffer (ms, örn: 15000)</option>
+                    <option value="maxBufferMs">Max Buffer (ms, örn: 45000)</option>
+                    <option value="playbackBufferMs">Oynatma Buffer (ms, örn: 5000)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <input type="text" id="playerSettingValue" placeholder="Yeni değeri girin">
+            </div>
+            <button class="btn" id="btnPlayerSetting" onclick="savePlayerSetting()" style="background: #f97316; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.35);">
+                <span>Ayarı Uygula</span>
+            </button>
+        </div>
+
+        <!-- D5: Yedekle ve Geri Yükle -->
+        <div class="section-card" style="border-color: rgba(59, 130, 246, 0.25);">
+            <h2 style="color: #60a5fa;">💾 Yedekleme & Geri Yükleme</h2>
+            <p class="description">TV veritabanını dışa aktarın veya bilgisayarınızdaki bir yedek dosyasını TV'nize geri yükleyin.</p>
+
+            <div style="display: flex; gap: 12px; margin-top: 16px;">
+                <button class="btn" onclick="exportBackup()" style="flex: 1; background: #2563eb; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.35);">
+                    <span>Yedek İndir</span>
+                </button>
+                <button class="btn" onclick="triggerImport()" style="flex: 1; background: #059669; box-shadow: 0 4px 15px rgba(5, 150, 105, 0.35);">
+                    <span>Yedek Yükle</span>
+                </button>
+            </div>
+            <input type="file" id="backupFileSelector" style="display: none;" accept=".json" onchange="importBackup(event)">
+        </div>
+
+        <!-- Session Disconnect -->
+        <div style="text-align: center; margin-top: 10px;">
+            <a href="#" onclick="disconnectSession(); return false;" style="color: var(--text-secondary); font-size: 13px; text-decoration: none; hover: underline;">Oturumu Kapat</a>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token') || '';
+
+        // Initial setup
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!token) {
+                showOverlay('Token Eksik', 'Lütfen TV ekranındaki QR kodu taratarak bu sayfayı açın.');
+                updateStatus('offline', 'Eksik Token');
+                return;
+            }
+            validateSession();
+        });
+
+        function showOverlay(title, msg) {
+            const overlay = document.getElementById('authOverlay');
+            overlay.classList.remove('hidden');
+            overlay.innerHTML = `
+                <div style="font-size: 40px; margin-bottom: 15px;">⚠️</div>
+                <h3>${title}</h3>
+                <p>${msg}</p>
+            `;
+        }
+
+        function hideOverlay() {
+            document.getElementById('authOverlay').classList.add('hidden');
+        }
+
+        function updateStatus(state, label) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            dot.className = 'status-dot ' + state;
+            text.textContent = label;
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <span class="toast-close" onclick="this.parentElement.remove()">&times;</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s reverse forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 4500);
+        }
+
+        function setAddon(url) {
+            document.getElementById('addonUrl').value = url;
+        }
+
+        function setRepo(url) {
+            document.getElementById('repoUrl').value = url;
+        }
+
+        // API Requests
+        async function validateSession() {
+            try {
+                const response = await fetch(`/companion?token=${encodeURIComponent(token)}`);
+                if (response.ok) {
+                    hideOverlay();
+                    updateStatus('online', 'Bağlı (TV)');
+                    showToast('Oturum başarıyla doğrulandı!', 'success');
+                    loadAddons();
+                    loadRepos();
+                    loadCsPlugins();
+                    loadMangaRepos();
+                    loadMangaSources();
+                    loadApiKeys();
+                    loadPlayerSettings();
+                    setInterval(checkSessionStatus, 8000);
+                } else {
+                    showOverlay('Yetkilendirme Hatası', 'Oturum tokenı geçersiz veya süresi dolmuş.');
+                    updateStatus('offline', 'Yetkisiz');
+                }
+            } catch (err) {
+                showOverlay('Bağlantı Hatası', 'NuvioTV Companion sunucusuna erişilemiyor. Cihazlarınızın aynı Wi-Fi ağında olduğundan emin olun.');
+                updateStatus('offline', 'Bağlantı Yok');
+            }
+        }
+
+        async function checkSessionStatus() {
+            try {
+                const response = await fetch(`/companion?token=${encodeURIComponent(token)}`);
+                if (!response.ok) updateStatus('offline', 'Bağlantı Koptu');
+            } catch (err) {
+                updateStatus('offline', 'Sunucu Çevrimdışı');
+            }
+        }
+
+        async function loadAddons() {
+            const list = document.getElementById('addonList');
+            try {
+                const res = await fetch(`/companion/addons?token=${encodeURIComponent(token)}`);
+                if (!res.ok) { list.innerHTML = '<div class="empty-state">Yüklenemedi</div>'; return; }
+                const data = await res.json();
+                const addons = data.addons || [];
+                if (addons.length === 0) { list.innerHTML = '<div class="empty-state">Henüz yüklü eklenti yok</div>'; return; }
+                list.innerHTML = addons.map(a => `
+                    <div class="item-card">
+                        <div class="item-info">
+                            <div class="item-name">${escHtml(a.name)}</div>
+                            <div class="item-url">${escHtml(a.manifestUrl)}</div>
+                        </div>
+                        <div class="item-actions">
+                            <label class="toggle-switch" title="${a.isEnabled ? 'Devre Dışı Bırak' : 'Etkinleştir'}">
+                                <input type="checkbox" ${a.isEnabled ? 'checked' : ''} onchange="toggleAddon('${escAttr(a.id)}', this.checked)">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <button class="btn-icon" title="Sil" onclick="deleteAddon('${escAttr(a.id)}', this)">🗑</button>
+                        </div>
+                    </div>`).join('');
+            } catch (e) { list.innerHTML = '<div class="empty-state">Bağlantı hatası</div>'; }
+        }
+
+        async function loadRepos() {
+            const list = document.getElementById('repoList');
+            try {
+                const res = await fetch(`/companion/repos?token=${encodeURIComponent(token)}`);
+                if (!res.ok) { list.innerHTML = '<div class="empty-state">Yüklenemedi</div>'; return; }
+                const data = await res.json();
+                const repos = data.repos || [];
+                if (repos.length === 0) { list.innerHTML = '<div class="empty-state">Henüz yüklü depo yok</div>'; return; }
+                list.innerHTML = repos.map(r => `
+                    <div class="item-card">
+                        <div class="item-info">
+                            <div class="item-name">${escHtml(r.name)}</div>
+                            <div class="item-url">${escHtml(r.repoUrl)}</div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="btn-icon" title="Sil" onclick="deleteRepo('${escAttr(r.id)}', this)">🗑</button>
+                        </div>
+                    </div>`).join('');
+            } catch (e) { list.innerHTML = '<div class="empty-state">Bağlantı hatası</div>'; }
+        }
+
+        async function deleteAddon(id, btn) {
+            if (!confirm('Bu eklentiyi silmek istediğinizden emin misiniz?')) return;
+            btn.disabled = true;
+            try {
+                const res = await fetch(`/companion/addons/${encodeURIComponent(id)}?token=${encodeURIComponent(token)}`, { method: 'DELETE' });
+                if (res.ok) { showToast('Eklenti silindi ✓', 'success'); setTimeout(loadAddons, 600); }
+                else showToast('Silinemedi', 'error');
+            } catch(e) { showToast('Bağlantı hatası', 'error'); btn.disabled = false; }
+        }
+
+        async function toggleAddon(id, enabled) {
+            try {
+                await fetch(`/companion/addons/${encodeURIComponent(id)}?token=${encodeURIComponent(token)}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `enabled=${enabled}`
+                });
+                showToast(enabled ? 'Eklenti etkinleştirildi ✓' : 'Eklenti devre dışı bırakıldı', 'success');
+            } catch(e) { showToast('Bağlantı hatası', 'error'); }
+        }
+
+        async function deleteRepo(id, btn) {
+            if (!confirm('Bu depoyu silmek istediğinizden emin misiniz?')) return;
+            btn.disabled = true;
+            try {
+                const res = await fetch(`/companion/repos/${encodeURIComponent(id)}?token=${encodeURIComponent(token)}`, { method: 'DELETE' });
+                if (res.ok) { showToast('Depo silindi ✓', 'success'); setTimeout(loadRepos, 600); }
+                else showToast('Silinemedi', 'error');
+            } catch(e) { showToast('Bağlantı hatası', 'error'); btn.disabled = false; }
+        }
+
+        function escHtml(s) {
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+        function escAttr(s) { return String(s).replace(/'/g,"\\'"); }
+
+        async function disconnectSession() {
+            try { await fetch(`/companion/disconnect?token=${encodeURIComponent(token)}`, { method: 'POST' }); } catch(e) {}
+            showOverlay('Oturum Kapatıldı', 'Güvenli çıkış yapıldı.');
+            updateStatus('offline', 'Çıkış Yapıldı');
+        }
+
+        async function sendAddon() {
+            const urlInput = document.getElementById('addonUrl');
+            const url = urlInput.value.trim();
+            if (!url) {
+                showToast('Lütfen geçerli bir eklenti manifest URL\'si girin!', 'warning');
+                return;
+            }
+
+            const btn = document.getElementById('btnAddon');
+            btn.disabled = true;
+            try {
+                const response = await fetch(`/companion/addon?token=${encodeURIComponent(token)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `payload=${encodeURIComponent(url)}`
+                });
+
+                if (response.ok) {
+                    showToast('Kurulum talebi TV\'ye gönderildi. Lütfen TV ekranında onaylayın.', 'success');
+                    urlInput.value = '';
+                } else {
+                    const err = await response.json();
+                    showToast(err.error || 'İstek gönderilemedi', 'error');
+                }
+            } catch (err) {
+                showToast('TV\'ye ulaşılamadı. Bağlantınızı kontrol edin.', 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function sendRepo() {
+            const urlInput = document.getElementById('repoUrl');
+            const url = urlInput.value.trim();
+            if (!url) {
+                showToast('Lütfen geçerli bir repo URL\'si girin!', 'warning');
+                return;
+            }
+
+            const btn = document.getElementById('btnRepo');
+            btn.disabled = true;
+            try {
+                const response = await fetch(`/companion/repo?token=${encodeURIComponent(token)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `payload=${encodeURIComponent(url)}`
+                });
+
+                if (response.ok) {
+                    showToast('Repo ekleme talebi TV\'ye gönderildi. Lütfen TV ekranında onaylayın.', 'success');
+                    urlInput.value = '';
+                } else {
+                    const err = await response.json();
+                    showToast(err.error || 'İstek gönderilemedi', 'error');
+                }
+            } catch (err) {
+                showToast('TV\'ye ulaşılamadı. Bağlantınızı kontrol edin.', 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // ── Cloudstream Plugins ──────────────────────────────────────────────
+        async function loadCsPlugins() {
+            const list = document.getElementById('csPluginList');
+            try {
+                const res = await fetch(`/companion/csplugins?token=${encodeURIComponent(token)}`);
+                if (!res.ok) { list.innerHTML = '<div class="empty-state">Yüklenemedi</div>'; return; }
+                const data = await res.json();
+                const plugins = data.plugins || [];
+                if (plugins.length === 0) { list.innerHTML = '<div class="empty-state">Henüz yüklü eklenti yok</div>'; return; }
+                list.innerHTML = plugins.map(p => `
+                    <div class="item-card">
+                        <div class="item-info">
+                            <div class="item-name">${escHtml(p.name)} <span style="font-size:11px;color:var(--text-secondary);">v${escHtml(p.version)}</span></div>
+                            <div class="item-url">${escHtml(p.downloadUrl)}</div>
+                        </div>
+                        <div class="item-actions">
+                            <label class="toggle-switch" title="${p.isEnabled ? 'Devre Dışı Bırak' : 'Etkinleştir'}">
+                                <input type="checkbox" ${p.isEnabled ? 'checked' : ''} onchange="toggleCsPlugin('${escAttr(p.id)}', this.checked)">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <button class="btn-icon" title="Sil" onclick="deleteCsPlugin('${escAttr(p.id)}', this)">🗑</button>
+                        </div>
+                    </div>`).join('');
+            } catch (e) { list.innerHTML = '<div class="empty-state">Bağlantı hatası</div>'; }
+        }
+
+        async function toggleCsPlugin(id, enabled) {
+            try {
+                await fetch(`/companion/csplugins/${encodeURIComponent(id)}?token=${encodeURIComponent(token)}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `enabled=${enabled}`
+                });
+                showToast(enabled ? 'Eklenti etkinleştirildi ✓' : 'Eklenti devre dışı bırakıldı', 'success');
+            } catch(e) { showToast('Bağlantı hatası', 'error'); }
+        }
+
+        async function deleteCsPlugin(id, btn) {
+            if (!confirm('Bu Cloudstream eklentisini silmek istediğinizden emin misiniz?')) return;
+            btn.disabled = true;
+            try {
+                const res = await fetch(`/companion/csplugins/${encodeURIComponent(id)}?token=${encodeURIComponent(token)}`, { method: 'DELETE' });
+                if (res.ok) { showToast('Eklenti silindi ✓', 'success'); setTimeout(loadCsPlugins, 600); }
+                else showToast('Silinemedi', 'error');
+            } catch(e) { showToast('Bağlantı hatası', 'error'); btn.disabled = false; }
+        }
+
+        // ── Manga Repos ──────────────────────────────────────────────────────
+        function setMangaRepo(url) {
+            document.getElementById('mangaRepoUrl').value = url;
+        }
+
+        async function loadMangaRepos() {
+            const list = document.getElementById('mangaRepoList');
+            try {
+                const res = await fetch(`/companion/manga/repos?token=${encodeURIComponent(token)}`);
+                if (!res.ok) { list.innerHTML = '<div class="empty-state">Yüklenemedi</div>'; return; }
+                const data = await res.json();
+                const repos = data.repos || [];
+                if (repos.length === 0) { list.innerHTML = '<div class="empty-state">Henüz yüklü manga deposu yok</div>'; return; }
+                list.innerHTML = repos.map(r => `
+                    <div class="item-card">
+                        <div class="item-info">
+                            <div class="item-name">${escHtml(r)}</div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="btn-icon" title="Sil" onclick="deleteMangaRepo('${escAttr(r)}', this)">🗑</button>
+                        </div>
+                    </div>`).join('');
+            } catch (e) { list.innerHTML = '<div class="empty-state">Bağlantı hatası</div>'; }
+        }
+
+        async function sendMangaRepo() {
+            const urlInput = document.getElementById('mangaRepoUrl');
+            const url = urlInput.value.trim();
+            if (!url) {
+                showToast('Lütfen geçerli bir repo URL\'si girin!', 'warning');
+                return;
+            }
+            const btn = document.getElementById('btnMangaRepo');
+            btn.disabled = true;
+            try {
+                const response = await fetch(`/companion/manga/repos?token=${encodeURIComponent(token)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `payload=${encodeURIComponent(url)}`
+                });
+                if (response.ok) {
+                    showToast('Manga deposu ekleme talebi TV\'ye gönderildi. Lütfen TV ekranında onaylayın.', 'success');
+                    urlInput.value = '';
+                } else {
+                    const err = await response.json();
+                    showToast(err.error || 'İstek gönderilemedi', 'error');
+                }
+            } catch (err) {
+                showToast('TV\'ye ulaşılamadı. Bağlantınızı kontrol edin.', 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function deleteMangaRepo(url, btn) {
+            if (!confirm('Bu manga deposunu silmek istediğinizden emin misiniz?')) return;
+            btn.disabled = true;
+            try {
+                const res = await fetch(`/companion/manga/repos/${encodeURIComponent(url)}?token=${encodeURIComponent(token)}`, { method: 'DELETE' });
+                if (res.ok) { showToast('Manga deposu silindi ✓', 'success'); setTimeout(loadMangaRepos, 600); }
+                else showToast('Silinemedi', 'error');
+            } catch(e) { showToast('Bağlantı hatası', 'error'); btn.disabled = false; }
+        }
+
+        // ── Manga Sources ────────────────────────────────────────────────────
+        async function loadMangaSources() {
+            const list = document.getElementById('mangaSourceList');
+            try {
+                const res = await fetch(`/companion/manga/sources?token=${encodeURIComponent(token)}`);
+                if (!res.ok) { list.innerHTML = '<div class="empty-state">Yüklenemedi</div>'; return; }
+                const data = await res.json();
+                const sources = data.sources || [];
+                if (sources.length === 0) { list.innerHTML = '<div class="empty-state">Henüz yüklü manga eklentisi yok</div>'; return; }
+                list.innerHTML = sources.map(s => `
+                    <div class="item-card">
+                        <div class="item-info">
+                            <div class="item-name">${escHtml(s.name)} <span style="font-size:11px;color:var(--text-secondary);">[${escHtml(s.lang)}]</span></div>
+                            <div class="item-url">${escHtml(s.pkgName)}</div>
+                        </div>
+                        <div class="item-actions">
+                            <label class="toggle-switch" title="${s.isEnabled ? 'Devre Dışı Bırak' : 'Etkinleştir'}">
+                                <input type="checkbox" ${s.isEnabled ? 'checked' : ''} onchange="toggleMangaSource('${escAttr(s.id)}', this.checked)">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <button class="btn-icon" title="Sil" onclick="deleteMangaSource('${escAttr(s.id)}', this)">🗑</button>
+                        </div>
+                    </div>`).join('');
+            } catch (e) { list.innerHTML = '<div class="empty-state">Bağlantı hatası</div>'; }
+        }
+
+        async function toggleMangaSource(key, enabled) {
+            try {
+                await fetch(`/companion/manga/sources/${encodeURIComponent(key)}?token=${encodeURIComponent(token)}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `enabled=${enabled}`
+                });
+                showToast(enabled ? 'Manga kaynağı etkinleştirildi ✓' : 'Manga kaynağı devre dışı bırakıldı', 'success');
+            } catch(e) { showToast('Bağlantı hatası', 'error'); }
+        }
+
+        async function deleteMangaSource(key, btn) {
+            if (!confirm('Bu manga kaynağını silmek istediğinizden emin misiniz?')) return;
+            btn.disabled = true;
+            try {
+                const res = await fetch(`/companion/manga/sources/${encodeURIComponent(key)}?token=${encodeURIComponent(token)}`, { method: 'DELETE' });
+                if (res.ok) { showToast('Manga kaynağı silindi ✓', 'success'); setTimeout(loadMangaSources, 600); }
+                else showToast('Silinemedi', 'error');
+            } catch(e) { showToast('Bağlantı hatası', 'error'); btn.disabled = false; }
+        }
+
+        async function loadApiKeys() {
+            const container = document.getElementById('apiKeyStatus');
+            try {
+                const res = await fetch(`/companion/settings/apikeys?token=${encodeURIComponent(token)}`);
+                if (!res.ok) { container.innerHTML = '<div class="empty-state">Yüklenemedi</div>'; return; }
+                const data = await res.json();
+                
+                const keys = [
+                    { id: 'tmdb', label: 'TMDB API Anahtarı', has: data.tmdb && data.tmdb.hasValue },
+                    { id: 'mdblist', label: 'MDBList API Anahtarı', has: data.mdblist && data.mdblist.hasValue },
+                    { id: 'aniskip', label: 'AnimeSkip Client ID', has: data.aniskip && data.aniskip.hasValue },
+                    { id: 'debrid', label: 'Debrid Token (RD/AD/PM)', has: data.debrid && data.debrid.hasValue }
+                ];
+                
+                container.innerHTML = keys.map(k => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.15); border:1px solid var(--border-color); padding:10px 14px; border-radius:var(--radius-md);">
+                        <span style="font-size:14px; font-weight:600;">${k.label}</span>
+                        <span style="font-size:12px; padding:4px 10px; border-radius:12px; font-weight:600; background:${k.has ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; color:${k.has ? 'var(--success-color)' : 'var(--error-color)'}; border:1px solid ${k.has ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'};">
+                            ${k.has ? '✓ Ayarlanmış' : '✗ Ayarlanmamış'}
+                        </span>
+                    </div>
+                `).join('');
+            } catch (e) {
+                container.innerHTML = '<div class="empty-state">Bağlantı hatası</div>';
+            }
+        }
+        
+        async function saveApiKey() {
+            const field = document.getElementById('apiKeyField').value;
+            const valueInput = document.getElementById('apiKeyValue');
+            const value = valueInput.value.trim();
+            const btn = document.getElementById('btnApiKey');
+            btn.disabled = true;
+            try {
+                const response = await fetch(`/companion/settings/apikeys?token=${encodeURIComponent(token)}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `key=${encodeURIComponent(field)}&value=${encodeURIComponent(value)}`
+                });
+                if (response.ok) {
+                    showToast('Anahtar başarıyla kaydedildi ✓', 'success');
+                    valueInput.value = '';
+                    loadApiKeys();
+                } else {
+                    showToast('Kaydedilemedi', 'error');
+                }
+            } catch (e) {
+                showToast('Bağlantı hatası', 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function loadPlayerSettings() {
+            const container = document.getElementById('playerSettingsStatus');
+            try {
+                const res = await fetch(`/companion/settings/player?token=${encodeURIComponent(token)}`);
+                if (!res.ok) { container.innerHTML = '<div class="empty-state">Yüklenemedi</div>'; return; }
+                const data = await res.json();
+                
+                const labels = {
+                    autoplay: 'Otomatik Oynatma',
+                    skipIntroDurSec: 'Intro Atlama Süresi',
+                    subtitleSize: 'Altyazı Boyutu',
+                    subtitleBold: 'Altyazı Kalın',
+                    audioBoostDb: 'Ses Artışı (dB)',
+                    audioDelayMs: 'Ses Gecikmesi (ms)',
+                    minBufferMs: 'Min Buffer',
+                    maxBufferMs: 'Max Buffer',
+                    playbackBufferMs: 'Oynatma Buffer'
+                };
+                
+                let html = '';
+                for (const [key, val] of Object.entries(data)) {
+                    const label = labels[key] || key;
+                    html += `
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.15); border:1px solid var(--border-color); padding:10px 14px; border-radius:var(--radius-md);">
+                            <span style="font-size:14px; font-weight:600;">${label}</span>
+                            <span style="font-size:13px; color:var(--text-secondary); font-family:monospace; background:rgba(255,255,255,0.05); padding:2px 8px; border-radius:4px;">${val}</span>
+                        </div>
+                    `;
+                }
+                container.innerHTML = html;
+            } catch (e) {
+                container.innerHTML = '<div class="empty-state">Bağlantı hatası</div>';
+            }
+        }
+        
+        async function savePlayerSetting() {
+            const field = document.getElementById('playerSettingField').value;
+            const valueInput = document.getElementById('playerSettingValue');
+            const value = valueInput.value.trim();
+            const btn = document.getElementById('btnPlayerSetting');
+            if (!value) {
+                showToast('Lütfen geçerli bir değer girin!', 'warning');
+                return;
+            }
+            btn.disabled = true;
+            try {
+                const response = await fetch(`/companion/settings/player?token=${encodeURIComponent(token)}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `key=${encodeURIComponent(field)}&value=${encodeURIComponent(value)}`
+                });
+                if (response.ok) {
+                    showToast('Oynatıcı ayarı güncellendi ✓', 'success');
+                    valueInput.value = '';
+                    loadPlayerSettings();
+                } else {
+                    showToast('Güncellenemedi', 'error');
+                }
+            } catch (e) {
+                showToast('Bağlantı hatası', 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function exportBackup() {
+            window.open(`/companion/backup/export?token=${encodeURIComponent(token)}`, '_blank');
+        }
+
+        function triggerImport() {
+            document.getElementById('backupFileSelector').click();
+        }
+
+        async function importBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Client side size verification (Max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                showToast('Yedek dosyası boyutu 10MB limitini aşamaz.', 'error');
+                event.target.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const content = e.target.result;
+                try {
+                    // Try to parse to verify JSON structure before uploading
+                    const parsed = JSON.parse(content);
+                    if (!parsed.entries) {
+                        showToast('Geçersiz yedek dosyası formatı (entries alanı yok).', 'error');
+                        event.target.value = '';
+                        return;
+                    }
+                } catch(err) {
+                    showToast('Geçersiz JSON dosyası.', 'error');
+                    event.target.value = '';
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/companion/backup/import?token=${encodeURIComponent(token)}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: `payload=${encodeURIComponent(content)}`
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.imported) {
+                        showToast('Yedek başarıyla içe aktarıldı ✓', 'success');
+                    } else {
+                        showToast(result.message || 'Yedek yükleme başarısız.', 'error');
+                    }
+                } catch(err) {
+                    showToast('Yedek yüklenirken bağlantı hatası oluştu.', 'error');
+                } finally {
+                    event.target.value = '';
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        async function disconnectSession() {
+            try {
+                await fetch(`/companion/disconnect?token=${encodeURIComponent(token)}`, { method: 'POST' });
+            } catch (e) {}
+            showOverlay('Oturum Kapatıldı', 'Güvenli çıkış yapıldı.');
+            updateStatus('offline', 'Çıkış Yapıldı');
+        }
+    </script>
+</body>
+</html>

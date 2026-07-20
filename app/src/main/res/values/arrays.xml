@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- FP-37-42 – CloudStream Settings arrays -->
+    
+    <string-array name="video_buffer_length_entries">
+        <item>Varsayılan (Otomatik)</item>
+        <item>5 saniye</item>
+        <item>10 saniye</item>
+        <item>30 saniye</item>
+        <item>60 saniye</item>
+    </string-array>
+
+    <string-array name="video_buffer_length_values">
+        <item>0</item>
+        <item>5</item>
+        <item>10</item>
+        <item>30</item>
+        <item>60</item>
+    </string-array>
+
+    <string-array name="software_decoding_entries">
+        <item>Yalnızca Donanım (HW)</item>
+        <item>Yazılım Desteği (SW Fallback)</item>
+        <item>Yazılım Öncelikli (SW Preferred)</item>
+    </string-array>
+
+    <string-array name="software_decoding_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+</resources>

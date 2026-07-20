@@ -1,0 +1,70 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Theme.KitsugiAnimeList" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <!-- Pencere Ayarları -->
+        <item name="android:windowBackground">#080A10</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">#080A10</item>
+        <item name="android:statusBarColor">#080A10</item>
+        <item name="android:windowLightNavigationBar">false</item>
+
+        <!-- AppCompat / Diyalog Renkleri (Kitsugi Renk Paleti) -->
+        <item name="colorPrimary">#C8F4EF</item> <!-- Kitsugi Accent Teal -->
+        <item name="colorPrimaryDark">#080A10</item>
+        <item name="colorAccent">#C8F4EF</item>
+        <item name="android:textColorPrimary">#F4F7FB</item>
+        <item name="android:textColorSecondary">#A9B0C2</item>
+
+        <!-- Diyalog Panelleri ve Butonlar için Uyumlu Tema Özelleştirmeleri -->
+        <item name="alertDialogTheme">@style/Theme.KitsugiAnimeList.Dialog</item>
+        <item name="dialogTheme">@style/Theme.KitsugiAnimeList.Dialog</item>
+    </style>
+
+    <style name="Theme.KitsugiAnimeList.Splash" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <!--
+            Açılışta SADECE koyu arka plan görünür.
+            Statik ikon/logo YOK — direkt WebView HTML animasyonu başlar.
+        -->
+        <item name="android:windowBackground">#050510</item>
+
+        <!-- Android 12+ sistem splash screen: tamamen boş/siyah -->
+        <item name="android:windowSplashScreenBackground">#050510</item>
+        <!-- SplashScreen API ikonunu gizlemek için şeffaf drawable -->
+        <item name="android:windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">#050510</item>
+
+        <!-- Tam ekran — status/nav bar yok -->
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">#050510</item>
+        <item name="android:statusBarColor">#050510</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <!-- Eklenti diyaloglarının Kitsugi temasına bürünmesi için özel diyalog stili -->
+    <style name="Theme.KitsugiAnimeList.Dialog" parent="Theme.AppCompat.DayNight.Dialog.Alert">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:background">#10131D</item> <!-- Kitsugi Surface -->
+        <item name="android:textColorPrimary">#F4F7FB</item>
+        <item name="android:textColorSecondary">#A9B0C2</item>
+        <item name="colorAccent">#C8F4EF</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Theme.KitsugiAnimeList.DialogButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Theme.KitsugiAnimeList.DialogButton</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Theme.KitsugiAnimeList.DialogButton</item>
+    </style>
+
+    <!-- Tamam/İptal butonları için özel stil -->
+    <style name="Theme.KitsugiAnimeList.DialogButton" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="android:textColor">#C8F4EF</item>
+    </style>
+
+    <!-- Eklentiler için AppCompat/NoActionBar teması (openSettings fallback) -->
+    <style name="Theme.Plugin.AppCompat" parent="Theme.KitsugiAnimeList">
+        <!-- Eklenti kendi Activity veya Fragment açarsa bu tema devreye girer -->
+        <item name="android:windowBackground">#080A10</item>
+        <item name="android:windowIsTranslucent">false</item>
+    </style>
+
+</resources>

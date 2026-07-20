@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- KitsugiSplashActivity programmatik layout view ID'leri -->
+    <item name="splash_root"       type="id"/>
+    <item name="splash_glow"       type="id"/>
+    <item name="splash_logo"       type="id"/>
+    <item name="splash_brand_name" type="id"/>
+    <item name="splash_brand_sub"  type="id"/>
+</resources>
