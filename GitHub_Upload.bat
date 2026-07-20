@@ -1,6 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
+set "PATH=C:\Program Files\Git\cmd;C:\Program Files\GitHub CLI;%PATH%"
+
 echo =================================================================
 echo   Kitsugi-Beta - Otomatik GitHub Release Yukleyici
 echo =================================================================
@@ -26,7 +28,8 @@ call gradlew.bat assembleFossDebug
 if exist "app\build\outputs\apk\foss\debug\app-foss-debug.apk" (
     echo.
     echo [+] 3. GitHub Release ve APK Yukleniyor...
-    "%GH_EXE%" release create v2.4.0 "app\build\outputs\apk\foss\debug\app-foss-debug.apk" --title "Kitsugi v2.4.0-beta" --notes-file RELEASE_NOTES.md
+    set "TAG_NAME=v2.4.0-%date:~-4%%date:~3,2%%date:~0,2%"
+    "%GH_EXE%" release create !TAG_NAME! "app\build\outputs\apk\foss\debug\app-foss-debug.apk" --title "Kitsugi !TAG_NAME!" --notes-file RELEASE_NOTES.md
     echo.
     echo =================================================================
     echo   [BASARILI] Surum ve APK GitHub'da Yayinlandi!
