@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -105,10 +107,18 @@ private fun KitsugiUpdateBottomSheetBody(
     onDismiss: () -> Unit
 ) {
     val accentColor = LocalKitsugiAccent.current
+    val isAvailable = state is UpdateUiState.UpdateAvailable
 
     Surface(
         modifier = Modifier
             .fillMaxWidth()
+            .then(
+                if (isAvailable) {
+                    Modifier.fillMaxHeight(0.85f)
+                } else {
+                    Modifier
+                }
+            )
             .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
             .border(
                 width = 1.dp,
@@ -121,6 +131,13 @@ private fun KitsugiUpdateBottomSheetBody(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .then(
+                    if (isAvailable) {
+                        Modifier.fillMaxHeight()
+                    } else {
+                        Modifier
+                    }
+                )
                 .navigationBarsPadding()
                 .padding(horizontal = 20.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -172,7 +189,7 @@ private fun KitsugiUpdateBottomSheetBody(
 }
 
 @Composable
-private fun UpdateAvailableBottomSheetContent(
+private fun ColumnScope.UpdateAvailableBottomSheetContent(
     release: AppRelease,
     accentColor: Color,
     onUpdateClick: () -> Unit,
@@ -234,7 +251,7 @@ private fun UpdateAvailableBottomSheetContent(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 220.dp, max = 380.dp)
+            .weight(1f)
             .clip(RoundedCornerShape(18.dp))
 
             .background(KitsugiColors.SurfaceSoft)

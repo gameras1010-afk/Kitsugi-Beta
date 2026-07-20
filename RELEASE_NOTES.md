@@ -1,4 +1,4 @@
-# Kitsugi v2.4.25 Release Notes 🚀
+# Kitsugi v2.4.26 Release Notes 🚀
 
 ---
 
@@ -16,6 +16,10 @@
 - **Göreceli Arama (Tümü) Tekilleştirme Düzeltmesi**: Farklı platformlardan gelen benzer isimli sonuçların (MAL, AniList, TMDB) tekilleştirme sırasında yanlışlıkla silinmesi sorunu çözüldü; sonuçlar artık adil şekilde harmanlanarak listeleniyor.
 - **Akıllı Sorgu Temizleyici & Fallback Arama**: Birleşik veya noktalama işaretli sorgularda (`demon-slayer` veya `OnePiece` gibi) kelimelerin akıllıca ayrıştırılması ve boş sonuç dönüldüğünde otomatik fallback araması yapılması sağlandı.
 
+### ⚙️ Güncelleme Ekranı Tasarım & Kaydırma İyileştirmesi
+- **Genişletilmiş Görünüm**: Güncelleme penceresi artık ekranın %85'ini kaplayacak şekilde yukarıdan açılır.
+- **Dinamik Kaydırma**: Değişiklik notları kutusu ekran yüksekliğine göre otomatik genişler ve kaydırma (scroll) sorunu olmadan tüm notların okunabilmesini sağlar.
+
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
@@ -31,3 +35,7 @@
 ### ⚡ Search Enhancements (Fuzzy & Relative Blending)
 - **Deduplication Fix in Relative Search**: Fixed a critical issue where TMDB and AniList results were erroneously scrubbed by the title deduplication logic when MAL results matched. They are now harmoniously blended side-by-side.
 - **Smart Query Cleaning & Fallback**: Automatically cleans concatenated or improperly formatted queries (e.g. `OnePiece` -> `One Piece`, `demon-slayer` -> `demon slayer`) and retries the search as a fallback if no direct matches are found.
+
+### ⚙️ Update Dialog Design & Scrolling Enhancements
+- **Extended Layout**: The update bottom sheet now fills up to 85% of screen height.
+- **Dynamic Scrolling**: The release notes container scales dynamically with weight, resolving scrolling issues on smaller screens/fonts and ensuring all changes can be read properly.
