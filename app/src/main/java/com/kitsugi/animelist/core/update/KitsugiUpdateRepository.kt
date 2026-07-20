@@ -40,13 +40,20 @@ class KitsugiUpdateRepository(
             val releaseTitle = json.optString("name", tagName).ifEmpty { "Yeni Güncelleme" }
             val releaseNotes = json.optString("body", "Detaylı değişiklik notu bulunmuyor.")
 
-            // Extract version code from tag (e.g., v2.4.0, 240, v240, 2.4.0-beta.29762145)
             val fetchedVersionCode = parseVersionCodeFromTag(tagName, json)
             val currentVersionCode = BuildConfig.VERSION_CODE
+            val currentVersionName = BuildConfig.VERSION_NAME
 
-            Log.d(TAG, "Current versionCode: $currentVersionCode, Fetched versionCode: $fetchedVersionCode (tag: $tagName)")
+            val isNewer = isNewerRelease(
+                currentVersionName = currentVersionName,
+                fetchedTag = tagName,
+                currentVersionCode = currentVersionCode,
+                fetchedVersionCode = fetchedVersionCode
+            )
 
-            if (fetchedVersionCode <= currentVersionCode) {
+            Log.d(TAG, "Current: $currentVersionName (code: $currentVersionCode), Fetched: $tagName (code: $fetchedVersionCode) -> isNewer: $isNewer")
+
+            if (!isNewer) {
                 return@runCatching null // No newer update
             }
 
@@ -130,4 +137,33 @@ class KitsugiUpdateRepository(
 
         return 0
     }
+
+    private fun isNewerRelease(
+        currentVersionName: String,
+        fetchedTag: String,
+        currentVersionCode: Int,
+        fetchedVersionCode: Int
+    ): Boolean {
+        // 1. If timestamp-based versionCode is fetched and strictly greater
+        if (fetchedVersionCode > 1000000 && fetchedVersionCode > currentVersionCode) {
+            return true
+        }
+
+        // 2. Semantic version comparison (e.g., v2.4.2 vs 2.4.0)
+        val cleanCurrent = currentVersionName.removePrefix("v").substringBefore("-").trim()
+        val cleanFetched = fetchedTag.removePrefix("v").substringBefore("-").trim()
+
+        val currentParts = cleanCurrent.split(".").mapNotNull { it.toIntOrNull() }
+        val fetchedParts = cleanFetched.split(".").mapNotNull { it.toIntOrNull() }
+
+        for (i in 0 until maxOf(currentParts.size, fetchedParts.size)) {
+            val curr = currentParts.getOrElse(i) { 0 }
+            val fetch = fetchedParts.getOrElse(i) { 0 }
+            if (fetch > curr) return true
+            if (fetch < curr) return false
+        }
+
+        return false
+    }
 }
+
