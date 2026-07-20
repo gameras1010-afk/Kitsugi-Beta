@@ -134,6 +134,9 @@ fun AppRootTabPages(
                 },
                 onFavoriteStaffClick = { staffId, source, name, imageUrl ->
                     ctx.navState.navigateToDetail(DetailScreen.StaffDetail(staffId, source, name, imageUrl))
+                },
+                onOpenStatsClick = {
+                    ctx.navState.navigateToDetail(DetailScreen.Stats)
                 }
             )
         }

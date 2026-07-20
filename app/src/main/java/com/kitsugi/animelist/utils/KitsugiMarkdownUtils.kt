@@ -21,6 +21,8 @@ object KitsugiMarkdownUtils {
      *  - [link](url) → passed through (already standard)
      *  - BBCode tags ([b], [i], [u], [url], [spoiler], etc.) → converted to markdown
      */
+    private val oldSpoilerRegex = Regex(">\\s*⚠️\\s*\\*?Spoiler:\\*?\\s*(.*)", RegexOption.IGNORE_CASE)
+
     fun String.formatAniListMarkdown(): String {
         val withBBCodeConverted = this.convertBBCodeToMarkdown()
         return withBBCodeConverted
@@ -28,11 +30,26 @@ object KitsugiMarkdownUtils {
             .replace(centerRegex) { it.groupValues[1].trim() }
             .replace(boldUnderscoreRegex) { "**${it.groupValues[1]}**" }
             .replace(spoilerRegex) { matchResult ->
-                val content = matchResult.groupValues[1]
-                val encoded = runCatching { URLEncoder.encode(content.trim(), "UTF-8") }
-                    .getOrElse { content }
-                "\n> ⚠️ *Spoiler:* $encoded\n"
+                val rawContent = matchResult.groupValues[1]
+                val cleaned = cleanSpoilerContent(rawContent)
+                "\n[[SPOILER:$cleaned]]\n"
             }
+            .replace(oldSpoilerRegex) { matchResult ->
+                val rawContent = matchResult.groupValues[1]
+                val cleaned = cleanSpoilerContent(rawContent)
+                "\n[[SPOILER:$cleaned]]\n"
+            }
+    }
+
+    fun cleanSpoilerContent(raw: String): String {
+        val trimmed = raw.trim()
+        return runCatching {
+            var s = trimmed
+            if (s.contains("%") || s.contains("+")) {
+                s = java.net.URLDecoder.decode(s.replace("+", " "), "UTF-8")
+            }
+            s
+        }.getOrElse { trimmed }
     }
 
     private fun String.convertBBCodeToMarkdown(): String {

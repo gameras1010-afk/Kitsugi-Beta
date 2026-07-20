@@ -54,18 +54,15 @@ import com.kitsugi.animelist.ui.theme.KitsugiTvTokens
 fun KitsugiSheetOrDialog(
     onDismiss: () -> Unit,
     heightFraction: Float = 0.9f,
+    fillMaxHeight: Boolean = false,
     innerScrollState: LazyListState? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val isTv = LocalIsTv.current
+    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
 
     if (isTv) {
         // TV: geniş ortalanmış dialog, D-pad navigasyonu için optimize
-        // fillMaxHeight yerine wrapContentHeight + heightIn kullanıyoruz:
-        //   - Küçük içerikler (birkaç buton) gereksiz boşluk bırakmaz
-        //   - Büyük içerikler (LazyColumn) heightIn max ile sınırlanır
-        //   - D-pad ile LazyColumn scroll'u Android TV tarafından otomatik yönetilir
-        val screenHeight = LocalConfiguration.current.screenHeightDp.dp
         val focusRequester = remember { FocusRequester() }
 
         androidx.compose.runtime.LaunchedEffect(Unit) {
@@ -101,7 +98,6 @@ fun KitsugiSheetOrDialog(
         val sheetState = rememberModalBottomSheetState(
             skipPartiallyExpanded = true,
             confirmValueChange = { targetValue ->
-                // Eğer iç scroll state verilmişse ve içerik aşağıda ise Hidden'a geçişi engelle
                 if (targetValue == SheetValue.Hidden && innerScrollState != null) {
                     val atTop = innerScrollState.firstVisibleItemIndex == 0 &&
                         innerScrollState.firstVisibleItemScrollOffset == 0
@@ -131,7 +127,15 @@ fun KitsugiSheetOrDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(heightFraction)
+                    .then(
+                        if (fillMaxHeight) {
+                            Modifier.fillMaxHeight(heightFraction)
+                        } else {
+                            Modifier
+                                .wrapContentHeight()
+                                .heightIn(max = screenHeight * heightFraction)
+                        }
+                    )
                     .navigationBarsPadding(),
                 content = content
             )
