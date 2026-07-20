@@ -148,6 +148,25 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             .trim()
     }
 
+    private fun generateFallbackQueries(query: String): List<String> {
+        val list = mutableListOf<String>()
+        val raw = query.trim()
+        if (raw.isBlank()) return list
+
+        val cleaned = cleanSearchQuery(raw)
+        if (cleaned.isNotBlank() && cleaned != raw) {
+            list.add(cleaned)
+        }
+
+        // Vowel typo correction (e.g. shorlock -> sherlock)
+        val lower = raw.lowercase()
+        if (lower.contains("shorl")) list.add(raw.replace(Regex("shorl", RegexOption.IGNORE_CASE), "sherl"))
+        if (lower.contains("attak")) list.add(raw.replace(Regex("attak", RegexOption.IGNORE_CASE), "attack"))
+        if (lower.contains("demn")) list.add(raw.replace(Regex("demn", RegexOption.IGNORE_CASE), "demon"))
+
+        return list.distinct()
+    }
+
     fun search() {
         val state = _uiState.value
         if (state.query.isBlank() && state.activeFilters.isDefault()) {
@@ -170,11 +189,16 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
 
         searchJob = viewModelScope.launch {
             val rawQuery = state.query.trim()
-            val cleanedQuery = cleanSearchQuery(rawQuery)
+            val fallbackCandidates = generateFallbackQueries(rawQuery)
 
             var results = executeSearchForQuery(rawQuery)
-            if (results.isEmpty() && cleanedQuery.isNotBlank() && cleanedQuery != rawQuery) {
-                results = executeSearchForQuery(cleanedQuery)
+            if (results.isEmpty()) {
+                for (fallback in fallbackCandidates) {
+                    if (fallback != rawQuery) {
+                        results = executeSearchForQuery(fallback)
+                        if (results.isNotEmpty()) break
+                    }
+                }
             }
 
             if (newHistoryItem != null && searchHistoryEnabledState && results.isNotEmpty()) {
@@ -245,10 +269,12 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             else -> if (queryText.isNotBlank()) emptyList() else listOf("POPULARITY_DESC")
         }
 
+        val fallbacks = generateFallbackQueries(queryText)
+
         return runCatching {
             when (state.selectedPlatform) {
                 SearchPlatform.MAL -> {
-                    apiClient.searchMALOnly(
+                    var res = apiClient.searchMALOnly(
                         query = queryText,
                         mediaType = state.selectedMediaType,
                         showAdultContent = showAdult,
@@ -258,9 +284,21 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                         sort = jikanSort,
                         orderBy = jikanOrderBy
                     )
+                    if (res.isEmpty()) {
+                        for (fb in fallbacks) {
+                            res = apiClient.searchMALOnly(
+                                query = fb, mediaType = state.selectedMediaType,
+                                showAdultContent = showAdult, status = jikanStatus,
+                                format = jikanFormat, genreId = jikanGenreId,
+                                sort = jikanSort, orderBy = jikanOrderBy
+                            )
+                            if (res.isNotEmpty()) break
+                        }
+                    }
+                    res
                 }
                 SearchPlatform.AniList -> {
-                    apiClient.searchAniList(
+                    var res = apiClient.searchAniList(
                         query = queryText,
                         mediaType = state.selectedMediaType,
                         showAdultContent = showAdult,
@@ -276,15 +314,39 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                         maxScore = filters.maxScore,
                         sort = aniListSort
                     )
+                    if (res.isEmpty()) {
+                        for (fb in fallbacks) {
+                            res = apiClient.searchAniList(
+                                query = fb, mediaType = state.selectedMediaType,
+                                showAdultContent = showAdult, status = aniListStatus,
+                                format = aniListFormat, season = filters.season,
+                                genres = aniListGenres, excludedGenres = aniListExcludedGenres,
+                                tags = aniListTags, minYear = filters.minYear,
+                                maxYear = filters.maxYear, minScore = filters.minScore,
+                                maxScore = filters.maxScore, sort = aniListSort
+                            )
+                            if (res.isNotEmpty()) break
+                        }
+                    }
+                    res
                 }
                 SearchPlatform.TMDB -> {
-                    if (queryText.isBlank()) emptyList() else TmdbApiClient().search(queryText)
+                    if (queryText.isBlank()) emptyList() else {
+                        var res = TmdbApiClient().search(queryText)
+                        if (res.isEmpty()) {
+                            for (fb in fallbacks) {
+                                res = TmdbApiClient().search(fb)
+                                if (res.isNotEmpty()) break
+                            }
+                        }
+                        res
+                    }
                 }
                 SearchPlatform.All -> {
                     coroutineScope {
                         val malDeferred = async {
                             runCatching {
-                                apiClient.searchMALOnly(
+                                var res = apiClient.searchMALOnly(
                                     query = queryText,
                                     mediaType = state.selectedMediaType,
                                     showAdultContent = showAdult,
@@ -294,11 +356,23 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                                     sort = jikanSort,
                                     orderBy = jikanOrderBy
                                 )
+                                if (res.isEmpty()) {
+                                    for (fb in fallbacks) {
+                                        res = apiClient.searchMALOnly(
+                                            query = fb, mediaType = state.selectedMediaType,
+                                            showAdultContent = showAdult, status = jikanStatus,
+                                            format = jikanFormat, genreId = jikanGenreId,
+                                            sort = jikanSort, orderBy = jikanOrderBy
+                                        )
+                                        if (res.isNotEmpty()) break
+                                    }
+                                }
+                                res
                             }.getOrDefault(emptyList())
                         }
                         val aniListDeferred = async {
                             runCatching {
-                                apiClient.searchAniList(
+                                var res = apiClient.searchAniList(
                                     query = queryText,
                                     mediaType = state.selectedMediaType,
                                     showAdultContent = showAdult,
@@ -314,6 +388,21 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                                     maxScore = filters.maxScore,
                                     sort = aniListSort
                                 )
+                                if (res.isEmpty()) {
+                                    for (fb in fallbacks) {
+                                        res = apiClient.searchAniList(
+                                            query = fb, mediaType = state.selectedMediaType,
+                                            showAdultContent = showAdult, status = aniListStatus,
+                                            format = aniListFormat, season = filters.season,
+                                            genres = aniListGenres, excludedGenres = aniListExcludedGenres,
+                                            tags = aniListTags, minYear = filters.minYear,
+                                            maxYear = filters.maxYear, minScore = filters.minScore,
+                                            maxScore = filters.maxScore, sort = aniListSort
+                                        )
+                                        if (res.isNotEmpty()) break
+                                    }
+                                }
+                                res
                             }.getOrDefault(emptyList())
                         }
                         val tmdbDeferred = async {
@@ -321,7 +410,14 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                                 emptyList()
                             } else {
                                 runCatching {
-                                    TmdbApiClient().search(queryText)
+                                    var res = TmdbApiClient().search(queryText)
+                                    if (res.isEmpty()) {
+                                        for (fb in fallbacks) {
+                                            res = TmdbApiClient().search(fb)
+                                            if (res.isNotEmpty()) break
+                                        }
+                                    }
+                                    res
                                 }.getOrDefault(emptyList())
                             }
                         }

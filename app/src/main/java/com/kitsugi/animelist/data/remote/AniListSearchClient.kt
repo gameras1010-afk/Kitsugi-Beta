@@ -263,7 +263,10 @@ class AniListSearchClient(
                     MediaType.Manga -> "MANGA"
                 }
             )
-            .put("sort", JSONArray(sort))
+
+        if (!sort.isNullOrEmpty()) {
+            variables.put("sort", JSONArray(sort))
+        }
 
         if (!showAdultContent) {
             variables.put("isAdult", false)
