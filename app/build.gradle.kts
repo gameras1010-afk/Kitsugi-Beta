@@ -34,9 +34,10 @@ android {
         minSdk = 26
         targetSdk = 36
         // Her derlemede otomatik artan benzersiz sürüm kodu (Dakika bazlı zaman damgası)
+        val appVersionName = "2.4.2"
         val timeVersionCode = (System.currentTimeMillis() / 60000).toInt()
         versionCode = timeVersionCode
-        versionName = "2.4.0-beta.$timeVersionCode"
+        versionName = "$appVersionName-beta.$timeVersionCode"
 
         buildConfigField("String", "TMDB_API_KEY", "\"$tmdbApiKey\"")
         // ── T3-01: OAuth / API secret'ları — local.properties'den okunur ──────

@@ -16,9 +16,15 @@ set "GH_EXE=C:\Program Files\GitHub CLI\gh.exe"
 if not exist "%GIT_EXE%" set "GIT_EXE=git"
 if not exist "%GH_EXE%" set "GH_EXE=gh"
 
+FOR /F "usebackq tokens=*" %%V IN (`powershell -NoProfile -Command "((Get-Content app/build.gradle.kts) -match 'val appVersionName =').Split([char]34)[1]"`) DO SET "APP_VER=%%V"
+if not defined APP_VER set "APP_VER=2.4.2"
+set "TAG_NAME=v!APP_VER!"
+
+echo [+] Algilanan Surum: !TAG_NAME!
+
 echo [+] 1. Kod degisiklikleri GitHub'a gonderiliyor...
 "%GIT_EXE%" add .
-"%GIT_EXE%" commit -m "Auto Update: Source code and Release Prep"
+"%GIT_EXE%" commit -m "Auto Update: Source code for !TAG_NAME!"
 "%GIT_EXE%" push -u origin main
 
 echo.
@@ -30,8 +36,7 @@ set GMS_APK=app\build\outputs\apk\gms\debug\app-gms-debug.apk
 
 if exist "%FOSS_APK%" (
     echo.
-    echo [+] 3. GitHub Release, FOSS ve GMS APK'lari Yukleniyor...
-    set "TAG_NAME=v2.4.0-%date:~-4%%date:~3,2%%date:~0,2%"
+    echo [+] 3. GitHub Release (!TAG_NAME!), FOSS ve GMS APK'lari Yukleniyor...
     
     if exist "%GMS_APK%" (
         "%GH_EXE%" release create !TAG_NAME! "%FOSS_APK%" "%GMS_APK%" --title "Kitsugi !TAG_NAME!" --notes-file RELEASE_NOTES.md
@@ -41,7 +46,7 @@ if exist "%FOSS_APK%" (
 
     echo.
     echo =================================================================
-    echo   [BASARILI] FOSS + GMS Surumleri GitHub'da Yayinlandi!
+    echo   [BASARILI] !TAG_NAME! Surumu ve APK'lar GitHub'da Yayinlandi!
     echo =================================================================
 ) else (
     echo.
