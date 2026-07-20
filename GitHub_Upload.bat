@@ -43,7 +43,7 @@ set "GMS_APK=app\build\outputs\apk\gms\debug\app-gms-debug.apk"
 
 if exist "!FOSS_APK!" (
     echo.
-    echo [+] 4. GitHub Release (!TAG_NAME!), FOSS ve GMS APK'lari Yukleniyor...
+    echo [+] 4. GitHub Release !TAG_NAME! - FOSS ve GMS APK'lari Yukleniyor...
     
     if exist "!GMS_APK!" (
         "!GH_EXE!" release create !TAG_NAME! "!FOSS_APK!" "!GMS_APK!" --title "Kitsugi !TAG_NAME!" --notes-file RELEASE_NOTES.md

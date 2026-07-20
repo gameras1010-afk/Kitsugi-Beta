@@ -1,29 +1,35 @@
-# Kitsugi v2.4.9-beta Release Notes 🚀
+# Kitsugi v2.4.9 Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### 🎉 Yenilikler ve Eklenen Özellikler
-- **Performans ve Listem Aktarım İyileştirmesi**: AniList, MyAnimeList ve Simkl veri aktarımlarında binlerce kaydı tek bir veritabanı işleminde (Batch Transaction) işleyen yeni mimariye geçildi. Aktarım sırasındaki kasma, donma ve takılmalar tamamen giderildi.
-- **Detay Sayfaları Tasarım Temizliği**: Detay sayfalarında banner rozetleri ile tekrarlayan `Dizi • 2010` vb. gereksiz alt başlık metinleri gizlendi.
-- **İstatistik Kartı Sadeleştirmesi**: Detay ekranlarında rozetlerle tekrarlayan Kaynak, Yıl ve +18 bilgi kartları kaldırıldı; alan kullanımı optimize edildi.
-- **Gelişmiş Güncelleme Yönetimi**: Ayarlar ekranına Otomatik Güncelleme kontrol anahtarı ve manuel "Şimdi Denetle" butonu eklendi.
+### ⚡ Performans ve İyileştirmeler
+- **Keşfet Sayfası Kasma Sorunu Çözüldü**: Keşfet sayfası, TV ve mobil cihazlar için ayrı ayrı yazılmış iki farklı kaydırma motoru kullanıyordu. Eski `Column(verticalScroll)` motoru çerçeve düşüşlerine (frame drop) neden oluyordu. Tüm mimari tek ve yüksek performanslı `LazyColumn` ile birleştirildi.
+- **Gereksiz Yeniden Çizmeler Engellendi**: Filtre hesaplamaları (`filteredTopAnime`, `filteredAiringAnime` vb.) her çizimde yeniden yapılmak yerine `remember {}` ile önbelleğe alındı. Bu sayede kaydırma sırasında gereksiz recomposition'lar ortadan kalktı.
+- **Liste Algılama Optimize Edildi**: Listelere eklenen öğelerin zaten listede olup olmadığını kontrol eden `isAlreadyInList` fonksiyonu `remember {}` ile stabilize edildi.
+- **LazyRow Performansı Arttırıldı**: Yatay medya listelerinde mobil cihazlar için de `LazyRow` kullanılmaya başlandı. Sanal listeleme sayesinde yalnızca ekranda görünen kartlar işleniyor.
+- **Sticky Header Optimize Edildi**: `isHeroGone` durumu artık `derivedStateOf` ile `LazyListState`'e bağlı — doğrudan `scrollState.value` gözlemlemek yerine snapshot tabanlı reaktif durum izleme kullanılıyor.
 
 ### 🛠️ Hata Düzeltmeleri
-- **Arka Plan İşlem Ayrıştırması**: Tüm liste çekme ve eşitleme coroutine'leri UI iş parçacığından arka plan `Dispatchers.IO` kanalına taşınarak arayüzün akıcılığı (60/120 FPS) korundu.
-- **Sürüm ve Not Senkronizasyonu**: GitHub Release başlığı, APK sürüm numarası ve uygulama içi güncelleme notları %100 otomatik senkronize edildi.
+- `LazyRow` içinde öğe anahtarı (key) tanımında kullanılan geçersiz `result.id` alanı, doğru `result.malId ?: result.tmdbId ?: 0` ifadesiyle düzeltildi.
+- `derivedStateOf` delegate operatörü için eksik `getValue` ve `derivedStateOf` importları eklendi.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### 🎉 New Features & Enhancements
-- **High-Performance List Imports**: Massive performance overhaul for AniList, MAL, and Simkl sync pipelines using single-transaction batch database operations. Completely eliminated lag and stuttering during large list imports.
-- **Refined Detail Page Layout**: Cleaned up redundant metadata subtitles (e.g. `Series • 2010`) that were already displayed as hero badges.
-- **Streamlined Stats Grid**: Removed redundant stat cards (Source, Year, Adult status) to maximize usable content space.
-- **Advanced Update Controls**: Added automatic update check toggle and manual check button in system settings.
+### ⚡ Performance & Improvements
+- **Explore Page Lag Fixed**: The Explore page used two separate scroll engines for TV and mobile devices. The old `Column(verticalScroll)` engine caused frame drops. The entire architecture has been unified into a single high-performance `LazyColumn`.
+- **Unnecessary Recompositions Eliminated**: Filter calculations (`filteredTopAnime`, `filteredAiringAnime`, etc.) are now cached with `remember {}` instead of being recomputed on every render. This eliminates unnecessary recompositions during scroll.
+- **List Detection Optimized**: The `isAlreadyInList` lambda used to check if items are already in the user's list is now stabilized with `remember {}`.
+- **LazyRow Performance Improved**: Horizontal media sections now use `LazyRow` on mobile as well. Only cards visible on screen are composed at any given time.
+- **Sticky Header Optimized**: The `isHeroGone` state is now bound to `LazyListState` via `derivedStateOf` — using snapshot-based reactive state observation instead of directly observing `scrollState.value`.
 
 ### 🛠️ Bug Fixes
-- **UI Thread Offloading**: All data import coroutines now run strictly on `Dispatchers.IO`, ensuring smooth frame rates without UI locks.
-- **Metadata Synchronization**: Guaranteed 100% version alignment between local APK build tags and remote GitHub release changelogs.
+- Fixed an invalid `result.id` key reference in `LazyRow` item key lambda. Now correctly uses `result.malId ?: result.tmdbId ?: 0`.
+- Added missing `getValue` and `derivedStateOf` imports required for the `by` delegate pattern in ExploreScreen.
+
+---
+
+> **📥 APK İndir / Download APK**: [Releases Sayfası / Releases Page](https://github.com/gameras1010-afk/Kitsugi-Beta/releases/latest)

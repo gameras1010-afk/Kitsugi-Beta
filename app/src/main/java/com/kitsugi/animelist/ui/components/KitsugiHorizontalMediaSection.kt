@@ -143,11 +143,15 @@ fun KitsugiHorizontalMediaSection(
                         }
                     }
                 } else {
-                    Row(
-                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    LazyRow(
+                        state = androidx.compose.foundation.lazy.rememberLazyListState(),
+                        contentPadding = PaddingValues(horizontal = 20.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        results.forEach { result ->
+                        itemsIndexed(
+                            items = results,
+                            key = { index, result -> "${result.source}_${result.malId ?: result.tmdbId ?: 0}_$index" }
+                        ) { _, result ->
                             val cardWidth = if (isLandscape) 320.dp else 180.dp
                             KitsugiExploreMediaCard(
                                 result = result,
