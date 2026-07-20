@@ -292,7 +292,10 @@ fun SettingsScreen(
                 },
                 onDismiss = {
                     activeDialog = null
-                }
+                },
+                autoUpdateCheckEnabled = params.general.autoUpdateCheckEnabled,
+                onAutoUpdateCheckEnabledChanged = params.general.onAutoUpdateCheckEnabledChanged,
+                onCheckForUpdatesClick = params.general.onCheckForUpdatesClick
             )
         }
 

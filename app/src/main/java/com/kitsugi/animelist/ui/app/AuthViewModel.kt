@@ -17,6 +17,7 @@ import com.kitsugi.animelist.data.auth.SimklImportManager
 import com.kitsugi.animelist.data.local.MediaEntryRepository
 import com.kitsugi.animelist.data.settings.SettingsDataStore
 import com.kitsugi.animelist.model.MediaEntry
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import dagger.hilt.EntryPoint
@@ -142,7 +143,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         isAniListImportRunning = true
         onShowMessage?.invoke("AniList listesi getiriliyor...")
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val settingsDataStore = SettingsDataStore(context)
 
             runCatching {
@@ -184,7 +185,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         isMalImportRunning = true
         onShowMessage?.invoke("MyAnimeList listesi getiriliyor...")
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val token = ExternalAuthManager.getOrRefreshMalToken(context)
 
             if (token.isNullOrBlank()) {
@@ -234,7 +235,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         isCrossSyncRunning = true
         onShowMessage?.invoke("Çift yönlü eşitleme başlatıldı...")
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val aniListToken = ExternalAuthManager.getAniListToken(context)
             val malToken = ExternalAuthManager.getOrRefreshMalToken(context)
 
@@ -325,7 +326,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         isSimklImportRunning = true
         onShowMessage?.invoke("Simkl listesi getiriliyor...")
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val settingsDataStore = SettingsDataStore(context)
 
             runCatching {

@@ -32,6 +32,7 @@ data class SettingsContext(
     val authViewModel: AuthViewModel,
     val mediaRepository: MediaEntryRepository,
     val playerSettingsViewModel: PlayerSettingsViewModel,
+    val updateViewModel: com.kitsugi.animelist.core.update.AppUpdateViewModel,
     val mangaViewModel: MangaViewModel,
     val onPickProfileImageClick: () -> Unit,
     val onPickBannerImageClick: () -> Unit,

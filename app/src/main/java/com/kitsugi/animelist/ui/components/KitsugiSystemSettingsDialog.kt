@@ -42,7 +42,10 @@ fun KitsugiSystemSettingsDialog(
     dnsChoice: Int,
     onDnsChoiceSelected: (Int) -> Unit,
     onDeveloperLogsClick: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    autoUpdateCheckEnabled: Boolean = true,
+    onAutoUpdateCheckEnabledChanged: (Boolean) -> Unit = {},
+    onCheckForUpdatesClick: () -> Unit = {}
 ) {
     val accentColor = LocalKitsugiAccent.current
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
@@ -142,6 +145,9 @@ fun KitsugiSystemSettingsDialog(
                         accentColor = accentColor
                     )
                     2 -> SystemInfoTab(
+                        autoUpdateCheckEnabled = autoUpdateCheckEnabled,
+                        onAutoUpdateCheckEnabledChanged = onAutoUpdateCheckEnabledChanged,
+                        onCheckForUpdatesClick = onCheckForUpdatesClick,
                         onDeveloperLogsClick = onDeveloperLogsClick,
                         accentColor = accentColor
                     )
@@ -308,6 +314,9 @@ private fun DnsSettingsTab(
 
 @Composable
 private fun SystemInfoTab(
+    autoUpdateCheckEnabled: Boolean,
+    onAutoUpdateCheckEnabledChanged: (Boolean) -> Unit,
+    onCheckForUpdatesClick: () -> Unit,
     onDeveloperLogsClick: () -> Unit,
     accentColor: Color
 ) {
@@ -322,6 +331,77 @@ private fun SystemInfoTab(
             .padding(vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        KitsugiSettingsSection(title = "Uygulama Güncellemeleri") {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Yeni sürümleri otomatik veya manuel olarak kontrol edin.",
+                    color = KitsugiColors.TextSecondary,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Left element: Auto Update toggle
+                    Row(
+                        modifier = Modifier
+                            .weight(1.1f)
+                            .background(
+                                color = KitsugiColors.SurfaceSoft,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Otomatik Kontrol",
+                                color = KitsugiColors.TextPrimary,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = if (autoUpdateCheckEnabled) "Açık" else "Kapalı",
+                                color = KitsugiColors.TextMuted,
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
+                        Switch(
+                            checked = autoUpdateCheckEnabled,
+                            onCheckedChange = onAutoUpdateCheckEnabledChanged,
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = KitsugiColors.Background,
+                                checkedTrackColor = accentColor
+                            )
+                        )
+                    }
+
+                    // Right element: Manual check button
+                    Button(
+                        onClick = onCheckForUpdatesClick,
+                        colors = ButtonDefaults.buttonColors(containerColor = accentColor),
+                        shape = RoundedCornerShape(12.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 12.dp),
+                        modifier = Modifier.weight(0.9f)
+                    ) {
+                        Text(
+                            text = "Şimdi Denetle",
+                            color = KitsugiColors.Background,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+            }
+        }
+
         KitsugiSettingsSection(title = "Uygulama Hakkında") {
             Column(
                 modifier = Modifier

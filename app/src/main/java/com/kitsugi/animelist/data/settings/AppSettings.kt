@@ -151,7 +151,8 @@ data class AppSettings(
     /** true = KitsugiAssMatroskaExtractor DefaultExtractorsFactory'e eklenir; false = Media3 fallback */
     val enableAssExtractor: Boolean = false,
     val splashAnimationEnabled: Boolean = true,
-    val splashSoundEnabled: Boolean = true
+    val splashSoundEnabled: Boolean = true,
+    val autoUpdateCheckEnabled: Boolean = true
 )
 
 enum class FrameRateMatchingMode {

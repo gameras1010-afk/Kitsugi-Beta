@@ -27,19 +27,13 @@ class MediaEntryRepository(
     }
 
     suspend fun insertAll(entries: List<MediaEntry>) {
-        entries.forEach { entry ->
-            dao.insert(
-                entry.copy(id = 0).toEntity()
-            )
-        }
+        if (entries.isEmpty()) return
+        dao.insertAll(entries.map { it.copy(id = 0).toEntity() })
     }
 
     suspend fun updateAllDirect(entries: List<MediaEntry>) {
-        entries.forEach { entry ->
-            dao.update(
-                entry.toEntity()
-            )
-        }
+        if (entries.isEmpty()) return
+        dao.updateAll(entries.map { it.toEntity() })
     }
 
     suspend fun update(entry: MediaEntry) {

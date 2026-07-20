@@ -157,6 +157,7 @@ class SettingsDataStore(
         val SplashSoundEnabled = booleanPreferencesKey("splash_sound_enabled")
         val LiveHelperEnabled = booleanPreferencesKey("live_helper_enabled")
         val EnableAssExtractor = booleanPreferencesKey("enable_ass_extractor")
+        val AutoUpdateCheckEnabled = booleanPreferencesKey("auto_update_check_enabled")
     }
 
     val settingsFlow: Flow<AppSettings> = kotlinx.coroutines.flow.flow {
@@ -288,9 +289,16 @@ class SettingsDataStore(
                     splashAnimationEnabled = preferences[Keys.SplashAnimationEnabled] ?: true,
                     splashSoundEnabled = preferences[Keys.SplashSoundEnabled] ?: true,
                     liveHelperEnabled = preferences[Keys.LiveHelperEnabled] ?: false,
-                    enableAssExtractor = preferences[Keys.EnableAssExtractor] ?: false
+                    enableAssExtractor = preferences[Keys.EnableAssExtractor] ?: false,
+                    autoUpdateCheckEnabled = preferences[Keys.AutoUpdateCheckEnabled] ?: true
                 )
             )
+        }
+    }
+
+    suspend fun setAutoUpdateCheckEnabled(enabled: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[Keys.AutoUpdateCheckEnabled] = enabled
         }
     }
 

@@ -24,8 +24,14 @@ interface MediaEntryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entry: MediaEntryEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(entities: List<MediaEntryEntity>)
+
     @Update
     suspend fun update(entry: MediaEntryEntity)
+
+    @Update
+    suspend fun updateAll(entities: List<MediaEntryEntity>)
 
     @Query("DELETE FROM media_entries WHERE id = :id")
     suspend fun deleteById(id: Int)

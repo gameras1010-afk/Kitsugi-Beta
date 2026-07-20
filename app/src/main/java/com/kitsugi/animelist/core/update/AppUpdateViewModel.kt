@@ -34,13 +34,13 @@ class AppUpdateViewModel(application: Application) : AndroidViewModel(applicatio
     private var currentRelease: AppRelease? = null
     private var dismissedVersionName: String? = null
 
-    fun checkForUpdates(silent: Boolean = true) {
+    fun checkForUpdates(silent: Boolean = true, force: Boolean = false) {
         if (_uiState.value is UpdateUiState.Downloading || _uiState.value is UpdateUiState.ReadyToInstall) {
             return
         }
 
         viewModelScope.launch {
-            if (!silent) _uiState.value = UpdateUiState.Checking
+            if (!silent || force) _uiState.value = UpdateUiState.Checking
 
             val result = repository.checkForUpdate()
             result.onSuccess { release ->
@@ -48,11 +48,24 @@ class AppUpdateViewModel(application: Application) : AndroidViewModel(applicatio
                     currentRelease = release
                     _uiState.value = UpdateUiState.UpdateAvailable(release)
                 } else {
-                    if (!silent) _uiState.value = UpdateUiState.Idle
+                    _uiState.value = UpdateUiState.Idle
+                    if (!silent || force) {
+                        android.widget.Toast.makeText(
+                            getApplication(),
+                            "Uygulamanız güncel! (v${com.kitsugi.animelist.BuildConfig.VERSION_NAME})",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }.onFailure { error ->
-                if (!silent) {
-                    _uiState.value = UpdateUiState.Failed(error.localizedMessage ?: "Güncelleme kontrolü başarısız.")
+                if (!silent || force) {
+                    val errMsg = error.localizedMessage ?: "Güncelleme kontrolü başarısız."
+                    _uiState.value = UpdateUiState.Failed(errMsg)
+                    android.widget.Toast.makeText(
+                        getApplication(),
+                        "Güncelleme denetlenemedi: $errMsg",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }

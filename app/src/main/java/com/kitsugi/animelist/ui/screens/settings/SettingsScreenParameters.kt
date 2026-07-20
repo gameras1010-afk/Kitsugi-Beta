@@ -62,7 +62,11 @@ data class GeneralSettings(
     val onMangaReadingModeSelected: (String) -> Unit = {},
     val onMangaColorFilterSelected: (String) -> Unit = {},
     val onMangaFitModeSelected: (String) -> Unit = {},
-    val onMangaBrightnessChanged: (Float) -> Unit = {}
+    val onMangaBrightnessChanged: (Float) -> Unit = {},
+    // ─── Otomatik & Manuel Güncelleme Kontrolü ─────────────────────────
+    val autoUpdateCheckEnabled: Boolean = true,
+    val onAutoUpdateCheckEnabledChanged: (Boolean) -> Unit = {},
+    val onCheckForUpdatesClick: () -> Unit = {}
 )
 
 data class ProfileSettings(

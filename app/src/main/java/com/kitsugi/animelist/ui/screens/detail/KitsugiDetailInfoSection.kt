@@ -355,29 +355,13 @@ internal fun MainStatsGrid(
             modifier = Modifier.weight(1f)
         )
 
-        MiniStatCard(
-            label = "Kaynak",
-            value = entry.source.uppercase(),
-            modifier = Modifier.weight(1f)
-        )
-
-        MiniStatCard(
-            label = "ID",
-            value = entry.malId?.toString() ?: "-",
-            modifier = Modifier.weight(1f)
-        )
-
-        MiniStatCard(
-            label = "Yıl",
-            value = entry.year?.toString() ?: "-",
-            modifier = Modifier.weight(1f)
-        )
-
-        MiniStatCard(
-            label = "+18",
-            value = if (entry.isAdult) "Evet" else "Hayır",
-            modifier = Modifier.weight(1f)
-        )
+        if (entry.malId != null) {
+            MiniStatCard(
+                label = "ID",
+                value = entry.malId.toString(),
+                modifier = Modifier.weight(1f)
+            )
+        }
     }
 }
 

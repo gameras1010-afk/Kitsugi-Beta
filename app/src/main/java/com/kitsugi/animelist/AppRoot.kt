@@ -426,7 +426,9 @@ fun AppRoot(
 
     LaunchedEffect(Unit) {
         authViewModel.refreshAuthState()
-        updateViewModel.checkForUpdates(silent = true)
+        if (appSettings.autoUpdateCheckEnabled) {
+            updateViewModel.checkForUpdates(silent = true)
+        }
 
         launch {
             networkMonitor.isOnlineFlow.collect { isOnline ->
@@ -737,6 +739,7 @@ fun AppRoot(
                     authViewModel = authViewModel,
                     profileViewModel = profileViewModel,
                     playerSettingsViewModel = playerSettingsViewModel,
+                    updateViewModel = updateViewModel,
                     addonViewModel = addonViewModel,
                     mangaViewModel = mangaViewModel,
                     mangaBrowseViewModel = mangaBrowseViewModel,
@@ -867,6 +870,7 @@ private fun AppNavigationContent(
     authViewModel: AuthViewModel,
     profileViewModel: ProfileViewModel,
     playerSettingsViewModel: PlayerSettingsViewModel,
+    updateViewModel: AppUpdateViewModel,
     addonViewModel: AddonViewModel,
     mangaViewModel: MangaViewModel,
     mangaBrowseViewModel: MangaBrowseViewModel,
@@ -999,6 +1003,7 @@ private fun AppNavigationContent(
                         authViewModel = authViewModel,
                         profileViewModel = profileViewModel,
                         playerSettingsViewModel = playerSettingsViewModel,
+                        updateViewModel = updateViewModel,
                         addonViewModel = addonViewModel,
                         mangaViewModel = mangaViewModel,
                         mediaRepository = mediaRepository,

@@ -62,7 +62,10 @@ internal fun SettingsContext.buildSettingsParams() =
             onMangaReadingModeSelected = { onMangaReadingModeSelected(it) },
             onMangaColorFilterSelected = { onMangaColorFilterSelected(it) },
             onMangaFitModeSelected = { onMangaFitModeSelected(it) },
-            onMangaBrightnessChanged = { onMangaBrightnessChanged(it) }
+            onMangaBrightnessChanged = { onMangaBrightnessChanged(it) },
+            autoUpdateCheckEnabled = appSettings.autoUpdateCheckEnabled,
+            onAutoUpdateCheckEnabledChanged = { onAutoUpdateCheckEnabledChanged(it) },
+            onCheckForUpdatesClick = { onCheckForUpdatesClick() }
         ),
         profile = com.kitsugi.animelist.ui.screens.settings.ProfileSettings(
             profileName = appSettings.profileName,
@@ -712,6 +715,17 @@ internal fun SettingsContext.onMangaBrightnessChanged(brightness: Float) {
     coroutineScope.launch {
         settingsDataStore.setMangaBrightness(brightness)
     }
+}
+
+internal fun SettingsContext.onAutoUpdateCheckEnabledChanged(enabled: Boolean) {
+    coroutineScope.launch {
+        settingsDataStore.setAutoUpdateCheckEnabled(enabled)
+        appViewModel.showSnackbarMessage(if (enabled) "Otomatik güncelleme kontrolü açıldı" else "Otomatik güncelleme kontrolü kapatıldı")
+    }
+}
+
+internal fun SettingsContext.onCheckForUpdatesClick() {
+    updateViewModel.checkForUpdates(silent = false, force = true)
 }
 
 

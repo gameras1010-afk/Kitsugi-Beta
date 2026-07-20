@@ -1,27 +1,29 @@
-# Kitsugi v2.4.8-beta Release Notes 🚀
+# Kitsugi v2.4.9-beta Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
 ### 🎉 Yenilikler ve Eklenen Özellikler
-- **Genişletilmiş Alt Sayfa (Bottom Sheet)**: Güncelleme diyaloğu ekranın altından yumuşakça açılan, yüksekliği artırılmış modern bir Bottom Sheet mimarisine dönüştürüldü.
-- **Otomatik Oturum Sürüm Yükseltme (Auto-Increment)**: `.bat` betiği her çalıştırıldığında projenin sürüm numarası (`appVersionName`) ve release notları otomatik yükseltilir.
-- **Çift Dilli Sürüm Bildirimleri**: Uygulama içi otomatik güncelleme diyaloğu ve GitHub Releases için hem Türkçe hem İngilizce sürüm notları desteği sağlandı.
+- **Performans ve Listem Aktarım İyileştirmesi**: AniList, MyAnimeList ve Simkl veri aktarımlarında binlerce kaydı tek bir veritabanı işleminde (Batch Transaction) işleyen yeni mimariye geçildi. Aktarım sırasındaki kasma, donma ve takılmalar tamamen giderildi.
+- **Detay Sayfaları Tasarım Temizliği**: Detay sayfalarında banner rozetleri ile tekrarlayan `Dizi • 2010` vb. gereksiz alt başlık metinleri gizlendi.
+- **İstatistik Kartı Sadeleştirmesi**: Detay ekranlarında rozetlerle tekrarlayan Kaynak, Yıl ve +18 bilgi kartları kaldırıldı; alan kullanımı optimize edildi.
+- **Gelişmiş Güncelleme Yönetimi**: Ayarlar ekranına Otomatik Güncelleme kontrol anahtarı ve manuel "Şimdi Denetle" butonu eklendi.
 
 ### 🛠️ Hata Düzeltmeleri
-- **Sürüm Döngüsü Düzeltildi**: Derlenen APK içerisindeki sürüm ismi ile GitHub Release etiket ismi %100 senkronize edildi.
-- **Biçimlendirilmiş Notlar**: Markdown sembolleri temizlendi ve vurgulu madde işaretleri ile okuma kolaylaştırıldı.
+- **Arka Plan İşlem Ayrıştırması**: Tüm liste çekme ve eşitleme coroutine'leri UI iş parçacığından arka plan `Dispatchers.IO` kanalına taşınarak arayüzün akıcılığı (60/120 FPS) korundu.
+- **Sürüm ve Not Senkronizasyonu**: GitHub Release başlığı, APK sürüm numarası ve uygulama içi güncelleme notları %100 otomatik senkronize edildi.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
 ### 🎉 New Features & Enhancements
-- **Sleek Bottom Sheet UI**: The update dialog now smoothly slides up from the bottom with expanded height and clean typography.
-- **Automatic Version Increment**: Running `.bat` automatically bumps the application patch version and synchronizes release metadata.
-- **Bilingual Release Notes**: Full dual-language (TR/ENG) release notifications.
+- **High-Performance List Imports**: Massive performance overhaul for AniList, MAL, and Simkl sync pipelines using single-transaction batch database operations. Completely eliminated lag and stuttering during large list imports.
+- **Refined Detail Page Layout**: Cleaned up redundant metadata subtitles (e.g. `Series • 2010`) that were already displayed as hero badges.
+- **Streamlined Stats Grid**: Removed redundant stat cards (Source, Year, Adult status) to maximize usable content space.
+- **Advanced Update Controls**: Added automatic update check toggle and manual check button in system settings.
 
 ### 🛠️ Bug Fixes
-- **Version Loop Resolution**: Ensured internal APK metadata perfectly matches the remote GitHub release tag.
-- **Formatted Changelog**: Cleaned raw markdown tags for clear bullet point readability.
+- **UI Thread Offloading**: All data import coroutines now run strictly on `Dispatchers.IO`, ensuring smooth frame rates without UI locks.
+- **Metadata Synchronization**: Guaranteed 100% version alignment between local APK build tags and remote GitHub release changelogs.
