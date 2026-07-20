@@ -16,7 +16,9 @@ if (Test-Path $gradleFile) {
 
         if (Test-Path $notesFile) {
             $notesContent = [System.IO.File]::ReadAllText((Get-Item $notesFile).FullName, $utf8NoBom)
-            $updatedNotes = $notesContent -replace '# Kitsugi v\d+\.\d+\.\d+(-beta)?', "# Kitsugi v$newVersion-beta"
+            # Tüm vX.Y.Z, vX.Y.Z-beta ve Kitsugi X.Y.Z ifadelerini otomatik yeni sürüme güncelle
+            $updatedNotes = $notesContent -replace 'v\d+\.\d+\.\d+(-beta)?', "v$newVersion-beta"
+            $updatedNotes = $updatedNotes -replace 'Kitsugi \d+\.\d+\.\d+', "Kitsugi $newVersion"
             [System.IO.File]::WriteAllText((Get-Item $notesFile).FullName, $updatedNotes, $utf8NoBom)
         }
 

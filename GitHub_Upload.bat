@@ -13,10 +13,10 @@ cd /d "C:\Kitsugi-Beta"
 set "GIT_EXE=C:\Program Files\Git\cmd\git.exe"
 set "GH_EXE=C:\Program Files\GitHub CLI\gh.exe"
 
-if not exist "%GIT_EXE%" set "GIT_EXE=git"
-if not exist "%GH_EXE%" set "GH_EXE=gh"
+if not exist "!GIT_EXE!" set "GIT_EXE=git"
+if not exist "!GH_EXE!" set "GH_EXE=gh"
 
-echo [+] 1. Surum numarasi otomatik yukseltiliyor...
+echo [+] 1. Surum ve Release Notlari otomatik yukseltiliyor...
 FOR /F "usebackq tokens=*" %%V IN (`powershell -ExecutionPolicy Bypass -File scripts\bump_version.ps1`) DO SET "NEW_VER=%%V"
 
 if not defined NEW_VER (
@@ -30,25 +30,25 @@ echo [+] Yeni Otomatik Surum: !TAG_NAME!
 
 echo.
 echo [+] 2. Kod ve surum degisiklikleri GitHub'a gonderiliyor...
-"%GIT_EXE%" add .
-"%GIT_EXE%" commit -m "Release !TAG_NAME!: Auto increment version and update release notes"
-"%GIT_EXE%" push -u origin main
+"!GIT_EXE!" add .
+"!GIT_EXE!" commit -m "Release !TAG_NAME!: Auto increment version and update release notes"
+"!GIT_EXE!" push -u origin main
 
 echo.
 echo [+] 3. FOSS ve GMS APK'lari Derleniyor (Lutfen bekleyin)...
 call gradlew.bat assembleFossDebug assembleGmsDebug
 
-set FOSS_APK=app\build\outputs\apk\foss\debug\app-foss-debug.apk
-set GMS_APK=app\build\outputs\apk\gms\debug\app-gms-debug.apk
+set "FOSS_APK=app\build\outputs\apk\foss\debug\app-foss-debug.apk"
+set "GMS_APK=app\build\outputs\apk\gms\debug\app-gms-debug.apk"
 
-if exist "%FOSS_APK%" (
+if exist "!FOSS_APK!" (
     echo.
     echo [+] 4. GitHub Release (!TAG_NAME!), FOSS ve GMS APK'lari Yukleniyor...
     
-    if exist "%GMS_APK%" (
-        "%GH_EXE%" release create !TAG_NAME! "%FOSS_APK%" "%GMS_APK%" --title "Kitsugi !TAG_NAME!" --notes-file RELEASE_NOTES.md
+    if exist "!GMS_APK!" (
+        "!GH_EXE!" release create !TAG_NAME! "!FOSS_APK!" "!GMS_APK!" --title "Kitsugi !TAG_NAME!" --notes-file RELEASE_NOTES.md
     ) else (
-        "%GH_EXE%" release create !TAG_NAME! "%FOSS_APK%" --title "Kitsugi !TAG_NAME!" --notes-file RELEASE_NOTES.md
+        "!GH_EXE!" release create !TAG_NAME! "!FOSS_APK!" --title "Kitsugi !TAG_NAME!" --notes-file RELEASE_NOTES.md
     )
 
     echo.
