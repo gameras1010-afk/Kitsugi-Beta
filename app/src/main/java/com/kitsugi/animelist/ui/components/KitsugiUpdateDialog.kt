@@ -234,8 +234,9 @@ private fun UpdateAvailableBottomSheetContent(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(max = 260.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .heightIn(min = 220.dp, max = 380.dp)
+            .clip(RoundedCornerShape(18.dp))
+
             .background(KitsugiColors.SurfaceSoft)
             .border(1.dp, KitsugiColors.Border.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
             .padding(14.dp)

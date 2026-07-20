@@ -32,6 +32,7 @@ class AppUpdateViewModel(application: Application) : AndroidViewModel(applicatio
     val uiState: StateFlow<UpdateUiState> = _uiState.asStateFlow()
 
     private var currentRelease: AppRelease? = null
+    private var dismissedVersionName: String? = null
 
     fun checkForUpdates(silent: Boolean = true) {
         if (_uiState.value is UpdateUiState.Downloading || _uiState.value is UpdateUiState.ReadyToInstall) {
@@ -43,7 +44,7 @@ class AppUpdateViewModel(application: Application) : AndroidViewModel(applicatio
 
             val result = repository.checkForUpdate()
             result.onSuccess { release ->
-                if (release != null) {
+                if (release != null && release.versionName != dismissedVersionName) {
                     currentRelease = release
                     _uiState.value = UpdateUiState.UpdateAvailable(release)
                 } else {
@@ -56,6 +57,7 @@ class AppUpdateViewModel(application: Application) : AndroidViewModel(applicatio
             }
         }
     }
+
 
     fun startDownloadAndInstall() {
         val release = currentRelease ?: return
@@ -99,6 +101,8 @@ class AppUpdateViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun dismissUpdate() {
+        dismissedVersionName = currentRelease?.versionName
         _uiState.value = UpdateUiState.Idle
     }
+
 }
