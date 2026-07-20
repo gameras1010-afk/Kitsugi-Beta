@@ -425,7 +425,12 @@ internal fun KitsugiMalMediaEntryEditorSheet(
                 }
 
                 Spacer(modifier = Modifier.height(18.dp))
-                val platformName = if (source == "mal" || source == "jikan") "MyAnimeList" else "Yerel Kitaplık"
+                val platformName = when {
+                    source == "mal" || source == "jikan" -> "MyAnimeList"
+                    source == "simkl" || source == "tmdb" -> "Simkl"
+                    source == "anilist" -> "AniList"
+                    else -> "Yerel Kitaplık"
+                }
                 Text(
                     text = "Not: Yaptığınız değişiklikler otomatik olarak $platformName hesabınızla senkronize edilecektir.",
                     color = KitsugiColors.TextMuted, style = MaterialTheme.typography.bodySmall,

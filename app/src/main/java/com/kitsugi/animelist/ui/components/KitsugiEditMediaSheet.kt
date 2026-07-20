@@ -116,7 +116,8 @@ fun KitsugiEditMediaSheet(
     val accentColor  = LocalKitsugiAccent.current
     val isAniList    = source == "anilist"
     val isMal        = source == "mal" || source == "jikan"
-    val isManual     = !isAniList && !isMal
+    val isSimkl      = source == "simkl" || source == "tmdb"
+    val isManual     = !isAniList && !isMal && !isSimkl
 
     // ── State ──────────────────────────────────────────────────────────────
     var title      by rememberSaveable(initialEntry?.id) { mutableStateOf(initialEntry?.title.orEmpty()) }
@@ -174,11 +175,13 @@ fun KitsugiEditMediaSheet(
     val platformName = when {
         isAniList -> "AniList"
         isMal     -> "MyAnimeList"
+        isSimkl   -> "Simkl"
         else      -> "Yerel Kitaplık"
     }
     val platformColor = when {
         isAniList -> Color(0xFF02A9FF)
         isMal     -> Color(0xFF2E51A2)
+        isSimkl   -> Color(0xFFE21926)
         else      -> KitsugiColors.TextMuted
     }
 
@@ -650,6 +653,7 @@ fun KitsugiEditMediaSheet(
                 val syncNote = when {
                     isAniList -> "Not: Değişiklikler otomatik olarak AniList hesabınızla senkronize edilecektir."
                     isMal     -> "Not: Değişiklikler otomatik olarak MyAnimeList hesabınızla senkronize edilecektir."
+                    isSimkl   -> "Not: Değişiklikler otomatik olarak Simkl hesabınızla senkronize edilecektir."
                     else      -> ""
                 }
                 if (syncNote.isNotBlank()) {
