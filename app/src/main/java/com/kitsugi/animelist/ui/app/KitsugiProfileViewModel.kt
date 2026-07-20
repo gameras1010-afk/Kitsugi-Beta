@@ -649,6 +649,7 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                 val favAnime = mutableListOf<ProfileFavoriteItem>()
                 val favManga = mutableListOf<ProfileFavoriteItem>()
                 val favChar = mutableListOf<ProfileFavoriteItem>()
+                val favStaff = mutableListOf<ProfileFavoriteItem>()
 
                 client.newCall(favRequest).execute().use { response ->
                     if (response.isSuccessful) {
@@ -696,6 +697,21 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                                 )
                             }
                         }
+
+                        // Fetch favorite staff/people
+                        dataObj?.optJSONArray("people")?.let { arr ->
+                            for (i in 0 until minOf(arr.length(), 12)) {
+                                val item = arr.getJSONObject(i)
+                                favStaff.add(
+                                    ProfileFavoriteItem(
+                                        id = item.getInt("mal_id").toString(),
+                                        title = item.optNullableString("name") ?: "İsimsiz",
+                                        imageUrl = item.optJSONObject("images")?.optJSONObject("webp")?.optNullableString("image_url")
+                                            ?: item.optJSONObject("images")?.optJSONObject("jpg")?.optNullableString("image_url") ?: ""
+                                    )
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -706,7 +722,8 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                         mangaStats = mangaStats ?: it.mangaStats,
                         favoriteAnime = favAnime,
                         favoriteManga = favManga,
-                        favoriteCharacters = favChar
+                        favoriteCharacters = favChar,
+                        favoriteStaff = favStaff
                     )
                 }
 
@@ -764,6 +781,58 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
 
                 val avgScore = if (scores.isNotEmpty()) scores.average() else 0.0
 
+                // Fetch recent watch history from Simkl /sync/history
+                val recentHistoryList = mutableListOf<ProfileFavoriteItem>()
+                try {
+                    val historyUrl = "https://api.simkl.com/sync/history?limit=20"
+                    val historyRequest = Request.Builder()
+                        .url(historyUrl)
+                        .header("Authorization", "Bearer $token")
+                        .header("simkl-api-key", com.kitsugi.animelist.BuildConfig.SIMKL_CLIENT_ID)
+                        .build()
+
+                    withContext(Dispatchers.IO) {
+                        client.newCall(historyRequest).execute().use { response ->
+                            if (response.isSuccessful) {
+                                val body = response.body?.string().orEmpty()
+                                val root = JSONObject(body)
+                                // History returns arrays: anime, shows, movies
+                                listOf("anime", "shows", "movies").forEach { key ->
+                                    root.optJSONArray(key)?.let { arr ->
+                                        for (i in 0 until minOf(arr.length(), 20)) {
+                                            val entry = arr.getJSONObject(i)
+                                            // Item is nested under "show", "movie", or "anime" key
+                                            val mediaObj = entry.optJSONObject("show")
+                                                ?: entry.optJSONObject("movie")
+                                                ?: entry.optJSONObject("anime")
+                                                ?: continue
+                                            val title = mediaObj.optNullableString("title") ?: continue
+                                            val ids = mediaObj.optJSONObject("ids")
+                                            val simklId = ids?.optInt("simkl", 0) ?: 0
+                                            val posterSlug = mediaObj.optNullableString("poster")
+                                            val imageUrl = if (!posterSlug.isNullOrBlank()) {
+                                                "https://simkl.in/posters/${posterSlug}_m.jpg"
+                                            } else ""
+                                            if (simklId > 0) {
+                                                recentHistoryList.add(
+                                                    ProfileFavoriteItem(
+                                                        id = simklId.toString(),
+                                                        title = title,
+                                                        imageUrl = imageUrl
+                                                    )
+                                                )
+                                            }
+                                            if (recentHistoryList.size >= 20) return@use
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (he: Exception) {
+                    android.util.Log.w("ProfileViewModel", "Simkl history fetch failed: ${he.message}")
+                }
+
                 _simklState.update {
                     it.copy(
                         isLoading = false,
@@ -781,7 +850,8 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                         planned = planned,
                         paused = paused,
                         dropped = dropped,
-                        avgScore = avgScore
+                        avgScore = avgScore,
+                        recentHistory = recentHistoryList
                     )
                 }
             } catch (e: Exception) {
@@ -895,7 +965,8 @@ data class MalProfileState(
     val mangaStats: AniListStats? = null,
     val favoriteAnime: List<ProfileFavoriteItem> = emptyList(),
     val favoriteManga: List<ProfileFavoriteItem> = emptyList(),
-    val favoriteCharacters: List<ProfileFavoriteItem> = emptyList()
+    val favoriteCharacters: List<ProfileFavoriteItem> = emptyList(),
+    val favoriteStaff: List<ProfileFavoriteItem> = emptyList()
 )
 
 data class SimklProfileState(
@@ -916,5 +987,6 @@ data class SimklProfileState(
     val planned: Int = 0,
     val paused: Int = 0,
     val dropped: Int = 0,
-    val avgScore: Double = 0.0
+    val avgScore: Double = 0.0,
+    val recentHistory: List<ProfileFavoriteItem> = emptyList()
 )

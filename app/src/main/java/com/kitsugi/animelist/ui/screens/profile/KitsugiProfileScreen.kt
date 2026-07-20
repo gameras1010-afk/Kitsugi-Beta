@@ -211,6 +211,7 @@ fun KitsugiProfileScreen(
                             onEntryClick = onEntryClick,
                             onFavoriteMediaClick = onFavoriteMediaClick,
                             onFavoriteCharacterClick = onFavoriteCharacterClick,
+                            onFavoriteStaffClick = onFavoriteStaffClick,
                             isLandscape = isLandscape,
                             accentColor = accentColor
                         )
@@ -755,6 +756,7 @@ fun MalProfileContent(
     onEntryClick: (MediaEntry) -> Unit,
     onFavoriteMediaClick: (mediaId: Int, mediaType: MediaType, source: String) -> Unit,
     onFavoriteCharacterClick: (charId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
+    onFavoriteStaffClick: (staffId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
     isLandscape: Boolean,
     accentColor: Color
 ) {
@@ -919,6 +921,11 @@ fun MalProfileContent(
                 FavoritesHorizontalSection("Favori Karakterler", state.favoriteCharacters) { item ->
                     item.id.toIntOrNull()?.let { id ->
                         onFavoriteCharacterClick(id, "jikan", item.title, item.imageUrl)
+                    }
+                }
+                FavoritesHorizontalSection("Favori Personeller", state.favoriteStaff) { item ->
+                    item.id.toIntOrNull()?.let { id ->
+                        onFavoriteStaffClick(id, "jikan", item.title, item.imageUrl)
                     }
                 }
             }
@@ -1131,6 +1138,15 @@ fun SimklProfileContent(
                     StatItemRow("Planlandı", planned, totalCount, KitsugiColors.TextMuted)
                     StatItemRow("Durduruldu", paused, totalCount, KitsugiColors.AccentOrange)
                     StatItemRow("Bırakıldı", dropped, totalCount, KitsugiColors.AccentPink)
+                }
+            }
+        }
+
+        // Son İzlenenler (Simkl history)
+        if (state.recentHistory.isNotEmpty()) {
+            item {
+                FavoritesHorizontalSection("Son İzlenenler", state.recentHistory) {
+                    // Simkl öğelerine tıklama; simklId ile arama yapılabilir ama şimdilik no-op
                 }
             }
         }
