@@ -1,9 +1,8 @@
 package com.kitsugi.animelist.ui.screens.detail
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,7 +20,7 @@ import com.kitsugi.animelist.model.MediaType
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.utils.tvClickable
-import com.kitsugi.animelist.ui.components.KitsugiShimmerMediaRow
+import com.kitsugi.animelist.ui.components.KitsugiShimmerSearchResultList
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayTitle
 
 @Composable
@@ -32,13 +31,13 @@ fun RecommendationsTabContent(
 ) {
     when (state) {
         is DetailTabState.Loading -> {
-            KitsugiShimmerMediaRow(cardCount = 4)
+            KitsugiShimmerSearchResultList(itemCount = 4)
         }
         is DetailTabState.Error -> {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp),
+                    .padding(vertical = 24.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -54,7 +53,7 @@ fun RecommendationsTabContent(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp),
+                        .padding(vertical = 24.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -67,23 +66,18 @@ fun RecommendationsTabContent(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 12.dp)
+                        .padding(vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(
-                        text = "Buna Benzer Yapımlar",
+                        text = "Buna Benzer Yapımlar (${list.size})",
                         color = KitsugiColors.TextPrimary,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 12.dp)
+                        modifier = Modifier.padding(bottom = 4.dp)
                     )
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(horizontal = 4.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        items(list) { rel ->
-                            RecommendationCard(rel, titleLanguage, onRecommendationClick)
-                        }
+                    list.forEach { rel ->
+                        RecommendationCard(rel, titleLanguage, onRecommendationClick)
                     }
                 }
             }
@@ -99,19 +93,20 @@ fun RecommendationCard(
 ) {
     val accentColor = LocalKitsugiAccent.current
     val displayTitle = rel.getDisplayTitle(titleLanguage)
-    Column(
+    Row(
         modifier = Modifier
-            .width(130.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
             .background(KitsugiColors.Surface)
-            .tvClickable(shape = RoundedCornerShape(12.dp), onClick = { onClick(rel) })
-            .padding(bottom = 8.dp)
+            .border(1.dp, KitsugiColors.Border.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
+            .tvClickable(shape = RoundedCornerShape(16.dp), onClick = { onClick(rel) })
+            .padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(180.dp)
-                .clip(RoundedCornerShape(12.dp))
+                .size(width = 54.dp, height = 76.dp)
+                .clip(RoundedCornerShape(10.dp))
                 .background(KitsugiColors.SurfaceSoft)
         ) {
             if (!rel.imageUrl.isNullOrBlank()) {
@@ -127,34 +122,41 @@ fun RecommendationCard(
                         text = displayTitle.take(2).uppercase(),
                         color = KitsugiColors.TextMuted,
                         fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleSmall
                     )
                 }
             }
         }
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = displayTitle,
-            color = KitsugiColors.TextPrimary,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(horizontal = 8.dp)
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        val typeLabel = when (rel.mediaType) {
-            MediaType.Anime -> "Anime"
-            MediaType.Manga -> "Manga"
-            MediaType.Movie -> "Film"
-            MediaType.TvShow -> "Dizi"
+        Spacer(modifier = Modifier.width(14.dp))
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = displayTitle,
+                color = KitsugiColors.TextPrimary,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            val typeLabel = when (rel.mediaType) {
+                MediaType.Anime -> "Anime"
+                MediaType.Manga -> "Manga"
+                MediaType.Movie -> "Film"
+                MediaType.TvShow -> "Dizi"
+            }
+            val subtitleText = if (rel.relationType.isNotBlank() && rel.relationType != "Recommendation") {
+                "${rel.relationType} • $typeLabel"
+            } else {
+                "Benzer Yapım • $typeLabel"
+            }
+            Text(
+                text = subtitleText,
+                color = accentColor,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.SemiBold
+            )
         }
-        Text(
-            text = typeLabel,
-            color = accentColor,
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(horizontal = 8.dp)
-        )
     }
 }
