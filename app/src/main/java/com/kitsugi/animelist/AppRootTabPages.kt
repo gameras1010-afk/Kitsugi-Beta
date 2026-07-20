@@ -21,6 +21,7 @@ import com.kitsugi.animelist.data.local.ManagedAddonEntity
 import com.kitsugi.animelist.data.local.CloudstreamRepoEntity
 import com.kitsugi.animelist.data.local.CsPluginEntity
 import com.kitsugi.animelist.model.MediaEntry
+import com.kitsugi.animelist.model.MediaType
 import com.kitsugi.animelist.data.remote.JikanSearchResult
 import com.kitsugi.animelist.data.remote.ApiSearchSelection
 import com.kitsugi.animelist.ui.navigation.MainTab
@@ -111,6 +112,28 @@ fun AppRootTabPages(
                 },
                 onOpenSettingsClick = {
                     ctx.appViewModel.selectTab(MainTab.Settings)
+                },
+                onFavoriteMediaClick = { mediaId, mediaType, source ->
+                    // Navigate to ApiResultDetail by building a minimal JikanSearchResult
+                    val result = com.kitsugi.animelist.data.remote.JikanSearchResult(
+                        malId = mediaId,
+                        title = "",
+                        subtitle = "",
+                        type = mediaType,
+                        total = null,
+                        score = null,
+                        isAdult = false,
+                        imageUrl = null,
+                        year = null,
+                        source = source
+                    )
+                    ctx.navState.navigateToDetail(DetailScreen.ApiResultDetail(result))
+                },
+                onFavoriteCharacterClick = { charId, source, name, imageUrl ->
+                    ctx.navState.navigateToDetail(DetailScreen.CharacterDetail(charId, source, name, imageUrl))
+                },
+                onFavoriteStaffClick = { staffId, source, name, imageUrl ->
+                    ctx.navState.navigateToDetail(DetailScreen.StaffDetail(staffId, source, name, imageUrl))
                 }
             )
         }

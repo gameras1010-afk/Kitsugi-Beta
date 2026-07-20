@@ -500,10 +500,10 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
             _malState.update { it.copy(isConnected = true, isLoading = true, error = null) }
 
             try {
-                // Fetch profile metadata using MAL OAuth API
+                // Fetch profile metadata using MAL OAuth API with picture, anime_statistics, and manga_statistics fields
                 val responseJson = withContext(Dispatchers.IO) {
                     val request = Request.Builder()
-                        .url("https://api.myanimelist.net/v2/users/@me?fields=id,name,gender,location,joined_at")
+                        .url("https://api.myanimelist.net/v2/users/@me?fields=id,name,picture,gender,location,joined_at,anime_statistics,manga_statistics")
                         .header("Authorization", "Bearer $token")
                         .header("Accept", "application/json")
                         .build()
@@ -522,17 +522,74 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                 val location = userObj.optNullableString("location") ?: ""
                 val joinedAt = userObj.optNullableString("joined_at") ?: ""
 
+                val animeStatsObj = userObj.optJSONObject("anime_statistics")
+                val officialAnimeStats = if (animeStatsObj != null) {
+                    val watching = animeStatsObj.optInt("num_items_watching", 0)
+                    val completed = animeStatsObj.optInt("num_items_completed", 0)
+                    val planned = animeStatsObj.optInt("num_items_plan_to_watch", 0)
+                    val paused = animeStatsObj.optInt("num_items_on_hold", 0)
+                    val dropped = animeStatsObj.optInt("num_items_dropped", 0)
+                    val total = animeStatsObj.optInt("num_items", 0)
+                    val meanScore = animeStatsObj.optDouble("mean_score", 0.0)
+                    val episodes = animeStatsObj.optInt("num_episodes", 0)
+                    val minutes = (animeStatsObj.optDouble("num_days", 0.0) * 24.0 * 60.0).toInt()
+
+                    AniListStats(
+                        count = total,
+                        episodesWatched = episodes,
+                        minutesWatched = minutes,
+                        meanScore = meanScore,
+                        watching = watching,
+                        completed = completed,
+                        planned = planned,
+                        paused = paused,
+                        dropped = dropped
+                    )
+                } else null
+
+                val mangaStatsObj = userObj.optJSONObject("manga_statistics")
+                val officialMangaStats = if (mangaStatsObj != null) {
+                    val watching = mangaStatsObj.optInt("num_items_reading", 0)
+                    val completed = mangaStatsObj.optInt("num_items_completed", 0)
+                    val planned = mangaStatsObj.optInt("num_items_plan_to_read", 0)
+                    val paused = mangaStatsObj.optInt("num_items_on_hold", 0)
+                    val dropped = mangaStatsObj.optInt("num_items_dropped", 0)
+                    val total = mangaStatsObj.optInt("num_items", 0)
+                    val meanScore = mangaStatsObj.optDouble("mean_score", 0.0)
+                    val chapters = mangaStatsObj.optInt("num_chapters", 0)
+                    val volumes = mangaStatsObj.optInt("num_volumes", 0)
+
+                    AniListStats(
+                        count = total,
+                        episodesWatched = chapters,
+                        minutesWatched = volumes,
+                        meanScore = meanScore,
+                        watching = watching,
+                        completed = completed,
+                        planned = planned,
+                        paused = paused,
+                        dropped = dropped
+                    )
+                } else null
+
                 _malState.update {
                     it.copy(
                         name = username,
                         avatarUrl = avatar,
                         location = location,
-                        joinedAt = joinedAt
+                        joinedAt = joinedAt,
+                        animeStats = officialAnimeStats,
+                        mangaStats = officialMangaStats
                     )
                 }
 
-                // Fetch Stats & Favorites via public Jikan API
-                fetchMalJikanData(username)
+                // Fetch Stats & Favorites via public Jikan API (safe call)
+                try {
+                    fetchMalJikanData(username)
+                } catch (je: Exception) {
+                    android.util.Log.e("ProfileViewModel", "Safe Jikan fetch failed: ${je.message}")
+                    _malState.update { it.copy(isLoading = false) }
+                }
 
             } catch (e: Exception) {
                 _malState.update { it.copy(isLoading = false, error = e.message ?: "MAL verisi yüklenirken hata oluştu.") }
@@ -654,7 +711,8 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                 }
 
             } catch (e: Exception) {
-                _malState.update { it.copy(isLoading = false, error = e.message ?: "Jikan API yükleme hatası.") }
+                android.util.Log.e("ProfileViewModel", "Jikan Jikan fetch error: ${e.message}")
+                _malState.update { it.copy(isLoading = false) }
             }
         }
     }
@@ -672,11 +730,58 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
         viewModelScope.launch {
             try {
                 val profile = com.kitsugi.animelist.data.auth.SimklImportManager.fetchUserProfile(token)
+                val watchlist = com.kitsugi.animelist.data.auth.SimklImportManager.fetchAllLists(token)
+
+                var totalAnime = 0
+                var totalShows = 0
+                var totalMovies = 0
+                var watching = 0
+                var completed = 0
+                var planned = 0
+                var paused = 0
+                var dropped = 0
+                val scores = mutableListOf<Int>()
+
+                watchlist.forEach { entry ->
+                    when (entry.type) {
+                        com.kitsugi.animelist.model.MediaType.Anime -> totalAnime++
+                        com.kitsugi.animelist.model.MediaType.TvShow -> totalShows++
+                        com.kitsugi.animelist.model.MediaType.Movie -> totalMovies++
+                        else -> {}
+                    }
+
+                    when (entry.status) {
+                        com.kitsugi.animelist.model.WatchStatus.Watching -> watching++
+                        com.kitsugi.animelist.model.WatchStatus.Completed -> completed++
+                        com.kitsugi.animelist.model.WatchStatus.Planned -> planned++
+                        com.kitsugi.animelist.model.WatchStatus.Paused -> paused++
+                        com.kitsugi.animelist.model.WatchStatus.Dropped -> dropped++
+                        else -> planned++
+                    }
+
+                    entry.score?.let { scores.add(it) }
+                }
+
+                val avgScore = if (scores.isNotEmpty()) scores.average() else 0.0
+
                 _simklState.update {
                     it.copy(
                         isLoading = false,
                         name = profile.name,
-                        avatarUrl = profile.avatarUrl
+                        avatarUrl = profile.avatarUrl,
+                        joinedAt = profile.joinedAt,
+                        location = profile.location,
+                        bio = profile.bio,
+                        accountType = profile.accountType,
+                        totalAnime = totalAnime,
+                        totalShows = totalShows,
+                        totalMovies = totalMovies,
+                        watching = watching,
+                        completed = completed,
+                        planned = planned,
+                        paused = paused,
+                        dropped = dropped,
+                        avgScore = avgScore
                     )
                 }
             } catch (e: Exception) {
@@ -798,5 +903,18 @@ data class SimklProfileState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val name: String = "",
-    val avatarUrl: String? = null
+    val avatarUrl: String? = null,
+    val joinedAt: String? = null,
+    val location: String? = null,
+    val bio: String? = null,
+    val accountType: String? = null,
+    val totalAnime: Int = 0,
+    val totalShows: Int = 0,
+    val totalMovies: Int = 0,
+    val watching: Int = 0,
+    val completed: Int = 0,
+    val planned: Int = 0,
+    val paused: Int = 0,
+    val dropped: Int = 0,
+    val avgScore: Double = 0.0
 )

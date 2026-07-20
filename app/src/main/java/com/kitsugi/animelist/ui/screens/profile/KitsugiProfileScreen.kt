@@ -62,6 +62,9 @@ fun KitsugiProfileScreen(
     appSettings: AppSettings,
     onEntryClick: (MediaEntry) -> Unit,
     onOpenSettingsClick: () -> Unit,
+    onFavoriteMediaClick: (mediaId: Int, mediaType: MediaType, source: String) -> Unit,
+    onFavoriteCharacterClick: (charId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
+    onFavoriteStaffClick: (staffId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val accentColor = LocalKitsugiAccent.current
@@ -185,6 +188,9 @@ fun KitsugiProfileScreen(
                             mediaEntries = mediaEntries,
                             appSettings = appSettings,
                             onEntryClick = onEntryClick,
+                            onFavoriteMediaClick = onFavoriteMediaClick,
+                            onFavoriteCharacterClick = onFavoriteCharacterClick,
+                            onFavoriteStaffClick = onFavoriteStaffClick,
                             onLoadMoreActivities = { viewModel.loadNextAniListActivitiesPage() },
                             isLandscape = isLandscape,
                             accentColor = accentColor
@@ -203,6 +209,8 @@ fun KitsugiProfileScreen(
                             mediaEntries = mediaEntries,
                             appSettings = appSettings,
                             onEntryClick = onEntryClick,
+                            onFavoriteMediaClick = onFavoriteMediaClick,
+                            onFavoriteCharacterClick = onFavoriteCharacterClick,
                             isLandscape = isLandscape,
                             accentColor = accentColor
                         )
@@ -572,6 +580,9 @@ fun AniListProfileContent(
     mediaEntries: List<MediaEntry>,
     appSettings: AppSettings,
     onEntryClick: (MediaEntry) -> Unit,
+    onFavoriteMediaClick: (mediaId: Int, mediaType: MediaType, source: String) -> Unit,
+    onFavoriteCharacterClick: (charId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
+    onFavoriteStaffClick: (staffId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
     onLoadMoreActivities: () -> Unit,
     isLandscape: Boolean,
     accentColor: Color
@@ -789,10 +800,26 @@ fun AniListProfileContent(
 
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        FavoritesHorizontalSection("Favori Animeler", state.favoriteAnime)
-                        FavoritesHorizontalSection("Favori Mangalar", state.favoriteManga)
-                        FavoritesHorizontalSection("Favori Karakterler", state.favoriteCharacters)
-                        FavoritesHorizontalSection("Favori Ekip (Staff)", state.favoriteStaff)
+                        FavoritesHorizontalSection("Favori Animeler", state.favoriteAnime) { item ->
+                            item.id.toIntOrNull()?.let { id ->
+                                onFavoriteMediaClick(id, MediaType.Anime, "anilist")
+                            }
+                        }
+                        FavoritesHorizontalSection("Favori Mangalar", state.favoriteManga) { item ->
+                            item.id.toIntOrNull()?.let { id ->
+                                onFavoriteMediaClick(id, MediaType.Manga, "anilist")
+                            }
+                        }
+                        FavoritesHorizontalSection("Favori Karakterler", state.favoriteCharacters) { item ->
+                            item.id.toIntOrNull()?.let { id ->
+                                onFavoriteCharacterClick(id, "anilist", item.title, item.imageUrl)
+                            }
+                        }
+                        FavoritesHorizontalSection("Favori Ekip (Staff)", state.favoriteStaff) { item ->
+                            item.id.toIntOrNull()?.let { id ->
+                                onFavoriteStaffClick(id, "anilist", item.title, item.imageUrl)
+                            }
+                        }
                     }
                 }
             }
@@ -915,6 +942,8 @@ fun MalProfileContent(
     mediaEntries: List<MediaEntry>,
     appSettings: AppSettings,
     onEntryClick: (MediaEntry) -> Unit,
+    onFavoriteMediaClick: (mediaId: Int, mediaType: MediaType, source: String) -> Unit,
+    onFavoriteCharacterClick: (charId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
     isLandscape: Boolean,
     accentColor: Color
 ) {
@@ -1103,9 +1132,21 @@ fun MalProfileContent(
 
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        FavoritesHorizontalSection("Favori Animeler", state.favoriteAnime)
-                        FavoritesHorizontalSection("Favori Mangalar", state.favoriteManga)
-                        FavoritesHorizontalSection("Favori Karakterler", state.favoriteCharacters)
+                        FavoritesHorizontalSection("Favori Animeler", state.favoriteAnime) { item ->
+                            item.id.toIntOrNull()?.let { id ->
+                                onFavoriteMediaClick(id, MediaType.Anime, "jikan")
+                            }
+                        }
+                        FavoritesHorizontalSection("Favori Mangalar", state.favoriteManga) { item ->
+                            item.id.toIntOrNull()?.let { id ->
+                                onFavoriteMediaClick(id, MediaType.Manga, "jikan")
+                            }
+                        }
+                        FavoritesHorizontalSection("Favori Karakterler", state.favoriteCharacters) { item ->
+                            item.id.toIntOrNull()?.let { id ->
+                                onFavoriteCharacterClick(id, "jikan", item.title, item.imageUrl)
+                            }
+                        }
                     }
                 }
             }
@@ -1250,14 +1291,41 @@ fun SimklProfileContent(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = state.name,
+                                color = KitsugiColors.TextPrimary,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                            if (!state.accountType.isNullOrBlank()) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(accentColor.copy(alpha = 0.2f))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        text = state.accountType.uppercase(),
+                                        color = accentColor,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 10.sp
+                                    )
+                                }
+                            }
+                        }
+                        val details = buildList {
+                            if (!state.location.isNullOrBlank()) add(state.location)
+                            if (!state.joinedAt.isNullOrBlank()) {
+                                val dateStr = state.joinedAt.substringBefore(" ")
+                                add("Katılım: $dateStr")
+                            }
+                        }.joinToString(" • ")
+
                         Text(
-                            text = state.name,
-                            color = KitsugiColors.TextPrimary,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "Simkl Üyesi",
+                            text = if (details.isNotBlank()) details else "Simkl Üyesi",
                             color = KitsugiColors.TextMuted,
                             style = MaterialTheme.typography.labelSmall
                         )
@@ -1297,38 +1365,112 @@ fun SimklProfileContent(
         // Sub-tab contents
         when (activeTab) {
             0 -> {
+                // PROFIL
                 item {
-                    Card(
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(containerColor = KitsugiColors.Surface),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+                    // Önce ViewModel'den API istatistikleri kullan (Simkl profil fetch'i sırasında hesaplanmış)
+                    // Yoksa yerel listeden hesapla (fallback)
+                    val hasApiStats = state.totalAnime > 0 || state.totalShows > 0 || state.totalMovies > 0
+
+                    val simklEntries = if (!hasApiStats) remember(mediaEntries) { mediaEntries.filter { it.source == "simkl" || it.simklId != null } } else emptyList()
+
+                    val totalCount = if (hasApiStats) state.totalAnime + state.totalShows + state.totalMovies else simklEntries.size
+                    val animeCount = if (hasApiStats) state.totalAnime else simklEntries.count { it.type == MediaType.Anime }
+                    val tvCount = if (hasApiStats) state.totalShows else simklEntries.count { it.type == MediaType.TvShow }
+                    val movieCount = if (hasApiStats) state.totalMovies else simklEntries.count { it.type == MediaType.Movie }
+
+                    val watching = if (hasApiStats) state.watching else simklEntries.count { it.status == WatchStatus.Watching || it.status == WatchStatus.Repeating }
+                    val completed = if (hasApiStats) state.completed else simklEntries.count { it.status == WatchStatus.Completed }
+                    val planned = if (hasApiStats) state.planned else simklEntries.count { it.status == WatchStatus.Planned }
+                    val paused = if (hasApiStats) state.paused else simklEntries.count { it.status == WatchStatus.Paused }
+                    val dropped = if (hasApiStats) state.dropped else simklEntries.count { it.status == WatchStatus.Dropped }
+
+                    val avgScore = if (hasApiStats) state.avgScore else {
+                        val scored = simklEntries.mapNotNull { it.score }
+                        if (scored.isNotEmpty()) scored.average() else 0.0
+                    }
+
+                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        // Connection Status Card
+                        Card(
+                            shape = RoundedCornerShape(24.dp),
+                            colors = CardDefaults.cardColors(containerColor = KitsugiColors.Surface),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(20.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.CheckCircle,
+                                        contentDescription = null,
+                                        tint = KitsugiColors.AccentGreen,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "Simkl Bağlantısı Aktif",
+                                        color = KitsugiColors.TextPrimary,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                                if (!state.bio.isNullOrBlank()) {
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Text(
+                                        text = state.bio,
+                                        color = KitsugiColors.TextSecondary,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
+
+                        // Statistics Section
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                                .clip(RoundedCornerShape(24.dp))
+                                .background(KitsugiColors.Surface)
+                                .padding(18.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Rounded.CheckCircle,
-                                contentDescription = null,
-                                tint = KitsugiColors.AccentGreen,
-                                modifier = Modifier.size(48.dp)
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "Simkl Bağlantısı Aktif",
+                                text = "Kütüphane İstatistikleri",
                                 color = KitsugiColors.TextPrimary,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Stats Cards Grid
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                StatCard("Toplam", totalCount.toString())
+                                StatCard("Ort. Skor", if (avgScore > 0) "%.2f".format(avgScore) else "-")
+                            }
                             Spacer(modifier = Modifier.height(8.dp))
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                StatCard("Animeler", animeCount.toString())
+                                StatCard("Diziler", tvCount.toString())
+                                StatCard("Filmler", movieCount.toString())
+                            }
+
+                            Spacer(modifier = Modifier.height(20.dp))
                             Text(
-                                text = "Simkl kütüphaneniz arka planda Kitsugi ile senkronize edilmektedir.",
-                                color = KitsugiColors.TextMuted,
-                                style = MaterialTheme.typography.bodySmall,
-                                textAlign = TextAlign.Center
+                                text = "İzleme Durumu Dağılımı",
+                                color = KitsugiColors.TextPrimary,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold
                             )
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            StatItemRow("İzleniyor", watching, totalCount, accentColor)
+                            StatItemRow("Tamamlandı", completed, totalCount, KitsugiColors.AccentGreen)
+                            StatItemRow("Planlandı", planned, totalCount, KitsugiColors.TextMuted)
+                            StatItemRow("Durduruldu", paused, totalCount, KitsugiColors.AccentOrange)
+                            StatItemRow("Bırakıldı", dropped, totalCount, KitsugiColors.AccentPink)
                         }
                     }
                 }
@@ -1514,7 +1656,8 @@ fun RowScope.StatCard(
 @Composable
 fun FavoritesHorizontalSection(
     title: String,
-    items: List<ProfileFavoriteItem>
+    items: List<ProfileFavoriteItem>,
+    onItemClick: (ProfileFavoriteItem) -> Unit
 ) {
     if (items.isEmpty()) return
 
@@ -1537,7 +1680,9 @@ fun FavoritesHorizontalSection(
         ) {
             items(items) { item ->
                 Column(
-                    modifier = Modifier.width(90.dp),
+                    modifier = Modifier
+                        .width(90.dp)
+                        .clickable { onItemClick(item) },
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Box(

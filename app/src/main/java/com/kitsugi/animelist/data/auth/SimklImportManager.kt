@@ -19,7 +19,11 @@ object SimklImportManager {
     data class SimklUserProfile(
         val name: String,
         val avatarUrl: String?,
-        val bannerUrl: String?
+        val bannerUrl: String?,
+        val joinedAt: String? = null,
+        val location: String? = null,
+        val bio: String? = null,
+        val accountType: String? = null
     )
 
     suspend fun fetchUserProfile(token: String): SimklUserProfile {
@@ -39,19 +43,29 @@ object SimklImportManager {
                     throw com.kitsugi.animelist.data.repository.SimklAuthException("Simkl yetkilendirme hatası: 401")
                 }
                 if (!response.isSuccessful) {
-                    throw IllegalStateException("Simkl profil hatasÄ±: ${response.code}")
+                    throw IllegalStateException("Simkl profil hatası: ${response.code}")
                 }
                 val responseText = response.body?.string().orEmpty()
                 val root = JSONObject(responseText)
                 val user = root.optJSONObject("user")
-                val name = user?.optNullableString("name") ?: "Simkl KullanÄ±cÄ±sÄ±"
+                val name = user?.optNullableString("name") ?: "Simkl Kullanıcısı"
                 val avatar = user?.optNullableString("avatar")
                 val avatarUrl = if (!avatar.isNullOrBlank()) "https://simkl.in/avatars/${avatar}_m.jpg" else null
+
+                val joinedAt = user?.optNullableString("joined_at")
+                val location = user?.optNullableString("location")
+                val bio = user?.optNullableString("bio")
+                val account = root.optJSONObject("account")
+                val accountType = account?.optNullableString("type")
 
                 SimklUserProfile(
                     name = name,
                     avatarUrl = avatarUrl,
-                    bannerUrl = null
+                    bannerUrl = null,
+                    joinedAt = joinedAt,
+                    location = location,
+                    bio = bio,
+                    accountType = accountType
                 )
             }
         }
