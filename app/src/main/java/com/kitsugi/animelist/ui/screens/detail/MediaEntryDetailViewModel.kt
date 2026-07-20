@@ -195,20 +195,15 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
         }
 
         // Run fetches in view model scope
+        // fetchDetail önce tamamlanır; TMDB'den Türkçe synopsis gelirse fetchSynopsis onu görür.
         viewModelScope.launch {
             fetchDetail(entry)
+            fetchSynopsis(entry)
+            fetchMdbListRatingsForEntry(entry)
         }
 
         viewModelScope.launch {
             fetchLogo(entry, showAnimeLogos)
-        }
-
-        viewModelScope.launch {
-            fetchSynopsis(entry)
-        }
-
-        viewModelScope.launch {
-            fetchMdbListRatingsForEntry(entry)
         }
     }
 
@@ -223,7 +218,23 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
                 apiClient.fetchDetail(
                     source = entry.source,
                     externalId = entry.malId,
-                    mediaType = entry.type
+                    mediaType = entry.type,
+                    // TMDB zenginleştirmesi için entry'deki ID'leri ilet
+                    tmdbId = entry.tmdbId,
+                    // realMalId → Jikan/ARM için gerçek MAL ID'si; kaynak bazında hesaplanır
+                    realMalId = when (entry.source.lowercase()) {
+                        "simkl" -> {
+                            // Simkl API ids.mal alanı varsa entry.malId gerçek MAL ID'dir (simklId'den farklı)
+                            val m = entry.malId; val s = entry.simklId
+                            if (m != null && m > 0 && m != s && m < 100_000_000) m else null
+                        }
+                        "anilist" -> {
+                            // 100M+ offset'li stableId gerçek MAL ID değil; < 100M ise MAL ID'dir
+                            val m = entry.malId
+                            if (m != null && m > 0 && m < 100_000_000) m else null
+                        }
+                        else -> entry.malId
+                    }
                 )
             }
             if (fetched != null) {
@@ -241,6 +252,25 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
                 _originalSynopsis.value = trSynopsis
                 _translatedSynopsis.value = trSynopsis
                 _synopsisState.value = SynopsisState.Success(trSynopsis)
+
+                // TMDB'den gelen synopsis için de autoTranslate döngüsünü çalıştır
+                val autoTranslate = runCatching { settingsDataStore.settingsFlow.first() }.getOrNull()?.autoTranslateEnabled ?: false
+                if (autoTranslate) {
+                    val cachedTr = DetailCache.getTranslation("synopsis", entry.source, stableId)
+                    if (cachedTr != null) {
+                        _synopsisState.value = SynopsisState.Success(cachedTr)
+                        _translatedSynopsis.value = cachedTr
+                    } else {
+                        val tr = withContext(Dispatchers.IO) {
+                            translationManager.translateToTurkish(trSynopsis)
+                        }
+                        if (!tr.isNullOrBlank() && tr != trSynopsis) {
+                            DetailCache.putTranslation("synopsis", entry.source, stableId, tr)
+                            _synopsisState.value = SynopsisState.Success(tr)
+                            _translatedSynopsis.value = tr
+                        }
+                    }
+                }
             }
 
             val determinedSeason = KitsugiEpisodeRatingsRepository.determineTargetSeason(
@@ -331,34 +361,47 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
     private suspend fun fetchSynopsis(entry: MediaEntry) {
         val stableId = entry.malId ?: 0
         val autoTranslate = runCatching { settingsDataStore.settingsFlow.first() }.getOrNull()?.autoTranslateEnabled ?: false
-        _translatedSynopsis.value = null
+
+        // fetchDetail zaten tamamlandı; TMDB'den Türkçe synopsis geldiyse kullan, tekrar işleme
+        val currentSynopsis = _synopsisState.value
+        if (currentSynopsis is SynopsisState.Success && !currentSynopsis.text.isNullOrBlank()) {
+            // TMDB zaten Türkçe synopsis sağladı; autoTranslate cache'ini kontrol et
+            if (autoTranslate) {
+                val cachedTr = DetailCache.getTranslation("synopsis", entry.source, stableId)
+                if (cachedTr != null) {
+                    _synopsisState.value = SynopsisState.Success(cachedTr)
+                    _translatedSynopsis.value = cachedTr
+                }
+            }
+            return
+        }
+
         _originalSynopsis.value = entry.synopsis
 
+        // entry.synopsis doluysa hemen göster, arka planda çevir
         if (!entry.synopsis.isNullOrBlank()) {
             _synopsisState.value = SynopsisState.Success(entry.synopsis)
             _translatedSynopsis.value = entry.synopsis
-            // Otomatik çeviri açıksa arka planda Google Translate uygula (zaten Türkçeyse TranslationManager atlar)
             if (autoTranslate) {
-                viewModelScope.launch {
-                    val cachedTr = DetailCache.getTranslation("synopsis", entry.source, stableId)
-                    if (cachedTr != null) {
-                        _synopsisState.value = SynopsisState.Success(cachedTr)
-                        _translatedSynopsis.value = cachedTr
-                    } else {
-                        val tr = withContext(Dispatchers.IO) {
-                            translationManager.translateToTurkish(entry.synopsis)
-                        }
-                        if (!tr.isNullOrBlank() && tr != entry.synopsis) {
-                            DetailCache.putTranslation("synopsis", entry.source, stableId, tr)
-                            _synopsisState.value = SynopsisState.Success(tr)
-                            _translatedSynopsis.value = tr
-                        }
+                val cachedTr = DetailCache.getTranslation("synopsis", entry.source, stableId)
+                if (cachedTr != null) {
+                    _synopsisState.value = SynopsisState.Success(cachedTr)
+                    _translatedSynopsis.value = cachedTr
+                } else {
+                    val tr = withContext(Dispatchers.IO) {
+                        translationManager.translateToTurkish(entry.synopsis)
+                    }
+                    if (!tr.isNullOrBlank() && tr != entry.synopsis) {
+                        DetailCache.putTranslation("synopsis", entry.source, stableId, tr)
+                        _synopsisState.value = SynopsisState.Success(tr)
+                        _translatedSynopsis.value = tr
                     }
                 }
             }
             return
         }
 
+        // entry.synopsis de yok; API'den çek
         _synopsisState.value = SynopsisState.Loading
 
         val synopsis = withContext(Dispatchers.IO) {
@@ -376,7 +419,6 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
             _synopsisState.value = SynopsisState.Success(synopsis)
             _translatedSynopsis.value = synopsis
 
-            // Otomatik çeviri açıksa çevir (zaten Türkçeyse TranslationManager atlar)
             if (autoTranslate) {
                 val cachedTr = DetailCache.getTranslation("synopsis", entry.source, stableId)
                 if (cachedTr != null) {
