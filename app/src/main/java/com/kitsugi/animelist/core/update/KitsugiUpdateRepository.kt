@@ -8,6 +8,9 @@ import kotlinx.coroutines.withContext
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 
 class KitsugiUpdateRepository(
     private val repoOwner: String = "gameras1010-afk",
@@ -40,6 +43,7 @@ class KitsugiUpdateRepository(
             val tagName = json.optString("tag_name", "").trim()
             val releaseTitle = json.optString("name", tagName).ifEmpty { "Yeni Güncelleme" }
             val releaseNotes = json.optString("body", "Detaylı değişiklik notu bulunmuyor.")
+            val publishedAt = formatReleaseDate(json.optString("published_at", ""))
 
             val fetchedVersionCode = parseVersionCodeFromTag(tagName, json)
             val currentVersionCode = BuildConfig.VERSION_CODE
@@ -101,8 +105,23 @@ class KitsugiUpdateRepository(
                 releaseTitle = releaseTitle,
                 releaseNotes = releaseNotes,
                 downloadUrl = downloadUrl,
-                apkSizeBytes = apkSize
+                apkSizeBytes = apkSize,
+                publishedAt = publishedAt
             )
+        }
+    }
+
+    private fun formatReleaseDate(isoDate: String): String {
+        if (isoDate.isBlank()) return ""
+        return try {
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
+            inputFormat.timeZone = TimeZone.getTimeZone("UTC")
+            val date = inputFormat.parse(isoDate) ?: return ""
+            val outputFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale("tr", "TR"))
+            outputFormat.timeZone = TimeZone.getTimeZone("Europe/Istanbul")
+            outputFormat.format(date)
+        } catch (e: Exception) {
+            isoDate
         }
     }
 

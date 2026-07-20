@@ -1,4 +1,4 @@
-# Kitsugi v2.4.27 Release Notes 🚀
+# Kitsugi v2.4.28 Release Notes 🚀
 
 ---
 
@@ -25,6 +25,7 @@
 ### ⚙️ Güncelleme Ekranı Tasarım & Kaydırma İyileştirmesi
 - **Genişletilmiş Görünüm**: Güncelleme penceresi artık ekranın %85'ini kaplayacak şekilde yukarıdan açılır.
 - **Dinamik Kaydırma**: Değişiklik notları kutusu ekran yüksekliğine göre otomatik genişler ve kaydırma (scroll) sorunu olmadan tüm notların okunabilmesini sağlar.
+- **Yayınlanma Zamanı Gösterimi**: Yeni güncellemelerin GitHub üzerinde ne zaman yayınlandığı (tarih, saat ve dakika) clock/saat ikonuyla birlikte yerel Türkçe formatında gösterilir.
 
 ---
 
@@ -51,3 +52,4 @@
 ### ⚙️ Update Dialog Design & Scrolling Enhancements
 - **Extended Layout**: The update bottom sheet now fills up to 85% of screen height.
 - **Dynamic Scrolling**: The release notes container scales dynamically with weight, resolving scrolling issues on smaller screens/fonts and ensuring all changes can be read properly.
+- **Publication Date Display**: Displays the exact release publication date and time from GitHub in a localized format with a dedicated access time clock icon.

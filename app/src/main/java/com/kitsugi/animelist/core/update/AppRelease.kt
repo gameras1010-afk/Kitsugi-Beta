@@ -6,5 +6,6 @@ data class AppRelease(
     val releaseTitle: String,
     val releaseNotes: String,
     val downloadUrl: String,
-    val apkSizeBytes: Long = 0L
+    val apkSizeBytes: Long = 0L,
+    val publishedAt: String = ""
 )

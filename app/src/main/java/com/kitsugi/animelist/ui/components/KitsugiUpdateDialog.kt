@@ -31,6 +31,7 @@ import androidx.compose.material.icons.rounded.NewReleases
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.SystemUpdate
 import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material.icons.rounded.AccessTime
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -242,6 +243,27 @@ private fun ColumnScope.UpdateAvailableBottomSheetContent(
         if (release.apkSizeBytes > 0) {
             val sizeMb = String.format("%.1f MB", release.apkSizeBytes.toDouble() / (1024 * 1024))
             VersionBadge(text = sizeMb, accentColor = KitsugiColors.TextMuted)
+        }
+    }
+
+    if (release.publishedAt.isNotBlank()) {
+        Spacer(modifier = Modifier.height(6.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Icon(
+                imageVector = androidx.compose.material.icons.Icons.Rounded.AccessTime,
+                contentDescription = null,
+                tint = KitsugiColors.TextMuted,
+                modifier = Modifier.size(13.dp)
+            )
+            Text(
+                text = "Yayınlanma: ${release.publishedAt}",
+                style = MaterialTheme.typography.labelSmall,
+                color = KitsugiColors.TextMuted
+            )
         }
     }
 
