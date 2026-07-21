@@ -36,12 +36,14 @@ class MediaEntryRepository(
         dao.updateAll(entries.map { it.toEntity() })
     }
 
-    suspend fun update(entry: MediaEntry) {
+    suspend fun update(entry: MediaEntry, syncExternal: Boolean = true) {
         dao.update(
             entry.toEntity()
         )
 
-        syncEntryIfPossible(entry)
+        if (syncExternal) {
+            syncEntryIfPossible(entry)
+        }
     }
 
     suspend fun deleteById(id: Int) {

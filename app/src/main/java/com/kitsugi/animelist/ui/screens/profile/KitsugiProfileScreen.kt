@@ -1366,15 +1366,6 @@ fun AniListProfileContent(
                     }
                 }
             } else {
-                val subTabTitle = when (statsSubTab) {
-                    1 -> "Türler"
-                    2 -> "Etiketler"
-                    3 -> "Ekip"
-                    4 -> "Seslendirenler"
-                    5 -> "Stüdyolar"
-                    else -> ""
-                }
-
                 val currentList: List<RankedStatItem> = when (statsSubTab) {
                     1 -> overview?.genreList.orEmpty()
                     2 -> overview?.tagList.orEmpty()
@@ -1423,14 +1414,6 @@ fun AniListProfileContent(
                                 }
                             }
                         }
-
-                        // Sub-Tab Title
-                        Text(
-                            text = subTabTitle,
-                            color = KitsugiColors.TextPrimary,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
 
                         // Sort Chips Row
                         Row(
@@ -3233,6 +3216,22 @@ fun PositionalStatItemCard(
                             .clip(CircleShape),
                         contentScale = ContentScale.Crop
                     )
+                    Spacer(modifier = Modifier.width(12.dp))
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(CircleShape)
+                            .background(KitsugiColors.SurfaceStrong),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Person,
+                            contentDescription = null,
+                            tint = accentColor.copy(alpha = 0.8f),
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
                     Spacer(modifier = Modifier.width(12.dp))
                 }
                 Text(

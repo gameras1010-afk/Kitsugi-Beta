@@ -22,9 +22,31 @@ object KitsugiMarkdownUtils {
      *  - BBCode tags ([b], [i], [u], [url], [spoiler], etc.) → converted to markdown
      */
     private val oldSpoilerRegex = Regex(">\\s*⚠️\\s*\\*?Spoiler:\\*?\\s*(.*)", RegexOption.IGNORE_CASE)
+    private val jsonPayloadRegex = Regex("""(?i)\bjson[A-Za-z0-9+/=_-]{8,}""")
+    private val jsonBlockRegex = Regex("""(?i)\bjson\s*\{.*?\}""", RegexOption.DOT_MATCHES_ALL)
+    private val emptyParensRegex = Regex("""\(\s*\)""")
+    private val emptyBracketsRegex = Regex("""\[\s*\]""")
+
+    /**
+     * Cleans user bio / about text by removing extension-generated JSON payload data
+     * (such as AniHyou, MoeList, AL-Stats data blocks like `jsonN4Ig...`) and
+     * stripping leftover empty brackets/parentheses.
+     */
+    fun String.cleanUserAboutText(): String {
+        if (isBlank()) return ""
+        val cleaned = this
+            .replace(jsonPayloadRegex, "")
+            .replace(jsonBlockRegex, "")
+            .replace(emptyParensRegex, "")
+            .replace(emptyBracketsRegex, "")
+            .replace(Regex("\\n{3,}"), "\n\n")
+            .trim()
+        return cleaned
+    }
 
     fun String.formatAniListMarkdown(): String {
-        val withBBCodeConverted = this.convertBBCodeToMarkdown()
+        val cleanedUserAbout = this.cleanUserAboutText()
+        val withBBCodeConverted = cleanedUserAbout.convertBBCodeToMarkdown()
         return withBBCodeConverted
             .replace(htmlBrRegex, "\n\n")
             .replace(centerRegex) { it.groupValues[1].trim() }

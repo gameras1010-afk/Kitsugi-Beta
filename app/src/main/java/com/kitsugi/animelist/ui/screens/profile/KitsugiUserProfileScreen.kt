@@ -83,8 +83,10 @@ import com.kitsugi.animelist.ui.app.ProfileFavoriteItem
 import com.kitsugi.animelist.ui.app.RankedStatItem
 import com.kitsugi.animelist.ui.components.KitsugiActivityDetailBottomSheet
 import com.kitsugi.animelist.ui.components.KitsugiImageGalleryDialog
+import com.kitsugi.animelist.ui.components.KitsugiMarkdownText
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
+import com.kitsugi.animelist.utils.KitsugiMarkdownUtils.cleanUserAboutText
 import com.kitsugi.animelist.utils.ShareUtils
 import com.kitsugi.animelist.utils.toEnglishGenreForSearch
 import com.kitsugi.animelist.utils.toTurkishGenre
@@ -114,12 +116,6 @@ fun KitsugiUserProfileScreen(
 
     LaunchedEffect(userId) {
         viewModel.loadUser(userId, fallbackUsername, fallbackAvatar)
-    }
-
-    DisposableEffect(userId) {
-        onDispose {
-            viewModel.resetState()
-        }
     }
 
     val state by viewModel.uiState.collectAsState()
@@ -186,7 +182,7 @@ fun KitsugiUserProfileScreen(
                     }
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = state.name.ifBlank { fallbackUsername ?: "KullanÃ„Â±cÃ„Â± Profili" },
+                        text = state.name.ifBlank { fallbackUsername ?: "Kullanıcı Profili" },
                         color = KitsugiColors.TextPrimary,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
@@ -202,7 +198,7 @@ fun KitsugiUserProfileScreen(
                     }) {
                         Icon(
                             imageVector = Icons.Rounded.Share,
-                            contentDescription = "Profili PaylaÃ…Å¸",
+                            contentDescription = "Profili Paylaş",
                             tint = KitsugiColors.TextPrimary
                         )
                     }
@@ -236,7 +232,7 @@ fun KitsugiUserProfileScreen(
                         val avatarUrl = (state.avatarUrl ?: fallbackAvatar)?.takeIf { it.isNotBlank() }
                         val bannerUrl = state.bannerUrl?.takeIf { it.isNotBlank() }
                         val imageList = listOfNotNull(avatarUrl, bannerUrl)
-                        val username = state.name.ifBlank { fallbackUsername ?: "KullanÃ„Â±cÃ„Â±" }
+                        val username = state.name.ifBlank { fallbackUsername ?: "Kullanıcı" }
 
                         Box(
                             modifier = Modifier
@@ -300,7 +296,7 @@ fun KitsugiUserProfileScreen(
                                 Column(modifier = Modifier.weight(1f)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
-                                            text = state.name.ifBlank { fallbackUsername ?: "AniList KullanÃ„Â±cÃ„Â±sÃ„Â±" },
+                                            text = state.name.ifBlank { fallbackUsername ?: "AniList Kullanıcısı" },
                                             color = KitsugiColors.TextPrimary,
                                             style = MaterialTheme.typography.titleLarge,
                                             fontWeight = FontWeight.Bold,
@@ -446,9 +442,9 @@ fun KitsugiUserProfileScreen(
                                 verticalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
                                 val tabs = listOf(
-                                    Icons.Rounded.Info to "HakkÃ„Â±nda",
+                                    Icons.Rounded.Info to "Hakkında",
                                     Icons.Rounded.ChatBubble to "Aktivite",
-                                    Icons.Rounded.BarChart to "Ã„Â°statistikler",
+                                    Icons.Rounded.BarChart to "İstatistikler",
                                     Icons.Rounded.Star to "Favoriler",
                                     Icons.Rounded.People to "Sosyal"
                                 )
@@ -461,7 +457,7 @@ fun KitsugiUserProfileScreen(
 
                                 // Sub-filter chips per tab
                                 if (activeTab == 2) {
-                                    val subTabs = listOf("Genel", "TÃƒÂ¼rler", "Etiketler", "Ekip", "Seslendirmen", "StÃƒÂ¼dyo")
+                                    val subTabs = listOf("Genel", "Türler", "Etiketler", "Ekip", "Seslendirenler", "Stüdyolar")
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -484,7 +480,7 @@ fun KitsugiUserProfileScreen(
                                             .horizontalScroll(rememberScrollState()),
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        listOf("Anime", "Manga", "Karakterler", "Ekip", "StÃƒÂ¼dyolar").forEachIndexed { idx, label ->
+                                        listOf("Anime", "Manga", "Karakterler", "Ekip", "Stüdyolar").forEachIndexed { idx, label ->
                                             ProfileFilterChip(
                                                 text = label,
                                                 isSelected = favoritesFilter == idx,
@@ -499,7 +495,7 @@ fun KitsugiUserProfileScreen(
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         ProfileFilterChip(
-                                            text = "TakipÃƒÂ§iler (${state.socialState.followers.size})",
+                                            text = "Takipçiler (${state.socialState.followers.size})",
                                             isSelected = socialFilter == 0,
                                             accentColor = accentColor,
                                             onClick = { viewModel.socialFilter = 0 }
@@ -528,21 +524,22 @@ fun KitsugiUserProfileScreen(
                                 verticalArrangement = Arrangement.spacedBy(14.dp)
                             ) {
                                 Text(
-                                    text = "KullanÃ„Â±cÃ„Â± HakkÃ„Â±nda",
+                                    text = "Kullanıcı Hakkında",
                                     color = KitsugiColors.TextPrimary,
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )
 
-                                if (state.about.isNotBlank()) {
-                                    Text(
-                                        text = state.about,
-                                        color = KitsugiColors.TextSecondary,
-                                        style = MaterialTheme.typography.bodyMedium
+                                val displayAbout = remember(state.about) { state.about.cleanUserAboutText() }
+                                if (displayAbout.isNotBlank()) {
+                                    KitsugiMarkdownText(
+                                        text = displayAbout,
+                                        fontSize = 14.sp,
+                                        lineHeight = 20.sp
                                     )
                                 } else {
                                     Text(
-                                        text = "Bu kullanÃ„Â±cÃ„Â± henÃƒÂ¼z bir biyografi eklemedi.",
+                                        text = "Bu kullanıcı henüz bir biyografi eklemedi.",
                                         color = KitsugiColors.TextMuted,
                                         style = MaterialTheme.typography.bodyMedium
                                     )
@@ -551,15 +548,14 @@ fun KitsugiUserProfileScreen(
                                 HorizontalDivider(color = KitsugiColors.SurfaceStrong)
 
                                 Row(modifier = Modifier.fillMaxWidth()) {
-                                    StatCard("Anime KayÃ„Â±t", state.animeStats?.count?.toString() ?: "0")
-                                    StatCard("Manga KayÃ„Â±t", state.mangaStats?.count?.toString() ?: "0")
+                                    StatCard("Anime Kayıt", state.animeStats?.count?.toString() ?: "0")
+                                    StatCard("Manga Kayıt", state.mangaStats?.count?.toString() ?: "0")
                                 }
                             }
                         }
                     }
 
-                    // TAB 1: ACTIVITIES
-                    if (activeTab == 1) {
+                                        if (activeTab == 1) {
                         if (state.activities.isEmpty()) {
                             item {
                                 Box(
@@ -568,7 +564,7 @@ fun KitsugiUserProfileScreen(
                                         .padding(32.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(text = "Son aktivite bulunamadÃ„Â±.", color = KitsugiColors.TextMuted)
+                                    Text(text = "Son aktivite bulunamadı.", color = KitsugiColors.TextMuted)
                                 }
                             }
                         } else {
@@ -608,7 +604,7 @@ fun KitsugiUserProfileScreen(
                                                 .padding(horizontal = 24.dp, vertical = 10.dp)
                                         ) {
                                             Text(
-                                                text = "Daha Fazla YÃƒÂ¼kle",
+                                                text = "Daha Fazla Yükle",
                                                 color = accentColor,
                                                 style = MaterialTheme.typography.labelMedium,
                                                 fontWeight = FontWeight.Bold
@@ -667,11 +663,11 @@ fun KitsugiUserProfileScreen(
                                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                             Row(modifier = Modifier.fillMaxWidth()) {
                                                 StatCard("Toplam", ov.count.toString())
-                                                StatCard(if (statsMediaType == 0) "Ã„Â°zlenen bÃƒÂ¶lÃƒÂ¼m" else "Okunan bÃƒÂ¶lÃƒÂ¼m", ov.episodesWatched.toString())
-                                                StatCard(if (statsMediaType == 0) "Ã„Â°zlenen gÃƒÂ¼n" else "Okunan cilt", "%.1f".format(ov.daysWatched))
+                                                StatCard(if (statsMediaType == 0) "İzlenen bölüm" else "Okunan bölüm", ov.episodesWatched.toString())
+                                                StatCard(if (statsMediaType == 0) "İzlenen gün" else "Okunan cilt", "%.1f".format(ov.daysWatched))
                                             }
                                             Row(modifier = Modifier.fillMaxWidth()) {
-                                                StatCard(if (statsMediaType == 0) "Planlanan gÃƒÂ¼n" else "Planlanan bÃƒÂ¶lÃƒÂ¼m", "%.1f".format(ov.plannedDaysOrCount))
+                                                StatCard(if (statsMediaType == 0) "Planlanan gün" else "Planlanan bölüm", "%.1f".format(ov.plannedDaysOrCount))
                                                 StatCard("Ortalama Puan", "%.2f".format(ov.meanScore))
                                                 StatCard("Standart sapma", "%.1f".format(ov.standardDeviation))
                                             }
@@ -694,13 +690,13 @@ fun KitsugiUserProfileScreen(
                                                 ) {
                                                     FilterChipItem(
                                                         selected = scoreDistType == 0,
-                                                        text = "BaÃ…Å¸lÃ„Â±k sayÃ„Â±sÃ„Â±",
+                                                        text = "Başlık sayısı",
                                                         onClick = { scoreDistType = 0 },
                                                         accentColor = accentColor
                                                     )
                                                     FilterChipItem(
                                                         selected = scoreDistType == 1,
-                                                        text = "Harcanan sÃƒÂ¼re",
+                                                        text = "Harcanan süre",
                                                         onClick = { scoreDistType = 1 },
                                                         accentColor = accentColor
                                                     )
@@ -732,7 +728,7 @@ fun KitsugiUserProfileScreen(
                                             HorizontalDivider(color = KitsugiColors.SurfaceStrong)
                                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                                 Text(
-                                                    text = if (statsMediaType == 0) "BÃƒÂ¶lÃƒÂ¼m SayÃ„Â±sÃ„Â±" else "Cilt/BÃƒÂ¶lÃƒÂ¼m SayÃ„Â±sÃ„Â±",
+                                                    text = if (statsMediaType == 0) "Bölüm Sayısı" else "Cilt/Bölüm Sayısı",
                                                     color = KitsugiColors.TextPrimary,
                                                     style = MaterialTheme.typography.titleMedium,
                                                     fontWeight = FontWeight.Bold
@@ -743,13 +739,13 @@ fun KitsugiUserProfileScreen(
                                                 ) {
                                                     FilterChipItem(
                                                         selected = lengthDistType == 0,
-                                                        text = "BaÃ…Å¸lÃ„Â±k sayÃ„Â±sÃ„Â±",
+                                                        text = "Başlık sayısı",
                                                         onClick = { lengthDistType = 0 },
                                                         accentColor = accentColor
                                                     )
                                                     FilterChipItem(
                                                         selected = lengthDistType == 1,
-                                                        text = "Harcanan sÃƒÂ¼re",
+                                                        text = "Harcanan süre",
                                                         onClick = { lengthDistType = 1 },
                                                         accentColor = accentColor
                                                     )
@@ -780,19 +776,19 @@ fun KitsugiUserProfileScreen(
                                             HorizontalDivider(color = KitsugiColors.SurfaceStrong)
                                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                                 Text(
-                                                    text = "Durum DaÃ„Å¸Ã„Â±lÃ„Â±mÃ„Â±",
+                                                    text = "Durum Dağılımı",
                                                     color = KitsugiColors.TextPrimary,
                                                     style = MaterialTheme.typography.titleMedium,
                                                     fontWeight = FontWeight.Bold
                                                 )
                                                 val statusItems = ov.statusList.map { item ->
                                                     val (label, color) = when (item.status.uppercase()) {
-                                                        "CURRENT" -> (if (statsMediaType == 0) "Ã…Âimdiki" else "Okunuyor") to Color(0xFF81C784)
-                                                        "COMPLETED" -> "TamamlandÃ„Â±" to Color(0xFF64B5F6)
+                                                        "CURRENT" -> (if (statsMediaType == 0) "Şimdiki" else "Okunuyor") to Color(0xFF81C784)
+                                                        "COMPLETED" -> "Tamamlandı" to Color(0xFF64B5F6)
                                                         "PLANNING" -> "Planlanan" to Color(0xFFA1887F)
                                                         "PAUSED" -> "Durduruldu" to Color(0xFFFFB74D)
-                                                        "DROPPED" -> "BÃ„Â±rakÃ„Â±ldÃ„Â±" to Color(0xFFE57373)
-                                                        "REPEATING" -> (if (statsMediaType == 0) "Tekrar Ã„Â°zleniyor" else "Tekrar Okunuyor") to Color(0xFFBA68C8)
+                                                        "DROPPED" -> "Bırakıldı" to Color(0xFFE57373)
+                                                        "REPEATING" -> (if (statsMediaType == 0) "Tekrar İzleniyor" else "Tekrar Okunuyor") to Color(0xFFBA68C8)
                                                         else -> item.status to accentColor
                                                     }
                                                     Triple(label, item.count, color)
@@ -806,7 +802,7 @@ fun KitsugiUserProfileScreen(
                                             HorizontalDivider(color = KitsugiColors.SurfaceStrong)
                                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                                 Text(
-                                                    text = "TÃƒÂ¼r DaÃ„Å¸Ã„Â±lÃ„Â±mÃ„Â±",
+                                                    text = "Tür Dağılımı",
                                                     color = KitsugiColors.TextPrimary,
                                                     style = MaterialTheme.typography.titleMedium,
                                                     fontWeight = FontWeight.Bold
@@ -814,12 +810,12 @@ fun KitsugiUserProfileScreen(
                                                 val formatItems = ov.formatList.map { item ->
                                                     val (label, color) = when (item.format.uppercase()) {
                                                         "TV" -> "TV" to Color(0xFF5C6BC0)
-                                                        "TV_SHORT" -> "TV KÃ„Â±sa" to Color(0xFF7E57C2)
+                                                        "TV_SHORT" -> "TV Kısa" to Color(0xFF7E57C2)
                                                         "MOVIE" -> "Film" to Color(0xFF26A69A)
-                                                        "SPECIAL" -> "Ãƒâ€“zel" to Color(0xFFFFA726)
+                                                        "SPECIAL" -> "Özel" to Color(0xFFFFA726)
                                                         "OVA" -> "OVA" to Color(0xFFFF7043)
                                                         "ONA" -> "ONA" to Color(0xFFEC407A)
-                                                        "MUSIC" -> "MÃƒÂ¼zik Klip" to Color(0xFFAB47BC)
+                                                        "MUSIC" -> "Müzik Klip" to Color(0xFFAB47BC)
                                                         "MANGA" -> "Manga" to Color(0xFF42A5F5)
                                                         "NOVEL" -> "LN" to Color(0xFF8D6E63)
                                                         "ONE_SHOT" -> "One-Shot" to Color(0xFF78909C)
@@ -836,7 +832,7 @@ fun KitsugiUserProfileScreen(
                                             HorizontalDivider(color = KitsugiColors.SurfaceStrong)
                                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                                 Text(
-                                                    text = "ÃƒÅ“lke DaÃ„Å¸Ã„Â±lÃ„Â±mÃ„Â±",
+                                                    text = "Ülke Dağılımı",
                                                     color = KitsugiColors.TextPrimary,
                                                     style = MaterialTheme.typography.titleMedium,
                                                     fontWeight = FontWeight.Bold
@@ -844,8 +840,8 @@ fun KitsugiUserProfileScreen(
                                                 val countryItems = ov.countryList.map { item ->
                                                     val (label, color) = when (item.country.uppercase()) {
                                                         "JP" -> "Japonya" to Color(0xFF5C6BC0)
-                                                        "KR" -> "GÃƒÂ¼ney Kore" to Color(0xFF26A69A)
-                                                        "CN" -> "Ãƒâ€¡in" to Color(0xFFFF7043)
+                                                        "KR" -> "Güney Kore" to Color(0xFF26A69A)
+                                                        "CN" -> "Çin" to Color(0xFFFF7043)
                                                         "TW" -> "Tayvan" to Color(0xFFAB47BC)
                                                         else -> item.country to accentColor
                                                     }
@@ -860,7 +856,7 @@ fun KitsugiUserProfileScreen(
                                             HorizontalDivider(color = KitsugiColors.SurfaceStrong)
                                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                                 Text(
-                                                    text = "YayÃ„Â±n YÃ„Â±lÃ„Â±",
+                                                    text = "Yayın Yılı",
                                                     color = KitsugiColors.TextPrimary,
                                                     style = MaterialTheme.typography.titleMedium,
                                                     fontWeight = FontWeight.Bold
@@ -871,13 +867,13 @@ fun KitsugiUserProfileScreen(
                                                 ) {
                                                     FilterChipItem(
                                                         selected = releaseYearDistType == 0,
-                                                        text = "BaÃ…Å¸lÃ„Â±k sayÃ„Â±sÃ„Â±",
+                                                        text = "Başlık sayısı",
                                                         onClick = { releaseYearDistType = 0 },
                                                         accentColor = accentColor
                                                     )
                                                     FilterChipItem(
                                                         selected = releaseYearDistType == 1,
-                                                        text = "Harcanan sÃƒÂ¼re",
+                                                        text = "Harcanan süre",
                                                         onClick = { releaseYearDistType = 1 },
                                                         accentColor = accentColor
                                                     )
@@ -911,7 +907,7 @@ fun KitsugiUserProfileScreen(
                                             HorizontalDivider(color = KitsugiColors.SurfaceStrong)
                                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                                 Text(
-                                                    text = if (statsMediaType == 0) "Ã„Â°zleme YÃ„Â±lÃ„Â±" else "Okuma YÃ„Â±lÃ„Â±",
+                                                    text = if (statsMediaType == 0) "İzleme Yılı" else "Okuma Yılı",
                                                     color = KitsugiColors.TextPrimary,
                                                     style = MaterialTheme.typography.titleMedium,
                                                     fontWeight = FontWeight.Bold
@@ -922,13 +918,13 @@ fun KitsugiUserProfileScreen(
                                                 ) {
                                                     FilterChipItem(
                                                         selected = startYearDistType == 0,
-                                                        text = "BaÃ…Å¸lÃ„Â±k sayÃ„Â±sÃ„Â±",
+                                                        text = "Başlık sayısı",
                                                         onClick = { startYearDistType = 0 },
                                                         accentColor = accentColor
                                                     )
                                                     FilterChipItem(
                                                         selected = startYearDistType == 1,
-                                                        text = "Harcanan sÃƒÂ¼re",
+                                                        text = "Harcanan süre",
                                                         onClick = { startYearDistType = 1 },
                                                         accentColor = accentColor
                                                     )
@@ -962,19 +958,11 @@ fun KitsugiUserProfileScreen(
                                             .padding(16.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text(text = "Ã„Â°statistik yÃƒÂ¼klenemedi.", color = KitsugiColors.TextMuted)
+                                        Text(text = "İstatistik yüklenemedi.", color = KitsugiColors.TextMuted)
                                     }
                                 }
                             }
                         } else {
-                            val subTabTitle = when (statsSubTab) {
-                                1 -> "TÃƒÂ¼rler"
-                                2 -> "Etiketler"
-                                3 -> "Ekip"
-                                4 -> "Seslendirenler"
-                                5 -> "StÃƒÂ¼dyolar"
-                                else -> ""
-                            }
                             val currentList: List<RankedStatItem> = when (statsSubTab) {
                                 1 -> overview?.genreList.orEmpty()
                                 2 -> overview?.tagList.orEmpty()
@@ -1023,26 +1011,19 @@ fun KitsugiUserProfileScreen(
                                         }
                                     }
 
-                                    Text(
-                                        text = subTabTitle,
-                                        color = KitsugiColors.TextPrimary,
-                                        style = MaterialTheme.typography.titleLarge,
-                                        fontWeight = FontWeight.Bold
-                                    )
-
                                     Row(
                                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                                         modifier = Modifier.horizontalScroll(rememberScrollState())
                                     ) {
                                         ProfileFilterChip(
                                             isSelected = viewModel.statsSortType == 0,
-                                            text = "BaÃ…Å¸lÃ„Â±k sayÃ„Â±sÃ„Â±",
+                                            text = "Başlık sayısı",
                                             onClick = { viewModel.statsSortType = 0 },
                                             accentColor = accentColor
                                         )
                                         ProfileFilterChip(
                                             isSelected = viewModel.statsSortType == 1,
-                                            text = "Harcanan sÃƒÂ¼re",
+                                            text = "Harcanan süre",
                                             onClick = { viewModel.statsSortType = 1 },
                                             accentColor = accentColor
                                         )
@@ -1071,7 +1052,7 @@ fun KitsugiUserProfileScreen(
                                             .padding(32.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text(text = "Ã„Â°statistik verisi bulunamadÃ„Â±.", color = KitsugiColors.TextMuted)
+                                        Text(text = "İstatistik verisi bulunamadı.", color = KitsugiColors.TextMuted)
                                     }
                                 }
                             } else {
@@ -1116,7 +1097,7 @@ fun KitsugiUserProfileScreen(
                             1 -> "Favori Mangalar"
                             2 -> "Favori Karakterler"
                             3 -> "Favori Ekip"
-                            4 -> "Favori StÃƒÂ¼dyolar"
+                            4 -> "Favori Stüdyolar"
                             else -> "Favoriler"
                         }
 
@@ -1128,7 +1109,7 @@ fun KitsugiUserProfileScreen(
                                         .padding(32.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(text = "Favori ÃƒÂ¶ge bulunamadÃ„Â±.", color = KitsugiColors.TextMuted)
+                                    Text(text = "Favori öğe bulunamadı.", color = KitsugiColors.TextMuted)
                                 }
                             }
                         } else {
@@ -1155,7 +1136,7 @@ fun KitsugiUserProfileScreen(
                                             .padding(horizontal = 10.dp, vertical = 4.dp)
                                     ) {
                                         Text(
-                                            text = "TÃƒÂ¼mÃƒÂ¼nÃƒÂ¼ GÃƒÂ¶r",
+                                            text = "Tümünü Gör",
                                             color = accentColor,
                                             style = MaterialTheme.typography.labelSmall,
                                             fontWeight = FontWeight.Bold
@@ -1261,7 +1242,7 @@ fun KitsugiUserProfileScreen(
                                                 .padding(horizontal = 24.dp, vertical = 10.dp)
                                         ) {
                                             Text(
-                                                text = "Daha Fazla YÃƒÂ¼kle",
+                                                text = "Daha Fazla Yükle",
                                                 color = accentColor,
                                                 style = MaterialTheme.typography.labelMedium,
                                                 fontWeight = FontWeight.Bold
@@ -1285,7 +1266,7 @@ fun KitsugiUserProfileScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = if (socialFilter == 0) "TakipÃƒÂ§i bulunamadÃ„Â±." else "Takip edilen kullanÃ„Â±cÃ„Â± bulunamadÃ„Â±.",
+                                        text = if (socialFilter == 0) "Takipçi bulunamadı." else "Takip edilen kullanıcı bulunamadı.",
                                         color = KitsugiColors.TextMuted,
                                         textAlign = TextAlign.Center
                                     )
@@ -1338,6 +1319,7 @@ fun KitsugiUserProfileScreen(
                     }
                 }
             }
+        }
 
     if (activeFavoriteSheet != null) {
         val currentHasNext = when (favoritesFilter) {
@@ -1413,8 +1395,6 @@ fun KitsugiUserProfileScreen(
         )
     }
 }
-}
-
 }
 
 

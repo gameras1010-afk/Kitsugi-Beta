@@ -31,6 +31,13 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.List
 import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.FormatListBulleted
+import androidx.compose.material.icons.rounded.PlayCircle
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.PauseCircle
+import androidx.compose.material.icons.rounded.StopCircle
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -253,12 +260,6 @@ fun KitsugiUserMediaListScreen(
         viewModel.loadUserMediaList(userId, selectedType)
     }
 
-    DisposableEffect(userId, initialMediaType) {
-        onDispose {
-            viewModel.resetState()
-        }
-    }
-
     val state by viewModel.uiState.collectAsState()
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -269,6 +270,7 @@ fun KitsugiUserMediaListScreen(
     // Sort: 0=Varsayılan, 1=A-Z, 2=Puan, 3=İlerleme
     var sortId by remember { mutableStateOf(0) }
     var showSortMenu by remember { mutableStateOf(false) }
+    var showStatusBottomSheet by remember { mutableStateOf(false) }
 
     val sortLabels = listOf("Varsayılan", "A-Z", "Puana Göre ↓", "İlerleyeye Göre ↓")
 
@@ -439,44 +441,7 @@ fun KitsugiUserMediaListScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
 
-                // Status Chips
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    val statusChips = listOf(
-                        null to "Hepsini Göster",
-                        WatchStatus.Watching to if (selectedType == MediaType.Anime) "İzliyor" else "Okuyor",
-                        WatchStatus.Completed to "Tamamlandı",
-                        WatchStatus.Planned to if (selectedType == MediaType.Anime) "Planlıyor" else "Planlıyor",
-                        WatchStatus.Paused to "Durduruldu",
-                        WatchStatus.Dropped to "Bırakıldı"
-                    )
-
-                    statusChips.forEach { (status, label) ->
-                        val isSelected = selectedStatusFilter == status
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(if (isSelected) accentColor else KitsugiColors.SurfaceStrong)
-                                .tvClickable(shape = RoundedCornerShape(12.dp)) {
-                                    selectedStatusFilter = status
-                                }
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
-                        ) {
-                            Text(
-                                text = label,
-                                color = if (isSelected) KitsugiColors.Background else KitsugiColors.TextPrimary,
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
             }
         }
 
@@ -679,10 +644,7 @@ fun KitsugiUserMediaListScreen(
                     .clip(RoundedCornerShape(999.dp))
                     .background(accentColor)
                     .tvClickable(shape = RoundedCornerShape(999.dp)) {
-                        // Döngüsel status seçimi
-                        val statusCycle = listOf(null, WatchStatus.Watching, WatchStatus.Completed, WatchStatus.Planned, WatchStatus.Paused, WatchStatus.Dropped)
-                        val currentIdx = statusCycle.indexOf(selectedStatusFilter)
-                        selectedStatusFilter = statusCycle[(currentIdx + 1) % statusCycle.size]
+                        showStatusBottomSheet = true
                     }
                     .padding(horizontal = 20.dp, vertical = 14.dp),
                 contentAlignment = Alignment.Center
@@ -704,6 +666,16 @@ fun KitsugiUserMediaListScreen(
                 }
             }
         }
+    }
+
+    if (showStatusBottomSheet) {
+        UserMediaListStatusBottomSheet(
+            items = state.items,
+            selectedStatus = selectedStatusFilter,
+            mediaType = selectedType,
+            onStatusSelected = { selectedStatusFilter = it },
+            onDismissRequest = { showStatusBottomSheet = false }
+        )
     }
 }
 
@@ -899,6 +871,102 @@ private fun UserMediaRowCard(
                     fontWeight = FontWeight.Bold,
                     fontSize = 11.sp
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun UserMediaListStatusBottomSheet(
+    items: List<UserMediaListItem>,
+    selectedStatus: WatchStatus?,
+    mediaType: MediaType,
+    onStatusSelected: (WatchStatus?) -> Unit,
+    onDismissRequest: () -> Unit
+) {
+    val accentColor = LocalKitsugiAccent.current
+
+    val totalCount = items.size
+    val watchingCount = items.count { it.status == WatchStatus.Watching }
+    val completedCount = items.count { it.status == WatchStatus.Completed }
+    val plannedCount = items.count { it.status == WatchStatus.Planned }
+    val pausedCount = items.count { it.status == WatchStatus.Paused }
+    val droppedCount = items.count { it.status == WatchStatus.Dropped }
+
+    val statusItems = listOf(
+        Triple(null, "Tümü", Icons.Rounded.FormatListBulleted to totalCount),
+        Triple(WatchStatus.Watching, if (mediaType == MediaType.Anime) "İzliyor" else "Okuyor", Icons.Rounded.PlayCircle to watchingCount),
+        Triple(WatchStatus.Completed, "Tamamlandı", Icons.Rounded.CheckCircle to completedCount),
+        Triple(WatchStatus.Planned, "Planlanan", Icons.Rounded.Schedule to plannedCount),
+        Triple(WatchStatus.Paused, "Durduruldu", Icons.Rounded.PauseCircle to pausedCount),
+        Triple(WatchStatus.Dropped, "Bırakıldı", Icons.Rounded.StopCircle to droppedCount)
+    )
+
+    ModalBottomSheet(
+        onDismissRequest = onDismissRequest,
+        containerColor = KitsugiColors.Surface,
+        scrimColor = KitsugiColors.Background.copy(alpha = 0.65f),
+        dragHandle = {
+            Box(
+                modifier = Modifier
+                    .padding(vertical = 12.dp)
+                    .width(40.dp)
+                    .height(4.dp)
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(KitsugiColors.TextMuted.copy(alpha = 0.4f))
+            )
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            statusItems.forEach { (status, title, iconAndCount) ->
+                val (icon, count) = iconAndCount
+                val isSelected = selectedStatus == status
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(
+                            if (isSelected) accentColor.copy(alpha = 0.15f) else KitsugiColors.SurfaceStrong.copy(alpha = 0.4f)
+                        )
+                        .tvClickable(shape = RoundedCornerShape(16.dp), onClick = {
+                            onStatusSelected(status)
+                            onDismissRequest()
+                        })
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = title,
+                            tint = if (isSelected) accentColor else KitsugiColors.TextSecondary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.width(14.dp))
+                        Text(
+                            text = title,
+                            color = if (isSelected) accentColor else KitsugiColors.TextPrimary,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = if (isSelected) FontWeight.Black else FontWeight.SemiBold
+                        )
+                    }
+
+                    Text(
+                        text = count.toString(),
+                        color = if (isSelected) accentColor else KitsugiColors.TextMuted,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp
+                    )
+                }
             }
         }
     }

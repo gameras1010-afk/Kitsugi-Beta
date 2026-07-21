@@ -1,27 +1,31 @@
-# Kitsugi v2.4.47 Release Notes 🚀
+# Kitsugi v2.4.48 Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### 🌐 Medya Başlık Lokalizasyonu Standardizasyonu (Media Title Localization)
-- **Kullanıcı Dil Tercihi Entegrasyonu**: Personel (Staff) ve Stüdyo (Studio) detay sayfalarındaki medya başlıkları, kullanıcının uygulama ayarlarındaki başlık dili tercihine (İngilizce, Japonca/Native, Romaji) göre dinamik olarak görüntülenecek şekilde güncellendi.
-- **Veri Katmanı & Model Yenilemesi**: `KitsugiStaffMediaWork` modeline `titleEnglish`, `titleJapanese` ve `titleRomaji` alanları eklendi; AniList GraphQL sorguları ve `KitsugiStaffClient`/`KitsugiStudioClient` veri eşlemeleri tektipleştirildi.
-- **TV & Mobil Uyumluluğu**: Mobil ve Android TV (`TvRootScreen`) arayüzlerinde tüm stüdyo ve personel iş listeleri `getDisplayTitle` yardımcı fonksiyonu ile tam lokalizasyon desteğine kavuştu.
+### 📋 Medya Listesi Filtreleme & Bottom Sheet Dönüşümü
+- **FAB Odaklı Etkileşim:** `KitsugiUserMediaListScreen` üzerindeki kalabalık oluşturan statik üst filtre çiplerinin yerini sağ alttaki FAB butonuyla açılan `UserMediaListStatusBottomSheet` aldı.
+- **Tasarım Paritesi:** Kullanıcı medya listelerinde "Listem" ekranıyla %100 görsel ve işlevsel filtreleme uyumu sağlandı.
 
-### 👤 Harici Kullanıcı Profili ve Sosyal Ekosistem Paritesi
-- **Tam Fonksiyonel Kullanıcı Profilleri**: Harici kullanıcı sayfalarında medya listeleri, sosyal takipçi/takip edilen listeleri ve istatistik sekmeleri kişisel profil ekranı ile %100 görsel ve fonksiyonel uyuma ulaştırıldı.
-- **Gelişmiş Favoriler ve Medya Navigasyonu**: Favori öğeleri ve kullanıcı listelerindeki kartlara tıklandığında ilgili detay sayfalarına doğru AniList/MAL ID eşleşmeleriyle sorunsuz yönlendirme sağlandı.
+### ⚡ Otomatik Senkronizasyon & Bildirim İyileştirmeleri
+- **Gereksiz Ağ İstekleri Giderildi:** İçerik detay sayfaları açıldığında özet (synopsis) verisinin çekilmesiyle tetiklenen arka plan güncellemeleri optimize edildi.
+- **Eşitleme Bildirimi Düzeltildi:** Detay sayfalarına girildiğinde durduk yere ekranda beliren "başarıyla eşitlendi / güncellendi" snackbar bildirimi ve harici platform senkronizasyonu engellendi.
+
+### 🛡️ +18 İçerik Bulanıklaştırma (Adult Blur) Güvencesi
+- **Profil & Detay Kapsamı:** Ayarlardan bulanıklaştırma seçeneği aktifken profil favorileri, istatistikleri, sosyal akış, medya listeleri ve detay hero/poster görsellerinde +18 ögelerin tam blurlanması sağlandı.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### 🌐 Media Title Localization Standardization
-- **User Preference Alignment**: Media titles across Staff and Studio detail pages are now dynamically rendered according to the user's preferred title language setting (English, Japanese/Native, Romaji).
-- **Data Layer & Schema Update**: Enhanced `KitsugiStaffMediaWork` with `titleEnglish`, `titleJapanese`, and `titleRomaji` fields. Updated AniList GraphQL queries and network mappers across `KitsugiStaffClient` and `KitsugiStudioClient`.
-- **Mobile & Android TV Support**: Standardized title rendering via `getDisplayTitle` extension across both mobile views and Android TV (`TvRootScreen`) components.
+### 📋 Media List Filtering & Bottom Sheet UX
+- **FAB-Driven Interaction:** Replaced static top status filter rows in `KitsugiUserMediaListScreen` with an interactive bottom sheet modal (`UserMediaListStatusBottomSheet`) triggered by the floating action button.
+- **Design Parity:** Achieved full visual and functional parity between personal and external user media lists.
 
-### 👤 External User Profile & Social Ecosystem Parity
-- **Feature-Complete External Profiles**: Synchronized external user profile pages with personal profiles, supporting grid/list media browsing, status filtering, follower/following social lists, and statistics parity.
-- **Seamless Media Navigation**: Resolved ID mapping edge cases for AniList favorited items, ensuring smooth navigation to media detail pages.
+### ⚡ Automatic Sync & Notification Refinement
+- **Eliminated Unnecessary Re-fetches:** Optimized background data updates triggered when loading media synopses on detail pages.
+- **Redundant Sync Toast Fix:** Prevented unexpected "successfully synced / updated" snackbars when simply opening media detail views.
+
+### 🛡️ Adult Content Blur Enforcement
+- **Comprehensive Coverage:** Verified complete visual blurring across profile favorites, stats, social activity streams, media list cards, and detail page hero/poster graphics when adult blur is enabled.
