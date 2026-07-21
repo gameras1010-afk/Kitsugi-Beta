@@ -1,3 +1,7 @@
+# Kitsugi v2.4.48 Release Notes 🚀
+
+---
+
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
 ### 📋 Medya Listesi Filtreleme & Görsel Yenilikler
