@@ -11,6 +11,9 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import com.kitsugi.animelist.data.settings.SettingsDataStore
+import android.content.Intent
+import androidx.core.content.FileProvider
+import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -18,6 +21,55 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 object KitsugiImageDownloadHelper {
+
+    fun shareImage(context: Context, url: String, title: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Resim hazırlanıyor...", Toast.LENGTH_SHORT).show()
+            }
+            runCatching {
+                val cacheDir = File(context.cacheDir, "shared_images")
+                if (!cacheDir.exists()) {
+                    cacheDir.mkdirs()
+                }
+                val sanitizedTitle = title.replace(Regex("[^a-zA-Z0-9_]"), "_")
+                val imageFile = File(cacheDir, "Kitsugi_${sanitizedTitle}_${System.currentTimeMillis()}.jpg")
+
+                val connection = java.net.URL(url).openConnection()
+                connection.connectTimeout = 15000
+                connection.readTimeout = 15000
+                connection.inputStream.use { input ->
+                    imageFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+
+                val contentUri: Uri = FileProvider.getUriForFile(
+                    context,
+                    "com.kitsugi.animelist.fileprovider",
+                    imageFile
+                )
+
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "image/*"
+                    putExtra(Intent.EXTRA_STREAM, contentUri)
+                    putExtra(Intent.EXTRA_TEXT, "$title\n$url")
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+
+                val chooser = Intent.createChooser(shareIntent, "Resmi Paylaş")
+                chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                withContext(Dispatchers.Main) {
+                    context.startActivity(chooser)
+                }
+            }.onFailure { e ->
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Resim paylaşılamadı: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
 
     fun hasWritePermission(context: Context): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

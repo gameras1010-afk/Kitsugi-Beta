@@ -131,7 +131,7 @@ fun FavouritesScreen(
             if (filteredEntries.isEmpty()) {
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()
                         .weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
@@ -181,7 +181,7 @@ fun FavouritesScreen(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()
                         .weight(1f)
                 ) {
                     items(

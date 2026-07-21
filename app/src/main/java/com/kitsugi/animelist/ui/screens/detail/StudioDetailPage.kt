@@ -38,6 +38,8 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import com.kitsugi.animelist.ui.components.KitsugiMarkdownText
@@ -78,6 +80,8 @@ fun StudioDetailPage(
 
     // Collect state from ViewModel
     val state by viewModel.state.collectAsState()
+    val isFavourite by viewModel.isFavourite.collectAsState()
+    val isAniListSource = source.lowercase() == "anilist"
 
     Box(
         modifier = Modifier
@@ -181,6 +185,25 @@ fun StudioDetailPage(
                                     ) {
                                         Text("Geri", color = KitsugiColors.TextPrimary, fontWeight = FontWeight.Bold)
                                     }
+                                    if (isAniListSource) {
+                                        Box(
+                                            modifier = Modifier
+                                                .align(Alignment.TopEnd)
+                                                .padding(end = 8.dp, top = 8.dp)
+                                                .size(40.dp)
+                                                .clip(androidx.compose.foundation.shape.CircleShape)
+                                                .background(KitsugiColors.Background.copy(alpha = 0.45f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            IconButton(onClick = { viewModel.toggleFavourite() }) {
+                                                Icon(
+                                                    imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                                                    contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
+                                                    tint = if (isFavourite) accentColor else KitsugiColors.TextPrimary
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                                 Column(modifier = Modifier.padding(16.dp)) {
                                     Text(detail.name, color = KitsugiColors.TextPrimary, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black)
@@ -257,7 +280,10 @@ fun StudioDetailPage(
                                     detail = detail,
                                     source = source,
                                     accentColor = accentColor,
-                                    onBackClick = onBackClick
+                                    onBackClick = onBackClick,
+                                    isFavourite = isFavourite,
+                                    isAniListSource = isAniListSource,
+                                    onToggleFavourite = { viewModel.toggleFavourite() }
                                 )
                             }
 
@@ -364,7 +390,10 @@ private fun StudioHeroHeader(
     detail: KitsugiStudioDetail,
     source: String,
     accentColor: Color,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    isFavourite: Boolean = false,
+    isAniListSource: Boolean = false,
+    onToggleFavourite: () -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -428,6 +457,27 @@ private fun StudioHeroHeader(
                 color = KitsugiColors.TextPrimary,
                 fontWeight = FontWeight.Bold
             )
+        }
+
+        // Favourite button
+        if (isAniListSource) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(end = 12.dp, top = 24.dp)
+                    .size(40.dp)
+                    .clip(androidx.compose.foundation.shape.CircleShape)
+                    .background(KitsugiColors.Background.copy(alpha = 0.45f)),
+                contentAlignment = Alignment.Center
+            ) {
+                IconButton(onClick = onToggleFavourite) {
+                    Icon(
+                        imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                        contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
+                        tint = if (isFavourite) accentColor else KitsugiColors.TextPrimary
+                    )
+                }
+            }
         }
 
         // Details Column (Name & Info Row)

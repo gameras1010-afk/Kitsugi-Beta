@@ -39,7 +39,9 @@ fun KitsugiCinematicLoadingScreen(
     imageUrl: String?,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    logoUrl: String? = null
+    logoUrl: String? = null,
+    isAdult: Boolean = false,
+    blurAdultMedia: Boolean = false
 ) {
     val accentColor = LocalKitsugiAccent.current
 
@@ -73,7 +75,10 @@ fun KitsugiCinematicLoadingScreen(
                         scaleY = scalePulse * 1.05f
                         alpha = 0.35f
                     }
-                    .blur(16.dp)
+                    .then(
+                        if (blurAdultMedia && isAdult) Modifier.blur(36.dp)
+                        else Modifier.blur(16.dp)
+                    )
             )
         }
 
@@ -144,7 +149,12 @@ fun KitsugiCinematicLoadingScreen(
                         model = imageUrl,
                         contentDescription = title,
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .then(
+                                if (blurAdultMedia && isAdult) Modifier.blur(24.dp)
+                                else Modifier
+                            )
                     )
                 }
                 Spacer(modifier = Modifier.height(24.dp))

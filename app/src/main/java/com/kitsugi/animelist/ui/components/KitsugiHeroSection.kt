@@ -93,7 +93,6 @@ fun KitsugiHeroSection(
     alreadyInList: (JikanSearchResult) -> Boolean,
     onInfoClick: (JikanSearchResult) -> Unit,
     modifier: Modifier = Modifier,
-    scrollValue: Float = 0f,
     titleLanguage: String = "ROMAJI",
     scoreFormat: String = "POINT_10",
     hideScores: Boolean = false,
@@ -149,8 +148,10 @@ fun KitsugiHeroSection(
                 }
             }
             logoMap[item.malId] = logoUrl
-            logos = logoMap.toMap()
         }
+        // Tüm logolar yüklendikten sonra tek seferinde state güncellemesi yap
+        // (her logo için ayrı recomposition tetiklemek yerine)
+        logos = logoMap.toMap()
     }
 
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
@@ -315,14 +316,10 @@ fun KitsugiHeroSection(
             .background(KitsugiColors.Surface)
     ) {
         val heroWidthPx = with(LocalDensity.current) { maxWidth.toPx() }
-        val heroHeightPx = with(LocalDensity.current) { layout.heroHeight.toPx() }
-        val scrollOffsetPx = when {
-            scrollValue < 0f -> scrollValue
-            scrollValue >= heroHeightPx -> heroHeightPx
-            else -> scrollValue
-        }
-        val heroScrollScale = heroBackgroundScrollScale(scrollOffsetPx)
-        val heroScrollTranslationY = heroBackgroundScrollTranslationY(scrollOffsetPx)
+        // Parallax scroll efekti kaldırıldı — her px değişiminde recomposition yapıyordu.
+        // Statik scale değerleri kullanılıyor, performans önemli ölçüde arttı.
+        val heroScrollScale = 1f
+        val heroScrollTranslationY = 0f
 
         HorizontalPager(
             state = pagerState,

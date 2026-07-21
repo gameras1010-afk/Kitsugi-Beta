@@ -234,7 +234,9 @@ fun MediaEntryDetailPage(
                 title = entry.title,
                 imageUrl = entry.imageUrl,
                 onBackClick = onBackClick,
-                logoUrl = if (showAnimeLogos) logoUrl else null
+                logoUrl = if (showAnimeLogos) logoUrl else null,
+                isAdult = entry.isAdult,
+                blurAdultMedia = blurAdultMedia
             )
         } else {
             val pullRefreshState = rememberPullToRefreshState()
@@ -457,7 +459,7 @@ fun MediaEntryDetailPage(
                                                     imageUrl = rel.imageUrl,
                                                     year = null,
                                                     realMalId = rel.malId,
-                                                    source = entry.source,
+                                                    source = rel.source,
                                                     titleEnglish = rel.titleEnglish,
                                                     titleJapanese = rel.titleJapanese
                                                 )
@@ -481,7 +483,7 @@ fun MediaEntryDetailPage(
                                                     imageUrl = rel.imageUrl,
                                                     year = null,
                                                     realMalId = rel.malId,
-                                                    source = entry.source,
+                                                    source = rel.source,
                                                     titleEnglish = rel.titleEnglish,
                                                     titleJapanese = rel.titleJapanese
                                                 )
@@ -785,7 +787,7 @@ fun MediaEntryDetailPage(
                                             imageUrl = rel.imageUrl,
                                             year = null,
                                             realMalId = rel.malId,
-                                            source = entry.source,
+                                            source = rel.source,
                                             titleEnglish = rel.titleEnglish,
                                             titleJapanese = rel.titleJapanese
                                         )
@@ -809,7 +811,7 @@ fun MediaEntryDetailPage(
                                             imageUrl = rel.imageUrl,
                                             year = null,
                                             realMalId = rel.malId,
-                                            source = entry.source,
+                                            source = rel.source,
                                             titleEnglish = rel.titleEnglish,
                                             titleJapanese = rel.titleJapanese
                                         )

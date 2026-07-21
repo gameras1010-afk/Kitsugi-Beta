@@ -290,7 +290,9 @@ fun ApiResultDetailPage(
                 title = displayResult.title,
                 imageUrl = displayResult.imageUrl,
                 onBackClick = onBackClick,
-                logoUrl = if (showAnimeLogos) logoUrl else null
+                logoUrl = if (showAnimeLogos) logoUrl else null,
+                isAdult = displayResult.isAdult,
+                blurAdultMedia = blurAdultMedia
             )
         } else {
             val pullRefreshState = rememberPullToRefreshState()
@@ -397,44 +399,6 @@ fun ApiResultDetailPage(
                                                 .padding(vertical = 14.dp),
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .height(64.dp)
-                                                    .background(KitsugiColors.Surface.copy(alpha = 0.92f))
-                                                    .padding(horizontal = 8.dp)
-                                            ) {
-                                                IconButton(onClick = onBackClick) {
-                                                    Icon(
-                                                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                                                        contentDescription = "Geri",
-                                                        tint = KitsugiColors.TextPrimary
-                                                    )
-                                                }
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                Text(
-                                                    text = displayResult.title,
-                                                    color = KitsugiColors.TextPrimary,
-                                                    style = MaterialTheme.typography.titleMedium,
-                                                    fontWeight = FontWeight.Black,
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis,
-                                                    modifier = Modifier.weight(1f)
-                                                )
-                                                IconButton(onClick = {
-                                                    val url = buildExternalUrl(displayResult)
-                                                    if (!url.isNullOrBlank()) {
-                                                        com.kitsugi.animelist.utils.ShareUtils.shareText(context, displayResult.title, url)
-                                                    }
-                                                }) {
-                                                    Icon(
-                                                        imageVector = Icons.Rounded.Share,
-                                                        contentDescription = "Paylaş",
-                                                        tint = KitsugiColors.TextSecondary
-                                                    )
-                                                }
-                                            }
                                             Row(
                                                 verticalAlignment = Alignment.CenterVertically,
                                                 horizontalArrangement = Arrangement.spacedBy(8.dp)

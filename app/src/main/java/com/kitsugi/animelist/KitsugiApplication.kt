@@ -230,11 +230,8 @@ class KitsugiApplication : Application(), SingletonImageLoader.Factory {
             AddonStreamRepository(this@KitsugiApplication).seedPresetsIfEmpty()
         }
 
-        // Pre-load all enabled Cloudstream plugins sequentially on startup.
-        // Delayed 5s so app UI is fully ready and the main thread is not blocked
-        // (fixes the 527ms BIND_APPLICATION latency seen in PerfMonitor logs).
-        applicationScope.launch {
-            kotlinx.coroutines.delay(5_000L)
+        // Pre-load all enabled Cloudstream plugins sequentially on startup immediately on IO thread.
+        applicationScope.launch(Dispatchers.IO) {
             try {
                 val db = KitsugiDatabase.getDatabase(this@KitsugiApplication)
                 val enabledPlugins = db.csPluginDao().getEnabledPlugins()
@@ -253,9 +250,8 @@ class KitsugiApplication : Application(), SingletonImageLoader.Factory {
             }
         }
 
-        // Pre-load manga extensions from manga_extensions/ on startup (7s delay like CS plugins)
-        applicationScope.launch {
-            kotlinx.coroutines.delay(7_000L)
+        // Pre-load manga extensions on startup immediately on IO thread
+        applicationScope.launch(Dispatchers.IO) {
             try {
                 com.kitsugi.animelist.data.manga.MangaExtensionLoader.loadAllExtensions(this@KitsugiApplication)
                 android.util.Log.d("KitsugiApplication", "Manga eklentileri tarama tamamlandı.")
@@ -329,17 +325,17 @@ class KitsugiApplication : Application(), SingletonImageLoader.Factory {
             }
             .memoryCache {
                 MemoryCache.Builder()
-                    .maxSizePercent(context, 0.25)  // R2: %33 → %25 (manga RGB_565 için yeterli)
+                    .maxSizePercent(context, 0.30)
                     .strongReferencesEnabled(true)
                     .build()
             }
             .diskCache {
                 DiskCache.Builder()
                     .directory(cacheDir.resolve("nuvio_images").toOkioPath())
-                    .maxSizeBytes(512L * 1024 * 1024)  // R2: 200MB → 512MB
+                    .maxSizeBytes(512L * 1024 * 1024)
                     .build()
             }
-            .crossfade(false)
+            .crossfade(150)
             .allowHardware(true)
             .allowRgb565(true)           // manga için %50 bellek tasarrufu
             .precision(Precision.INEXACT)

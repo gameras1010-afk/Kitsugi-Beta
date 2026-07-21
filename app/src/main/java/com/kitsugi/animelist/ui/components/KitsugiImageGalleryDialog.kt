@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Image
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -199,6 +200,12 @@ fun KitsugiImageGalleryDialog(
                             } else {
                                 launcher.launch(KitsugiImageDownloadHelper.getRequiredPermissions())
                             }
+                        }
+                    },
+                    onShare = {
+                        val currentUrl = imageUrls.getOrNull(pagerState.currentPage)
+                        if (currentUrl != null) {
+                            KitsugiImageDownloadHelper.shareImage(context, currentUrl, title)
                         }
                     },
                     onDismiss = { dismissWithAnimation() },
@@ -451,6 +458,7 @@ private fun KitsugiGalleryHeader(
     accentColor: Color,
     downloadGlow: Float,
     onDownload: () -> Unit,
+    onShare: () -> Unit,
     onDismiss: () -> Unit,
     isLandscape: Boolean
 ) {
@@ -563,6 +571,30 @@ private fun KitsugiGalleryHeader(
                         Icon(
                             imageVector = Icons.Rounded.Download,
                             contentDescription = "İndir",
+                            tint = accentColor,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    // Paylaşım Butonu — accent dokunuşlu glassmorphism
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(
+                                color = accentColor.copy(alpha = 0.12f),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .border(
+                                width = 1.dp,
+                                color = accentColor.copy(alpha = 0.35f),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .tvClickable(shape = RoundedCornerShape(12.dp), onClick = onShare),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Share,
+                            contentDescription = "Paylaş",
                             tint = accentColor,
                             modifier = Modifier.size(20.dp)
                         )

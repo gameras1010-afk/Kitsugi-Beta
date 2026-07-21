@@ -213,7 +213,7 @@ internal fun MangaExtensionsTab(
                     }
 
                     // Kotatsu-Redo (Futon) built-in kaynakları kartı
-                    val kotatsuPurple = Color(0xFF7B61FF)
+                    val kotatsuColor = accentColor
                     var kotatsuActiveLangs by remember {
                         mutableStateOf(com.kitsugi.animelist.data.manga.KotatsuExtensionAdapter.getActiveLangs())
                     }
@@ -237,7 +237,7 @@ internal fun MangaExtensionsTab(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(10.dp))
-                            .background(kotatsuPurple.copy(alpha = 0.08f))
+                            .background(kotatsuColor.copy(alpha = 0.08f))
                             .padding(horizontal = 12.dp, vertical = 10.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
@@ -249,13 +249,13 @@ internal fun MangaExtensionsTab(
                             Icon(
                                 Icons.Rounded.AutoAwesome,
                                 contentDescription = null,
-                                tint = kotatsuPurple,
+                                tint = kotatsuColor,
                                 modifier = Modifier.size(20.dp)
                             )
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     "🤖 Kotatsu-Redo (Futon)",
-                                    color = kotatsuPurple,
+                                    color = kotatsuColor,
                                     fontWeight = FontWeight.SemiBold,
                                     fontSize = 12.sp
                                 )
@@ -269,12 +269,12 @@ internal fun MangaExtensionsTab(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(kotatsuPurple.copy(alpha = 0.15f))
+                                    .background(kotatsuColor.copy(alpha = 0.15f))
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
                             ) {
                                 Text(
                                     "Otomatik",
-                                    color = kotatsuPurple,
+                                    color = kotatsuColor,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -350,11 +350,11 @@ internal fun MangaExtensionsTab(
                                     }.joinToString("")
                                 }
                                 val chipBg = if (isActive)
-                                    kotatsuPurple.copy(alpha = 0.22f)
+                                    kotatsuColor.copy(alpha = 0.22f)
                                 else
                                     KitsugiColors.SurfaceStrong
-                                val chipBorder = if (isActive) kotatsuPurple else KitsugiColors.Border.copy(alpha = 0.4f)
-                                val chipTextColor = if (isActive) kotatsuPurple else KitsugiColors.TextSecondary
+                                val chipBorder = if (isActive) kotatsuColor else KitsugiColors.Border.copy(alpha = 0.4f)
+                                val chipTextColor = if (isActive) kotatsuColor else KitsugiColors.TextSecondary
 
                                 Box(
                                     modifier = Modifier

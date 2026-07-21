@@ -273,7 +273,26 @@ class KitsugiMediaRelationsClient {
                         TmdbApiClient().fetchRecommendations(effectiveTmdbId, isMovie)
                     } else emptyList()
                 }
-                "jikan", "mal" -> fetchRecommendationsFromJikan(externalId, mediaType)
+                "jikan", "mal" -> {
+                    val malList = fetchRecommendationsFromJikan(externalId, mediaType)
+                    // For anime/TV, try to enrich with TMDB "More Like This" when a tmdbId is known
+                    if (mediaType != MediaType.Manga) {
+                        val effectiveTmdbId = tmdbId ?: runCatching {
+                            KitsugiIdResolver.resolveIds(malId = realMalId ?: externalId, aniListId = null).tmdbId
+                        }.getOrNull()
+                        if (effectiveTmdbId != null && effectiveTmdbId > 0) {
+                            val isMovie = mediaType == MediaType.Movie
+                            val tmdbList = TmdbApiClient().fetchRecommendations(effectiveTmdbId, isMovie)
+                            if (tmdbList.isNotEmpty()) {
+                                // Keep MAL items (canonical IDs) first; append TMDB-only items after
+                                val malIds = malList.map { it.malId }.toHashSet()
+                                val tmdbOnly = tmdbList.filter { it.malId !in malIds }
+                                return@withContext malList + tmdbOnly
+                            }
+                        }
+                    }
+                    malList
+                }
                 "anilist"      -> fetchRecommendationsFromAniList(externalId, mediaType)
                 else           -> emptyList()
             }

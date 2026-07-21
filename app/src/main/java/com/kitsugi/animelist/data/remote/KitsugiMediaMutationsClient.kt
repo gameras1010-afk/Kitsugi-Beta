@@ -85,6 +85,37 @@ class KitsugiMediaMutationsClient {
         }
     }
 
+    /**
+     * AniList ToggleFavourite mutasyonu — karakter, ekip üyesi ve stüdyo için.
+     * @param entityType "character", "staff" veya "studio"
+     * @param entityId AniList entity ID'si
+     * @return true = başarılı toggle, false = hata
+     */
+    suspend fun toggleFavourite(entityType: String, entityId: Int): Boolean {
+        return withContext(Dispatchers.IO) {
+            val (argDecl, argParam, varKey) = when (entityType.lowercase()) {
+                "character" -> Triple("\$characterId: Int", "characterId: \$characterId", "characterId")
+                "staff"     -> Triple("\$staffId: Int",     "staffId: \$staffId",         "staffId")
+                "studio"    -> Triple("\$studioId: Int",    "studioId: \$studioId",        "studioId")
+                else        -> return@withContext false
+            }
+            val query = """
+                mutation ($argDecl) {
+                    ToggleFavourite($argParam) {
+                        characters { nodes { id } }
+                        staff { nodes { id } }
+                        studios { nodes { id } }
+                    }
+                }
+            """.trimIndent()
+            val variables = JSONObject().put(varKey, entityId)
+            runCatching {
+                val response = KitsugiApiBase.executeAniListQuery(query, variables)
+                response != null && !response.contains("errors")
+            }.getOrElse { false }
+        }
+    }
+
     suspend fun deleteActivity(activityId: Int): Boolean {
         return withContext(Dispatchers.IO) {
             val query = """

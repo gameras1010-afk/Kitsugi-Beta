@@ -1,19 +1,35 @@
-# Kitsugi v2.4.38 Release Notes 🚀
+# Kitsugi v2.4.39 Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### 🎨 Yayın Takvimi Tema Uyumlaştırması
-- **Dinamik Renk Entegrasyonu**: Haftalık yayın takvimi ekranı (`KitsugiAiringCalendarScreen`), artık uygulamanın genel dinamik tema renklerine (`KitsugiColors.Accent`) tam olarak uyum sağlıyor.
-- **Seçili Durum Kontrast İyileştirmesi**: Gün seçimi sekmelerindeki metinlerin ve bölüm sayı rozetlerinin renkleri, seçili olunduğunda arka planın dynamic accent rengiyle çakışmayacak ve yüksek kontrastlı (okunabilir) olacak şekilde KitsugiColors.Background ile güncellendi.
-- **Yükleme ve Hata Arayüzü Güncellemesi**: Yükleme göstergesi ve hata ekranındaki yeniden deneme butonları da artık uygulamanın aktif tema renklerini kullanıyor.
+### 🚀 Uygulama Açılış & Sıfır Gecikme (Zero-Delay Startup)
+- **Sıfır Suni Gecikme**: Cloudstream ve Manga eklentilerinin yüklenmesindeki yapay gecikmeler kaldırıldı. Tüm kaynaklar uygulamanın açıldığı ilk anda `Dispatchers.IO` arka plan thread havuzunda eşzamanlı olarak yüklenir.
+- **60/120 FPS Akıcı Açılış Animasyonu**: Arka plan yüklemeleri UI thread'ini etkilemediği için açılış animasyonu tamamen akıcı çalışır.
+
+### 👤 Profil Ekranı Pozisyon Koruma & State İyileştirmesi
+- **Kaldığın Yerden Devam Etme**: Profil ekranındaki sekmeler (Hakkında, Aktivite, İstatistikler, Favoriler, Sosyal) ve kaydırma pozisyonu (`LazyListState`) `rememberSaveable` ile koruma altına alındı.
+- **Yenileme ve Detay Sayfası Dönüşü**: Detay sayfalarına girip geri dönüldüğünde veya sayfa yenilendiğinde seçili sekme ve kaydırma konumu sıfırlanmaz.
+
+### ⚡ UI & Liste Performans Optimizasyonları
+- **Tekil Shimmer Fırçası (`LocalShimmerBrush`)**: Tüm yükleme animasyonları tek bir merkezi fırçadan beslenerek GPU/CPU tüketimi azaltıldı.
+- **Sabit Liste Anahtarları (Keyed Lists)**: Yayın Takvimi, Keşfet ve Ana Ekran yatay satır öğelerine benzersiz keys eklenerek liste takılmaları giderildi.
+- **Coil Önbellek Güçlendirmesi**: Resim bellek önbelleği artırılarak akıcı görsel yükleme sağlandı.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### 🎨 Airing Calendar Theme Synchronization
-- **Dynamic Accent Color Integration**: The weekly airing calendar screen (`KitsugiAiringCalendarScreen`) has been refactored to utilize the application's active dynamic accent color (`KitsugiColors.Accent`).
-- **Selected Tab Contrast Enhancements**: The text and episode count badge colors for the selected day tab have been updated to use `KitsugiColors.Background` instead of static white, ensuring readable contrast on top of light dynamic accent backgrounds.
-- **Loading & Error UI Theming**: The refresh loading indicator and "Retry" buttons now seamlessly adapt to the current theme configuration.
+### 🚀 Zero-Delay Startup Performance
+- **Instant Background Loading**: Artificial delay triggers during plugin/extension initialization were eliminated. All loading processes run immediately on background `Dispatchers.IO`.
+- **High Frame-Rate Cinematic Loading**: Isolated background tasks ensure 60/120 FPS fluid loading screen animations.
+
+### 👤 Profile Screen State & Scroll Retention
+- **Seamless Navigation Backstack**: Profile tabs (About, Activity, Stats, Favorites, Social) and scroll position (`LazyListState`) are now persisted using `rememberSaveable`.
+- **State Preservation**: Returning from detail pages or pulling to refresh maintains your exact active tab and scroll position.
+
+### ⚡ System-wide UI Rendering Optimizations
+- **Consolidated Shimmer Animation**: Unified `LocalShimmerBrush` eliminates redundant animation cycles across the app.
+- **Keyed Lazy Components**: Airing calendar and home rows now use composite item keys to eliminate list jitter and scroll reset issues.
+

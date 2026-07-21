@@ -592,7 +592,46 @@ fun KitsugiEditMediaSheet(
                     }
                 }
 
-                // Manual only
+                // Simkl only
+                if (isSimkl) {
+                    SheetRow(
+                        icon = Icons.Rounded.Star, label = "Favori",
+                        switchChecked = isFavorite, onSwitchCheckedChange = { isFavorite = it }
+                    )
+                    SheetRow(
+                        icon = Icons.Rounded.Repeat,
+                        label = if (selectedType == MediaType.Manga) "Yeniden Okunuyor" else "Yeniden İzleniyor",
+                        switchChecked = isRepeating, onSwitchCheckedChange = { isRepeating = it }
+                    )
+                    if (isRepeating) {
+                        SheetRow(
+                            icon = Icons.Rounded.RepeatOne,
+                            label = if (selectedType == MediaType.Manga) "Toplam Tekrar Okuma" else "Toplam Tekrar İzleme",
+                            value = repeatCount.toString(),
+                            onDecrement = { repeatCount = (repeatCount - 1).coerceAtLeast(0) },
+                            onIncrement = { repeatCount++ }
+                        )
+                    }
+                    // Etiketler — lokal organizasyon için
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.Label,
+                            contentDescription = "Etiketler",
+                            tint = KitsugiColors.TextSecondary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        DialogTextField(
+                            value = tags, onValueChange = { tags = it },
+                            label = "Etiketler", placeholder = "Virgülle ayırın: Örn: sevilen, bilim-kurgu",
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
                 if (isManual) {
                     SheetRow(
                         icon = Icons.Rounded.Star, label = "Favori",

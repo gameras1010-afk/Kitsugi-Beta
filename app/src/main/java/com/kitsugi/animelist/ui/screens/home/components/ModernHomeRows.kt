@@ -92,12 +92,13 @@ fun ModernHomeRows(
                 )
             }
             else -> {
+                val rowState = androidx.compose.runtime.remember(title) { androidx.compose.foundation.lazy.LazyListState() }
                 LazyRow(
-                    state = rememberLazyListState(),
+                    state = rowState,
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(results, key = { it.malId }) { item ->
+                    items(results, key = { "${it.source}_${it.malId}" }) { item ->
                         ModernHomeMediaCard(
                             item = item,
                             cardWidth = cardWidth,

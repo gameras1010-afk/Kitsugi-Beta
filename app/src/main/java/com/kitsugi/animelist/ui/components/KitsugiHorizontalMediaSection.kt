@@ -11,12 +11,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.ui.platform.LocalConfiguration
@@ -32,7 +34,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import com.kitsugi.animelist.ui.components.LocalShimmerBrush
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.theme.KitsugiTvTokens
@@ -106,9 +108,11 @@ fun KitsugiHorizontalMediaSection(
                     val lastFocusedIndex = remember(results) { mutableStateOf(0) }
                     val focusRequesters = remember(results) { mutableMapOf<Int, FocusRequester>() }
                     val rowFocusRequester = remember { FocusRequester() }
+                    // title'a bağlı stable state — platform değişiminde sıfırlanır, yoksa korunur
+                    val lazyListState = remember(title) { LazyListState() }
                     CompositionLocalProvider(LocalBringIntoViewSpec provides tvSpec) {
                         LazyRow(
-                            state = androidx.compose.foundation.lazy.rememberLazyListState(),
+                            state = lazyListState,
                             modifier = Modifier
                                 .focusRequester(rowFocusRequester)
                                 .focusRestorer {
@@ -145,8 +149,10 @@ fun KitsugiHorizontalMediaSection(
                         }
                     }
                 } else {
+                    // title'a bağlı stable state — scroll pozisyonu platform değişince sıfırlanır
+                    val lazyListState = remember(title) { LazyListState() }
                     LazyRow(
-                        state = androidx.compose.foundation.lazy.rememberLazyListState(),
+                        state = lazyListState,
                         contentPadding = PaddingValues(horizontal = 20.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {

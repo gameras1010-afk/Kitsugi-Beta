@@ -85,6 +85,7 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.layout.size
 import kotlinx.coroutines.delay
+import com.kitsugi.animelist.ui.components.KitsugiShimmerProvider
 
 @Composable
 fun ExploreScreen(
@@ -165,15 +166,28 @@ fun ExploreScreen(
 
     val isAlreadyInList = remember(entryKeysSet) {
         { result: JikanSearchResult ->
+            // Key'leri onceden hesaplanmis set'ten O(1) lookup — her render'da string filter yok
             val directKey = "${result.source.lowercase()}_${result.malId}"
-            val tmdbId = result.tmdbId ?: if (result.source.equals("tmdb", ignoreCase = true)) result.malId else null
-            val rMal = if (result.source.equals("jikan", ignoreCase = true) || result.source.equals("mal", ignoreCase = true)) result.malId else result.realMalId
-            val normTitle = result.title.lowercase().filter { it in 'a'..'z' || it in '0'..'9' }.trim()
-
-            entryKeysSet.contains(directKey) ||
-                    (tmdbId != null && entryKeysSet.contains("tmdb_$tmdbId")) ||
-                    (rMal != null && (entryKeysSet.contains("mal_$rMal") || entryKeysSet.contains("jikan_$rMal"))) ||
-                    (normTitle.isNotEmpty() && entryKeysSet.contains("${result.type}_$normTitle"))
+            if (entryKeysSet.contains(directKey)) {
+                true
+            } else {
+                val tmdbId = result.tmdbId ?: if (result.source.equals("tmdb", ignoreCase = true)) result.malId else null
+                if (tmdbId != null && entryKeysSet.contains("tmdb_$tmdbId")) {
+                    true
+                } else {
+                    val rMal = if (result.source.equals("jikan", ignoreCase = true) || result.source.equals("mal", ignoreCase = true)) result.malId else result.realMalId
+                    if (rMal != null && (entryKeysSet.contains("mal_$rMal") || entryKeysSet.contains("jikan_$rMal"))) {
+                        true
+                    } else {
+                        val normTitle = buildString {
+                            for (c in result.title.lowercase()) {
+                                if (c in 'a'..'z' || c in '0'..'9') append(c)
+                            }
+                        }.trim()
+                        normTitle.isNotEmpty() && entryKeysSet.contains("${result.type}_$normTitle")
+                    }
+                }
+            }
         }
     }
 
@@ -261,18 +275,18 @@ fun ExploreScreen(
                         )
                     }
                 ) {
-                    LazyColumn(
-                        state = lazyListState,
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 100.dp)
-                    ) {
+                    KitsugiShimmerProvider {
+                        LazyColumn(
+                            state = lazyListState,
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(bottom = 100.dp)
+                        ) {
                         if (heroItems.isNotEmpty()) {
                             item {
                                 KitsugiHeroSection(
                                     items = heroItems,
                                     alreadyInList = isAlreadyInList,
                                     onInfoClick = onOpenApiDetail,
-                                    scrollValue = lazyListState.firstVisibleItemScrollOffset.toFloat(),
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
                                     hideScores = hideScores,
@@ -284,7 +298,9 @@ fun ExploreScreen(
                             }
                         } else if (viewModel.isLoading) {
                             item {
-                                KitsugiShimmerHeroSection()
+                                KitsugiShimmerProvider {
+                                    KitsugiShimmerHeroSection()
+                                }
                                 Spacer(modifier = Modifier.height(26.dp))
                             }
                         } else {
@@ -677,6 +693,7 @@ fun ExploreScreen(
                             }
                         }
                     }
+                }
                 }
             }
         }

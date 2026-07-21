@@ -18,6 +18,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,6 +36,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -151,60 +156,27 @@ fun MyListScreen(
         mutableStateOf(initialScrollIndex == 0 && initialScrollOffset == 0)
     }
 
-    LaunchedEffect(lazyListState) {
-        snapshotFlow {
-            lazyListState.firstVisibleItemIndex to lazyListState.firstVisibleItemScrollOffset
-        }.collect { position ->
-            if (isScrollRestored && entries.isNotEmpty()) {
-                onScrollPositionChange(
-                    position.first,
-                    position.second
-                )
-            }
-        }
-    }
-
-    LaunchedEffect(entries) {
-        if (!isScrollRestored) {
-            if (entries.isNotEmpty()) {
-                if (initialScrollIndex > 0 || initialScrollOffset > 0) {
-                    try {
-                        lazyListState.scrollToItem(initialScrollIndex, initialScrollOffset)
-                    } catch (e: Exception) {
-                        // ignore out of bounds
-                    }
-                }
-                isScrollRestored = true
-            } else {
-                kotlinx.coroutines.delay(100)
-                if (entries.isEmpty()) {
-                    isScrollRestored = true
-                }
-            }
-        }
-    }
-
-    var showAddDialog by rememberSaveable {
-        mutableStateOf(false)
-    }
-    var activeZoomImageUrl by remember { mutableStateOf<String?>(null) }
-    var activeZoomTitle by remember { mutableStateOf("") }
-
-    var showApiSearchDialog by rememberSaveable {
-        mutableStateOf(false)
-    }
-
-    var showStatusBottomSheet by rememberSaveable { mutableStateOf(false) }
-    var showSortMenu by rememberSaveable { mutableStateOf(false) }
-    var showSearchField by rememberSaveable { mutableStateOf(false) }
-
-    var isFabVisible by remember { mutableStateOf(true) }
+    var isFabVisible by rememberSaveable { mutableStateOf(true) }
     var prevIndex by remember { mutableIntStateOf(0) }
     var prevOffset by remember { mutableIntStateOf(0) }
+    var showSearchField by rememberSaveable { mutableStateOf(false) }
+    var showSortMenu by rememberSaveable { mutableStateOf(false) }
+    var showStatusBottomSheet by rememberSaveable { mutableStateOf(false) }
+    var showAddDialog by rememberSaveable { mutableStateOf(false) }
+    var showApiSearchDialog by rememberSaveable { mutableStateOf(false) }
+    var activeZoomImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
+    var activeZoomTitle by rememberSaveable { mutableStateOf("") }
 
+    // Birleştirilmiş scroll tracking — tek snapshotFlow ile FAB görünürlüğü
+    // ve scroll pozisyonu kaydetme birlikte yönetilir
     LaunchedEffect(lazyListState) {
         snapshotFlow { lazyListState.firstVisibleItemIndex to lazyListState.firstVisibleItemScrollOffset }
             .collect { (index, offset) ->
+                // Scroll pozisyonu kaydetme
+                if (isScrollRestored && entries.isNotEmpty()) {
+                    onScrollPositionChange(index, offset)
+                }
+                // FAB görünürlüğü
                 if (index == 0 && offset < 40) {
                     isFabVisible = true
                 } else if (index > prevIndex || (index == prevIndex && offset > prevOffset + 15)) {
@@ -332,12 +304,87 @@ fun MyListScreen(
     var isListRefreshing by remember { mutableStateOf(false) }
     val pullRefreshState = rememberPullToRefreshState()
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(KitsugiColors.background),
-        contentAlignment = Alignment.TopCenter
+            .background(KitsugiColors.background)
     ) {
+        // ── Sabit üst bar (başlık + arama + sıralama) ──
+        androidx.compose.material3.Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = KitsugiColors.background,
+            shadowElevation = 0.dp
+        ) {
+            Column {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(start = horizontalPadding, end = 4.dp, top = 8.dp, bottom = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Listem",
+                        color = KitsugiColors.textPrimary,
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(0.dp)
+                    ) {
+                        IconButton(onClick = { showSearchField = !showSearchField }) {
+                            Icon(
+                                imageVector = Icons.Rounded.Search,
+                                contentDescription = "Arama",
+                                tint = if (showSearchField || searchQuery.isNotBlank()) accentColor else KitsugiColors.textSecondary
+                            )
+                        }
+
+                        Box {
+                            IconButton(onClick = { showSortMenu = true }) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Sort,
+                                    contentDescription = "Sıralama",
+                                    tint = if (selectedSortId.isNotBlank() && selectedSortId != "added") accentColor else KitsugiColors.textSecondary
+                                )
+                            }
+
+                            KitsugiMyListSortMenu(
+                                expanded = showSortMenu,
+                                selectedSortId = selectedSortId,
+                                onSortSelected = onSortChange,
+                                onDismissRequest = { showSortMenu = false }
+                            )
+                        }
+                    }
+                }
+
+                // Arama alanı — sabit barın hemen altında açılıp kapanır
+                AnimatedVisibility(
+                    visible = showSearchField || searchQuery.isNotBlank(),
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    KitsugiSearchField(
+                        value = searchQuery,
+                        onValueChange = onSearchQueryChange,
+                        placeholder = "Listende ara...",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = horizontalPadding, vertical = 6.dp)
+                    )
+                }
+
+                HorizontalDivider(
+                    color = KitsugiColors.border.copy(alpha = 0.18f),
+                    thickness = 0.5.dp
+                )
+            }
+        }
+
         val tvSpec = KitsugiScrollDefaults.rememberTvCenteredSpec()
         CompositionLocalProvider(
             LocalBringIntoViewSpec provides if (isTvDevice) tvSpec else LocalBringIntoViewSpec.current
@@ -355,7 +402,9 @@ fun MyListScreen(
                         isListRefreshing = false
                     }
                 },
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
                 state = pullRefreshState,
                 indicator = {
                     PullToRefreshDefaults.Indicator(
@@ -376,136 +425,9 @@ fun MyListScreen(
                     verticalArrangement = Arrangement.Top
                 ) {
         item {
-            Spacer(modifier = Modifier.height(if (isLandscape) 14.dp else 28.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Listem",
-                    color = KitsugiColors.textPrimary,
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    IconButton(onClick = { showSearchField = !showSearchField }) {
-                        Icon(
-                            imageVector = Icons.Rounded.Search,
-                            contentDescription = "Arama",
-                            tint = if (showSearchField || searchQuery.isNotBlank()) accentColor else KitsugiColors.textSecondary
-                        )
-                    }
-
-                    Box {
-                        IconButton(onClick = { showSortMenu = true }) {
-                            Icon(
-                                imageVector = Icons.Rounded.Sort,
-                                contentDescription = "Sıralama",
-                                tint = accentColor
-                            )
-                        }
-
-                        KitsugiMyListSortMenu(
-                            expanded = showSortMenu,
-                            selectedSortId = selectedSortId,
-                            onSortSelected = onSortChange,
-                            onDismissRequest = { showSortMenu = false }
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(12.dp))
         }
 
-        item {
-            val currentProfileName = when (selectedTabIndex) {
-                0 -> {
-                    if (isAniListConnected && appSettings.anilistUsername.isNotBlank()) {
-                        appSettings.anilistUsername
-                    } else {
-                        "AniList Profilim"
-                    }
-                }
-                1 -> {
-                    if (isMalConnected && appSettings.malUsername.isNotBlank()) {
-                        appSettings.malUsername
-                    } else {
-                        "MAL Profilim"
-                    }
-                }
-                else -> {
-                    if (isSimklConnected && appSettings.simklUsername.isNotBlank()) {
-                        appSettings.simklUsername
-                    } else {
-                        "Simkl Profilim"
-                    }
-                }
-            }
-
-            val currentProfileImage = when (selectedTabIndex) {
-                0 -> appSettings.anilistProfileImageUri
-                1 -> appSettings.malProfileImageUri
-                else -> appSettings.simklProfileImageUri
-            }
-
-            val currentBannerImage = when (selectedTabIndex) {
-                0 -> appSettings.anilistBannerImageUri
-                1 -> appSettings.malBannerImageUri
-                else -> appSettings.simklBannerImageUri
-            }
-
-            val currentListTitle = when (selectedTabIndex) {
-                0 -> "AniList Kütüphanesi"
-                1 -> "MyAnimeList Kütüphanesi"
-                else -> "Simkl Kütüphanesi"
-            }
-
-            val currentPlatformName = when (selectedTabIndex) {
-                0 -> "AniList"
-                1 -> "MyAnimeList"
-                else -> "Simkl"
-            }
-
-            val currentUsername = when (selectedTabIndex) {
-                0 -> appSettings.anilistUsername
-                1 -> appSettings.malUsername
-                else -> appSettings.simklUsername
-            }
-
-            KitsugiProfileHeaderCard(
-                profileName = currentProfileName,
-                listTitle = currentListTitle,
-                anilistUsername = currentUsername,
-                profileImageUri = currentProfileImage,
-                bannerImageUri = currentBannerImage,
-                totalCount = listStats.totalCount,
-                favoriteCount = listStats.favoriteCount,
-                averageScoreText = listStats.averageScoreText,
-                platformName = currentPlatformName,
-                onSettingsClick = onSettingsClick
-            )
-
-            Spacer(modifier = Modifier.height(18.dp))
-        }
-
-        item {
-            ListStatsHeader(
-                stats = listStats,
-                expanded = showDetailedStats,
-                onToggleExpanded = {
-                    showDetailedStats = !showDetailedStats
-                }
-            )
-
-            Spacer(modifier = Modifier.height(18.dp))
-        }
 
         stickyHeader(key = "platform_tabs") {
             val tabs = listOf("AniList", "MAL", "Simkl")
@@ -514,14 +436,16 @@ fun MyListScreen(
                 modifier = Modifier.fillMaxWidth(),
                 color = KitsugiColors.background
             ) {
-                Box(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp)
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .weight(1f)
                             .clip(RoundedCornerShape(22.dp))
                             .background(KitsugiColors.surface),
                         horizontalArrangement = Arrangement.spacedBy(0.dp)
@@ -549,6 +473,28 @@ fun MyListScreen(
                             }
                         }
                     }
+
+                    // 🎲 Rastgele buton — tab sırası sağ köşe
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(KitsugiColors.surface)
+                            .tvClickable(shape = RoundedCornerShape(14.dp)) {
+                                if (visibleEntries.isNotEmpty()) {
+                                    val randomEntry = visibleEntries.random()
+                                    onEntryClick(randomEntry)
+                                } else {
+                                    onExternalSyncMessage("Gösterilecek bir öğe yok")
+                                }
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "🎲",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
                 }
             }
         }
@@ -575,67 +521,9 @@ fun MyListScreen(
                 Spacer(modifier = Modifier.height(90.dp))
             }
         } else {
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    AddActionButton(
-                        title = "API ile Ara",
-                        primary = true,
-                        modifier = Modifier.weight(1.2f),
-                        onClick = { showApiSearchDialog = true }
-                    )
+            // Arama kutusu artık sabit üst barda, burada gösterilmiyor
 
-                    AddActionButton(
-                        title = "Senkronize Et",
-                        primary = false,
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            when (selectedTabIndex) {
-                                0 -> onSyncAniList()
-                                1 -> onSyncMal()
-                                else -> onSyncSimkl()
-                            }
-                        }
-                    )
-
-                    AddActionButton(
-                        title = "Manuel Ekle",
-                        primary = false,
-                        modifier = Modifier.weight(1f),
-                        onClick = { showAddDialog = true }
-                    )
-
-                    AddActionButton(
-                        title = "🎲",
-                        primary = false,
-                        modifier = Modifier.weight(0.5f),
-                        onClick = {
-                            if (visibleEntries.isNotEmpty()) {
-                                val randomEntry = visibleEntries.random()
-                                onEntryClick(randomEntry)
-                            } else {
-                                onExternalSyncMessage("Gösterilecek bir öğe yok")
-                            }
-                        }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(18.dp))
-            }
-
-            item {
-                KitsugiSearchField(
-                    value = searchQuery,
-                    onValueChange = onSearchQueryChange,
-                    placeholder = "Listende ara..."
-                )
-
-                Spacer(modifier = Modifier.height(14.dp))
-            }
-
-            item {
+            stickyHeader(key = "filter_sort_bar") {
                 var isFiltersExpanded by rememberSaveable { mutableStateOf(false) }
 
                 val activeStatusTitle = statusFilters.firstOrNull { it.id == selectedStatusFilterId }?.title ?: "Tümü"
@@ -656,95 +544,103 @@ fun MyListScreen(
                     activeSortTitle
                 ).filterNotNull().joinToString("  •  ")
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(KitsugiColors.surface)
-                        .tvClickable(shape = RoundedCornerShape(16.dp), onClick = { isFiltersExpanded = !isFiltersExpanded })
-                        .padding(horizontal = 16.dp, vertical = 14.dp)
+                androidx.compose.material3.Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = KitsugiColors.background
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.weight(1f)
+                    Column(modifier = Modifier.padding(bottom = 6.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(KitsugiColors.surface)
+                                .tvClickable(shape = RoundedCornerShape(16.dp), onClick = { isFiltersExpanded = !isFiltersExpanded })
+                                .padding(horizontal = 16.dp, vertical = 14.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Rounded.FilterList,
-                                contentDescription = null,
-                                tint = accentColor,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.FilterList,
+                                        contentDescription = null,
+                                        tint = accentColor,
+                                        modifier = Modifier.size(20.dp)
+                                    )
 
-                            Spacer(modifier = Modifier.width(12.dp))
+                                    Spacer(modifier = Modifier.width(12.dp))
 
-                            Column {
-                                Text(
-                                    text = "Filtrele ve Sırala",
-                                    color = KitsugiColors.textPrimary,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = summary,
-                                    color = KitsugiColors.textMuted,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Medium
+                                    Column {
+                                        Text(
+                                            text = "Filtrele ve Sırala",
+                                            color = KitsugiColors.textPrimary,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = summary,
+                                            color = KitsugiColors.textMuted,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                }
+
+                                Icon(
+                                    imageVector = if (isFiltersExpanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
+                                    contentDescription = null,
+                                    tint = KitsugiColors.textMuted,
+                                    modifier = Modifier.size(24.dp)
                                 )
                             }
                         }
 
-                        Icon(
-                            imageVector = if (isFiltersExpanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
-                            contentDescription = null,
-                            tint = KitsugiColors.textMuted,
-                            modifier = Modifier.size(24.dp)
-                        )
+                        AnimatedVisibility(
+                            visible = isFiltersExpanded,
+                            enter = expandVertically(),
+                            exit = shrinkVertically()
+                        ) {
+                            Column {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                RichMyListFilterPanel(
+                                    selectedStatusFilterId = selectedStatusFilterId,
+                                    selectedTypeFilterId = selectedTypeFilterId,
+                                    selectedFavoriteFilterId = selectedFavoriteFilterId,
+                                    selectedScoreFilterId = selectedScoreFilterId,
+                                    selectedYearFilterId = selectedYearFilterId,
+                                    selectedExtraFilterId = selectedExtraFilterId,
+                                    selectedSortId = selectedSortId,
+                                    onStatusSelected = onStatusFilterChange,
+                                    onTypeSelected = onTypeFilterChange,
+                                    onFavoriteSelected = onFavoriteFilterChange,
+                                    onScoreSelected = onScoreFilterChange,
+                                    onYearSelected = onYearFilterChange,
+                                    onExtraSelected = onExtraFilterChange,
+                                    onSortSelected = onSortChange,
+                                    onResetFilters = {
+                                        onStatusFilterChange("all")
+                                        onTypeFilterChange("all")
+                                        onFavoriteFilterChange("all")
+                                        onScoreFilterChange("all")
+                                        onYearFilterChange("all")
+                                        onExtraFilterChange("all")
+                                    },
+                                    onHideFilters = {
+                                        isFiltersExpanded = false
+                                    }
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                AnimatedVisibility(
-                    visible = isFiltersExpanded,
-                    enter = expandVertically(),
-                    exit = shrinkVertically()
-                ) {
-                    RichMyListFilterPanel(
-                        selectedStatusFilterId = selectedStatusFilterId,
-                        selectedTypeFilterId = selectedTypeFilterId,
-                        selectedFavoriteFilterId = selectedFavoriteFilterId,
-                        selectedScoreFilterId = selectedScoreFilterId,
-                        selectedYearFilterId = selectedYearFilterId,
-                        selectedExtraFilterId = selectedExtraFilterId,
-                        selectedSortId = selectedSortId,
-                        onStatusSelected = onStatusFilterChange,
-                        onTypeSelected = onTypeFilterChange,
-                        onFavoriteSelected = onFavoriteFilterChange,
-                        onScoreSelected = onScoreFilterChange,
-                        onYearSelected = onYearFilterChange,
-                        onExtraSelected = onExtraFilterChange,
-                        onSortSelected = onSortChange,
-                        onResetFilters = {
-                            onStatusFilterChange("all")
-                            onTypeFilterChange("all")
-                            onFavoriteFilterChange("all")
-                            onScoreFilterChange("all")
-                            onYearFilterChange("all")
-                            onExtraFilterChange("all")
-                        },
-                        onHideFilters = {
-                            isFiltersExpanded = false
-                        }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(14.dp))
             }
 
             if (selectedTabEntries.isEmpty()) {
@@ -810,17 +706,31 @@ fun MyListScreen(
             }
         }
     } // end LazyColumn
+        }
+    } // end PullToRefreshBox + CompositionLocalProvider
 
-        // ── Scroll-aware floating category button (inside Box so .align works) ──
-        val isTv = com.kitsugi.animelist.ui.theme.LocalIsTvDevice.current
-        if (!isTv) {
+    } // end Column
+
+    // ── Scroll-aware floating category button ──
+    val isTv = com.kitsugi.animelist.ui.theme.LocalIsTvDevice.current
+    if (!isTv) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomEnd
+        ) {
             AnimatedVisibility(
                 visible = isFabVisible,
                 enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
                 exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(bottom = 76.dp, end = 20.dp)
+                    .padding(
+                        bottom = if (isLandscape) {
+                            16.dp
+                        } else {
+                            86.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                        },
+                        end = 20.dp
+                    )
                     .zIndex(10f)
             ) {
                 val activeStatusLabel = statusFilters.firstOrNull { it.id == selectedStatusFilterId }?.title
@@ -855,8 +765,6 @@ fun MyListScreen(
             }
         }
     }
-}
-}
 
     if (showStatusBottomSheet) {
         KitsugiListStatusBottomSheet(

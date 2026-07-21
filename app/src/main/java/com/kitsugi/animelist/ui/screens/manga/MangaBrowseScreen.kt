@@ -43,7 +43,6 @@ import androidx.compose.ui.platform.LocalContext
 import com.kitsugi.animelist.ui.app.AddonViewModel
 import com.kitsugi.animelist.ui.app.MangaViewModel
 import com.kitsugi.animelist.ui.components.KitsugiAddonsSettingsDialog
-import com.kitsugi.animelist.ui.screens.stream.SettingsShortcutCard
 
 // ─── Per-source fetch state ───────────────────────────────────────────────────
 
@@ -439,7 +438,9 @@ fun MangaBrowseScreen(
             // Arama devam ediyorken (sourceStates doluyken) bu mesajı gösterme.
             val sourcesEmpty = ui.sources.isEmpty() && states.isEmpty() && !ui.isLoadingPopular
             if (sourcesEmpty) {
-                EmptySourcesHint(onOpenSettings = { showSettingsDialog = true })
+                Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    EmptySourcesHint(onOpenSettings = { showSettingsDialog = true })
+                }
             } else {
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp),
@@ -494,87 +495,75 @@ fun MangaBrowseScreen(
                     }
                 }
                 HorizontalDivider(modifier = Modifier.padding(top = 10.dp, bottom = 4.dp), color = KitsugiColors.SurfaceStrong.copy(0.5f))
-            }
 
-            // ── Grid ──
-            Box(Modifier.weight(1f)) {
-                val loading = if (query.isNotBlank()) states.any { it.isLoading } else ui.isLoadingPopular
-                when {
-                    loading && mergedMangas.isEmpty() -> {
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(cols),
-                            contentPadding = PaddingValues(12.dp),
-                            verticalArrangement   = Arrangement.spacedBy(12.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            items(8) {
-                                MangaCardShimmer()
-                            }
-                        }
-                    }
-                    !loading && mergedMangas.isEmpty() ->
-                        Box(Modifier.fillMaxSize(), Alignment.Center) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.padding(horizontal = 24.dp)
+                // ── Grid ──
+                Box(Modifier.weight(1f)) {
+                    val loading = if (query.isNotBlank()) states.any { it.isLoading } else ui.isLoadingPopular
+                    when {
+                        loading && mergedMangas.isEmpty() -> {
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(cols),
+                                contentPadding = PaddingValues(12.dp),
+                                verticalArrangement   = Arrangement.spacedBy(12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                modifier = Modifier.fillMaxSize()
                             ) {
-                                Icon(Icons.Rounded.SearchOff, null, tint = KitsugiColors.TextMuted, modifier = Modifier.size(48.dp))
-                                Spacer(Modifier.height(8.dp))
-                                Text("Sonuç bulunamadı", color = KitsugiColors.TextSecondary)
-                                Spacer(Modifier.height(24.dp))
-                                SettingsShortcutCard(
-                                    accentColor = accentColor,
-                                    onClick = { showSettingsDialog = true }
-                                )
-                            }
-                        }
-                    else -> LazyVerticalGrid(
-                        columns = GridCells.Fixed(cols),
-                        contentPadding = PaddingValues(12.dp),
-                        verticalArrangement   = Arrangement.spacedBy(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        // 1) ÖNCE başarıyla veri gelen kaynakların mangaları (en üstte).
-                        items(mergedMangas, key = { "${it.source}_${it.url}" }) { manga ->
-                            MangaCard(manga, accentColor) {
-                                // Kaynağı önce sourceStates'ten, sonra ui.sources'tan ara.
-                                // Arama modunda ui.sources boş olabilir; states her zaman dolu.
-                                val src = states.firstOrNull { it.source.name == manga.source }?.source
-                                    ?: ui.sources.firstOrNull { it.name == manga.source }
-                                    ?: selFilter
-                                    ?: states.firstOrNull()?.source
-                                    ?: ui.sources.firstOrNull()
-                                if (src != null) onMangaClick(src, manga)
-                            }
-                        }
-                        // 2) SONRA hâlâ yüklenen kaynakların iskelet (placeholder) kartları — EN ALTTA.
-                        //    Böylece başarıyla gelen sonuçlar her zaman üstte kalır, yüklenenler onları aşağı itmez.
-                        if (query.isNotBlank()) {
-                            val loadingStates = states.filter { it.isLoading && (selFilter == null || selFilter.name == it.source.name) }
-                            items(loadingStates, key = { "sk_${it.source.name}" }) {
-                                SkeletonCard(it.source.name, accentColor)
-                            }
-                        }
-                        val hasNextPageToShow = if (query.isBlank()) hasNext
-                            else (selFilter != null && (states.firstOrNull { it.source.name == selFilter.name }?.hasNextPage == true))
-
-                        if (query.isBlank() || selFilter != null) {
-                            item(span = { GridItemSpan(cols) }) {
-                                LaunchedEffect(mergedMangas.size) { vm.loadNextPage() }
-                                androidx.compose.animation.AnimatedVisibility(visible = hasNextPageToShow) {
-                                    Box(Modifier.fillMaxWidth().height(64.dp), Alignment.Center) {
-                                        CircularProgressIndicator(color = accentColor, modifier = Modifier.size(30.dp))
-                                    }
+                                items(8) {
+                                    MangaCardShimmer()
                                 }
                             }
                         }
+                        !loading && mergedMangas.isEmpty() ->
+                            Box(Modifier.fillMaxSize(), Alignment.Center) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier.padding(horizontal = 24.dp)
+                                ) {
+                                    Icon(Icons.Rounded.SearchOff, null, tint = KitsugiColors.TextMuted, modifier = Modifier.size(48.dp))
+                                    Spacer(Modifier.height(8.dp))
+                                    Text("Sonuç bulunamadı", color = KitsugiColors.TextSecondary)
+                                }
+                            }
+                        else -> LazyVerticalGrid(
+                            columns = GridCells.Fixed(cols),
+                            contentPadding = PaddingValues(12.dp),
+                            verticalArrangement   = Arrangement.spacedBy(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            // 1) ÖNCE başarıyla veri gelen kaynakların mangaları (en üstte).
+                            items(mergedMangas, key = { "${it.source}_${it.url}" }) { manga ->
+                                MangaCard(manga, accentColor) {
+                                    // Kaynağı önce sourceStates'ten, sonra ui.sources'tan ara.
+                                    // Arama modunda ui.sources boş olabilir; states her zaman dolu.
+                                    val src = states.firstOrNull { it.source.name == manga.source }?.source
+                                        ?: ui.sources.firstOrNull { it.name == manga.source }
+                                        ?: selFilter
+                                        ?: states.firstOrNull()?.source
+                                        ?: ui.sources.firstOrNull()
+                                    if (src != null) onMangaClick(src, manga)
+                                }
+                            }
+                            // 2) SONRA hâlâ yüklenen kaynakların iskelet (placeholder) kartları — EN ALTTA.
+                            //    Böylece başarıyla gelen sonuçlar her zaman üstte kalır, yüklenenler onları aşağı itmez.
+                            if (query.isNotBlank()) {
+                                val loadingStates = states.filter { it.isLoading && (selFilter == null || selFilter.name == it.source.name) }
+                                items(loadingStates, key = { "sk_${it.source.name}" }) {
+                                    SkeletonCard(it.source.name, accentColor)
+                                }
+                            }
+                            val hasNextPageToShow = if (query.isBlank()) hasNext
+                                else (selFilter != null && (states.firstOrNull { it.source.name == selFilter.name }?.hasNextPage == true))
 
-                        item(span = { GridItemSpan(cols) }) {
-                            SettingsShortcutCard(
-                                accentColor = accentColor,
-                                onClick = { showSettingsDialog = true }
-                            )
+                            if (query.isBlank() || selFilter != null) {
+                                item(span = { GridItemSpan(cols) }) {
+                                    LaunchedEffect(mergedMangas.size) { vm.loadNextPage() }
+                                    androidx.compose.animation.AnimatedVisibility(visible = hasNextPageToShow) {
+                                        Box(Modifier.fillMaxWidth().height(64.dp), Alignment.Center) {
+                                            CircularProgressIndicator(color = accentColor, modifier = Modifier.size(30.dp))
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -765,10 +754,13 @@ private fun EmptySourcesHint(onOpenSettings: () -> Unit) {
             Text("Henüz manga eklentisi yüklü değil.", color = KitsugiColors.TextSecondary, fontWeight = FontWeight.Medium)
             Button(
                 onClick = onOpenSettings,
-                colors = ButtonDefaults.buttonColors(containerColor = LocalKitsugiAccent.current),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = LocalKitsugiAccent.current,
+                    contentColor = KitsugiColors.Background
+                ),
                 shape = RoundedCornerShape(10.dp)
             ) {
-                Text("Eklentileri Düzenle", color = KitsugiColors.TextPrimary, fontWeight = FontWeight.Bold)
+                Text("Eklentileri Düzenle", fontWeight = FontWeight.Bold)
             }
         }
     }

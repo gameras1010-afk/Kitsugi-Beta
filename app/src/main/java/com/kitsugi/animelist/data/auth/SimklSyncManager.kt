@@ -105,6 +105,27 @@ object SimklSyncManager {
             }
         }
 
+        // 3. Puanı Simkl'e yaz (POST /sync/ratings)
+        val score = entry.score
+        if (score != null && score > 0) {
+            runCatching {
+                simklApiClient.setRating(token, simklId, entry.type, score)
+            }.onSuccess { success ->
+                if (success) messages.add("Simkl puanı güncellendi: $score/10")
+                else errors.add("Simkl puanı güncellenemedi")
+            }.onFailure { e ->
+                errors.add("Simkl puan hatası: ${e.message}")
+                Log.e(TAG, "syncEntryToSimkl setRating hatası", e)
+            }
+        } else if (score == null || score == 0) {
+            // Puan silinmişse kaldır
+            runCatching {
+                simklApiClient.removeRating(token, simklId, entry.type)
+            }.onFailure { e ->
+                Log.w(TAG, "Simkl removeRating uyarısı: ${e.message}")
+            }
+        }
+
         SyncResult(messages = messages, errors = errors)
     }
 

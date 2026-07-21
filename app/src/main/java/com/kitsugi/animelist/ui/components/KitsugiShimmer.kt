@@ -21,6 +21,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocal
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,6 +33,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kitsugi.animelist.ui.theme.KitsugiColors
+
+/**
+ * Paylaşımlı shimmer brush — aynı recomposition çerçevesinde birden fazla
+ * shimmer bileşeni varsa tek bir InfiniteTransition paylasılır.
+ * Üst bileşende [KitsugiShimmerProvider] kullanılmazsa her bileşen
+ * kendi transition'unu oluşturur (geriye uyumlu).
+ */
+val LocalShimmerBrush: ProvidableCompositionLocal<Brush?> = compositionLocalOf { null }
 
 // ─── Merkezi Shimmer Fırçası ───────────────────────────────────────────────
 // KitsugiMobile HomeSkeletonLoading.kt'den uyarlama:
@@ -136,14 +148,30 @@ fun KitsugiShimmerMediaCard(
     }
 }
 
-// ─── Yatay Shimmer Satırı ─────────────────────────────────────────────────
+// ─── Yatay Shimmer Satırı ─────────────────────────────────────────────────────────────
 // ExploreScreen'deki her KitsugiHorizontalMediaSection'ın yükleme durumu.
+
+/**
+ * Shimmer içeren birden fazla bileşen aynı kompozisyon ağacında yer alıyorsa
+ * bu provider ile tek bir InfiniteTransition paylaşılır — belirgin performans gain'i.
+ */
+@Composable
+fun KitsugiShimmerProvider(
+    content: @Composable () -> Unit
+) {
+    val sharedBrush = rememberKitsugiShimmerBrush()
+    CompositionLocalProvider(
+        LocalShimmerBrush provides sharedBrush,
+        content = content
+    )
+}
 
 @Composable
 fun KitsugiShimmerMediaRow(
     cardCount: Int = 5,
 ) {
-    val brush = rememberKitsugiShimmerBrush()
+    // LocalShimmerBrush varsa paylaş, yoksa kendi transition'unu oluştur
+    val brush = LocalShimmerBrush.current ?: rememberKitsugiShimmerBrush()
     Row(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -161,7 +189,8 @@ fun KitsugiShimmerHeroSection(
     heroHeight: Dp = 420.dp,
     modifier: Modifier = Modifier,
 ) {
-    val brush = rememberKitsugiShimmerBrush()
+    // LocalShimmerBrush varsa paylaş, yoksa kendi transition'unu oluştur
+    val brush = LocalShimmerBrush.current ?: rememberKitsugiShimmerBrush()
 
     Box(
         modifier = modifier
@@ -223,7 +252,7 @@ fun KitsugiShimmerHeroSection(
 fun KitsugiShimmerDetailHeader(
     modifier: Modifier = Modifier,
 ) {
-    val brush = rememberKitsugiShimmerBrush()
+    val brush = LocalShimmerBrush.current ?: rememberKitsugiShimmerBrush()
 
     Column(
         modifier = modifier
@@ -297,7 +326,7 @@ fun KitsugiShimmerDetailHeader(
 fun KitsugiShimmerAvatarRow(
     avatarCount: Int = 6,
 ) {
-    val brush = rememberKitsugiShimmerBrush()
+    val brush = LocalShimmerBrush.current ?: rememberKitsugiShimmerBrush()
     Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
         repeat(avatarCount) {
             Column(
@@ -331,7 +360,7 @@ fun KitsugiShimmerAvatarRow(
 fun KitsugiShimmerSearchResultList(
     itemCount: Int = 5,
 ) {
-    val brush = rememberKitsugiShimmerBrush()
+    val brush = LocalShimmerBrush.current ?: rememberKitsugiShimmerBrush()
     val isTv = com.kitsugi.animelist.ui.theme.LocalIsTv.current
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp),

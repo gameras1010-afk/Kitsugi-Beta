@@ -45,7 +45,8 @@ data class KitsugiStudioDetail(
     val favorites: Int? = null,
     val established: String? = null,
     val about: String? = null,
-    val mediaWorks: List<KitsugiStaffMediaWork> = emptyList()
+    val mediaWorks: List<KitsugiStaffMediaWork> = emptyList(),
+    val isFavourite: Boolean = false
 )
 
 data class KitsugiMediaDetail(
@@ -157,7 +158,8 @@ data class KitsugiCharacterDetail(
     val bloodType: String?,
     val biography: String?,
     val voiceActors: List<KitsugiVoiceActor> = emptyList(),
-    val mediaAppearances: List<KitsugiCharacterMediaAppearance> = emptyList()
+    val mediaAppearances: List<KitsugiCharacterMediaAppearance> = emptyList(),
+    val isFavourite: Boolean = false
 )
 
 data class KitsugiStaff(
@@ -203,7 +205,8 @@ data class KitsugiStaffDetail(
     val gender: String?,
     val homeTown: String?,
     val characterRoles: List<KitsugiStaffCharacterRole> = emptyList(),
-    val mediaWorks: List<KitsugiStaffMediaWork> = emptyList()
+    val mediaWorks: List<KitsugiStaffMediaWork> = emptyList(),
+    val isFavourite: Boolean = false
 )
 
 data class KitsugiRelation(

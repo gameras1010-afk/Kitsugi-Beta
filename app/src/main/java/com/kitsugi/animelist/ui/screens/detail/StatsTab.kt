@@ -41,10 +41,12 @@ fun StatsTabContent(
     state: DetailTabState<KitsugiStats?>,
     source: String = ""
 ) {
+    val isTurkish = java.util.Locale.getDefault().language.equals("tr", ignoreCase = true)
+
     when (state) {
         is DetailTabState.Loading -> {
             Text(
-                text = "İstatistikler yükleniyor...",
+                text = if (isTurkish) "İstatistikler yükleniyor..." else "Loading statistics...",
                 color = KitsugiColors.TextSecondary,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(vertical = 16.dp)
@@ -52,7 +54,7 @@ fun StatsTabContent(
         }
         is DetailTabState.Error -> {
             Text(
-                text = "İstatistikler yüklenirken hata oluştu.",
+                text = if (isTurkish) "İstatistikler yüklenirken hata oluştu." else "Failed to load statistics.",
                 color = KitsugiColors.AccentRed,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(vertical = 16.dp)
@@ -62,7 +64,7 @@ fun StatsTabContent(
             val stats = state.data
             if (stats == null) {
                 Text(
-                    text = "İstatistik verisi bulunamadı.",
+                    text = if (isTurkish) "İstatistik verisi bulunamadı." else "No statistics available.",
                     color = KitsugiColors.TextSecondary,
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(vertical = 16.dp)
@@ -76,7 +78,7 @@ fun StatsTabContent(
                     if (stats.rankings.isNotEmpty()) {
                         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             Text(
-                                text = "Sıralama",
+                                text = if (isTurkish) "Sıralama" else "Rankings",
                                 color = KitsugiColors.TextPrimary,
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold
@@ -100,7 +102,7 @@ fun StatsTabContent(
                     if (totalStatus > 0) {
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Text(
-                                text = "Durum Dağılımı",
+                                text = if (isTurkish) "Durum Dağılımı" else "Status Distribution",
                                 color = KitsugiColors.TextPrimary,
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold
@@ -115,19 +117,19 @@ fun StatsTabContent(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 if (watching > 0) {
-                                    StatusBadge(amount = watching, label = "Şimdiki", color = Color(0xFF8CE637))
+                                    StatusBadge(amount = watching, label = if (isTurkish) "Şimdiki" else "Current", color = Color(0xFF8CE637))
                                 }
                                 if (planned > 0) {
-                                    StatusBadge(amount = planned, label = "Planlanan", color = Color(0xFFC08A6E))
+                                    StatusBadge(amount = planned, label = if (isTurkish) "Planlanan" else "Planning", color = Color(0xFFC08A6E))
                                 }
                                 if (completed > 0) {
-                                    StatusBadge(amount = completed, label = "Tamamlanan", color = Color(0xFF5B8EFF))
+                                    StatusBadge(amount = completed, label = if (isTurkish) "Tamamlanan" else "Completed", color = Color(0xFF5B8EFF))
                                 }
                                 if (dropped > 0) {
-                                    StatusBadge(amount = dropped, label = "Bırakıldı", color = Color(0xFFFF5252))
+                                    StatusBadge(amount = dropped, label = if (isTurkish) "Bırakıldı" else "Dropped", color = Color(0xFFFF5252))
                                 }
                                 if (paused > 0) {
-                                    StatusBadge(amount = paused, label = "Ara Verildi", color = Color(0xFF909399))
+                                    StatusBadge(amount = paused, label = if (isTurkish) "Ara Verildi" else "Paused", color = Color(0xFF909399))
                                 }
                             }
 
@@ -182,7 +184,7 @@ fun StatsTabContent(
                             }
 
                             Text(
-                                text = "Toplam: ${formatNumber(totalStatus)}",
+                                text = "${if (isTurkish) "Toplam" else "Total"}: ${formatNumber(totalStatus)}",
                                 color = KitsugiColors.TextSecondary,
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Bold
@@ -194,7 +196,7 @@ fun StatsTabContent(
                     if (stats.scoreDistribution.isNotEmpty()) {
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Text(
-                                text = "Puan Dağılımı",
+                                text = if (isTurkish) "Puan Dağılımı" else "Score Distribution",
                                 color = KitsugiColors.TextPrimary,
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold
@@ -228,7 +230,7 @@ fun StatsTabContent(
 
                     if (stats.rankings.isEmpty() && totalStatus <= 0 && stats.scoreDistribution.isEmpty()) {
                         Text(
-                            text = "İstatistik verisi bulunamadı.",
+                            text = if (isTurkish) "İstatistik verisi bulunamadı." else "No statistics available.",
                             color = KitsugiColors.TextSecondary,
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(vertical = 16.dp)
@@ -243,7 +245,7 @@ fun StatsTabContent(
 @Composable
 private fun RankingPillItem(ranking: KitsugiRanking) {
     val isPopular = ranking.type.equals("POPULAR", ignoreCase = true) || ranking.context.lowercase().contains("popular")
-    val formattedContext = formatRankingContext(ranking.context)
+    val formattedContext = formatRankingContext(ranking)
 
     Row(
         modifier = Modifier
@@ -346,20 +348,83 @@ private fun ScoreColumnItem(score: Int, amount: Int, maxVotes: Int) {
     }
 }
 
-private fun formatRankingContext(context: String): String {
-    val clean = context
-        .replace("WINTER", "Kış", ignoreCase = true)
-        .replace("SPRING", "İlkbahar", ignoreCase = true)
-        .replace("SUMMER", "Yaz", ignoreCase = true)
-        .replace("FALL", "Sonbahar", ignoreCase = true)
+private fun formatRankingContext(ranking: KitsugiRanking): String {
+    val isTurkish = java.util.Locale.getDefault().language.equals("tr", ignoreCase = true)
+    val ctxLower = ranking.context.lowercase().trim()
+    val isPopular = ranking.type.equals("POPULAR", ignoreCase = true) || ctxLower.contains("popular")
+    val isAllTime = ranking.allTime || ctxLower.contains("all time")
 
-    return clean.split(" ").joinToString(" ") { word ->
-        word.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+    if (isTurkish) {
+        if (isAllTime) {
+            return if (isPopular) "Tüm Zamanların En Popüleri" else "Tüm Zamanların En Yüksek Puanlısı"
+        }
+
+        val seasonTr = when (ranking.season?.uppercase() ?: run {
+            when {
+                ctxLower.contains("winter") -> "Kış"
+                ctxLower.contains("spring") -> "İlkbahar"
+                ctxLower.contains("summer") -> "Yaz"
+                ctxLower.contains("fall") -> "Sonbahar"
+                else -> null
+            }
+        }) {
+            "WINTER", "KIŞ" -> "Kış"
+            "SPRING", "İLKBAHAR" -> "İlkbahar"
+            "SUMMER", "YAZ" -> "Yaz"
+            "FALL", "SONBAHAR" -> "Sonbahar"
+            else -> null
+        }
+
+        val year = ranking.year ?: Regex("\\b(19|20)\\d{2}\\b").find(ranking.context)?.value?.toIntOrNull()
+
+        if (seasonTr != null && year != null) {
+            return if (isPopular) "$year $seasonTr Sezonunun En Popüleri" else "$year $seasonTr Sezonunun En Yüksek Puanlısı"
+        }
+
+        if (year != null) {
+            return if (isPopular) "$year Yılının En Popüleri" else "$year Yılının En Yüksek Puanlısı"
+        }
+
+        return if (isPopular) "En Popüler" else "En Yüksek Puanlı"
+    } else {
+        if (isAllTime) {
+            return if (isPopular) "Most Popular All Time" else "Highest Rated All Time"
+        }
+
+        val seasonEn = when (ranking.season?.uppercase() ?: run {
+            when {
+                ctxLower.contains("winter") -> "Winter"
+                ctxLower.contains("spring") -> "Spring"
+                ctxLower.contains("summer") -> "Summer"
+                ctxLower.contains("fall") -> "Fall"
+                else -> null
+            }
+        }) {
+            "WINTER", "KIŞ" -> "Winter"
+            "SPRING", "İLKBAHAR" -> "Spring"
+            "SUMMER", "YAZ" -> "Summer"
+            "FALL", "SONBAHAR" -> "Fall"
+            else -> null
+        }
+
+        val year = ranking.year ?: Regex("\\b(19|20)\\d{2}\\b").find(ranking.context)?.value?.toIntOrNull()
+
+        if (seasonEn != null && year != null) {
+            return if (isPopular) "Most Popular $seasonEn $year" else "Highest Rated $seasonEn $year"
+        }
+
+        if (year != null) {
+            return if (isPopular) "Most Popular $year" else "Highest Rated $year"
+        }
+
+        return if (isPopular) "Most Popular" else "Highest Rated"
     }
 }
 
 private fun formatNumber(number: Int): String {
-    return java.text.NumberFormat.getInstance(java.util.Locale("tr", "TR")).format(number)
+    val isTurkish = java.util.Locale.getDefault().language.equals("tr", ignoreCase = true)
+    val locale = if (isTurkish) java.util.Locale("tr", "TR") else java.util.Locale.US
+    return java.text.NumberFormat.getInstance(locale).format(number)
 }
 
 private fun formatCompactNumber(number: Int): String {

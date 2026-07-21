@@ -1,4 +1,7 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(
+    androidx.compose.foundation.ExperimentalFoundationApi::class,
+    androidx.compose.material3.ExperimentalMaterial3Api::class
+)
 
 package com.kitsugi.animelist.ui.screens.profile
 
@@ -22,6 +25,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.saveable.rememberSaveable
 import com.kitsugi.animelist.ui.app.RankedStatItem
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -640,13 +645,16 @@ fun AniListProfileContent(
     isLandscape: Boolean,
     accentColor: Color
 ) {
-    var activeTab by remember { mutableStateOf(0) } // 0: Info, 1: Activity, 2: Stats, 3: Favorites, 4: Social
-    var statsMediaType by remember { mutableStateOf(0) } // 0: Anime, 1: Manga
-    var statsSubTab by remember { mutableStateOf(0) } // 0: Genel Bakış, 1: Türler, 2: Etiketler, 3: Ekip, 4: Seslendirenler, 5: Stüdyolar
-    var favoritesFilter by remember { mutableStateOf(0) } // 0: Anime, 1: Manga, 2: Character, 3: Staff, 4: Studio
-    var socialFilter by remember { mutableStateOf(0) } // 0: Followers, 1: Following
+    var activeTab by rememberSaveable { mutableIntStateOf(0) } // 0: Info, 1: Activity, 2: Stats, 3: Favorites, 4: Social
+    var statsMediaType by rememberSaveable { mutableIntStateOf(0) } // 0: Anime, 1: Manga
+    var statsSubTab by rememberSaveable { mutableIntStateOf(0) } // 0: Genel Bakış, 1: Türler, 2: Etiketler, 3: Ekip, 4: Seslendirenler, 5: Stüdyolar
+    var favoritesFilter by rememberSaveable { mutableIntStateOf(0) } // 0: Anime, 1: Manga, 2: Character, 3: Staff, 4: Studio
+    var socialFilter by rememberSaveable { mutableIntStateOf(0) } // 0: Followers, 1: Following
+
+    val listState = rememberLazyListState()
 
     LazyColumn(
+        state = listState,
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = if (isLandscape) 18.dp else 16.dp),
@@ -743,21 +751,83 @@ fun AniListProfileContent(
             }
         }
 
-        // Top 5 Icon Sub-Tabs
-        item {
-            val tabs = listOf(
-                Icons.Rounded.Info to "Hakkında",
-                Icons.Rounded.ChatBubble to "Aktivite",
-                Icons.Rounded.BarChart to "İstatistikler",
-                Icons.Rounded.Star to "Favoriler",
-                Icons.Rounded.People to "Sosyal"
-            )
-            ProfileHeaderIconTabs(
-                tabs = tabs,
-                selectedTab = activeTab,
-                onTabSelected = { activeTab = it },
-                accentColor = accentColor
-            )
+        // Top 5 Icon Sub-Tabs + Sub-filters (Sticky at top)
+        stickyHeader(key = "anilist_tabs_header") {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = KitsugiColors.Background
+            ) {
+                Column(
+                    modifier = Modifier.padding(vertical = 6.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    val tabs = listOf(
+                        Icons.Rounded.Info to "Hakkında",
+                        Icons.Rounded.ChatBubble to "Aktivite",
+                        Icons.Rounded.BarChart to "İstatistikler",
+                        Icons.Rounded.Star to "Favoriler",
+                        Icons.Rounded.People to "Sosyal"
+                    )
+                    ProfileHeaderIconTabs(
+                        tabs = tabs,
+                        selectedTab = activeTab,
+                        onTabSelected = { activeTab = it },
+                        accentColor = accentColor
+                    )
+
+                    if (activeTab == 2) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            listOf("Genel Bakış", "Türler", "Etiketler", "Ekip", "Seslendirenler", "Stüdyolar").forEachIndexed { idx, label ->
+                                ProfileFilterChip(
+                                    text = label,
+                                    isSelected = statsSubTab == idx,
+                                    accentColor = accentColor,
+                                    onClick = { statsSubTab = idx }
+                                )
+                            }
+                        }
+                    } else if (activeTab == 3) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            listOf("Anime", "Manga", "Karakterler", "Ekip", "Stüdyolar").forEachIndexed { idx, label ->
+                                ProfileFilterChip(
+                                    text = label,
+                                    isSelected = favoritesFilter == idx,
+                                    accentColor = accentColor,
+                                    onClick = { favoritesFilter = idx }
+                                )
+                            }
+                        }
+                    } else if (activeTab == 4) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            ProfileFilterChip(
+                                text = "Takipçiler (${state.socialState.followers.size})",
+                                isSelected = socialFilter == 0,
+                                accentColor = accentColor,
+                                onClick = { socialFilter = 0 }
+                            )
+                            ProfileFilterChip(
+                                text = "Takip Edilen (${state.socialState.following.size})",
+                                isSelected = socialFilter == 1,
+                                accentColor = accentColor,
+                                onClick = { socialFilter = 1 }
+                            )
+                        }
+                    }
+                }
+            }
         }
 
         // TAB 0: INFO
@@ -846,26 +916,10 @@ fun AniListProfileContent(
             }
         }
 
+
+
         // TAB 2: STATS
         if (activeTab == 2) {
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    listOf("Genel Bakış", "Türler", "Etiketler", "Ekip", "Seslendirenler", "Stüdyolar").forEachIndexed { idx, label ->
-                        ProfileFilterChip(
-                            text = label,
-                            isSelected = statsSubTab == idx,
-                            accentColor = accentColor,
-                            onClick = { statsSubTab = idx }
-                        )
-                    }
-                }
-            }
-
             val overview = if (statsMediaType == 0) state.animeOverviewStats else state.mangaOverviewStats
 
             if (statsSubTab == 0) {
@@ -1041,26 +1095,10 @@ fun AniListProfileContent(
             }
         }
 
+
+
         // TAB 3: FAVORITES
         if (activeTab == 3) {
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    listOf("Anime", "Manga", "Karakterler", "Ekip", "Stüdyolar").forEachIndexed { idx, label ->
-                        ProfileFilterChip(
-                            text = label,
-                            isSelected = favoritesFilter == idx,
-                            accentColor = accentColor,
-                            onClick = { favoritesFilter = idx }
-                        )
-                    }
-                }
-            }
-
             val currentFavList = when (favoritesFilter) {
                 0 -> state.favoriteAnime
                 1 -> state.favoriteManga
@@ -1147,26 +1185,6 @@ fun AniListProfileContent(
 
         // TAB 4: SOCIAL
         if (activeTab == 4) {
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    ProfileFilterChip(
-                        text = "Takipçiler (${state.socialState.followers.size})",
-                        isSelected = socialFilter == 0,
-                        accentColor = accentColor,
-                        onClick = { socialFilter = 0 }
-                    )
-                    ProfileFilterChip(
-                        text = "Takip Edilen (${state.socialState.following.size})",
-                        isSelected = socialFilter == 1,
-                        accentColor = accentColor,
-                        onClick = { socialFilter = 1 }
-                    )
-                }
-            }
-
             val userList = if (socialFilter == 0) state.socialState.followers else state.socialState.following
             if (userList.isEmpty()) {
                 item {
@@ -1243,11 +1261,14 @@ fun MalProfileContent(
     isLandscape: Boolean,
     accentColor: Color
 ) {
-    var activeTab by remember { mutableStateOf(0) }
-    var statsMediaType by remember { mutableStateOf(0) }
-    var favoritesFilter by remember { mutableStateOf(0) }
+    var activeTab by rememberSaveable { mutableIntStateOf(0) }
+    var statsMediaType by rememberSaveable { mutableIntStateOf(0) }
+    var favoritesFilter by rememberSaveable { mutableIntStateOf(0) }
+
+    val listState = rememberLazyListState()
 
     LazyColumn(
+        state = listState,
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = if (isLandscape) 18.dp else 16.dp),
@@ -1343,21 +1364,62 @@ fun MalProfileContent(
             }
         }
 
-        // Top 5 Icon Sub-Tabs
-        item {
-            val tabs = listOf(
-                Icons.Rounded.Info to "Hakkında",
-                Icons.Rounded.ChatBubble to "Aktivite",
-                Icons.Rounded.BarChart to "İstatistikler",
-                Icons.Rounded.Star to "Favoriler",
-                Icons.Rounded.People to "Sosyal"
-            )
-            ProfileHeaderIconTabs(
-                tabs = tabs,
-                selectedTab = activeTab,
-                onTabSelected = { activeTab = it },
-                accentColor = accentColor
-            )
+        // Top 5 Icon Sub-Tabs + Sub-filters (Sticky at top)
+        stickyHeader(key = "mal_tabs_header") {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = KitsugiColors.Background
+            ) {
+                Column(
+                    modifier = Modifier.padding(vertical = 6.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    val tabs = listOf(
+                        Icons.Rounded.Info to "Hakkında",
+                        Icons.Rounded.ChatBubble to "Aktivite",
+                        Icons.Rounded.BarChart to "İstatistikler",
+                        Icons.Rounded.Star to "Favoriler",
+                        Icons.Rounded.People to "Sosyal"
+                    )
+                    ProfileHeaderIconTabs(
+                        tabs = tabs,
+                        selectedTab = activeTab,
+                        onTabSelected = { activeTab = it },
+                        accentColor = accentColor
+                    )
+
+                    if (activeTab == 3) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            listOf("Anime", "Manga", "Karakterler", "Ekip").forEachIndexed { idx, label ->
+                                ProfileFilterChip(
+                                    text = label,
+                                    isSelected = favoritesFilter == idx,
+                                    accentColor = accentColor,
+                                    onClick = { favoritesFilter = idx }
+                                )
+                            }
+                        }
+                    } else if (activeTab == 4) {
+                        val userList = state.socialState.followers
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            ProfileFilterChip(
+                                text = "Arkadaşlar (${userList.size})",
+                                isSelected = true,
+                                accentColor = accentColor,
+                                onClick = {}
+                            )
+                        }
+                    }
+                }
+            }
         }
 
         if (activeTab == 0) {
@@ -1476,25 +1538,9 @@ fun MalProfileContent(
             }
         }
 
-        if (activeTab == 3) {
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    listOf("Anime", "Manga", "Karakterler", "Ekip").forEachIndexed { idx, label ->
-                        ProfileFilterChip(
-                            text = label,
-                            isSelected = favoritesFilter == idx,
-                            accentColor = accentColor,
-                            onClick = { favoritesFilter = idx }
-                        )
-                    }
-                }
-            }
 
+
+        if (activeTab == 3) {
             val currentFavList = when (favoritesFilter) {
                 0 -> state.favoriteAnime
                 1 -> state.favoriteManga
@@ -1578,22 +1624,10 @@ fun MalProfileContent(
             }
         }
 
+
+
         if (activeTab == 4) {
             val userList = state.socialState.followers
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    ProfileFilterChip(
-                        text = "Arkadaşlar (${userList.size})",
-                        isSelected = true,
-                        accentColor = accentColor,
-                        onClick = {}
-                    )
-                }
-            }
-
             if (userList.isEmpty()) {
                 item {
                     Box(
@@ -1724,9 +1758,12 @@ fun SimklProfileContent(
     isLandscape: Boolean,
     accentColor: Color
 ) {
-    var activeTab by remember { mutableStateOf(0) }
+    var activeTab by rememberSaveable { mutableIntStateOf(0) }
+
+    val listState = rememberLazyListState()
 
     LazyColumn(
+        state = listState,
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = if (isLandscape) 18.dp else 16.dp),
@@ -1814,19 +1851,29 @@ fun SimklProfileContent(
             }
         }
 
-        // Top 5 Icon Sub-Tabs
-        item {
-            val tabs = listOf(
-                Icons.Rounded.Info to "Hakkında",
-                Icons.Rounded.ChatBubble to "Aktivite",
-                Icons.Rounded.BarChart to "İstatistikler"
-            )
-            ProfileHeaderIconTabs(
-                tabs = tabs,
-                selectedTab = activeTab,
-                onTabSelected = { activeTab = it },
-                accentColor = accentColor
-            )
+        // Top 3 Icon Sub-Tabs (Sticky at top)
+        stickyHeader(key = "simkl_tabs_header") {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = KitsugiColors.Background
+            ) {
+                Column(
+                    modifier = Modifier.padding(vertical = 6.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    val tabs = listOf(
+                        Icons.Rounded.Info to "Hakkında",
+                        Icons.Rounded.ChatBubble to "Aktivite",
+                        Icons.Rounded.BarChart to "İstatistikler"
+                    )
+                    ProfileHeaderIconTabs(
+                        tabs = tabs,
+                        selectedTab = activeTab,
+                        onTabSelected = { activeTab = it },
+                        accentColor = accentColor
+                    )
+                }
+            }
         }
 
         if (activeTab == 0) {

@@ -4,9 +4,11 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.kitsugi.animelist.data.auth.ExternalAuthManager
 import com.kitsugi.animelist.data.local.TranslationManager
 import com.kitsugi.animelist.data.remote.DetailCache
 import com.kitsugi.animelist.data.remote.JikanApiClient
+import com.kitsugi.animelist.data.remote.KitsugiMediaMutationsClient
 import com.kitsugi.animelist.data.settings.SettingsDataStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +22,7 @@ class StaffDetailViewModel(application: Application) : AndroidViewModel(applicat
 
     private val context = application.applicationContext
     private val apiClient = JikanApiClient()
+    private val mutationsClient = KitsugiMediaMutationsClient()
     private val translationManager = TranslationManager(context)
     private val settingsDataStore = SettingsDataStore(context)
     private val TAG = "StaffDetailVM"
@@ -29,6 +32,9 @@ class StaffDetailViewModel(application: Application) : AndroidViewModel(applicat
 
     private val _translatedBio = MutableStateFlow<String?>(null)
     val translatedBio: StateFlow<String?> = _translatedBio.asStateFlow()
+
+    private val _isFavourite = MutableStateFlow(false)
+    val isFavourite: StateFlow<Boolean> = _isFavourite.asStateFlow()
 
     private var currentFetchKey: String? = null
     private var lastStaffId: Int = 0
@@ -88,6 +94,7 @@ class StaffDetailViewModel(application: Application) : AndroidViewModel(applicat
 
         if (detail != null) {
             _state.value = StaffDetailState.Success(detail)
+            _isFavourite.value = detail.isFavourite
 
             // Otomatik çeviri açıksa biyografiyi çevir (zaten Türkçeyse TranslationManager atlar)
             val bio = detail.biography
@@ -106,6 +113,32 @@ class StaffDetailViewModel(application: Application) : AndroidViewModel(applicat
             }
         } else {
             _state.value = StaffDetailState.Error("Ekip üyesi detayları yüklenemedi.")
+        }
+    }
+
+    /**
+     * AniList ekip üyesi favori toggle — sadece AniList kaynağı ve giriş yapılmışsa çalışır.
+     */
+    fun toggleFavourite() {
+        val token = ExternalAuthManager.getAniListToken(context) ?: return
+        val currentState = _state.value as? StaffDetailState.Success ?: return
+        val detail = currentState.detail
+        if (lastSource.lowercase() != "anilist") return
+
+        val newFav = !_isFavourite.value
+        _isFavourite.value = newFav
+        val updated = detail.copy(isFavourite = newFav)
+        _state.value = StaffDetailState.Success(updated)
+        DetailCache.putStaffDetail(lastSource, lastStaffId, updated)
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val ok = mutationsClient.toggleFavourite("staff", detail.id)
+            if (!ok) {
+                _isFavourite.value = !newFav
+                val rolled = detail.copy(isFavourite = !newFav)
+                _state.value = StaffDetailState.Success(rolled)
+                DetailCache.putStaffDetail(lastSource, lastStaffId, rolled)
+            }
         }
     }
 }

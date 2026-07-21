@@ -4,9 +4,11 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.kitsugi.animelist.data.auth.ExternalAuthManager
 import com.kitsugi.animelist.data.local.TranslationManager
 import com.kitsugi.animelist.data.remote.DetailCache
 import com.kitsugi.animelist.data.remote.JikanApiClient
+import com.kitsugi.animelist.data.remote.KitsugiMediaMutationsClient
 import com.kitsugi.animelist.data.settings.SettingsDataStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +22,7 @@ class CharacterDetailViewModel(application: Application) : AndroidViewModel(appl
 
     private val context = application.applicationContext
     private val apiClient = JikanApiClient()
+    private val mutationsClient = KitsugiMediaMutationsClient()
     private val translationManager = TranslationManager(context)
     private val settingsDataStore = SettingsDataStore(context)
     private val TAG = "CharacterDetailVM"
@@ -29,6 +32,9 @@ class CharacterDetailViewModel(application: Application) : AndroidViewModel(appl
 
     private val _translatedBio = MutableStateFlow<String?>(null)
     val translatedBio: StateFlow<String?> = _translatedBio.asStateFlow()
+
+    private val _isFavourite = MutableStateFlow(false)
+    val isFavourite: StateFlow<Boolean> = _isFavourite.asStateFlow()
 
     private var currentFetchKey: String? = null
     private var lastCharacterId: Int = 0
@@ -88,6 +94,7 @@ class CharacterDetailViewModel(application: Application) : AndroidViewModel(appl
 
         if (detail != null) {
             _state.value = CharacterDetailState.Success(detail)
+            _isFavourite.value = detail.isFavourite
 
             // Otomatik çeviri açıksa biyografiyi çevir (zaten Türkçeyse TranslationManager atlar)
             val bio = detail.biography
@@ -106,6 +113,34 @@ class CharacterDetailViewModel(application: Application) : AndroidViewModel(appl
             }
         } else {
             _state.value = CharacterDetailState.Error("Karakter detayları yüklenemedi.")
+        }
+    }
+
+    /**
+     * AniList karakter favori toggle — sadece AniList kaynağı ve giriş yapılmışsa çalışır.
+     * Anında UI güncellemesi yapar, arka planda mutasyon çalışır.
+     */
+    fun toggleFavourite() {
+        val token = ExternalAuthManager.getAniListToken(context) ?: return
+        val currentState = _state.value as? CharacterDetailState.Success ?: return
+        val detail = currentState.detail
+        if (lastSource.lowercase() != "anilist") return
+
+        val newFav = !_isFavourite.value
+        _isFavourite.value = newFav
+        val updated = detail.copy(isFavourite = newFav)
+        _state.value = CharacterDetailState.Success(updated)
+        DetailCache.putCharacterDetail(lastSource, lastCharacterId, updated)
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val ok = mutationsClient.toggleFavourite("character", detail.id)
+            if (!ok) {
+                // rollback
+                _isFavourite.value = !newFav
+                val rolled = detail.copy(isFavourite = !newFav)
+                _state.value = CharacterDetailState.Success(rolled)
+                DetailCache.putCharacterDetail(lastSource, lastCharacterId, rolled)
+            }
         }
     }
 }

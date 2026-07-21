@@ -351,7 +351,7 @@ private fun AiringEntryList(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        itemsIndexed(entries) { _, entry ->
+        items(entries, key = { "${it.malId}_${it.aniListId}_${it.episode}" }) { entry ->
             val isInList = remember(currentEntries, entry) {
                 currentEntries.any { me ->
                     (entry.malId != null && me.malId == entry.malId) ||

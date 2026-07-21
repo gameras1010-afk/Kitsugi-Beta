@@ -39,6 +39,8 @@ import coil3.compose.AsyncImage
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material3.Icon
@@ -112,6 +114,8 @@ fun CharacterDetailPage(
     // Collect states from ViewModel
     val state by viewModel.state.collectAsState()
     val translatedBio by viewModel.translatedBio.collectAsState()
+    val isFavourite by viewModel.isFavourite.collectAsState()
+    val isAniListSource = source.lowercase() == "anilist"
 
     Box(
         modifier = Modifier
@@ -286,6 +290,23 @@ fun CharacterDetailPage(
                                                         contentDescription = "Paylaş",
                                                         tint = KitsugiColors.TextPrimary
                                                     )
+                                                }
+                                            }
+                                            if (isAniListSource) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(40.dp)
+                                                        .clip(CircleShape)
+                                                        .background(KitsugiColors.Background.copy(alpha = 0.45f)),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    IconButton(onClick = { viewModel.toggleFavourite() }) {
+                                                        Icon(
+                                                            imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                                                            contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
+                                                            tint = if (isFavourite) accentColor else KitsugiColors.TextPrimary
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }
@@ -546,6 +567,27 @@ fun CharacterDetailPage(
                                             color = KitsugiColors.TextPrimary,
                                             fontWeight = FontWeight.Bold
                                         )
+                                    }
+
+                                    // Favourite button (portrait hero — top end)
+                                    if (isAniListSource) {
+                                        Box(
+                                            modifier = Modifier
+                                                .align(Alignment.TopEnd)
+                                                .padding(end = 12.dp, top = 24.dp)
+                                                .size(40.dp)
+                                                .clip(CircleShape)
+                                                .background(KitsugiColors.Background.copy(alpha = 0.45f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            IconButton(onClick = { viewModel.toggleFavourite() }) {
+                                                Icon(
+                                                    imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                                                    contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
+                                                    tint = if (isFavourite) accentColor else KitsugiColors.TextPrimary
+                                                )
+                                            }
+                                        }
                                     }
 
                                     // Character Header Info

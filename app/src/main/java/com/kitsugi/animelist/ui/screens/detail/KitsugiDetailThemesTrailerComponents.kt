@@ -80,36 +80,12 @@ fun KitsugiTrailerCard(trailerUrl: String, mediaTitle: String = "") {
             .background(KitsugiColors.Surface)
             .padding(16.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Ön izleme",
-                color = KitsugiColors.TextPrimary,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f)
-            )
-            // Tam ekran butonu (her zaman görünür)
-            if (videoId != null) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(accentColor.copy(alpha = 0.15f))
-                        .tvClickable(shape = CircleShape) { showOverlay = true },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Fullscreen,
-                        contentDescription = "Tam ekran fragman",
-                        tint = accentColor,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            }
-        }
+        Text(
+            text = "Ön izleme",
+            color = KitsugiColors.TextPrimary,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
 
         Spacer(modifier = Modifier.height(12.dp))
 
