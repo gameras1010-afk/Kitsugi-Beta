@@ -173,3 +173,4 @@
 -dontwarn org.conscrypt.Conscrypt
 -dontwarn org.conscrypt.ConscryptHostnameVerifier
 -dontwarn org.checkerframework.**
+-dontwarn kotlinx.datetime.**
