@@ -95,8 +95,9 @@ fun ExploreScreen(
     onOpenApiDetail: (JikanSearchResult) -> Unit,
     onOpenMangaReader: () -> Unit = {},
     onOpenAiringCalendar: () -> Unit = {},
+    initialScrollIndex: Int = 0,
     initialScrollOffset: Int = 0,
-    onScrollOffsetChange: (Int) -> Unit = {},
+    onScrollPositionChange: (index: Int, offset: Int) -> Unit = { _, _ -> },
     viewModel: ExploreViewModel = viewModel(),
     titleLanguage: String = "ROMAJI",
     scoreFormat: String = "POINT_10",
@@ -197,7 +198,10 @@ fun ExploreScreen(
         listOf(KitsugiColors.AccentGreen.copy(0.85f), KitsugiColors.AccentBlue.copy(0.70f)),    // Yayında
     )
 
-    val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = initialScrollOffset)
+    val lazyListState = rememberLazyListState(
+        initialFirstVisibleItemIndex = initialScrollIndex,
+        initialFirstVisibleItemScrollOffset = initialScrollOffset
+    )
 
     var activeRankingSheetData by remember { mutableStateOf<Triple<String, MediaType, List<JikanSearchResult>>?>(null) }
 
@@ -207,8 +211,12 @@ fun ExploreScreen(
         }
     }
 
-    LaunchedEffect(lazyListState.firstVisibleItemScrollOffset) {
-        onScrollOffsetChange(lazyListState.firstVisibleItemScrollOffset)
+    LaunchedEffect(lazyListState) {
+        androidx.compose.runtime.snapshotFlow {
+            lazyListState.firstVisibleItemIndex to lazyListState.firstVisibleItemScrollOffset
+        }.collect { (index, offset) ->
+            onScrollPositionChange(index, offset)
+        }
     }
 
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current

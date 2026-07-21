@@ -169,9 +169,10 @@ private fun ExploreTabPage(ctx: TabPagesContext) {
         onOpenAiringCalendar = {
             ctx.navState.navigateToDetail(DetailScreen.AiringCalendar)
         },
+        initialScrollIndex = ctx.appViewModel.exploreScrollIndex,
         initialScrollOffset = ctx.appViewModel.exploreScrollOffset,
-        onScrollOffsetChange = { offset ->
-            ctx.appViewModel.updateExploreScrollPosition(0, offset)
+        onScrollPositionChange = { index, offset ->
+            ctx.appViewModel.updateExploreScrollPosition(index, offset)
         },
         viewModel = ctx.exploreViewModel,
         titleLanguage = ctx.appSettings.titleLanguage,
