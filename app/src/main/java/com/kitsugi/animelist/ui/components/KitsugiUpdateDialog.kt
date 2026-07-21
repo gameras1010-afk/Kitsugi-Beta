@@ -224,7 +224,7 @@ private fun ColumnScope.UpdateAvailableBottomSheetContent(
                 color = KitsugiColors.TextPrimary
             )
             Text(
-                text = "Kitsugi v${release.versionName}",
+                text = "v${BuildConfig.VERSION_NAME} < v${release.versionName}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = KitsugiColors.TextSecondary
             )
