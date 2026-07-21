@@ -124,7 +124,10 @@ fun KitsugiHorizontalMediaSection(
                             ),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            itemsIndexed(results) { index, result ->
+                            itemsIndexed(
+                                items = results,
+                                key = { index, result -> "${result.source}_${result.malId ?: result.tmdbId ?: 0}_$index" }
+                            ) { index, result ->
                                 val requester = focusRequesters.getOrPut(index) { FocusRequester() }
                                 val cardWidth = if (isLandscape) 320.dp else 180.dp
                                 KitsugiExploreMediaCard(

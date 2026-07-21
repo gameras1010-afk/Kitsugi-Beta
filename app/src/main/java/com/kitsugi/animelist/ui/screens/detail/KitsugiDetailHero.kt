@@ -7,12 +7,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -23,8 +31,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -55,10 +63,12 @@ fun KitsugiDetailHero(
     scoreLabel: String? = null,
     isFavorite: Boolean = false,
     alreadyInList: Boolean = false,
-    blurAdultMedia: Boolean = false
+    blurAdultMedia: Boolean = false,
+    onShareClick: (() -> Unit)? = null
 ) {
     val accentColor = LocalKitsugiAccent.current
     val fallbackPlaceholderColor = statusColor ?: accentColor
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -112,17 +122,54 @@ fun KitsugiDetailHero(
                 )
         )
 
-        TextButton(
-            onClick = onBackClick,
+        // ── Top Action Bar: Back (left) + Share (right) ──
+        Row(
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(start = 12.dp, top = 24.dp)
+                .fillMaxWidth()
+                .padding(start = 12.dp, end = 12.dp, top = 24.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Geri",
-                color = KitsugiColors.TextPrimary,
-                fontWeight = FontWeight.Bold
-            )
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(KitsugiColors.Background.copy(alpha = 0.45f)),
+                contentAlignment = Alignment.Center
+            ) {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                        contentDescription = "Geri",
+                        tint = KitsugiColors.TextPrimary
+                    )
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(KitsugiColors.Background.copy(alpha = 0.45f)),
+                contentAlignment = Alignment.Center
+            ) {
+                IconButton(onClick = {
+                    if (onShareClick != null) {
+                        onShareClick()
+                    } else {
+                        val mediaType = if (typeLabel.contains("MANGA", ignoreCase = true)) com.kitsugi.animelist.model.MediaType.Manga else com.kitsugi.animelist.model.MediaType.Anime
+                        val url = com.kitsugi.animelist.utils.ShareUtils.buildMediaUrl(source, 0, mediaType)
+                        com.kitsugi.animelist.utils.ShareUtils.shareText(context, title, url)
+                    }
+                }) {
+                    Icon(
+                        imageVector = Icons.Rounded.Share,
+                        contentDescription = "Paylaş",
+                        tint = KitsugiColors.TextPrimary
+                    )
+                }
+            }
         }
 
         Column(

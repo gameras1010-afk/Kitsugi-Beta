@@ -1,46 +1,36 @@
-# Kitsugi v2.4.41 Release Notes 🚀
+# Kitsugi v2.4.42 Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
+
+### 🎨 Standart Detay Sayfası Navigasyon & Paylaşım Barı
+- **Merkezi Navigasyon Barı**: Karakter, Seslendirici/Staff, Stüdyo ve API detay sayfalarındaki eski ve dağınık navigasyon butonları tek tipleştirildi.
+- **Standart Paylaşım (Share) Butonu**: Tüm detay sayfalarının sağ üst köşesine yarı saydam dairesel butonlar ile "Paylaş" seçeneği eklendi. `ShareUtils` üzerinden AniList, MAL ve Simkl platformlarına uygun bağlantı paylaşımı sağlandı.
+- **Favori Entegrasyonu Korundu**: AniList oturumu açık olan kullanıcılar için favorilere ekleme/çıkarma kalp butonu standart üst bar düzeniyle uyumlu hale getirildi.
+
+### 🐛 Profil Ekranı Çökme Çözümü (Favorites & Social Crash Fix)
+- **LazyVerticalGrid Çakışması Giderildi**: Profil sekmesindeki Favoriler ve Sosyal sekmelerine tıklandığında iç içe dikey kaydırma (`IllegalStateException: Vertically scrollable component was measured with an infinity maximum height constraints`) hatasından kaynaklanan çökme tamamen çözüldü.
+- **Güvenli Grid Düzeni**: 3'lü kapak ve kullanıcı kartı düzeni arka planda dinamik `items(chunked(3))` mimarisine geçirilerek görsel kalite bozulmadan %100 stabil çalışma sağlandı.
 
 ### 🚀 Uygulama Açılış & Sıfır Gecikme (Zero-Delay Startup)
 - **Sıfır Suni Gecikme**: Cloudstream ve Manga eklentilerinin yüklenmesindeki yapay gecikmeler kaldırıldı. Tüm kaynaklar uygulamanın açıldığı ilk anda `Dispatchers.IO` arka plan thread havuzunda eşzamanlı olarak yüklenir.
 - **60/120 FPS Akıcı Açılış Animasyonu**: Arka plan yüklemeleri UI thread'ini etkilemediği için açılış animasyonu tamamen akıcı çalışır.
 
 ### 📊 AniHyou / MoeList Gelişmiş Profil İstatistikleri Entegrasyonu
-- **Puan Dağılımı ve Skor Renklendirmesi**: Puan grafiği 1-10 arası renk skalasıyla (Kırmızı-Yeşil-Mavi gradient) görselleştirildi. `[Başlık sayısı]` ve `[Harcanan süre]` filtre çipleri eklendi.
-- **Bölüm Sayısı & Cilt Dağılımı**: Anime bölüm sayıları ve manga cilt gruplamaları grafik olarak eklendi. `[Başlık sayısı]`, `[Harcanan süre]` ve `[Ortalama Puan]` filtreleri entegre edildi.
-- **Detaylı Dağılım Grafikleri**: Durum Dağılımı (Türkçe durum etiketleriyle), Tür/Format Dağılımı (TV, Film, OVA, ONA vb.) ve Ülke Dağılımı (Japonya, Çin, Güney Kore) renk paletli çubuk grafiklerle zenginleştirildi.
-- **Yayın Yılı & İzleme Yılı Grafikleri**: Yayın yılları ve izleme/okuma yıllarına göre başlık sayısı, süre ve puan dağılım grafikleri eklendi.
-- **3x2 Özet İstatistik Izgarası**: Toplam kayıt, izlenen bölüm, izlenen gün, planlanan gün/bölüm, ortalama puan ve standart sapma verileri düzenli kart yapısına dönüştürüldü.
-
-### 👤 Profil Ekranı Pozisyon Koruma & State İyileştirmesi
-- **Kaldığın Yerden Devam Etme**: Profil ekranındaki sekmeler (Hakkında, Aktivite, İstatistikler, Favoriler, Sosyal) ve kaydırma pozisyonu (`LazyListState`) `rememberSaveable` ile koruma altına alındı.
-- **Yenileme ve Detay Sayfası Dönüşü**: Detay sayfalarına girip geri dönüldüğünde veya sayfa yenilendiğinde seçili sekme ve kaydırma konumu sıfırlanmaz.
-
-### 🔄 Güncelleme Denetleyicisi & Doğrudan APK İndirme Fix
-- **Doğrudan İndirme ve Otomatik Kurulum**: Hakkında sayfasındaki "Şimdi Denetle" butonuna tıklandığında dış web sayfalarına gitmeden doğrudan uygulama içi güncelleme penceresini açan ve APK'yı indirip kuran akış düzeltildi.
-- **Sürüm Kontrol Mantığı İyileştirmesi**: Kapatılan güncellemelerin manuel denetlemede yeniden görünmesini engelleyen bayrak sıfırlandı ve semantik sürüm karşılaştırması optimize edildi.
-
-### ⚡ UI & Liste Performans Optimizasyonları
-- **Tekil Shimmer Fırçası (`LocalShimmerBrush`)**: Tüm yükleme animasyonları tek bir merkezi fırçadan beslenerek GPU/CPU tüketimi azaltıldı.
-- **Sabit Liste Anahtarları (Keyed Lists)**: Yayın Takvimi, Keşfet ve Ana Ekran yatay satır öğelerine benzersiz keys eklenerek liste takılmaları giderildi.
-- **Coil Önbellek Güçlendirmesi**: Resim bellek önbelleği artırılarak akıcı görsel yükleme sağlandı.
+- **Puan Dağılımı ve Skor Renklendirmesi**: Puan grafiği 1-10 arası renk skalasıyla görselleştirildi.
+- **3x2 Özet İstatistik Izgarası**: Toplam kayıt, izlenen bölüm, izlenen gün, planlanan gün/bölüm, ortalama puan ve standart sapma verileri kart yapısına dönüştürüldü.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### 🚀 Zero-Delay Startup Performance
-- **Instant Background Loading**: Artificial delay triggers during plugin/extension initialization were eliminated. All loading processes run immediately on background `Dispatchers.IO`.
-- **High Frame-Rate Cinematic Loading**: Isolated background tasks ensure 60/120 FPS fluid loading screen animations.
+### 🎨 Unified Detail Navigation & Share Action Bar
+- **Standardized Hero Bar**: Unified "Back" and "Share" action bars across all detail screens (Character, Staff, Studio, ApiResult).
+- **Persistent Share Action**: Top action bar includes cross-platform deep-linking powered by `ShareUtils` for AniList, MAL, and Simkl.
+- **Preserved Favorite Support**: Heart toggle for AniList authenticated sessions is seamlessly integrated into the unified translucent action bar.
 
-### 👤 Profile Screen State & Scroll Retention
-- **Seamless Navigation Backstack**: Profile tabs (About, Activity, Stats, Favorites, Social) and scroll position (`LazyListState`) are now persisted using `rememberSaveable`.
-- **State Preservation**: Returning from detail pages or pulling to refresh maintains your exact active tab and scroll position.
-
-### ⚡ System-wide UI Rendering Optimizations
-- **Consolidated Shimmer Animation**: Unified `LocalShimmerBrush` eliminates redundant animation cycles across the app.
-- **Keyed Lazy Components**: Airing calendar and home rows now use composite item keys to eliminate list jitter and scroll reset issues.
+### 🐛 Profile Screen Favorites & Social Crash Resolution
+- **Eliminated Scroll Constraint Crash**: Fixed `IllegalStateException` caused by nested scrollable grids within the Profile tab's outer `LazyColumn`.
+- **Chunked Row Layout**: Preserved 3-column visual layout while using safe `chunked(3)` items composition.
 

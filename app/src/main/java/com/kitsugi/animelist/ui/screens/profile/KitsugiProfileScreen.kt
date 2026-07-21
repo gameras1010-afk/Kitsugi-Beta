@@ -1345,20 +1345,17 @@ fun AniListProfileContent(
                     }
                 }
             } else {
-                item {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(3),
+                items(currentFavList.chunked(3)) { rowItems ->
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .wrapContentHeight(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        userScrollEnabled = false
+                            .padding(bottom = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        items(currentFavList, key = { it.id }) { item ->
+                        rowItems.forEach { item ->
                             Column(
                                 modifier = Modifier
-                                    .fillMaxWidth()
+                                    .weight(1f)
                                     .clickable {
                                         item.id.toIntOrNull()?.let { id ->
                                             when (favoritesFilter) {
@@ -1403,6 +1400,12 @@ fun AniListProfileContent(
                                 )
                             }
                         }
+                        // Fill empty slots if last row has fewer than 3 items
+                        if (rowItems.size < 3) {
+                            repeat(3 - rowItems.size) {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
                     }
                 }
             }
@@ -1423,20 +1426,17 @@ fun AniListProfileContent(
                     }
                 }
             } else {
-                item {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(3),
+                items(userList.chunked(3)) { rowItems ->
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .wrapContentHeight(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        userScrollEnabled = false
+                            .padding(bottom = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        items(userList, key = { it.id }) { u ->
+                        rowItems.forEach { u ->
                             Column(
                                 modifier = Modifier
-                                    .fillMaxWidth()
+                                    .weight(1f)
                                     .clip(RoundedCornerShape(16.dp))
                                     .background(KitsugiColors.Surface)
                                     .padding(12.dp),
@@ -1459,6 +1459,11 @@ fun AniListProfileContent(
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
+                            }
+                        }
+                        if (rowItems.size < 3) {
+                            repeat(3 - rowItems.size) {
+                                Spacer(modifier = Modifier.weight(1f))
                             }
                         }
                     }
@@ -1786,20 +1791,17 @@ fun MalProfileContent(
                     }
                 }
             } else {
-                item {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(3),
+                items(currentFavList.chunked(3)) { rowItems ->
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .wrapContentHeight(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        userScrollEnabled = false
+                            .padding(bottom = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        items(currentFavList, key = { it.id }) { item ->
+                        rowItems.forEach { item ->
                             Column(
                                 modifier = Modifier
-                                    .fillMaxWidth()
+                                    .weight(1f)
                                     .clickable {
                                         item.id.toIntOrNull()?.let { id ->
                                             when (favoritesFilter) {
@@ -1842,6 +1844,11 @@ fun MalProfileContent(
                                     textAlign = TextAlign.Center,
                                     fontSize = 11.sp
                                 )
+                            }
+                        }
+                        if (rowItems.size < 3) {
+                            repeat(3 - rowItems.size) {
+                                Spacer(modifier = Modifier.weight(1f))
                             }
                         }
                     }

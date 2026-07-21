@@ -192,12 +192,12 @@ object SimklImportManager {
     }
 
     private fun mapSimklStatus(status: String?): WatchStatus {
-        return when (status) {
-            "watching" -> WatchStatus.Watching
+        return when (status?.lowercase()) {
+            "watching", "reading", "rewatching" -> WatchStatus.Watching
             "completed" -> WatchStatus.Completed
-            "hold" -> WatchStatus.Paused
+            "hold", "on_hold", "paused" -> WatchStatus.Paused
             "dropped" -> WatchStatus.Dropped
-            "plantowatch" -> WatchStatus.Planned
+            "plantowatch", "plan_to_watch", "planning" -> WatchStatus.Planned
             else -> WatchStatus.Planned
         }
     }

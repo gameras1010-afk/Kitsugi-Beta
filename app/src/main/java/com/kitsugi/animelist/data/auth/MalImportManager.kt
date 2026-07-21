@@ -278,12 +278,12 @@ object MalImportManager {
     private fun convertMalListStatus(
         malStatus: String
     ): WatchStatus {
-        return when (malStatus) {
-            "watching" -> WatchStatus.Watching
+        return when (malStatus.lowercase()) {
+            "watching", "reading", "rewatching", "rereading" -> WatchStatus.Watching
             "completed" -> WatchStatus.Completed
             "dropped" -> WatchStatus.Dropped
-            "on_hold" -> WatchStatus.Paused
-            "plan_to_watch" -> WatchStatus.Planned
+            "on_hold", "hold", "paused" -> WatchStatus.Paused
+            "plan_to_watch", "plan_to_read", "planning" -> WatchStatus.Planned
             else -> WatchStatus.Planned
         }
     }

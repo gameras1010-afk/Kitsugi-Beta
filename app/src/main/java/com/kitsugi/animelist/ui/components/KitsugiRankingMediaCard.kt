@@ -246,7 +246,9 @@ private fun buildFormatText(result: JikanSearchResult): String {
     }
 }
 
+private val trLocale = Locale("tr", "TR")
+private val trNumberFormat = NumberFormat.getInstance(trLocale)
+
 private fun formatNumber(number: Int): String {
-    val locale = Locale("tr", "TR")
-    return NumberFormat.getInstance(locale).format(number)
+    return trNumberFormat.format(number)
 }

@@ -247,8 +247,14 @@ fun FullScreenMediaGridPage(
         }
     }
 
-    val displayedResults = loadedResults.filter { result ->
-        showAdultContent || !result.isAdult
+    val displayedResults = remember(loadedResults, showAdultContent) {
+        loadedResults.filter { result ->
+            showAdultContent || !result.isAdult
+        }
+    }
+
+    val chunkedResults = remember(displayedResults) {
+        displayedResults.chunked(2)
     }
 
     val listState = rememberLazyListState()
@@ -380,7 +386,7 @@ fun FullScreenMediaGridPage(
                     )
                 }
             } else {
-                items(displayedResults.chunked(2), key = { it[0].source + "_" + it[0].malId }) { pair ->
+                items(chunkedResults, key = { pair -> "${pair[0].source}_${pair[0].malId}_${pair.getOrNull(1)?.malId ?: 0}" }) { pair ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)

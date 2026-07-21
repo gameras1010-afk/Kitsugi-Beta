@@ -27,13 +27,13 @@ object SimklSyncManager {
     // ── Durum Dönüşüm Yardımcıları (NyanTV simklStatusToAL referans) ────────────
 
     /** Simkl status string'ini uygulama WatchStatus'una çevirir */
-    fun simklStatusToWatchStatus(simklStatus: String?): WatchStatus = when (simklStatus) {
-        "watching"    -> WatchStatus.Watching
-        "completed"   -> WatchStatus.Completed
-        "hold"        -> WatchStatus.Paused
-        "dropped"     -> WatchStatus.Dropped
-        "plantowatch" -> WatchStatus.Planned
-        else          -> WatchStatus.Planned
+    fun simklStatusToWatchStatus(simklStatus: String?): WatchStatus = when (simklStatus?.lowercase()) {
+        "watching", "reading", "rewatching" -> WatchStatus.Watching
+        "completed"                         -> WatchStatus.Completed
+        "hold", "on_hold", "paused"         -> WatchStatus.Paused
+        "dropped"                           -> WatchStatus.Dropped
+        "plantowatch", "plan_to_watch", "planning" -> WatchStatus.Planned
+        else                                -> WatchStatus.Planned
     }
 
     /** Uygulama WatchStatus'unu Simkl status string'ine çevirir (NyanTV alStatusToSimkl referans) */

@@ -589,11 +589,56 @@ fun AppRoot(
         )
     }
 
-    fun isAlreadyInList(result: JikanSearchResult): Boolean {
-        return mediaEntries.any { entry ->
-            entry.matches(result)
+    val entryKeysSet = remember(mediaEntries) {
+        val keys = mutableSetOf<String>()
+        mediaEntries.forEach { entry ->
+            keys.add("${entry.source.lowercase()}_${entry.malId}")
+            if (entry.tmdbId != null) {
+                keys.add("tmdb_${entry.tmdbId}")
+            }
+            if (entry.source.equals("jikan", ignoreCase = true) || entry.source.equals("mal", ignoreCase = true)) {
+                keys.add("mal_${entry.malId}")
+                keys.add("jikan_${entry.malId}")
+            }
+            val normTitle = buildString {
+                for (c in entry.title.lowercase()) {
+                    if (c in 'a'..'z' || c in '0'..'9') append(c)
+                }
+            }.trim()
+            if (normTitle.isNotEmpty()) {
+                keys.add("${entry.type}_$normTitle")
+            }
+        }
+        keys
+    }
+
+    val isAlreadyInListLambda: (JikanSearchResult) -> Boolean = remember(entryKeysSet) {
+        { result: JikanSearchResult ->
+            val directKey = "${result.source.lowercase()}_${result.malId}"
+            if (entryKeysSet.contains(directKey)) {
+                true
+            } else {
+                val tmdbId = result.tmdbId ?: if (result.source.equals("tmdb", ignoreCase = true)) result.malId else null
+                if (tmdbId != null && entryKeysSet.contains("tmdb_$tmdbId")) {
+                    true
+                } else {
+                    val rMal = if (result.source.equals("jikan", ignoreCase = true) || result.source.equals("mal", ignoreCase = true)) result.malId else result.realMalId
+                    if (rMal != null && (entryKeysSet.contains("mal_$rMal") || entryKeysSet.contains("jikan_$rMal"))) {
+                        true
+                    } else {
+                        val normTitle = buildString {
+                            for (c in result.title.lowercase()) {
+                                if (c in 'a'..'z' || c in '0'..'9') append(c)
+                            }
+                        }.trim()
+                        normTitle.isNotEmpty() && entryKeysSet.contains("${result.type}_$normTitle")
+                    }
+                }
+            }
         }
     }
+
+    fun isAlreadyInList(result: JikanSearchResult): Boolean = isAlreadyInListLambda(result)
 
     fun openFullScreenSection(
         title: String,

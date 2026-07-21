@@ -6,6 +6,8 @@
 package com.kitsugi.animelist.ui.screens.mylist
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import com.kitsugi.animelist.ui.utils.tvClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -160,6 +162,7 @@ fun MyListScreen(
     var prevIndex by remember { mutableIntStateOf(0) }
     var prevOffset by remember { mutableIntStateOf(0) }
     var showSearchField by rememberSaveable { mutableStateOf(false) }
+    var showFilterPanel by rememberSaveable { mutableStateOf(false) }
     var showSortMenu by rememberSaveable { mutableStateOf(false) }
     var showStatusBottomSheet by rememberSaveable { mutableStateOf(false) }
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
@@ -211,10 +214,11 @@ fun MyListScreen(
 
     val selectedTabEntries = remember(entriesAfterAdultFilter, selectedTabIndex) {
         entriesAfterAdultFilter.filter { entry ->
+            val src = entry.source.lowercase()
             when (selectedTabIndex) {
-                0 -> entry.source == "anilist"
-                1 -> entry.source == "mal" || entry.source == "jikan"
-                else -> entry.source == "simkl"
+                0 -> src == "anilist"
+                1 -> src == "mal" || src == "jikan" || src == "myanimelist"
+                else -> src == "simkl"
             }
         }
     }
@@ -227,7 +231,8 @@ fun MyListScreen(
         it.id == selectedTypeFilterId
     }?.type
 
-    val favoritesOnly = selectedFavoriteFilterId == "favorites"
+    val favoritesOnly = selectedFavoriteFilterId == "favorites" || selectedStatusFilterId == "favorites"
+    val adultOnly = selectedStatusFilterId == "adult"
 
     val filteredEntries = selectedTabEntries
         .filter { entry ->
@@ -238,6 +243,9 @@ fun MyListScreen(
         }
         .filter { entry ->
             if (favoritesOnly) entry.isFavorite else true
+        }
+        .filter { entry ->
+            if (adultOnly) entry.isAdult else true
         }
         .filter { entry ->
             when (selectedScoreFilterId) {
@@ -309,7 +317,15 @@ fun MyListScreen(
             .fillMaxSize()
             .background(KitsugiColors.background)
     ) {
-        // ── Sabit üst bar (başlık + arama + sıralama) ──
+        val hasActiveFilters = selectedStatusFilterId != "all" ||
+                selectedTypeFilterId != "all" ||
+                selectedFavoriteFilterId != "all" ||
+                selectedScoreFilterId != "all" ||
+                selectedYearFilterId != "all" ||
+                selectedExtraFilterId != "all" ||
+                (selectedSortId.isNotBlank() && selectedSortId != "newest" && selectedSortId != "added")
+
+        // ── Sabit üst bar (başlık + arama + filtreleme) ──
         androidx.compose.material3.Surface(
             modifier = Modifier.fillMaxWidth(),
             color = KitsugiColors.background,
@@ -343,39 +359,168 @@ fun MyListScreen(
                             )
                         }
 
+                        // Filtrele ve Sırala Üst Bar Butonu (Sağ Üst Buton)
                         Box {
-                            IconButton(onClick = { showSortMenu = true }) {
+                            IconButton(onClick = { showFilterPanel = !showFilterPanel }) {
                                 Icon(
-                                    imageVector = Icons.Rounded.Sort,
-                                    contentDescription = "Sıralama",
-                                    tint = if (selectedSortId.isNotBlank() && selectedSortId != "added") accentColor else KitsugiColors.textSecondary
+                                    imageVector = Icons.Rounded.FilterList,
+                                    contentDescription = "Filtrele ve Sırala",
+                                    tint = if (showFilterPanel || hasActiveFilters) accentColor else KitsugiColors.textSecondary
                                 )
                             }
-
-                            KitsugiMyListSortMenu(
-                                expanded = showSortMenu,
-                                selectedSortId = selectedSortId,
-                                onSortSelected = onSortChange,
-                                onDismissRequest = { showSortMenu = false }
-                            )
                         }
                     }
                 }
 
-                // Arama alanı — sabit barın hemen altında açılıp kapanır
+                // Açılır Filtre ve Sırala Paneli (Sağ üstteki filtre butonuna basınca açılır)
+                AnimatedVisibility(
+                    visible = showFilterPanel,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = horizontalPadding, vertical = 6.dp)
+                    ) {
+                        RichMyListFilterPanel(
+                            selectedStatusFilterId = selectedStatusFilterId,
+                            selectedTypeFilterId = selectedTypeFilterId,
+                            selectedFavoriteFilterId = selectedFavoriteFilterId,
+                            selectedScoreFilterId = selectedScoreFilterId,
+                            selectedYearFilterId = selectedYearFilterId,
+                            selectedExtraFilterId = selectedExtraFilterId,
+                            selectedSortId = selectedSortId,
+                            onStatusSelected = onStatusFilterChange,
+                            onTypeSelected = onTypeFilterChange,
+                            onFavoriteSelected = onFavoriteFilterChange,
+                            onScoreSelected = onScoreFilterChange,
+                            onYearSelected = onYearFilterChange,
+                            onExtraSelected = onExtraFilterChange,
+                            onSortSelected = onSortChange,
+                            onResetFilters = {
+                                onStatusFilterChange("all")
+                                onTypeFilterChange("all")
+                                onFavoriteFilterChange("all")
+                                onScoreFilterChange("all")
+                                onYearFilterChange("all")
+                                onExtraFilterChange("all")
+                                onSortChange("newest")
+                            },
+                            onHideFilters = {
+                                showFilterPanel = false
+                            }
+                        )
+                    }
+                }
+
+                // AniHyou / MoeList Tarzı Arama ve Hızlı Filtre Paneli (3. Resimdeki Mantık)
                 AnimatedVisibility(
                     visible = showSearchField || searchQuery.isNotBlank(),
                     enter = expandVertically() + fadeIn(),
                     exit = shrinkVertically() + fadeOut()
                 ) {
-                    KitsugiSearchField(
-                        value = searchQuery,
-                        onValueChange = onSearchQueryChange,
-                        placeholder = "Listende ara...",
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = horizontalPadding, vertical = 6.dp)
-                    )
+                            .padding(horizontal = horizontalPadding, vertical = 6.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        KitsugiSearchField(
+                            value = searchQuery,
+                            onValueChange = onSearchQueryChange,
+                            placeholder = "Listende ara...",
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            val typeItems = listOf(
+                                "all" to "Tümü",
+                                "anime" to "Anime",
+                                "manga" to "Manga",
+                                "movie" to "Film",
+                                "tvshow" to "Dizi"
+                            )
+                            typeItems.forEach { (id, label) ->
+                                val isSelected = selectedTypeFilterId == id
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(if (isSelected) accentColor else KitsugiColors.surface)
+                                        .tvClickable(shape = RoundedCornerShape(12.dp)) {
+                                            onTypeFilterChange(id)
+                                        }
+                                        .padding(horizontal = 12.dp, vertical = 7.dp)
+                                ) {
+                                    Text(
+                                        text = if (isSelected) "✓ $label" else label,
+                                        color = if (isSelected) KitsugiColors.background else KitsugiColors.textPrimary,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+
+                            // Sıralama Seçim Çipi
+                            val activeSortTitle = sortOptions.firstOrNull { it.id == selectedSortId }?.title ?: "Son eklenen"
+                            Box {
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(KitsugiColors.surface)
+                                        .tvClickable(shape = RoundedCornerShape(12.dp)) {
+                                            showSortMenu = true
+                                        }
+                                        .padding(horizontal = 12.dp, vertical = 7.dp)
+                                ) {
+                                    Text(
+                                        text = "≡ $activeSortTitle ▾",
+                                        color = accentColor,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+
+                                KitsugiMyListSortMenu(
+                                    expanded = showSortMenu,
+                                    selectedSortId = selectedSortId,
+                                    onSortSelected = onSortChange,
+                                    onDismissRequest = { showSortMenu = false }
+                                )
+                            }
+
+                            if (searchQuery.isNotBlank() || hasActiveFilters) {
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .tvClickable(shape = RoundedCornerShape(12.dp)) {
+                                            onSearchQueryChange("")
+                                            onStatusFilterChange("all")
+                                            onTypeFilterChange("all")
+                                            onFavoriteFilterChange("all")
+                                            onScoreFilterChange("all")
+                                            onYearFilterChange("all")
+                                            onExtraFilterChange("all")
+                                            onSortChange("newest")
+                                        }
+                                        .padding(horizontal = 10.dp, vertical = 7.dp)
+                                ) {
+                                    Text(
+                                        text = "Temizle",
+                                        color = accentColor,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
 
                 HorizontalDivider(
@@ -523,125 +668,7 @@ fun MyListScreen(
         } else {
             // Arama kutusu artık sabit üst barda, burada gösterilmiyor
 
-            stickyHeader(key = "filter_sort_bar") {
-                var isFiltersExpanded by rememberSaveable { mutableStateOf(false) }
 
-                val activeStatusTitle = statusFilters.firstOrNull { it.id == selectedStatusFilterId }?.title ?: "Tümü"
-                val activeTypeTitle = typeFilters.firstOrNull { it.id == selectedTypeFilterId }?.title ?: "Tümü"
-                val activeFavoriteTitle = favoriteFilters.firstOrNull { it.id == selectedFavoriteFilterId }?.title ?: "Tümü"
-                val activeScoreTitle = scoreFilters.firstOrNull { it.id == selectedScoreFilterId }?.title ?: "Tümü"
-                val activeYearTitle = yearFilters.firstOrNull { it.id == selectedYearFilterId }?.title ?: "Tümü"
-                val activeExtraTitle = extraFilters.firstOrNull { it.id == selectedExtraFilterId }?.title ?: "Tümü"
-                val activeSortTitle = sortOptions.firstOrNull { it.id == selectedSortId }?.title ?: "Son eklenen"
-
-                val summary = listOf(
-                    if (activeStatusTitle != "Tümü") "Durum: $activeStatusTitle" else null,
-                    if (activeTypeTitle != "Tümü") "Tür: $activeTypeTitle" else null,
-                    if (activeFavoriteTitle != "Tümü") activeFavoriteTitle else null,
-                    if (activeScoreTitle != "Tümü") "Puan: $activeScoreTitle" else null,
-                    if (activeYearTitle != "Tümü") activeYearTitle else null,
-                    if (activeExtraTitle != "Tümü") activeExtraTitle else null,
-                    activeSortTitle
-                ).filterNotNull().joinToString("  •  ")
-
-                androidx.compose.material3.Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = KitsugiColors.background
-                ) {
-                    Column(modifier = Modifier.padding(bottom = 6.dp)) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(KitsugiColors.surface)
-                                .tvClickable(shape = RoundedCornerShape(16.dp), onClick = { isFiltersExpanded = !isFiltersExpanded })
-                                .padding(horizontal = 16.dp, vertical = 14.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.FilterList,
-                                        contentDescription = null,
-                                        tint = accentColor,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-
-                                    Spacer(modifier = Modifier.width(12.dp))
-
-                                    Column {
-                                        Text(
-                                            text = "Filtrele ve Sırala",
-                                            color = KitsugiColors.textPrimary,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                        Spacer(modifier = Modifier.height(2.dp))
-                                        Text(
-                                            text = summary,
-                                            color = KitsugiColors.textMuted,
-                                            style = MaterialTheme.typography.labelSmall,
-                                            fontWeight = FontWeight.Medium
-                                        )
-                                    }
-                                }
-
-                                Icon(
-                                    imageVector = if (isFiltersExpanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
-                                    contentDescription = null,
-                                    tint = KitsugiColors.textMuted,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-                        }
-
-                        AnimatedVisibility(
-                            visible = isFiltersExpanded,
-                            enter = expandVertically(),
-                            exit = shrinkVertically()
-                        ) {
-                            Column {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                RichMyListFilterPanel(
-                                    selectedStatusFilterId = selectedStatusFilterId,
-                                    selectedTypeFilterId = selectedTypeFilterId,
-                                    selectedFavoriteFilterId = selectedFavoriteFilterId,
-                                    selectedScoreFilterId = selectedScoreFilterId,
-                                    selectedYearFilterId = selectedYearFilterId,
-                                    selectedExtraFilterId = selectedExtraFilterId,
-                                    selectedSortId = selectedSortId,
-                                    onStatusSelected = onStatusFilterChange,
-                                    onTypeSelected = onTypeFilterChange,
-                                    onFavoriteSelected = onFavoriteFilterChange,
-                                    onScoreSelected = onScoreFilterChange,
-                                    onYearSelected = onYearFilterChange,
-                                    onExtraSelected = onExtraFilterChange,
-                                    onSortSelected = onSortChange,
-                                    onResetFilters = {
-                                        onStatusFilterChange("all")
-                                        onTypeFilterChange("all")
-                                        onFavoriteFilterChange("all")
-                                        onScoreFilterChange("all")
-                                        onYearFilterChange("all")
-                                        onExtraFilterChange("all")
-                                    },
-                                    onHideFilters = {
-                                        isFiltersExpanded = false
-                                    }
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-                }
-            }
 
             if (selectedTabEntries.isEmpty()) {
                 item {

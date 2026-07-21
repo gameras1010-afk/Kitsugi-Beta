@@ -250,12 +250,12 @@ fun CharacterDetailPage(
                                                     )
                                                 )
                                         )
-                                        // Top action bar: Back + Share
+                                        // Top action bar: Back (left) + Share/Favourite (right)
                                         Row(
                                             modifier = Modifier
                                                 .align(Alignment.TopStart)
                                                 .fillMaxWidth()
-                                                .padding(horizontal = 8.dp, vertical = 16.dp),
+                                                .padding(start = 12.dp, end = 12.dp, top = 24.dp),
                                             horizontalArrangement = Arrangement.SpaceBetween,
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
@@ -274,25 +274,11 @@ fun CharacterDetailPage(
                                                     )
                                                 }
                                             }
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(40.dp)
-                                                    .clip(CircleShape)
-                                                    .background(KitsugiColors.Background.copy(alpha = 0.45f)),
-                                                contentAlignment = Alignment.Center
+
+                                            Row(
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                verticalAlignment = Alignment.CenterVertically
                                             ) {
-                                                IconButton(onClick = {
-                                                    val url = com.kitsugi.animelist.utils.ShareUtils.buildCharacterUrl(source, characterId)
-                                                    com.kitsugi.animelist.utils.ShareUtils.shareText(context, detail.name, url)
-                                                }) {
-                                                    Icon(
-                                                        imageVector = Icons.Rounded.Share,
-                                                        contentDescription = "Paylaş",
-                                                        tint = KitsugiColors.TextPrimary
-                                                    )
-                                                }
-                                            }
-                                            if (isAniListSource) {
                                                 Box(
                                                     modifier = Modifier
                                                         .size(40.dp)
@@ -300,12 +286,33 @@ fun CharacterDetailPage(
                                                         .background(KitsugiColors.Background.copy(alpha = 0.45f)),
                                                     contentAlignment = Alignment.Center
                                                 ) {
-                                                    IconButton(onClick = { viewModel.toggleFavourite() }) {
+                                                    IconButton(onClick = {
+                                                        val url = com.kitsugi.animelist.utils.ShareUtils.buildCharacterUrl(source, characterId)
+                                                        com.kitsugi.animelist.utils.ShareUtils.shareText(context, detail.name, url)
+                                                    }) {
                                                         Icon(
-                                                            imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                                                            contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
-                                                            tint = if (isFavourite) accentColor else KitsugiColors.TextPrimary
+                                                            imageVector = Icons.Rounded.Share,
+                                                            contentDescription = "Paylaş",
+                                                            tint = KitsugiColors.TextPrimary
                                                         )
+                                                    }
+                                                }
+
+                                                if (isAniListSource) {
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .size(40.dp)
+                                                            .clip(CircleShape)
+                                                            .background(KitsugiColors.Background.copy(alpha = 0.45f)),
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        IconButton(onClick = { viewModel.toggleFavourite() }) {
+                                                            Icon(
+                                                                imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                                                                contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
+                                                                tint = if (isFavourite) accentColor else KitsugiColors.TextPrimary
+                                                            )
+                                                        }
                                                     }
                                                 }
                                             }
@@ -555,37 +562,70 @@ fun CharacterDetailPage(
                                             )
                                     )
 
-                                    // Top back button
-                                    TextButton(
-                                        onClick = onBackClick,
+                                    // Top Action Bar: Back (left) + Share & Favourite (right)
+                                    Row(
                                         modifier = Modifier
                                             .align(Alignment.TopStart)
-                                            .padding(start = 12.dp, top = 24.dp)
+                                            .fillMaxWidth()
+                                            .padding(start = 12.dp, end = 12.dp, top = 24.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text(
-                                            text = "Geri",
-                                            color = KitsugiColors.TextPrimary,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-
-                                    // Favourite button (portrait hero — top end)
-                                    if (isAniListSource) {
                                         Box(
                                             modifier = Modifier
-                                                .align(Alignment.TopEnd)
-                                                .padding(end = 12.dp, top = 24.dp)
                                                 .size(40.dp)
                                                 .clip(CircleShape)
                                                 .background(KitsugiColors.Background.copy(alpha = 0.45f)),
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            IconButton(onClick = { viewModel.toggleFavourite() }) {
+                                            IconButton(onClick = onBackClick) {
                                                 Icon(
-                                                    imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                                                    contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
-                                                    tint = if (isFavourite) accentColor else KitsugiColors.TextPrimary
+                                                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                                    contentDescription = "Geri",
+                                                    tint = KitsugiColors.TextPrimary
                                                 )
+                                            }
+                                        }
+
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(40.dp)
+                                                    .clip(CircleShape)
+                                                    .background(KitsugiColors.Background.copy(alpha = 0.45f)),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                IconButton(onClick = {
+                                                    val url = com.kitsugi.animelist.utils.ShareUtils.buildCharacterUrl(source, characterId)
+                                                    com.kitsugi.animelist.utils.ShareUtils.shareText(context, detail.name, url)
+                                                }) {
+                                                    Icon(
+                                                        imageVector = Icons.Rounded.Share,
+                                                        contentDescription = "Paylaş",
+                                                        tint = KitsugiColors.TextPrimary
+                                                    )
+                                                }
+                                            }
+
+                                            if (isAniListSource) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(40.dp)
+                                                        .clip(CircleShape)
+                                                        .background(KitsugiColors.Background.copy(alpha = 0.45f)),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    IconButton(onClick = { viewModel.toggleFavourite() }) {
+                                                        Icon(
+                                                            imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                                                            contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
+                                                            tint = if (isFavourite) accentColor else KitsugiColors.TextPrimary
+                                                        )
+                                                    }
+                                                }
                                             }
                                         }
                                     }
