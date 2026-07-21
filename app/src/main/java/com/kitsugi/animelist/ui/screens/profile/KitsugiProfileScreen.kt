@@ -1085,7 +1085,7 @@ fun AniListProfileContent(
                         columns = GridCells.Fixed(3),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(max = 1200.dp),
+                            .wrapContentHeight(),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         userScrollEnabled = false
@@ -1183,7 +1183,7 @@ fun AniListProfileContent(
                         columns = GridCells.Fixed(3),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(max = 1200.dp),
+                            .wrapContentHeight(),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         userScrollEnabled = false
@@ -1510,7 +1510,7 @@ fun MalProfileContent(
                         columns = GridCells.Fixed(3),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(max = 1200.dp),
+                            .wrapContentHeight(),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         userScrollEnabled = false

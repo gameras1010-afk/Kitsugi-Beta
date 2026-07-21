@@ -25,7 +25,7 @@ android {
     val simklSecret       = localProperties.getProperty("simkl_client_secret")   ?: "81d3253f90d1f2c0c4ea55af6ca317861e5f40d43c16255eeabd57fc51c73f1c"
     val animeSkipClientId = localProperties.getProperty("anime_skip_client_id")  ?: "5mpKIMeowxmJ4UvAWacdPEzNbfXEjZDv"
 
-    val appVersionName = "2.4.32"
+    val appVersionName = "2.4.33"
 
     compileSdk = 36
 
