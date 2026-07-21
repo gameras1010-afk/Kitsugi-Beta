@@ -675,26 +675,30 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
             try {
                 val socialQuery = """
                     query (${'$'}userId: Int) {
-                        Page(page: 1, perPage: 50) {
-                            followers(userId: ${'$'}userId) {
-                                id
-                                name
-                                avatar { large }
+                        User(id: ${'$'}userId) {
+                            followers(page: 1, perPage: 50) {
+                                nodes {
+                                    id
+                                    name
+                                    avatar { large }
+                                }
                             }
-                            following(userId: ${'$'}userId) {
-                                id
-                                name
-                                avatar { large }
+                            following(page: 1, perPage: 50) {
+                                nodes {
+                                    id
+                                    name
+                                    avatar { large }
+                                }
                             }
                         }
                     }
                 """.trimIndent()
                 val variables = JSONObject().put("userId", userId)
                 val jsonResponse = postGraphQl(token, socialQuery, variables)
-                val pageObj = JSONObject(jsonResponse).getJSONObject("data").getJSONObject("Page")
+                val userObj = JSONObject(jsonResponse).getJSONObject("data").getJSONObject("User")
 
                 val followersList = mutableListOf<UserFollowItem>()
-                pageObj.optJSONArray("followers")?.let { arr ->
+                userObj.optJSONObject("followers")?.optJSONArray("nodes")?.let { arr ->
                     for (i in 0 until arr.length()) {
                         val obj = arr.getJSONObject(i)
                         followersList.add(
@@ -708,7 +712,7 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                 }
 
                 val followingList = mutableListOf<UserFollowItem>()
-                pageObj.optJSONArray("following")?.let { arr ->
+                userObj.optJSONObject("following")?.optJSONArray("nodes")?.let { arr ->
                     for (i in 0 until arr.length()) {
                         val obj = arr.getJSONObject(i)
                         followingList.add(
@@ -1301,6 +1305,42 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                 android.util.Log.e("ProfileViewModel", "Jikan favorites fetch failed: ${e.message}")
             }
 
+            val malFriends = mutableListOf<UserFollowItem>()
+            try {
+                kotlinx.coroutines.delay(1000)
+                val friendsRequest = Request.Builder()
+                    .url("https://api.jikan.moe/v4/users/$username/friends")
+                    .build()
+
+                client.newCall(friendsRequest).execute().use { response ->
+                    if (response.isSuccessful) {
+                        val responseText = response.body?.string().orEmpty()
+                        val dataArr = JSONObject(responseText).optJSONArray("data")
+                        dataArr?.let { arr ->
+                            for (i in 0 until arr.length()) {
+                                val friendObj = arr.getJSONObject(i)
+                                val userObj = friendObj.optJSONObject("user")
+                                if (userObj != null) {
+                                    val friendName = userObj.optNullableString("username") ?: "Kullanıcı"
+                                    val friendAvatar = userObj.optNullableString("image_url")
+                                    malFriends.add(
+                                        UserFollowItem(
+                                            id = friendName.hashCode(),
+                                            name = friendName,
+                                            avatarUrl = friendAvatar
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        android.util.Log.w("ProfileViewModel", "Jikan friends HTTP ${response.code} for user: $username")
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("ProfileViewModel", "Jikan friends fetch failed: ${e.message}")
+            }
+
             // Always update state — partial data is better than no data
             _malState.update {
                 it.copy(
@@ -1310,7 +1350,8 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                     favoriteAnime = favAnime,
                     favoriteManga = favManga,
                     favoriteCharacters = favChar,
-                    favoriteStaff = favStaff
+                    favoriteStaff = favStaff,
+                    socialState = SocialState(followers = malFriends, following = malFriends)
                 )
             }
         }

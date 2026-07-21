@@ -42,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -585,18 +586,11 @@ fun HorizontalStatsBar(
 
 @Composable
 fun ProfileHeaderIconTabs(
+    tabs: List<Pair<ImageVector, String>>,
     selectedTab: Int,
     onTabSelected: (Int) -> Unit,
     accentColor: Color
 ) {
-    val tabs = listOf(
-        Icons.Rounded.Info to "Hakkında",
-        Icons.Rounded.ChatBubble to "Aktivite",
-        Icons.Rounded.BarChart to "İstatistikler",
-        Icons.Rounded.Star to "Favoriler",
-        Icons.Rounded.People to "Sosyal"
-    )
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -751,7 +745,15 @@ fun AniListProfileContent(
 
         // Top 5 Icon Sub-Tabs
         item {
+            val tabs = listOf(
+                Icons.Rounded.Info to "Hakkında",
+                Icons.Rounded.ChatBubble to "Aktivite",
+                Icons.Rounded.BarChart to "İstatistikler",
+                Icons.Rounded.Star to "Favoriler",
+                Icons.Rounded.People to "Sosyal"
+            )
             ProfileHeaderIconTabs(
+                tabs = tabs,
                 selectedTab = activeTab,
                 onTabSelected = { activeTab = it },
                 accentColor = accentColor
@@ -1343,7 +1345,15 @@ fun MalProfileContent(
 
         // Top 5 Icon Sub-Tabs
         item {
+            val tabs = listOf(
+                Icons.Rounded.Info to "Hakkında",
+                Icons.Rounded.ChatBubble to "Aktivite",
+                Icons.Rounded.BarChart to "İstatistikler",
+                Icons.Rounded.Star to "Favoriler",
+                Icons.Rounded.People to "Sosyal"
+            )
             ProfileHeaderIconTabs(
+                tabs = tabs,
                 selectedTab = activeTab,
                 onTabSelected = { activeTab = it },
                 accentColor = accentColor
@@ -1569,14 +1579,72 @@ fun MalProfileContent(
         }
 
         if (activeTab == 4) {
+            val userList = state.socialState.followers
             item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(32.dp),
-                    contentAlignment = Alignment.Center
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(text = "MyAnimeList için sosyal veriler mevcut değil.", color = KitsugiColors.TextMuted)
+                    ProfileFilterChip(
+                        text = "Arkadaşlar (${userList.size})",
+                        isSelected = true,
+                        accentColor = accentColor,
+                        onClick = {}
+                    )
+                }
+            }
+
+            if (userList.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "Arkadaş bulunamadı.", color = KitsugiColors.TextMuted)
+                    }
+                }
+            } else {
+                item {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        userScrollEnabled = false
+                    ) {
+                        items(userList, key = { it.id }) { u ->
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(KitsugiColors.Surface)
+                                    .padding(12.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                AsyncImage(
+                                    model = u.avatarUrl ?: "",
+                                    contentDescription = u.name,
+                                    modifier = Modifier
+                                        .size(56.dp)
+                                        .clip(CircleShape),
+                                    contentScale = ContentScale.Crop
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = u.name,
+                                    color = KitsugiColors.TextPrimary,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -1748,7 +1816,13 @@ fun SimklProfileContent(
 
         // Top 5 Icon Sub-Tabs
         item {
+            val tabs = listOf(
+                Icons.Rounded.Info to "Hakkında",
+                Icons.Rounded.ChatBubble to "Aktivite",
+                Icons.Rounded.BarChart to "İstatistikler"
+            )
             ProfileHeaderIconTabs(
+                tabs = tabs,
                 selectedTab = activeTab,
                 onTabSelected = { activeTab = it },
                 accentColor = accentColor

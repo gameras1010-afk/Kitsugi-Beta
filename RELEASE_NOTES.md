@@ -1,39 +1,23 @@
-# Kitsugi v2.4.33 Release Notes 🚀
+# Kitsugi v2.4.35 Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### 🌐 Küresel Paylaşım & Derin Bağlantı (Deep Links / App Links) Entegrasyonu
-- **Medya, Profil ve Karakter Paylaşımı**: Medya detay sayfalarının yapışkan başlıklarında (sticky floating header) ve hero bölümlerinde, profil banner'larında (AniList, MAL, Simkl) ile Karakter ve Ekip detay sayfalarında doğrudan web bağlantısı paylaşma (**Paylaş** butonu) eklendi.
-- **Sistem Paylaşım Menüsü (Share Sheet)**: `ShareUtils` merkezi altyapısı ile oluşturulan AniList, MyAnimeList, TMDB ve Simkl bağlantıları tek tıkla Android sistem paylaşım menüsüne aktarılır.
-- **Otomatik Uygulama İçi Yönlendirme (App Links)**: AniList, MyAnimeList, TMDB ve Simkl web bağlantılarına (örn. tarayıcıdan veya mesajlaşma uygulamalarından) tıklandığında Kitsugi doğrudan ilgili medya, profil veya detay sayfasını açar.
+### 👥 Sosyal Bağlantılar & Arkadaş Listesi Düzeltmeleri
+- **AniList Sosyal Veri Düzeltmesi**: AniList takipçi ve takip edilen listelerinin GraphQL sorgu şeması güncellenerek veri yüklenmeme sorunu çözüldü.
+- **MyAnimeList (MAL) Arkadaş Entegrasyonu**: Jikan API entegrasyonu ile MAL profilinde arkadaş listesi çekme desteği getirildi. Arkadaş listesi profilin "Sosyal" sekmesinde grid düzeninde gösterilir.
 
-### 🔞 Yetişkin İçerik (+18) Gizlilik Bulanıklaştırması (Adult Content Blur)
-- Keşfet, Listem ve Profil ekranlarındaki medya kartları, hero kesimleri ve sıralama listelerinde yetişkin içerikler kullanıcı tercihlerine göre otomatik olarak bulanıklaştırılır.
-
-### 🌐 Harici Çeviri Servisi Ayarı (External Translation Support)
-- Ayarlar menüsüne tercih edilen harici çeviri servisinin (DeepL, Google Translate vb.) seçilebileceği yapı eklendi. Biyografi ve açıklama çevirileri kullanıcı tercihine göre açılır.
-
-### 📱 Listem (My List) Ekranı & Arayüz İyileştirmeleri
-- **Dinamik Kaydırmaya Duyarlı Buton (Scroll-aware FAB)**: Kategori seçimi için kaydırma yönüne göre gizlenen/gösterilen hareketli buton entegre edildi.
-- **Gelişmiş İlerleme Göstergeleri**: Medya kartlarında izleme/okuma durumlarını görsel olarak takip etmeyi kolaylaştıran ilerleme çubukları eklendi.
+### 🧹 Simkl Profil Arayüzü Temizliği
+- Simkl platformunda API desteği olmayan boş "Favoriler" ve "Sosyal" sekmeleri gizlenerek kullanıcı arayüzü daha sade hale getirildi.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### 🌐 Global Sharing & Deep Link (App Links) Integration
-- **Media, Profile & Character Sharing**: Added **Share** action buttons across Media Detail pages (sticky header & hero sections), Profile banners (AniList, MAL, Simkl), as well as Character and Staff detail screens.
-- **System Share Sheet**: Centralized `ShareUtils` formats standard URLs for AniList, MyAnimeList, TMDB, and Simkl, triggering the native Android share sheet with one tap.
-- **App Links Navigation**: Clicking external URLs for AniList, MAL, TMDB, or Simkl now automatically opens the corresponding media, profile, character, or staff screen inside Kitsugi.
+### 👥 Social Connections & Friends List Fixes
+- **AniList Social Fetching Fix**: Updated GraphQL API query fields for AniList followers and following to resolve loading failures.
+- **MyAnimeList (MAL) Friends Integration**: Added friends list fetching via the Jikan API. Friend profiles are now displayed in a clean grid layout under the "Social" sub-tab.
 
-### 🔞 Adult Content (+18) Privacy Blur
-- Media cards, hero sections, and bottom sheets across Explore, My List, and Profile screens now apply privacy blur to adult-tagged media according to user preferences.
-
-### 🌐 External Translation Service Selection
-- Added configurable preferred translator options (DeepL, Google Translate, etc.) in Settings, allowing one-tap translation of biographies and descriptions using your preferred engine.
-
-### 📱 My List Screen & UX Enhancements
-- **Scroll-Aware Floating Action Button**: Smooth category selection FAB that automatically hides on scroll down and reappears on scroll up.
-- **Visual Progress Indicators**: Added progress bars to media list entries for instant progress tracking.
+### 🧹 Simkl Profile UI Cleanup
+- Hidden unsupported and empty "Favorites" and "Social" tabs in Simkl profile view to streamline the UI.
