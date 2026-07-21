@@ -1,31 +1,31 @@
-# Kitsugi v2.4.48 Release Notes 🚀
+# Kitsugi v2.4.49 Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### 📋 Medya Listesi Filtreleme & Bottom Sheet Dönüşümü
-- **FAB Odaklı Etkileşim:** `KitsugiUserMediaListScreen` üzerindeki kalabalık oluşturan statik üst filtre çiplerinin yerini sağ alttaki FAB butonuyla açılan `UserMediaListStatusBottomSheet` aldı.
-- **Tasarım Paritesi:** Kullanıcı medya listelerinde "Listem" ekranıyla %100 görsel ve işlevsel filtreleme uyumu sağlandı.
+### 📋 Medya Listesi Filtreleme & Görsel Yenilikler
+- **Pratik Filtreleme Penceresi:** Kullanıcı medya listelerinde kalabalık oluşturan üst durum butonları kaldırıldı. Artık sağ alttaki filtre butonuna dokunarak kategoriler arasında hızlıca geçiş yapabilirsiniz.
+- **Ekran Tasarım Uyumu:** Kullanıcı profillerindeki medya listeleri "Listem" sekmesiyle tam uyumlu ve temiz bir görünüme kavuşturuldu.
 
-### ⚡ Otomatik Senkronizasyon & Bildirim İyileştirmeleri
-- **Gereksiz Ağ İstekleri Giderildi:** İçerik detay sayfaları açıldığında özet (synopsis) verisinin çekilmesiyle tetiklenen arka plan güncellemeleri optimize edildi.
-- **Eşitleme Bildirimi Düzeltildi:** Detay sayfalarına girildiğinde durduk yere ekranda beliren "başarıyla eşitlendi / güncellendi" snackbar bildirimi ve harici platform senkronizasyonu engellendi.
+### ⚡ Performans & Bildirim İyileştirmeleri
+- **Gereksiz Yüklemeler Engellendi:** İçerik detay sayfalarına girildiğinde arka planda istemsizce çalışan veri yenileme işlemleri optimize edildi.
+- **Sayfa Geçiş Rahatlığı:** Detay sayfaları açılırken ekranda beliren gereksiz "başarıyla eşitlendi / güncellendi" bildirimi ve harici platform yüklemeleri kaldırıldı.
 
-### 🛡️ +18 İçerik Bulanıklaştırma (Adult Blur) Güvencesi
-- **Profil & Detay Kapsamı:** Ayarlardan bulanıklaştırma seçeneği aktifken profil favorileri, istatistikleri, sosyal akış, medya listeleri ve detay hero/poster görsellerinde +18 ögelerin tam blurlanması sağlandı.
+### 🛡️ +18 İçerik Bulanıklaştırma (Adult Blur) Koruması
+- **Gelişmiş Gizlilik Kapsamı:** Ayarlardan bulanıklaştırma seçeneği aktifken profil favorileri, istatistikler, sosyal akış ve içerik kapak görsellerindeki +18 öğeler tam koruma altına alındı.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### 📋 Media List Filtering & Bottom Sheet UX
-- **FAB-Driven Interaction:** Replaced static top status filter rows in `KitsugiUserMediaListScreen` with an interactive bottom sheet modal (`UserMediaListStatusBottomSheet`) triggered by the floating action button.
-- **Design Parity:** Achieved full visual and functional parity between personal and external user media lists.
+### 📋 Media List Filtering & UI Enhancements
+- **Bottom Sheet Filter Integration:** Replaced static top status chips on user media list screens with a clean bottom sheet filter modal accessible via the floating action button.
+- **Design Alignment:** Standardized user media list pages to match the My List layout seamlessly.
 
-### ⚡ Automatic Sync & Notification Refinement
-- **Eliminated Unnecessary Re-fetches:** Optimized background data updates triggered when loading media synopses on detail pages.
-- **Redundant Sync Toast Fix:** Prevented unexpected "successfully synced / updated" snackbars when simply opening media detail views.
+### ⚡ Performance & Notification Optimizations
+- **Optimized Data Refresh:** Prevented redundant background sync operations when navigating to media detail pages.
+- **Clean Navigation Experience:** Removed unexpected sync notifications and toasts when opening detail views.
 
-### 🛡️ Adult Content Blur Enforcement
-- **Comprehensive Coverage:** Verified complete visual blurring across profile favorites, stats, social activity streams, media list cards, and detail page hero/poster graphics when adult blur is enabled.
+### 🛡️ Adult Content Blur Protection
+- **Comprehensive Privacy Coverage:** Guaranteed complete image blurring across favorites, stats, social streams, and hero banners when adult content blur is enabled.

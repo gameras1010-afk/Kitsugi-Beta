@@ -611,7 +611,7 @@ private fun CleanReleaseNotesText(notes: String) {
                     )
                 }
                 trimmed.startsWith("-") || trimmed.startsWith("*") -> {
-                    val cleanText = trimmed.removePrefix("-").removePrefix("*").replace("**", "").trim()
+                    val cleanText = trimmed.removePrefix("-").removePrefix("*").replace("**", "").replace("`", "").trim()
                     Row(
                         modifier = Modifier.padding(start = 4.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -631,7 +631,7 @@ private fun CleanReleaseNotesText(notes: String) {
                     }
                 }
                 trimmed.isNotEmpty() -> {
-                    val cleanText = trimmed.replace("**", "").trim()
+                    val cleanText = trimmed.replace("**", "").replace("`", "").trim()
                     Text(
                         text = cleanText,
                         style = MaterialTheme.typography.bodyMedium,
