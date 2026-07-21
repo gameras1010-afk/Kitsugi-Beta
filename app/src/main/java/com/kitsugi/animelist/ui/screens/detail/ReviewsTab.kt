@@ -3,6 +3,7 @@ package com.kitsugi.animelist.ui.screens.detail
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import com.kitsugi.animelist.ui.utils.tvClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -99,17 +100,22 @@ fun ReviewsTabContent(
         if (forumTopics.isNotEmpty()) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(KitsugiColors.Surface)
+                    .border(1.dp, KitsugiColors.Border.copy(alpha = 0.3f), RoundedCornerShape(18.dp))
+                    .padding(vertical = 12.dp)
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = "Tartışma Konuları",
                         color = KitsugiColors.TextPrimary,
-                        fontSize = 16.sp,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.Black
                     )
 
@@ -131,7 +137,7 @@ fun ReviewsTabContent(
 
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    contentPadding = PaddingValues(horizontal = 4.dp),
+                    contentPadding = PaddingValues(horizontal = 14.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     items(forumTopics) { topic ->
@@ -141,6 +147,7 @@ fun ReviewsTabContent(
                                 Toast.makeText(context, "Yükleniyor...", Toast.LENGTH_SHORT).show()
                                 activeTopicForDetail = topic
                             },
+                            backgroundColor = KitsugiColors.SurfaceSoft,
                             onLikeClick = if (source.lowercase() != "jikan" && source.lowercase() != "mal") {
                                 {
                                     coroutineScope.launch {
@@ -171,17 +178,22 @@ fun ReviewsTabContent(
         if (activitiesList.isNotEmpty()) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(KitsugiColors.Surface)
+                    .border(1.dp, KitsugiColors.Border.copy(alpha = 0.3f), RoundedCornerShape(18.dp))
+                    .padding(vertical = 12.dp)
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = "Aktiviteler",
                         color = KitsugiColors.TextPrimary,
-                        fontSize = 16.sp,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.Black
                     )
 
@@ -203,7 +215,7 @@ fun ReviewsTabContent(
 
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    contentPadding = PaddingValues(horizontal = 4.dp),
+                    contentPadding = PaddingValues(horizontal = 14.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     items(activitiesList) { activity ->
@@ -214,6 +226,7 @@ fun ReviewsTabContent(
                                 Toast.makeText(context, "Yükleniyor...", Toast.LENGTH_SHORT).show()
                                 activeActivityIdForDetail = activity.id
                             },
+                            backgroundColor = KitsugiColors.SurfaceSoft,
                             onLikeClick = {
                                 if (source.lowercase() == "jikan" || source.lowercase() == "mal") {
                                     Toast.makeText(context, "Beğeni özelliği MAL kaynağı için desteklenmemektedir.", Toast.LENGTH_SHORT).show()
@@ -245,17 +258,22 @@ fun ReviewsTabContent(
         // --- 3. REVIEWS SECTION ---
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(18.dp))
+                .background(KitsugiColors.Surface)
+                .border(1.dp, KitsugiColors.Border.copy(alpha = 0.3f), RoundedCornerShape(18.dp))
+                .padding(vertical = 12.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = "İncelemeler",
                     color = KitsugiColors.TextPrimary,
-                    fontSize = 16.sp,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Black
                 )
 
@@ -277,14 +295,16 @@ fun ReviewsTabContent(
 
             when (state) {
                 is DetailTabState.Loading -> {
-                    KitsugiShimmerSearchResultList(itemCount = 2)
+                    Box(modifier = Modifier.padding(horizontal = 14.dp)) {
+                        KitsugiShimmerSearchResultList(itemCount = 2)
+                    }
                 }
                 is DetailTabState.Error -> {
                     Text(
                         text = "İncelemeler yüklenirken hata oluştu.",
                         color = KitsugiColors.AccentRed,
                         style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(vertical = 16.dp, horizontal = 4.dp)
+                        modifier = Modifier.padding(vertical = 16.dp, horizontal = 14.dp)
                     )
                 }
                 is DetailTabState.Success -> {
@@ -293,12 +313,12 @@ fun ReviewsTabContent(
                             text = "Henüz inceleme yazılmamış.",
                             color = KitsugiColors.TextSecondary,
                             style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(vertical = 16.dp, horizontal = 4.dp)
+                            modifier = Modifier.padding(vertical = 16.dp, horizontal = 14.dp)
                         )
                     } else {
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            contentPadding = PaddingValues(horizontal = 4.dp),
+                            contentPadding = PaddingValues(horizontal = 14.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             items(reviewsList) { rev ->
@@ -306,6 +326,7 @@ fun ReviewsTabContent(
                                     rev = rev,
                                     modifier = Modifier.width(280.dp),
                                     preferredTranslator = preferredTranslator,
+                                    backgroundColor = KitsugiColors.SurfaceSoft,
                                     onClick = { activeReviewForDetail = rev },
                                     onHelpfulClick = {
                                         if (rev.id == null) {
@@ -406,13 +427,14 @@ fun ReviewsTabContent(
 private fun TopicCard(
     topic: KitsugiForumTopic,
     onClick: () -> Unit,
-    onLikeClick: (() -> Unit)? = null
+    onLikeClick: (() -> Unit)? = null,
+    backgroundColor: androidx.compose.ui.graphics.Color = KitsugiColors.Surface
 ) {
     Column(
         modifier = Modifier
             .width(240.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(KitsugiColors.Surface)
+            .background(backgroundColor)
             .tvClickable(shape = RoundedCornerShape(16.dp), onClick = onClick)
             .padding(12.dp)
     ) {
@@ -547,14 +569,15 @@ private fun ActivityCard(
     activity: KitsugiActivity,
     titleLanguage: String = "ROMAJI",
     onClick: () -> Unit,
-    onLikeClick: () -> Unit
+    onLikeClick: () -> Unit,
+    backgroundColor: androidx.compose.ui.graphics.Color = KitsugiColors.Surface
 ) {
     val accentColor = LocalKitsugiAccent.current
     Column(
         modifier = Modifier
             .width(240.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(KitsugiColors.Surface)
+            .background(backgroundColor)
             .tvClickable(shape = RoundedCornerShape(16.dp), onClick = onClick)
             .padding(12.dp)
     ) {

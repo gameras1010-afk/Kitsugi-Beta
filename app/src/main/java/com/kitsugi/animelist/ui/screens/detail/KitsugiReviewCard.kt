@@ -38,6 +38,7 @@ internal fun KitsugiReviewCard(
     rev: KitsugiReview,
     modifier: Modifier = Modifier.fillMaxWidth(),
     preferredTranslator: String = "DEFAULT",
+    backgroundColor: androidx.compose.ui.graphics.Color = KitsugiColors.Surface,
     onClick: () -> Unit,
     onHelpfulClick: () -> Unit
 ) {
@@ -49,7 +50,7 @@ internal fun KitsugiReviewCard(
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(20.dp))
-            .background(KitsugiColors.Surface)
+            .background(backgroundColor)
             .tvClickable(shape = RoundedCornerShape(20.dp), onClick = onClick)
             .padding(14.dp)
     ) {

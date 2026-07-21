@@ -49,7 +49,7 @@ internal fun EntryDetailOverviewTab(
     val context = LocalContext.current
 
     Column(
-        modifier = Modifier.padding(horizontal = 4.dp, vertical = 14.dp),
+        modifier = Modifier.padding(horizontal = 0.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         DetailSynopsisCard(

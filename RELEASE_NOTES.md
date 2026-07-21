@@ -1,23 +1,19 @@
-# Kitsugi v2.4.57 Release Notes 🚀
+# Kitsugi v2.4.58 Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### ⚡ Kritik Performans & Derleme Optimizasyonu (Kasma/Donma Çözümü)
-- **Release Moduna Geçiş:** GitHub üzerinden yayınlanan APK derlemeleri artık `Debug` mod yerine tamamen **Release (Minified & R8/Proguard ile Optimize edilmiş)** modda derlenmektedir. Jetpack Compose üzerindeki tüm gereksiz kontrol yükleri kaldırılmış ve zayıf/farklı cihazlarda yaşanan **kasma, donma ve takılma sorunları tamamen çözülmüştür**.
-- **Kod Karıştırma & Koruma:** Uygulama kaynak kodları R8 derleyicisi ile karıştırılarak (obfuscated) tersine mühendisliğe karşı güvenli hale getirilmiştir.
-
-### 📺 TV Modu Ayrıştırma Hazırlığı
-- **TV Yedeklemesi:** TV arayüzü ve TV entegrasyonuna ait tüm kod tabanı harici yedekleme dizinine güvenle taşınmış, ana mobil kod tabanı hafifletilmiştir.
+### 🎨 Detay Sayfası Kenarlık & Tasarım Standardizasyonu
+- **Görsel Kenar Kaymaları Çözüldü:** Tüm detay sayfalarındaki `HorizontalPager` kaydırma alanları standartlaştırıldı. İçeriklerin ekran kenarlarından taşması (edge-bleeding) engellendi ve hızlı kaydırma sırasındaki titremeler/donmalar giderildi.
+- **Kutulu Kart Tasarımı (Surface):** Detay sayfalarında yer alan "Durum Dağılımı", "Puan Dağılımı", "Tartışma Konuları", "Aktiviteler" ve "İncelemeler" gibi tüm sekmeler, uygulamanın genel premium estetiğine uygun olarak yuvarlak köşeli (`18.dp`) ve arka plan rengi olan kart yapılarına (`Surface`) yerleştirildi.
+- **Renk Karşıtlığı Kontrastı:** İçi içe geçen yorum kartlarında karmaşayı önlemek amacıyla iç kartların arka plan renkleri `SurfaceSoft` olarak uyarlanarak görsellik ve okunabilirlik en üst düzeye çıkarıldı.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### ⚡ Critical Performance & Compilation Optimization (Lag/Stutter Fix)
-- **Release Mode Compiler:** GitHub Release builds have been migrated from `Debug` to fully optimized **Release (Minified & R8/Proguard Optimized)** compiler settings. This eliminates Jetpack Compose development overhead, resolve **lag/stutter issues on low-end/different devices**, and significantly improves rendering frame rates.
-- **Code Obfuscation & Security:** Applied R8 compiler rules to obfuscate class structures and protect code against reverse engineering.
-
-### 📺 TV Code Separation Preparation
-- **TV Integration Backup:** TV components, companion network code, and navigation elements have been backed up to the backup directory to streamline and lighten the primary mobile codebase.
+### 🎨 Detail Page Spacing & Layout Standardization
+- **Edge Bleeding Resolved:** Standardized layout spacing constraints for the `HorizontalPager` component across all detail pages to prevent content from touching screen edges and eliminate scrolling jitters during rapid swipe navigation.
+- **Encapsulated Card Containers:** Grouped the "Status Distribution", "Score Distribution", "Forum Topics", "Activities", and "Reviews" sections into stylized, rounded-corner (`18.dp`) container cards (`Surface`) to achieve a unified, premium visual signature.
+- **Nested Card Contrast:** Updated background colors for nested topic, activity, and review cards to `SurfaceSoft` inside primary containers, offering clean contrast and high aesthetic refinement.

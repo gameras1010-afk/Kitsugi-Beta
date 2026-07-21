@@ -100,11 +100,19 @@ fun StatsTabContent(
                     val safeTotal = if (totalStatus > 0) totalStatus else 1
 
                     if (totalStatus > 0) {
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(KitsugiColors.Surface)
+                                .border(1.dp, KitsugiColors.Border.copy(alpha = 0.3f), RoundedCornerShape(18.dp))
+                                .padding(16.dp)
+                        ) {
                             Text(
                                 text = if (isTurkish) "Durum Dağılımı" else "Status Distribution",
                                 color = KitsugiColors.TextPrimary,
-                                style = MaterialTheme.typography.titleLarge,
+                                style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
 
@@ -194,11 +202,19 @@ fun StatsTabContent(
 
                     // 3. PUAN DAĞILIMI (SCORE DISTRIBUTION)
                     if (stats.scoreDistribution.isNotEmpty()) {
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(KitsugiColors.Surface)
+                                .border(1.dp, KitsugiColors.Border.copy(alpha = 0.3f), RoundedCornerShape(18.dp))
+                                .padding(16.dp)
+                        ) {
                             Text(
                                 text = if (isTurkish) "Puan Dağılımı" else "Score Distribution",
                                 color = KitsugiColors.TextPrimary,
-                                style = MaterialTheme.typography.titleLarge,
+                                style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
 

@@ -1007,8 +1007,7 @@ fun ApiResultDetailPage(
                             state = pagerState,
                             userScrollEnabled = !isTv,
                             beyondViewportPageCount = 1,
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp),
-                            pageSpacing = 12.dp,
+                            pageSpacing = 16.dp,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .wrapContentHeight()
@@ -1018,6 +1017,7 @@ fun ApiResultDetailPage(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .heightIn(min = 600.dp)
+                                    .padding(horizontal = 16.dp)
                             ) {
                                 when (page) {
                                     0 -> {
