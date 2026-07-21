@@ -353,10 +353,44 @@ fun KitsugiProfileScreen(
     }
 
     if (activeFavoriteSheet != null) {
+        val filterTitle = activeFavoriteSheet!!.first
+        val currentFavCategory = when (viewModel.aniListFavoritesFilter) {
+            0 -> "anime"
+            1 -> "manga"
+            2 -> "characters"
+            3 -> "staff"
+            4 -> "studios"
+            else -> "anime"
+        }
+        val currentFavList = if (activeSubTab == 0) {
+            when (viewModel.aniListFavoritesFilter) {
+                0 -> aniListState.favoriteAnime
+                1 -> aniListState.favoriteManga
+                2 -> aniListState.favoriteCharacters
+                3 -> aniListState.favoriteStaff
+                4 -> aniListState.favoriteStudios
+                else -> activeFavoriteSheet!!.second
+            }
+        } else {
+            activeFavoriteSheet!!.second
+        }
+        val currentHasNext = if (activeSubTab == 0) {
+            when (viewModel.aniListFavoritesFilter) {
+                0 -> aniListState.favAnimeHasNext
+                1 -> aniListState.favMangaHasNext
+                2 -> aniListState.favCharHasNext
+                3 -> aniListState.favStaffHasNext
+                4 -> aniListState.favStudioHasNext
+                else -> false
+            }
+        } else false
+
         FavoritesExpandedBottomSheet(
-            title = activeFavoriteSheet!!.first,
-            items = activeFavoriteSheet!!.second,
+            title = filterTitle,
+            items = currentFavList,
             blurAdultMedia = appSettings.blurAdultMedia,
+            hasNextPage = currentHasNext,
+            onLoadMore = { viewModel.loadMoreFavorites(currentFavCategory) },
             onItemClick = { item ->
                 onSheetItemClick?.invoke(item)
             },
@@ -1519,6 +1553,15 @@ fun AniListProfileContent(
                 else -> false
             }
 
+            val filterTitle = when (favoritesFilter) {
+                0 -> "Favori Animeler"
+                1 -> "Favori Mangalar"
+                2 -> "Favori Karakterler"
+                3 -> "Favori Ekip"
+                4 -> "Favori Stüdyolar"
+                else -> "Favoriler"
+            }
+
             if (currentFavList.isEmpty()) {
                 item {
                     Box(
@@ -1531,6 +1574,50 @@ fun AniListProfileContent(
                     }
                 }
             } else {
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "$filterTitle (${currentFavList.size})",
+                            color = KitsugiColors.TextPrimary,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(KitsugiColors.SurfaceStrong)
+                                .clickable {
+                                    onOpenFavoriteSheet(filterTitle, currentFavList) { item ->
+                                        item.id.toIntOrNull()?.let { id ->
+                                            when (favoritesFilter) {
+                                                0 -> onFavoriteMediaClick(id, MediaType.Anime, "anilist")
+                                                1 -> onFavoriteMediaClick(id, MediaType.Manga, "anilist")
+                                                2 -> onFavoriteCharacterClick(id, "anilist", item.title, item.imageUrl)
+                                                3 -> onFavoriteStaffClick(id, "anilist", item.title, item.imageUrl)
+                                                4 -> onFavoriteStudioClick?.invoke(id, "anilist", item.title, item.imageUrl)
+                                            }
+                                        }
+                                    }
+                                }
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "Tümünü Gör",
+                                color = accentColor,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+
                 items(currentFavList.chunked(3)) { rowItems ->
                     Row(
                         modifier = Modifier
@@ -2028,6 +2115,14 @@ fun MalProfileContent(
                 else -> emptyList()
             }
 
+            val filterTitle = when (favoritesFilter) {
+                0 -> "Favori Animeler"
+                1 -> "Favori Mangalar"
+                2 -> "Favori Karakterler"
+                3 -> "Favori Ekip"
+                else -> "Favoriler"
+            }
+
             if (currentFavList.isEmpty()) {
                 item {
                     Box(
@@ -2040,6 +2135,49 @@ fun MalProfileContent(
                     }
                 }
             } else {
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "$filterTitle (${currentFavList.size})",
+                            color = KitsugiColors.TextPrimary,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(KitsugiColors.SurfaceStrong)
+                                .clickable {
+                                    onOpenFavoriteSheet(filterTitle, currentFavList) { item ->
+                                        item.id.toIntOrNull()?.let { id ->
+                                            when (favoritesFilter) {
+                                                0 -> onFavoriteMediaClick(id, MediaType.Anime, "jikan")
+                                                1 -> onFavoriteMediaClick(id, MediaType.Manga, "jikan")
+                                                2 -> onFavoriteCharacterClick(id, "jikan", item.title, item.imageUrl)
+                                                3 -> onFavoriteStaffClick(id, "jikan", item.title, item.imageUrl)
+                                            }
+                                        }
+                                    }
+                                }
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "Tümünü Gör",
+                                color = accentColor,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+
                 items(currentFavList.chunked(3)) { rowItems ->
                     Row(
                         modifier = Modifier
