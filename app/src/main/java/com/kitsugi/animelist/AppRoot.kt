@@ -1071,7 +1071,9 @@ private fun AppNavigationContent(
                             navState.openMangaBrowse(entry.title, entry.id)
                         }
                     },
-                    triggerSearch = triggerSearch
+                    triggerSearch = triggerSearch,
+                    triggerSearchByGenre = triggerSearchByGenre,
+                    triggerSearchByTag = triggerSearchByTag
                 )
             }
 

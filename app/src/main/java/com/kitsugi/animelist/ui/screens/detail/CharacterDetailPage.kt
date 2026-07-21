@@ -711,6 +711,8 @@ fun CharacterDetailPage(
                                  HorizontalPager(
                                      state = pagerState,
                                      userScrollEnabled = !isTv,
+                                     beyondViewportPageCount = 1,
+                                     pageSpacing = 12.dp,
                                      modifier = Modifier.fillMaxWidth()
                                  ) { page ->
                                 val currentTab = tabs.getOrNull(page)

@@ -36,12 +36,12 @@ echo [+] 2. Kod ve surum degisiklikleri GitHub'a gonderiliyor...
 
 echo.
 echo [+] 3. FOSS ve GMS APK'lari Derleniyor (Lutfen bekleyin)...
-call gradlew.bat assembleFossDebug assembleGmsDebug
+call gradlew.bat assembleFossRelease assembleGmsRelease
 
 set "FOSS_APK="
-for %%F in ("app\build\outputs\apk\foss\debug\*.apk") do set "FOSS_APK=%%F"
+for %%F in ("app\build\outputs\apk\foss\release\*.apk") do set "FOSS_APK=%%F"
 set "GMS_APK="
-for %%F in ("app\build\outputs\apk\gms\debug\*.apk") do set "GMS_APK=%%F"
+for %%F in ("app\build\outputs\apk\gms\release\*.apk") do set "GMS_APK=%%F"
 
 if exist "!FOSS_APK!" (
     echo.

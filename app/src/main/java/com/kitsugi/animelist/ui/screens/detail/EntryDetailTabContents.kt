@@ -32,6 +32,8 @@ internal fun EntryDetailOverviewTab(
     externalUrl: String?,
     onSearchQuery: (String) -> Unit,
     onStudioClick: (id: Int, source: String, name: String?, url: String?) -> Unit,
+    onGenreClick: (String) -> Unit = {},
+    onTagClick: (String) -> Unit = {},
     mdbListRatings: MdbListRatings? = null,
     mdbListLoading: Boolean = false,
     mdbListShowImdb: Boolean = true,
@@ -47,7 +49,7 @@ internal fun EntryDetailOverviewTab(
     val context = LocalContext.current
 
     Column(
-        modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
+        modifier = Modifier.padding(horizontal = 4.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         DetailSynopsisCard(
@@ -87,7 +89,7 @@ internal fun EntryDetailOverviewTab(
         if (!detail?.genres.isNullOrEmpty()) {
             EntryGenresChipRow(
                 genres = detail!!.genres,
-                onGenreClick = onSearchQuery
+                onGenreClick = onGenreClick
             )
         }
 
@@ -120,7 +122,7 @@ internal fun EntryDetailOverviewTab(
         if (!detail?.tags.isNullOrEmpty()) {
             KitsugiTagsCard(
                 tags = detail!!.tags,
-                onTagClick = onSearchQuery
+                onTagClick = onTagClick
             )
         }
 

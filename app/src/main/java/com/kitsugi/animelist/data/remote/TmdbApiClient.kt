@@ -171,6 +171,11 @@ class TmdbApiClient(
         TmdbDiscoverClient.getTopRatedShows(page, apiKey, ::executeGet)
     }
 
+    suspend fun discoverByGenre(genreId: Int, isMovie: Boolean): List<JikanSearchResult> = withContext(Dispatchers.IO) {
+        if (!isTmdbEnabled()) return@withContext emptyList()
+        TmdbDiscoverClient.discoverByGenre(genreId, isMovie, apiKey, ::executeGet)
+    }
+
     suspend fun fetchBackdropByTitle(title: String): String? = withContext(Dispatchers.IO) {
         if (!isTmdbEnabled()) return@withContext null
         TmdbDiscoverClient.fetchBackdropByTitle(title, apiKey, ::executeGet)

@@ -139,6 +139,8 @@ fun MediaEntryDetailPage(
     onStaffClick: (Int, String, String?, String?) -> Unit,
     onStudioClick: (Int, String, String?, String?) -> Unit,
     onSearchQuery: (String) -> Unit = {},
+    onSearchByGenre: (String) -> Unit = {},
+    onSearchByTag: (String) -> Unit = {},
     titleLanguage: String = "ROMAJI",
     scoreFormat: String = "POINT_10",
     hideScores: Boolean = false,
@@ -412,6 +414,8 @@ fun MediaEntryDetailPage(
                                 HorizontalPager(
                                     state = pagerState,
                                     userScrollEnabled = !isTvDevice,
+                                    beyondViewportPageCount = 1,
+                                    pageSpacing = 12.dp,
                                     modifier = Modifier.fillMaxSize().clipToBounds()
                                 ) { page ->
                                     val pageScrollState = rememberScrollState()
@@ -436,6 +440,8 @@ fun MediaEntryDetailPage(
                                                     externalUrl = externalUrl,
                                                     onSearchQuery = onSearchQuery,
                                                     onStudioClick = onStudioClick,
+                                                    onGenreClick = onSearchByGenre,
+                                                    onTagClick = onSearchByTag,
                                                     preferredTranslator = preferredTranslator
                                                 )
                                             }
@@ -744,6 +750,9 @@ fun MediaEntryDetailPage(
                         HorizontalPager(
                             state = pagerState,
                             userScrollEnabled = !isTv,
+                            beyondViewportPageCount = 1,
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp),
+                            pageSpacing = 12.dp,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .wrapContentHeight()
@@ -764,7 +773,9 @@ fun MediaEntryDetailPage(
                                             externalUrl = externalUrl,
                                             onSearchQuery = onSearchQuery,
                                             onStudioClick = onStudioClick,
-                                                    preferredTranslator = preferredTranslator
+                                            onGenreClick = onSearchByGenre,
+                                            onTagClick = onSearchByTag,
+                                            preferredTranslator = preferredTranslator
                                         )
                                     }
                                     1 -> CharactersTabContent(state = charactersState, onCharacterClick = onCharacterClick, onStaffClick = onStaffClick)

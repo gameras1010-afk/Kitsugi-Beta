@@ -33,6 +33,8 @@ internal fun ApiDetailOverviewTab(
     isTranslating: Boolean,
     onSearchQuery: (String) -> Unit,
     onStudioClick: (id: Int, source: String, name: String?, url: String?) -> Unit,
+    onGenreClick: (String) -> Unit = {},
+    onTagClick: (String) -> Unit = {},
     onTranslateClick: () -> Unit,
     onCopyClick: () -> Unit,
     mdbListRatings: MdbListRatings? = null,
@@ -47,7 +49,7 @@ internal fun ApiDetailOverviewTab(
     onSettingsClick: (() -> Unit)? = null
 ) {
     Column(
-        modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp)
+        modifier = Modifier.padding(horizontal = 4.dp, vertical = 14.dp)
     ) {
         ApiSynopsisCard(
             synopsis = displaySynopsis,
@@ -81,7 +83,7 @@ internal fun ApiDetailOverviewTab(
         if (!detail?.genres.isNullOrEmpty()) {
             ApiGenresChipRow(
                 genres = detail!!.genres,
-                onGenreClick = onSearchQuery
+                onGenreClick = onGenreClick
             )
             Spacer(modifier = Modifier.height(14.dp))
         }
@@ -113,7 +115,7 @@ internal fun ApiDetailOverviewTab(
         if (!detail?.tags.isNullOrEmpty()) {
             KitsugiTagsCard(
                 tags = detail!!.tags,
-                onTagClick = onSearchQuery
+                onTagClick = onTagClick
             )
             Spacer(modifier = Modifier.height(14.dp))
         }

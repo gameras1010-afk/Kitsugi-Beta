@@ -149,6 +149,8 @@ fun ApiResultDetailPage(
     onStaffClick: (Int, String, String?, String?) -> Unit,
     onStudioClick: (Int, String, String?, String?) -> Unit,
     onSearchQuery: (String) -> Unit = {},
+    onSearchByGenre: (String) -> Unit = {},
+    onSearchByTag: (String) -> Unit = {},
     titleLanguage: String = "ROMAJI",
     scoreFormat: String = "POINT_10",
     hideScores: Boolean = false,
@@ -559,6 +561,8 @@ fun ApiResultDetailPage(
                                 HorizontalPager(
                                     state = pagerState,
                                     userScrollEnabled = !isTvDevice,
+                                    beyondViewportPageCount = 1,
+                                    pageSpacing = 12.dp,
                                     modifier = Modifier.fillMaxSize().clipToBounds()
                                 ) { page ->
                                     val pageScrollState = rememberScrollState()
@@ -583,6 +587,8 @@ fun ApiResultDetailPage(
                                                     isTranslating = (translatedSynopsis == null && detailState?.synopsis != null),
                                                     onSearchQuery = onSearchQuery,
                                                     onStudioClick = onStudioClick,
+                                                    onGenreClick = onSearchByGenre,
+                                                    onTagClick = onSearchByTag,
                                                     onTranslateClick = {
                                                         val raw = detailState?.synopsis
                                                         if (!raw.isNullOrBlank()) context.openTranslator(raw, settingsState?.preferredTranslator ?: "DEFAULT")
@@ -1000,6 +1006,9 @@ fun ApiResultDetailPage(
                         HorizontalPager(
                             state = pagerState,
                             userScrollEnabled = !isTv,
+                            beyondViewportPageCount = 1,
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp),
+                            pageSpacing = 12.dp,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .wrapContentHeight()
@@ -1020,6 +1029,8 @@ fun ApiResultDetailPage(
                                             isTranslating = (translatedSynopsis == null && detailState?.synopsis != null),
                                             onSearchQuery = onSearchQuery,
                                             onStudioClick = onStudioClick,
+                                            onGenreClick = onSearchByGenre,
+                                            onTagClick = onSearchByTag,
                                             onTranslateClick = {
                                                 val raw = detailState?.synopsis
                                                 if (!raw.isNullOrBlank()) context.openTranslator(raw, settingsState?.preferredTranslator ?: "DEFAULT")

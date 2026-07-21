@@ -175,6 +175,27 @@ internal object TmdbDiscoverClient {
         result
     }
 
+    /**
+     * TMDB keşfet endpoint'i üzerinden belirli bir tür ID'sine göre içerik çeker.
+     */
+    suspend fun discoverByGenre(
+        genreId: Int,
+        isMovie: Boolean,
+        apiKey: String,
+        executeGet: suspend (String) -> String?
+    ): List<JikanSearchResult> = withContext(Dispatchers.IO) {
+        val cacheKey = "discover_genre_${genreId}_${if (isMovie) "movie" else "tv"}"
+        get(cacheKey)?.let { return@withContext it }
+
+        val endpoint = if (isMovie) "movie" else "tv"
+        val mediaType = if (isMovie) MediaType.Movie else MediaType.TvShow
+        val url = "https://api.themoviedb.org/3/discover/$endpoint?api_key=$apiKey&language=tr-TR&with_genres=$genreId&sort_by=popularity.desc&page=1"
+        val result = parseTmdbDiscoverList(url, mediaType, executeGet)
+
+        if (result.isNotEmpty()) put(cacheKey, result)
+        result
+    }
+
     // ── Backdrop by Title ───────────────────────────────────────────────────────
 
     /**

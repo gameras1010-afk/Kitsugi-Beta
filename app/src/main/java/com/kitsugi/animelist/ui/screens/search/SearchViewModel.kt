@@ -96,10 +96,17 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
      * [genreEnglish] her zaman İngilizce API adı olmalı (Kitsugi translation map zaten dönüştürür).
      */
     fun setGenreFilter(genreEnglish: String) {
+        val cleanGenre = translateToEnglishForSearch(genreEnglish)
+        val isAniListGenre = isOfficialAniListGenre(cleanGenre)
+        val filter = if (isAniListGenre) {
+            SearchFilters(genres = listOf(cleanGenre))
+        } else {
+            SearchFilters(tags = listOf(cleanGenre))
+        }
         _uiState.update {
             it.copy(
                 query = "",
-                activeFilters = SearchFilters(genres = listOf(genreEnglish)),
+                activeFilters = filter,
                 hasSearched = false
             )
         }
@@ -110,34 +117,171 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
      * Profil / detay sayfasından bir etikete (tag) tıklandığında çağrılır.
      */
     fun setTagFilter(tag: String) {
+        val cleanTag = translateToEnglishForSearch(tag)
         _uiState.update {
             it.copy(
                 query = "",
-                activeFilters = SearchFilters(tags = listOf(tag)),
+                activeFilters = SearchFilters(tags = listOf(cleanTag)),
                 hasSearched = false
             )
         }
         search()
     }
 
-    private fun getJikanGenreId(genre: String?): Int? = when (genre?.lowercase()?.trim()) {
+    private fun isOfficialAniListGenre(genre: String): Boolean {
+        val officialGenres = listOf(
+            "Action", "Adventure", "Comedy", "Drama", "Ecchi", "Fantasy",
+            "Hentai", "Horror", "Mahou Shoujo", "Mecha", "Music", "Mystery",
+            "Psychological", "Romance", "Sci-Fi", "Slice of Life", "Sports",
+            "Supernatural", "Thriller"
+        )
+        return officialGenres.any { it.equals(genre.trim(), ignoreCase = true) }
+    }
+
+    private fun translateToEnglishForSearch(label: String): String = when (label.lowercase().trim()) {
+        "aksiyon" -> "Action"
+        "macera" -> "Adventure"
+        "komedi" -> "Comedy"
+        "dram" -> "Drama"
+        "ecchi" -> "Ecchi"
+        "fantastik" -> "Fantasy"
+        "hentai" -> "Hentai"
+        "korku" -> "Horror"
+        "gizem" -> "Mystery"
+        "romantizm" -> "Romance"
+        "sci-fi", "bilim kurgu" -> "Sci-Fi"
+        "spor" -> "Sports"
+        "doğaüstü" -> "Supernatural"
+        "gerilim", "suspense" -> "Thriller"
+        "psikoloji", "psychological" -> "Psychological"
+        "müzik" -> "Music"
+        "okul" -> "School"
+        "tarihi" -> "Historical"
+        "mecha" -> "Mecha"
+        "yaşamdan kesitler", "slice of life" -> "Slice of Life"
+        "büyü", "sihir", "magic" -> "Magic"
+        "süper güç", "super power" -> "Super Power"
+        "askeri", "military" -> "Military"
+        "uzay", "space" -> "Space"
+        "vampir", "vampire" -> "Vampire"
+        "reenkarnasyon", "reincarnation" -> "Reincarnation"
+        "zaman yolculuğu", "time travel" -> "Time Travel"
+        "mitoloji", "mythology" -> "Mythology"
+        "parodi", "parody" -> "Parody"
+        "samuray", "samurai" -> "Samurai"
+        "çocuk", "kids" -> "Kids"
+        "otaku kültürü", "otaku culture" -> "Otaku Culture"
+        "hayatta kalma", "survival" -> "Survival"
+        "harem" -> "Harem"
+        "ters harem", "reverse harem" -> "Reverse Harem"
+        "dedektif", "detective" -> "Detective"
+        "dövüş sanatları", "martial arts" -> "Martial Arts"
+        "iş yeri", "workplace" -> "Workplace"
+        "cgdct" -> "CGDCT"
+        "çocuk bakımı", "childcare" -> "Childcare"
+        "kavga", "gore" -> "Gore"
+        "idoller", "idols" -> "Idols"
+        "isekai" -> "Isekai"
+        "iyashikei" -> "Iyashikei"
+        "aşk üçgeni", "love polygon" -> "Love Polygon"
+        "video oyunu", "video game" -> "Video Game"
+        "post-apokaliptik", "post-apocalyptic" -> "Post-Apocalyptic"
+        "siberpunk", "cyberpunk" -> "Cyberpunk"
+        else -> label
+    }
+
+    private fun getJikanGenreId(genreOrTag: String?): Int? = when (genreOrTag?.lowercase()?.trim()) {
         "action", "aksiyon" -> 1
         "adventure", "macera" -> 2
+        "racing", "yarış" -> 3
         "comedy", "komedi" -> 4
-        "drama", "dram" -> 8
-        "fantasy", "fantastik" -> 10
-        "horror", "korku" -> 14
+        "avant garde" -> 5
+        "mythology", "mitoloji" -> 6
         "mystery", "gizem" -> 7
-        "romance", "romantizm" -> 22
-        "sci-fi" -> 24
-        "sports", "spor" -> 30
-        "supernatural", "doğaüstü" -> 37
-        "suspense", "gerilim" -> 41
-        "psychology", "psikoloji" -> 40
-        "music", "müzik" -> 19
-        "school", "okul" -> 23
+        "drama", "dram" -> 8
+        "ecchi" -> 9
+        "fantasy", "fantastik" -> 10
+        "strategy game" -> 11
+        "hentai" -> 12
         "historical", "tarihi" -> 13
+        "horror", "korku" -> 14
+        "kids", "çocuk" -> 15
+        "martial arts" -> 17
         "mecha" -> 18
+        "music", "müzik" -> 19
+        "parody", "parodi" -> 20
+        "samurai" -> 21
+        "romance", "romantizm" -> 22
+        "school", "okul" -> 23
+        "sci-fi" -> 24
+        "shoujo ai" -> 25
+        "shounen ai" -> 26
+        "space", "uzay" -> 27
+        "sports", "spor" -> 30
+        "super power", "süper güç" -> 31
+        "vampire", "vampir" -> 32
+        "harem" -> 33
+        "slice of life", "yaşamdan kesitler" -> 36
+        "supernatural", "doğaüstü" -> 37
+        "military", "askeri" -> 38
+        "detective", "dedektif" -> 39
+        "psychology", "psychological", "psikoloji" -> 40
+        "suspense", "gerilim", "thriller" -> 41
+        "seinen" -> 42
+        "josei" -> 43
+        "gourmet" -> 47
+        "workplace" -> 48
+        "adult cast" -> 50
+        "cgdct" -> 52
+        "childcare" -> 53
+        "combat sports" -> 54
+        "delinquents" -> 56
+        "educational" -> 57
+        "gag humor" -> 58
+        "gore" -> 59
+        "high stakes game" -> 60
+        "idols" -> 61
+        "isekai" -> 62
+        "iyashikei" -> 63
+        "love polygon" -> 64
+        "magical sex shift" -> 65
+        "medical" -> 66
+        "organized crime" -> 67
+        "otaku culture" -> 68
+        "performing arts" -> 69
+        "pets" -> 70
+        "reincarnation", "reenkarnasyon" -> 71
+        "reverse harem" -> 72
+        "showbiz" -> 74
+        "survival", "hayatta kalma" -> 75
+        "team sports" -> 76
+        "time travel", "zaman yolculuğu" -> 77
+        "video game" -> 79
+        "visual arts" -> 80
+        "magic", "sihir", "büyü" -> 10
+        "cyberpunk" -> 24
+        "post-apocalyptic" -> 75
+        else -> null
+    }
+
+    private fun getTmdbGenreId(genreOrTag: String?, isMovie: Boolean): Int? = when (genreOrTag?.lowercase()?.trim()) {
+        "action", "aksiyon" -> if (isMovie) 28 else 10759
+        "adventure", "macera" -> if (isMovie) 12 else 10759
+        "comedy", "komedi" -> 35
+        "drama", "dram" -> 18
+        "fantasy", "fantastik" -> if (isMovie) 14 else 10765
+        "horror", "korku" -> 27
+        "mystery", "gizem" -> 9648
+        "romance", "romantizm" -> 10749
+        "sci-fi" -> if (isMovie) 878 else 10765
+        "thriller", "gerilim", "suspense", "psychology", "psikoloji" -> 53
+        "music", "müzik" -> 10402
+        "historical", "tarihi" -> 36
+        "crime", "suç" -> 80
+        "family", "aile" -> 10751
+        "military", "war", "savaş", "askeri" -> if (isMovie) 10752 else 10768
+        "supernatural", "doğaüstü", "magic" -> if (isMovie) 14 else 10765
+        "animation", "animasyon" -> 16
         else -> null
     }
 
@@ -261,7 +405,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             else -> null
         }
         val jikanFormat = filters.format?.lowercase()
-        val jikanGenreId = getJikanGenreId(filters.genres.firstOrNull())
+        val jikanGenreId = getJikanGenreId(filters.genres.firstOrNull() ?: filters.tags.firstOrNull())
         val jikanSort = when (filters.sort) {
             "SCORE_DESC" -> "desc"
             "POPULARITY_DESC" -> "desc"
@@ -287,9 +431,11 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             else -> null
         }
         val aniListFormat = filters.format
-        val aniListGenres = getAniListGenreNames(filters.genres)
-        val aniListExcludedGenres = getAniListGenreNames(filters.excludedGenres)
-        val aniListTags = filters.tags
+        val aniListGenres = getAniListGenreNames(filters.genres.filter { isOfficialAniListGenre(it) })
+        val aniListExcludedGenres = getAniListGenreNames(filters.excludedGenres.filter { isOfficialAniListGenre(it) })
+        val aniListTags = filters.tags.toMutableList().apply {
+            addAll(filters.genres.filter { !isOfficialAniListGenre(it) })
+        }.distinct()
         val aniListSort = when (filters.sort) {
             "SCORE_DESC" -> listOf("SCORE_DESC")
             "TITLE_ROMAJI_DESC" -> listOf("TITLE_DESC")
@@ -360,7 +506,10 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                     res
                 }
                 SearchPlatform.TMDB -> {
-                    if (queryText.isBlank()) emptyList() else {
+                    val tmdbGenreId = getTmdbGenreId(filters.genres.firstOrNull() ?: filters.tags.firstOrNull(), state.selectedMediaType == MediaType.Movie)
+                    if (queryText.isBlank() && tmdbGenreId != null) {
+                        TmdbApiClient().discoverByGenre(tmdbGenreId, state.selectedMediaType == MediaType.Movie)
+                    } else if (queryText.isNotBlank()) {
                         var res = TmdbApiClient().search(queryText)
                         if (res.isEmpty()) {
                             for (fb in fallbacks) {
@@ -369,6 +518,8 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                             }
                         }
                         res
+                    } else {
+                        emptyList()
                     }
                 }
                 SearchPlatform.All -> {
@@ -435,19 +586,28 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                             }.getOrDefault(emptyList())
                         }
                         val tmdbDeferred = async {
-                            if (state.selectedMediaType == MediaType.Manga || queryText.isBlank()) {
+                            if (state.selectedMediaType == MediaType.Manga) {
                                 emptyList()
                             } else {
-                                runCatching {
-                                    var res = TmdbApiClient().search(queryText)
-                                    if (res.isEmpty()) {
-                                        for (fb in fallbacks) {
-                                            res = TmdbApiClient().search(fb)
-                                            if (res.isNotEmpty()) break
+                                val tmdbGenreId = getTmdbGenreId(filters.genres.firstOrNull() ?: filters.tags.firstOrNull(), state.selectedMediaType == MediaType.Movie)
+                                if (queryText.isBlank() && tmdbGenreId != null) {
+                                    runCatching {
+                                        TmdbApiClient().discoverByGenre(tmdbGenreId, state.selectedMediaType == MediaType.Movie)
+                                    }.getOrDefault(emptyList())
+                                } else if (queryText.isNotBlank()) {
+                                    runCatching {
+                                        var res = TmdbApiClient().search(queryText)
+                                        if (res.isEmpty()) {
+                                            for (fb in fallbacks) {
+                                                res = TmdbApiClient().search(fb)
+                                                if (res.isNotEmpty()) break
+                                            }
                                         }
-                                    }
-                                    res
-                                }.getOrDefault(emptyList())
+                                        res
+                                    }.getOrDefault(emptyList())
+                                } else {
+                                    emptyList()
+                                }
                             }
                         }
                         val mal = malDeferred.await()

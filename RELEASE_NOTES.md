@@ -1,31 +1,23 @@
-# Kitsugi v2.4.52 Release Notes 🚀
+# Kitsugi v2.4.54 Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### 📋 Medya Listesi Filtreleme & Görsel Yenilikler
-- **Pratik Filtreleme Penceresi:** Kullanıcı medya listelerinde kalabalık oluşturan üst durum butonları kaldırıldı. Artık sağ alttaki filtre butonuna dokunarak kategoriler arasında hızlıca geçiş yapabilirsiniz.
-- **Ekran Tasarım Uyumu:** Kullanıcı profillerindeki medya listeleri "Listem" sekmesiyle tam uyumlu ve temiz bir görünüme kavuşturuldu.
+### ⚡ Kritik Performans & Derleme Optimizasyonu (Kasma/Donma Çözümü)
+- **Release Moduna Geçiş:** GitHub üzerinden yayınlanan APK derlemeleri artık `Debug` mod yerine tamamen **Release (Minified & R8/Proguard ile Optimize edilmiş)** modda derlenmektedir. Jetpack Compose üzerindeki tüm gereksiz kontrol yükleri kaldırılmış ve zayıf/farklı cihazlarda yaşanan **kasma, donma ve takılma sorunları tamamen çözülmüştür**.
+- **Kod Karıştırma & Koruma:** Uygulama kaynak kodları R8 derleyicisi ile karıştırılarak (obfuscated) tersine mühendisliğe karşı güvenli hale getirilmiştir.
 
-### ⚡ Performans & Bildirim İyileştirmeleri
-- **Gereksiz Yüklemeler Engellendi:** İçerik detay sayfalarına girildiğinde arka planda istemsizce çalışan veri yenileme işlemleri optimize edildi.
-- **Sayfa Geçiş Rahatlığı:** Detay sayfaları açılırken ekranda beliren gereksiz "başarıyla eşitlendi / güncellendi" bildirimi ve harici platform yüklemeleri kaldırıldı.
-
-### 🛡️ +18 İçerik Bulanıklaştırma (Adult Blur) Koruması
-- **Gelişmiş Gizlilik Kapsamı:** Ayarlardan bulanıklaştırma seçeneği aktifken profil favorileri, istatistikler, sosyal akış ve içerik kapak görsellerindeki +18 öğeler tam koruma altına alındı.
+### 📺 TV Modu Ayrıştırma Hazırlığı
+- **TV Yedeklemesi:** TV arayüzü ve TV entegrasyonuna ait tüm kod tabanı harici yedekleme dizinine güvenle taşınmış, ana mobil kod tabanı hafifletilmiştir.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### 📋 Media List Filtering & UI Enhancements
-- **Bottom Sheet Filter Integration:** Replaced static top status chips on user media list screens with a clean bottom sheet filter modal accessible via the floating action button.
-- **Design Alignment:** Standardized user media list pages to match the My List layout seamlessly.
+### ⚡ Critical Performance & Compilation Optimization (Lag/Stutter Fix)
+- **Release Mode Compiler:** GitHub Release builds have been migrated from `Debug` to fully optimized **Release (Minified & R8/Proguard Optimized)** compiler settings. This eliminates Jetpack Compose development overhead, resolve **lag/stutter issues on low-end/different devices**, and significantly improves rendering frame rates.
+- **Code Obfuscation & Security:** Applied R8 compiler rules to obfuscate class structures and protect code against reverse engineering.
 
-### ⚡ Performance & Optimization
-- **Optimized Data Refresh:** Prevented redundant background sync operations when navigating to media detail pages.
-- **Clean Navigation Experience:** Removed unexpected sync notifications and toasts when opening detail views.
-
-### 🛡️ Adult Content Blur Protection
-- **Comprehensive Privacy Coverage:** Guaranteed complete image blurring across favorites, stats, social streams, and hero banners when adult content blur is enabled.
+### 📺 TV Code Separation Preparation
+- **TV Integration Backup:** TV components, companion network code, and navigation elements have been backed up to the backup directory to streamline and lighten the primary mobile codebase.

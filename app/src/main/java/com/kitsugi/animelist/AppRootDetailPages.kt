@@ -45,7 +45,9 @@ fun AppRootDetailPages(
     onIncrementEntryProgress: (MediaEntry) -> Unit,
     onAddApiSelectionToList: (ApiSearchSelection) -> Unit,
     onReadMangaClick: (MediaEntry, MangaMappingEntity?) -> Unit,
-    triggerSearch: (String) -> Unit
+    triggerSearch: (String) -> Unit,
+    triggerSearchByGenre: (String) -> Unit = {},
+    triggerSearchByTag: (String) -> Unit = {}
 ) {
     when (key) {
         is AppStateKey.StudioDetail -> {
@@ -197,6 +199,8 @@ fun AppRootDetailPages(
                         navState.navigateToDetail(DetailScreen.StudioDetail(studioId, studioSource, studioName, studioImageUrl))
                     },
                     onSearchQuery = triggerSearch,
+                    onSearchByGenre = triggerSearchByGenre,
+                    onSearchByTag = triggerSearchByTag,
                     titleLanguage = appSettings.titleLanguage,
                     scoreFormat = appSettings.scoreFormat,
                     hideScores = appSettings.hideScores,
@@ -281,6 +285,8 @@ fun AppRootDetailPages(
                             navState.navigateToDetail(DetailScreen.StudioDetail(studioId, studioSource, studioName, studioImageUrl))
                         },
                         onSearchQuery = triggerSearch,
+                        onSearchByGenre = triggerSearchByGenre,
+                        onSearchByTag = triggerSearchByTag,
                         titleLanguage = appSettings.titleLanguage,
                         scoreFormat = appSettings.scoreFormat,
                         hideScores = appSettings.hideScores,
