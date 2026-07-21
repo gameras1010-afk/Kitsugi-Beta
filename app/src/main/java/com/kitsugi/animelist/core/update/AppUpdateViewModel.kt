@@ -39,12 +39,16 @@ class AppUpdateViewModel(application: Application) : AndroidViewModel(applicatio
             return
         }
 
+        if (force) {
+            dismissedVersionName = null
+        }
+
         viewModelScope.launch {
             if (!silent || force) _uiState.value = UpdateUiState.Checking
 
             val result = repository.checkForUpdate()
             result.onSuccess { release ->
-                if (release != null && release.versionName != dismissedVersionName) {
+                if (release != null && (force || release.versionName != dismissedVersionName)) {
                     currentRelease = release
                     _uiState.value = UpdateUiState.UpdateAvailable(release)
                 } else {

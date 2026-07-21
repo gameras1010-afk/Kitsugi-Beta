@@ -126,23 +126,15 @@ class KitsugiUpdateRepository(
     }
 
     private fun parseVersionCodeFromTag(tag: String, json: JSONObject): Int {
-        // 1. Try parsing pure digits from tag or version string if formatted like 29762145
         val cleanTag = tag.removePrefix("v").trim()
 
-        // If tag is pure numbers
+        // If tag is pure numbers (e.g. 29762145)
         cleanTag.toIntOrNull()?.let { return it }
 
         // If tag is like 2.4.0-beta.29762145, extract the last numeric segment
         val lastSegment = cleanTag.substringAfterLast(".").toIntOrNull()
-        if (lastSegment != null && lastSegment > 100) {
+        if (lastSegment != null && lastSegment > 100000) {
             return lastSegment
-        }
-
-        // Try extracting numeric digits from tag
-        val digitsOnly = cleanTag.filter { it.isDigit() }
-        if (digitsOnly.isNotEmpty()) {
-            val parsed = digitsOnly.toIntOrNull()
-            if (parsed != null) return parsed
         }
 
         // Fallback: check assets for versionCode in name (e.g., Kitsugi-29762145.apk)
@@ -150,7 +142,7 @@ class KitsugiUpdateRepository(
         for (i in 0 until assets.length()) {
             val assetName = assets.optJSONObject(i)?.optString("name", "") ?: continue
             val apkDigits = assetName.filter { it.isDigit() }.toIntOrNull()
-            if (apkDigits != null && apkDigits > 100) {
+            if (apkDigits != null && apkDigits > 100000) {
                 return apkDigits
             }
         }
@@ -165,11 +157,11 @@ class KitsugiUpdateRepository(
         fetchedVersionCode: Int
     ): Boolean {
         // 1. If timestamp-based versionCode is fetched and strictly greater
-        if (fetchedVersionCode > 1000000 && fetchedVersionCode > currentVersionCode) {
+        if (fetchedVersionCode > 100000 && currentVersionCode > 100000 && fetchedVersionCode > currentVersionCode) {
             return true
         }
 
-        // 2. Semantic version comparison (e.g., v2.4.2 vs 2.4.0)
+        // 2. Semantic version comparison (e.g., v2.4.40 vs 2.4.39)
         val cleanCurrent = currentVersionName.removePrefix("v").substringBefore("-").trim()
         val cleanFetched = fetchedTag.removePrefix("v").substringBefore("-").trim()
 

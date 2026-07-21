@@ -1,4 +1,4 @@
-# Kitsugi v2.4.40 Release Notes 🚀
+# Kitsugi v2.4.41 Release Notes 🚀
 
 ---
 
@@ -18,6 +18,10 @@
 ### 👤 Profil Ekranı Pozisyon Koruma & State İyileştirmesi
 - **Kaldığın Yerden Devam Etme**: Profil ekranındaki sekmeler (Hakkında, Aktivite, İstatistikler, Favoriler, Sosyal) ve kaydırma pozisyonu (`LazyListState`) `rememberSaveable` ile koruma altına alındı.
 - **Yenileme ve Detay Sayfası Dönüşü**: Detay sayfalarına girip geri dönüldüğünde veya sayfa yenilendiğinde seçili sekme ve kaydırma konumu sıfırlanmaz.
+
+### 🔄 Güncelleme Denetleyicisi & Doğrudan APK İndirme Fix
+- **Doğrudan İndirme ve Otomatik Kurulum**: Hakkında sayfasındaki "Şimdi Denetle" butonuna tıklandığında dış web sayfalarına gitmeden doğrudan uygulama içi güncelleme penceresini açan ve APK'yı indirip kuran akış düzeltildi.
+- **Sürüm Kontrol Mantığı İyileştirmesi**: Kapatılan güncellemelerin manuel denetlemede yeniden görünmesini engelleyen bayrak sıfırlandı ve semantik sürüm karşılaştırması optimize edildi.
 
 ### ⚡ UI & Liste Performans Optimizasyonları
 - **Tekil Shimmer Fırçası (`LocalShimmerBrush`)**: Tüm yükleme animasyonları tek bir merkezi fırçadan beslenerek GPU/CPU tüketimi azaltıldı.
