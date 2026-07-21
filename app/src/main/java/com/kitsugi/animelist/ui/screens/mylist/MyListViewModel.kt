@@ -7,6 +7,7 @@ import com.kitsugi.animelist.data.local.MediaEntryRepository
 import com.kitsugi.animelist.data.local.KitsugiDatabase
 import com.kitsugi.animelist.model.MediaEntry
 import com.kitsugi.animelist.model.WatchStatus
+import com.kitsugi.animelist.data.auth.ExternalAuthManager
 import com.kitsugi.animelist.model.MediaType
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
@@ -44,10 +45,11 @@ class MyListViewModel(application: Application) : AndroidViewModel(application) 
     )
 
     init {
-        // Bozuk Simkl subtitle'larını tek seferlik onar
+        // Bozuk Simkl subtitle'larını ve kaynak etiketlerini tek seferlik onar
         viewModelScope.launch {
             val dao = KitsugiDatabase.getDatabase(context).mediaEntryDao()
             repairBrokenSimklSubtitles(dao)
+            repairMisclassifiedSources(dao)
         }
     }
 
@@ -77,6 +79,21 @@ class MyListViewModel(application: Application) : AndroidViewModel(application) 
                 typeLabel
             }
             dao.update(entity.copy(subtitle = fixedSubtitle))
+        }
+    }
+
+    private suspend fun repairMisclassifiedSources(
+        dao: com.kitsugi.animelist.data.local.MediaEntryDao
+    ) {
+        val isAniListConnected = ExternalAuthManager.getAniListToken(context) != null
+        val isMalConnected = ExternalAuthManager.getMalToken(context) != null
+
+        if (isAniListConnected && !isMalConnected) {
+            val all = dao.getAll()
+            val misclassified = all.filter { it.source == "jikan" || it.source == "mal" }
+            misclassified.forEach { entity ->
+                dao.update(entity.copy(source = "anilist"))
+            }
         }
     }
 

@@ -293,7 +293,10 @@ data class KitsugiActivity(
     val mediaCoverUrl: String? = null,
     val likeCount: Int,
     val isLiked: Boolean,
-    val replies: List<KitsugiActivityReply> = emptyList()
+    val replies: List<KitsugiActivityReply> = emptyList(),
+    val mediaId: Int? = null,
+    val mediaType: String? = null,
+    val isAdult: Boolean = false
 )
 
 data class KitsugiActivityReply(

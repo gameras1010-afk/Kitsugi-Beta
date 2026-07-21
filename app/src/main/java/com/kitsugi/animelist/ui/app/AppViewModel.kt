@@ -13,6 +13,7 @@ import com.kitsugi.animelist.data.remote.ApiSearchSelection
 import com.kitsugi.animelist.data.remote.matches
 import com.kitsugi.animelist.data.settings.SettingsDataStore
 import com.kitsugi.animelist.model.MediaEntry
+import com.kitsugi.animelist.model.MediaType
 import com.kitsugi.animelist.model.WatchStatus
 import com.kitsugi.animelist.ui.components.BackupImportMode
 import com.kitsugi.animelist.ui.navigation.MainTab
@@ -317,25 +318,39 @@ class AppViewModel : ViewModel() {
     ) {
         val result = selection.result
 
-        val isAniListSource = result.source.equals("anilist", ignoreCase = true)
-        val isMalSource = result.source.equals("mal", ignoreCase = true) || result.source.equals("jikan", ignoreCase = true)
-        val isSimklSource = result.source.equals("simkl", ignoreCase = true)
+        val targetSource = when {
+            result.type == MediaType.TvShow || result.type == MediaType.Movie -> "simkl"
+            isAniListConnected -> "anilist"
+            isMalConnected -> "mal"
+            isSimklConnected -> "simkl"
+            else -> if (result.source.equals("anilist", ignoreCase = true)) "anilist" else "mal"
+        }
 
-        val isConnected = when {
-            isAniListSource -> isAniListConnected
-            isMalSource -> isMalConnected
-            isSimklSource -> isSimklConnected
+        val isConnected = when (targetSource) {
+            "anilist" -> isAniListConnected
+            "mal" -> isMalConnected
+            "simkl" -> isSimklConnected
             else -> true
         }
 
-        if (!isConnected) {
-            val platformName = when {
-                isAniListSource -> "AniList"
-                isSimklSource -> "Simkl"
+        if (!isConnected && (isAniListConnected || isMalConnected || isSimklConnected)) {
+            // If user has at least one account connected, allow adding to that connected account
+            // e.g. targetSource defaulted to mal, but user is connected to AniList
+        } else if (!isConnected) {
+            val platformName = when (targetSource) {
+                "anilist" -> "AniList"
+                "simkl" -> "Simkl"
                 else -> "MyAnimeList"
             }
             showSnackbarMessage("Listeye eklemek için önce $platformName hesabını bağlamalısın!")
             return
+        }
+
+        val finalSource = when {
+            isAniListConnected && (targetSource == "mal" || targetSource == "anilist") -> "anilist"
+            isMalConnected && targetSource == "mal" -> "mal"
+            isSimklConnected && targetSource == "simkl" -> "simkl"
+            else -> targetSource
         }
 
         val alreadyExists = currentEntries.any { entry -> entry.matches(result) }
@@ -355,7 +370,7 @@ class AppViewModel : ViewModel() {
             total = result.total,
             isFavorite = false,
             isAdult = result.isAdult,
-            source = result.source,
+            source = finalSource,
             malId = result.malId,
             imageUrl = result.imageUrl,
             year = result.year,
@@ -364,7 +379,7 @@ class AppViewModel : ViewModel() {
 
         viewModelScope.launch {
             repository.insert(newEntry)
-            showSnackbarMessage("Listeye eklendi: ${result.title}")
+            showSnackbarMessage("Listeye eklendi: ${newEntry.title}")
         }
     }
 

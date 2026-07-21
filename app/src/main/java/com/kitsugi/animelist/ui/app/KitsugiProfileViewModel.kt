@@ -3,6 +3,7 @@ package com.kitsugi.animelist.ui.app
 import android.app.Application
 import android.content.Context
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
@@ -37,6 +38,31 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
 
     // Selected sub-tab persistence (0: AniList, 1: MAL, 2: Simkl)
     var activeSubTab by mutableStateOf(0)
+
+    // Scroll state persistence for Profile tabs
+    var aniListScrollIndex by mutableIntStateOf(0)
+    var aniListScrollOffset by mutableIntStateOf(0)
+
+    var malScrollIndex by mutableIntStateOf(0)
+    var malScrollOffset by mutableIntStateOf(0)
+
+    var simklScrollIndex by mutableIntStateOf(0)
+    var simklScrollOffset by mutableIntStateOf(0)
+
+    fun updateAniListScroll(index: Int, offset: Int) {
+        aniListScrollIndex = index
+        aniListScrollOffset = offset
+    }
+
+    fun updateMalScroll(index: Int, offset: Int) {
+        malScrollIndex = index
+        malScrollOffset = offset
+    }
+
+    fun updateSimklScroll(index: Int, offset: Int) {
+        simklScrollIndex = index
+        simklScrollOffset = offset
+    }
 
     // AniList profile UI state
     private val _aniListState = MutableStateFlow(AniListProfileState())
@@ -299,6 +325,7 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                                     nodes {
                                         id
                                         type
+                                        isAdult
                                         title {
                                             romaji
                                             english
@@ -312,6 +339,7 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                                     nodes {
                                         id
                                         type
+                                        isAdult
                                         title {
                                             romaji
                                             english
@@ -434,7 +462,8 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                             ProfileFavoriteItem(
                                 id = node.getInt("id").toString(),
                                 title = node.getJSONObject("title").optNullableString("romaji") ?: node.getJSONObject("title").optNullableString("english") ?: "İsimsiz",
-                                imageUrl = node.getJSONObject("coverImage").optNullableString("large") ?: ""
+                                imageUrl = node.getJSONObject("coverImage").optNullableString("large") ?: "",
+                                isAdult = node.optBoolean("isAdult", false)
                             )
                         )
                     }
@@ -447,7 +476,8 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                             ProfileFavoriteItem(
                                 id = node.getInt("id").toString(),
                                 title = node.getJSONObject("title").optNullableString("romaji") ?: node.getJSONObject("title").optNullableString("english") ?: "İsimsiz",
-                                imageUrl = node.getJSONObject("coverImage").optNullableString("large") ?: ""
+                                imageUrl = node.getJSONObject("coverImage").optNullableString("large") ?: "",
+                                isAdult = node.optBoolean("isAdult", false)
                             )
                         )
                     }
@@ -566,6 +596,7 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                                     media {
                                         id
                                         type
+                                        isAdult
                                         title {
                                             romaji
                                             english
@@ -621,6 +652,7 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                         val media = act.optJSONObject("media")
                         val mediaId = media?.optInt("id")
                         val mediaType = media?.optNullableString("type")
+                        val isAdult = media?.optBoolean("isAdult", false) ?: false
                         val mediaTitle = media?.optJSONObject("title")?.optNullableString("romaji") ?: media?.optJSONObject("title")?.optNullableString("english") ?: "Medya"
                         val mediaImage = media?.optJSONObject("coverImage")?.optNullableString("large")
                         val status = act.optNullableString("status") ?: "güncelledi"
@@ -640,7 +672,8 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                                 isLiked = isLiked,
                                 replyCount = replyCount,
                                 mediaId = mediaId,
-                                mediaType = mediaType
+                                mediaType = mediaType,
+                                isAdult = isAdult
                             )
                         )
                     }
@@ -1519,7 +1552,8 @@ data class AniListStats(
 data class ProfileFavoriteItem(
     val id: String,
     val title: String,
-    val imageUrl: String
+    val imageUrl: String,
+    val isAdult: Boolean = false
 )
 
 sealed class ProfileActivityItem {
@@ -1555,7 +1589,8 @@ sealed class ProfileActivityItem {
         override val isLiked: Boolean,
         override val replyCount: Int = 0,
         val mediaId: Int? = null,
-        val mediaType: String? = null
+        val mediaType: String? = null,
+        val isAdult: Boolean = false
     ) : ProfileActivityItem()
 }
 

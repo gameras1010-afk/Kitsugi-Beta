@@ -76,82 +76,91 @@ fun AppRootTabPages(
 
     when (key.tab) {
         MainTab.Explore -> {
-            ExploreTabPage(ctx)
+            ctx.navState.stateHolder.SaveableStateProvider(key = "root_tab_explore") {
+                ExploreTabPage(ctx)
+            }
         }
 
         MainTab.MyList -> {
-            MyListTabPageWrapper(
-                appSettings = ctx.appSettings,
-                mediaEntries = ctx.mediaEntries,
-                mediaRepository = ctx.mediaRepository,
-                appViewModel = ctx.appViewModel,
-                authViewModel = ctx.authViewModel,
-                navState = ctx.navState,
-                context = context
-            )
+            ctx.navState.stateHolder.SaveableStateProvider(key = "root_tab_mylist") {
+                MyListTabPageWrapper(
+                    appSettings = ctx.appSettings,
+                    mediaEntries = ctx.mediaEntries,
+                    mediaRepository = ctx.mediaRepository,
+                    appViewModel = ctx.appViewModel,
+                    authViewModel = ctx.authViewModel,
+                    navState = ctx.navState,
+                    context = context
+                )
+            }
         }
 
         MainTab.Search -> {
-            SearchTabPage(ctx)
+            ctx.navState.stateHolder.SaveableStateProvider(key = "root_tab_search") {
+                SearchTabPage(ctx)
+            }
         }
 
         MainTab.Profile -> {
-            com.kitsugi.animelist.ui.screens.profile.KitsugiProfileScreen(
-                viewModel = ctx.kitsugiProfileViewModel,
-                mediaEntries = ctx.mediaEntries,
-                isAniListConnected = ctx.authViewModel.isAniListConnected,
-                isMalConnected = ctx.authViewModel.isMalConnected,
-                isSimklConnected = ctx.authViewModel.isSimklConnected,
-                profileName = ctx.appSettings.profileName,
-                listTitle = ctx.appSettings.listTitle,
-                profileImageUri = ctx.appSettings.profileImageUri,
-                bannerImageUri = ctx.appSettings.bannerImageUri,
-                appSettings = ctx.appSettings,
-                onEntryClick = { entry ->
-                    ctx.navState.navigateToDetail(DetailScreen.MediaDetail(entry.id))
-                },
-                onOpenSettingsClick = {
-                    ctx.appViewModel.selectTab(MainTab.Settings)
-                },
-                onLoginAniList = { ctx.authViewModel.startExternalAuth("anilist") },
-                onLoginMal = { ctx.authViewModel.startExternalAuth("mal") },
-                onLoginSimkl = { ctx.authViewModel.startExternalAuth("simkl") },
-                onFavoriteMediaClick = { mediaId, mediaType, source ->
-                    // Navigate to ApiResultDetail by building a minimal JikanSearchResult
-                    val result = com.kitsugi.animelist.data.remote.JikanSearchResult(
-                        malId = mediaId,
-                        title = "",
-                        subtitle = "",
-                        type = mediaType,
-                        total = null,
-                        score = null,
-                        isAdult = false,
-                        imageUrl = null,
-                        year = null,
-                        source = source
-                    )
-                    ctx.navState.navigateToDetail(DetailScreen.ApiResultDetail(result))
-                },
-                onFavoriteCharacterClick = { charId, source, name, imageUrl ->
-                    ctx.navState.navigateToDetail(DetailScreen.CharacterDetail(charId, source, name, imageUrl))
-                },
-                onFavoriteStaffClick = { staffId, source, name, imageUrl ->
-                    ctx.navState.navigateToDetail(DetailScreen.StaffDetail(staffId, source, name, imageUrl))
-                },
-                onOpenStatsClick = {
-                    ctx.navState.navigateToDetail(DetailScreen.Stats)
-                }
-            )
+            ctx.navState.stateHolder.SaveableStateProvider(key = "root_tab_profile") {
+                com.kitsugi.animelist.ui.screens.profile.KitsugiProfileScreen(
+                    viewModel = ctx.kitsugiProfileViewModel,
+                    mediaEntries = ctx.mediaEntries,
+                    isAniListConnected = ctx.authViewModel.isAniListConnected,
+                    isMalConnected = ctx.authViewModel.isMalConnected,
+                    isSimklConnected = ctx.authViewModel.isSimklConnected,
+                    profileName = ctx.appSettings.profileName,
+                    listTitle = ctx.appSettings.listTitle,
+                    profileImageUri = ctx.appSettings.profileImageUri,
+                    bannerImageUri = ctx.appSettings.bannerImageUri,
+                    appSettings = ctx.appSettings,
+                    onEntryClick = { entry ->
+                        ctx.navState.navigateToDetail(DetailScreen.MediaDetail(entry.id))
+                    },
+                    onOpenSettingsClick = {
+                        ctx.appViewModel.selectTab(MainTab.Settings)
+                    },
+                    onLoginAniList = { ctx.authViewModel.startExternalAuth("anilist") },
+                    onLoginMal = { ctx.authViewModel.startExternalAuth("mal") },
+                    onLoginSimkl = { ctx.authViewModel.startExternalAuth("simkl") },
+                    onFavoriteMediaClick = { mediaId, mediaType, source ->
+                        val result = com.kitsugi.animelist.data.remote.JikanSearchResult(
+                            malId = mediaId,
+                            title = "Yükleniyor...",
+                            subtitle = "",
+                            type = mediaType,
+                            total = null,
+                            score = null,
+                            isAdult = false,
+                            imageUrl = null,
+                            year = null,
+                            source = source
+                        )
+                        ctx.navState.navigateToDetail(DetailScreen.ApiResultDetail(result))
+                    },
+                    onFavoriteCharacterClick = { charId, source, name, imageUrl ->
+                        ctx.navState.navigateToDetail(DetailScreen.CharacterDetail(charId, source, name, imageUrl))
+                    },
+                    onFavoriteStaffClick = { staffId, source, name, imageUrl ->
+                        ctx.navState.navigateToDetail(DetailScreen.StaffDetail(staffId, source, name, imageUrl))
+                    },
+                    onOpenStatsClick = {
+                        ctx.navState.navigateToDetail(DetailScreen.Stats)
+                    }
+                )
+            }
         }
 
         MainTab.Settings -> {
-            SettingsTabPage(
-                addonsList = addonsList,
-                reposList = reposList,
-                csPluginsList = csPluginsList,
-                ctx = ctx,
-                context = context
-            )
+            ctx.navState.stateHolder.SaveableStateProvider(key = "root_tab_settings") {
+                SettingsTabPage(
+                    addonsList = addonsList,
+                    reposList = reposList,
+                    csPluginsList = csPluginsList,
+                    ctx = ctx,
+                    context = context
+                )
+            }
         }
     }
 }

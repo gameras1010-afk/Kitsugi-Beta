@@ -477,7 +477,7 @@ class KitsugiMediaSocialClient {
                             ... on ListActivity {
                                 id status progress createdAt likeCount isLiked
                                 user { name avatar { medium } }
-                                media { title { romaji english native } coverImage { large } }
+                                media { id type isAdult title { romaji english native } coverImage { large } }
                             }
                             ... on TextActivity {
                                 id text createdAt likeCount isLiked
@@ -509,7 +509,7 @@ class KitsugiMediaSocialClient {
                         ... on ListActivity {
                             id status progress createdAt likeCount isLiked
                             user { name avatar { medium } }
-                            media { title { romaji english native } coverImage { large } }
+                            media { id type isAdult title { romaji english native } coverImage { large } }
                             replies { id text createdAt likeCount isLiked user { name avatar { medium } } }
                         }
                         ... on TextActivity {
@@ -602,10 +602,14 @@ class KitsugiMediaSocialClient {
         val userObj = item.optJSONObject("user")
         var mediaTitleRomaji: String? = null; var mediaTitleEnglish: String? = null
         var mediaTitleNative: String? = null;  var mediaCoverUrl: String? = null
+        var mediaId: Int? = null; var mediaType: String? = null; var isAdult = false
         if (item.has("media")) {
             val mediaObj = item.optJSONObject("media")
             if (mediaObj != null) {
-                val titleObj = mediaObj.optJSONObject("title")
+                mediaId           = mediaObj.optInt("id")
+                mediaType         = mediaObj.optNullableString("type")
+                isAdult           = mediaObj.optBoolean("isAdult", false)
+                val titleObj      = mediaObj.optJSONObject("title")
                 mediaTitleRomaji  = titleObj?.optNullableString("romaji")
                 mediaTitleEnglish = titleObj?.optNullableString("english")
                 mediaTitleNative  = titleObj?.optNullableString("native")
@@ -622,7 +626,8 @@ class KitsugiMediaSocialClient {
             mediaTitle = mediaTitle, mediaTitleRomaji = mediaTitleRomaji,
             mediaTitleEnglish = mediaTitleEnglish, mediaTitleNative = mediaTitleNative,
             mediaCoverUrl = mediaCoverUrl,
-            likeCount = item.optInt("likeCount", 0), isLiked = item.optBoolean("isLiked", false)
+            likeCount = item.optInt("likeCount", 0), isLiked = item.optBoolean("isLiked", false),
+            mediaId = mediaId, mediaType = mediaType, isAdult = isAdult
         )
     }
 

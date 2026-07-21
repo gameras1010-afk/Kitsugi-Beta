@@ -212,7 +212,7 @@ fun ApiResultDetailPage(
         val detail = detailState
         if (detail != null) {
             result.copy(
-                title = if (result.title == "Yükleniyor...") (detail.title ?: result.title) else result.title,
+                title = if (result.title.isBlank() || result.title == "Yükleniyor...") (detail.title ?: result.title) else result.title,
                 imageUrl = result.imageUrl ?: detail.imageUrl,
                 score = result.score ?: detail.score,
                 year = result.year ?: detail.year,

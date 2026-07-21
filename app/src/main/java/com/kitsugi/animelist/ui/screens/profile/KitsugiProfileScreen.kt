@@ -44,6 +44,7 @@ import com.kitsugi.animelist.data.remote.JikanApiClient
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -264,6 +265,7 @@ fun KitsugiProfileScreen(
                             platformName = "AniList"
                         ) {
                             AniListProfileContent(
+                                viewModel = viewModel,
                                 state = aniListState,
                                 mediaEntries = mediaEntries,
                                 appSettings = appSettings,
@@ -294,6 +296,7 @@ fun KitsugiProfileScreen(
                             platformName = "MyAnimeList"
                         ) {
                             MalProfileContent(
+                                viewModel = viewModel,
                                 state = malState,
                                 mediaEntries = mediaEntries,
                                 appSettings = appSettings,
@@ -316,6 +319,7 @@ fun KitsugiProfileScreen(
                             platformName = "Simkl"
                         ) {
                             SimklProfileContent(
+                                viewModel = viewModel,
                                 state = simklState,
                                 mediaEntries = mediaEntries,
                                 appSettings = appSettings,
@@ -337,6 +341,7 @@ fun KitsugiProfileScreen(
         FavoritesExpandedBottomSheet(
             title = activeFavoriteSheet!!.first,
             items = activeFavoriteSheet!!.second,
+            blurAdultMedia = appSettings.blurAdultMedia,
             onItemClick = { item ->
                 onSheetItemClick?.invoke(item)
             },
@@ -352,6 +357,10 @@ fun KitsugiProfileScreen(
             activityId = activeActivityIdForDetail!!,
             apiClient = apiClient,
             titleLanguage = appSettings.titleLanguage.toString(),
+            blurAdultMedia = appSettings.blurAdultMedia,
+            onMediaClick = { mediaId, mType, source ->
+                onFavoriteMediaClick(mediaId, mType, source)
+            },
             onDismiss = {
                 activeActivityIdForDetail = null
                 viewModel.fetchAniListProfile()
@@ -631,6 +640,7 @@ fun ProfileHeaderIconTabs(
 
 @Composable
 fun AniListProfileContent(
+    viewModel: KitsugiProfileViewModel,
     state: AniListProfileState,
     mediaEntries: List<MediaEntry>,
     appSettings: AppSettings,
@@ -658,7 +668,17 @@ fun AniListProfileContent(
     var releaseYearDistType by rememberSaveable { mutableIntStateOf(0) } // 0: Başlık sayısı, 1: Harcanan süre, 2: Ortalama Puan
     var startYearDistType by rememberSaveable { mutableIntStateOf(0) } // 0: Başlık sayısı, 1: Harcanan süre, 2: Ortalama Puan
 
-    val listState = rememberLazyListState()
+    val listState = rememberLazyListState(
+        initialFirstVisibleItemIndex = viewModel.aniListScrollIndex,
+        initialFirstVisibleItemScrollOffset = viewModel.aniListScrollOffset
+    )
+
+    LaunchedEffect(listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset) {
+        viewModel.updateAniListScroll(
+            listState.firstVisibleItemIndex,
+            listState.firstVisibleItemScrollOffset
+        )
+    }
 
     LazyColumn(
         state = listState,
@@ -910,6 +930,7 @@ fun AniListProfileContent(
                             ActivityCard(
                                 activity = act,
                                 accentColor = accentColor,
+                                blurAdultMedia = appSettings.blurAdultMedia,
                                 onMediaClick = { mediaId, mType ->
                                     onFavoriteMediaClick(mediaId, mType, "anilist")
                                 },
@@ -1379,7 +1400,9 @@ fun AniListProfileContent(
                                         AsyncImage(
                                             model = item.imageUrl,
                                             contentDescription = item.title,
-                                            modifier = Modifier.fillMaxSize(),
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .then(if (appSettings.blurAdultMedia && item.isAdult) Modifier.blur(24.dp) else Modifier),
                                             contentScale = ContentScale.Crop
                                         )
                                     } else {
@@ -1479,6 +1502,7 @@ fun AniListProfileContent(
 
 @Composable
 fun MalProfileContent(
+    viewModel: KitsugiProfileViewModel,
     state: MalProfileState,
     mediaEntries: List<MediaEntry>,
     appSettings: AppSettings,
@@ -1495,7 +1519,17 @@ fun MalProfileContent(
     var statsMediaType by rememberSaveable { mutableIntStateOf(0) }
     var favoritesFilter by rememberSaveable { mutableIntStateOf(0) }
 
-    val listState = rememberLazyListState()
+    val listState = rememberLazyListState(
+        initialFirstVisibleItemIndex = viewModel.malScrollIndex,
+        initialFirstVisibleItemScrollOffset = viewModel.malScrollOffset
+    )
+
+    LaunchedEffect(listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset) {
+        viewModel.updateMalScroll(
+            listState.firstVisibleItemIndex,
+            listState.firstVisibleItemScrollOffset
+        )
+    }
 
     LazyColumn(
         state = listState,
@@ -1825,7 +1859,9 @@ fun MalProfileContent(
                                         AsyncImage(
                                             model = item.imageUrl,
                                             contentDescription = item.title,
-                                            modifier = Modifier.fillMaxSize(),
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .then(if (appSettings.blurAdultMedia && item.isAdult) Modifier.blur(24.dp) else Modifier),
                                             contentScale = ContentScale.Crop
                                         )
                                     } else {
@@ -1980,6 +2016,7 @@ fun ProfileActivityRow(
 
 @Composable
 fun SimklProfileContent(
+    viewModel: KitsugiProfileViewModel,
     state: SimklProfileState,
     mediaEntries: List<MediaEntry>,
     appSettings: AppSettings,
@@ -1992,7 +2029,17 @@ fun SimklProfileContent(
 ) {
     var activeTab by rememberSaveable { mutableIntStateOf(0) }
 
-    val listState = rememberLazyListState()
+    val listState = rememberLazyListState(
+        initialFirstVisibleItemIndex = viewModel.simklScrollIndex,
+        initialFirstVisibleItemScrollOffset = viewModel.simklScrollOffset
+    )
+
+    LaunchedEffect(listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset) {
+        viewModel.updateSimklScroll(
+            listState.firstVisibleItemIndex,
+            listState.firstVisibleItemScrollOffset
+        )
+    }
 
     LazyColumn(
         state = listState,
@@ -2417,6 +2464,7 @@ fun RowScope.StatCard(
 fun FavoritesHorizontalSection(
     title: String,
     items: List<ProfileFavoriteItem>,
+    blurAdultMedia: Boolean = false,
     onSeeAllClick: (() -> Unit)? = null,
     onItemClick: (ProfileFavoriteItem) -> Unit
 ) {
@@ -2488,7 +2536,9 @@ fun FavoritesHorizontalSection(
                             AsyncImage(
                                 model = item.imageUrl,
                                 contentDescription = item.title,
-                                modifier = Modifier.fillMaxSize(),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .then(if (blurAdultMedia && item.isAdult) Modifier.blur(24.dp) else Modifier),
                                 contentScale = ContentScale.Crop
                             )
                         } else {
@@ -2522,6 +2572,7 @@ fun FavoritesHorizontalSection(
 fun FavoritesExpandedBottomSheet(
     title: String,
     items: List<ProfileFavoriteItem>,
+    blurAdultMedia: Boolean = false,
     onItemClick: (ProfileFavoriteItem) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -2603,7 +2654,9 @@ fun FavoritesExpandedBottomSheet(
                                 AsyncImage(
                                     model = item.imageUrl,
                                     contentDescription = item.title,
-                                    modifier = Modifier.fillMaxSize(),
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .then(if (blurAdultMedia && item.isAdult) Modifier.blur(24.dp) else Modifier),
                                     contentScale = ContentScale.Crop
                                 )
                             } else {
@@ -2637,6 +2690,7 @@ fun FavoritesExpandedBottomSheet(
 fun ActivityCard(
     activity: ProfileActivityItem,
     accentColor: Color,
+    blurAdultMedia: Boolean = false,
     onMediaClick: ((mediaId: Int, type: MediaType) -> Unit)? = null,
     onActivityClick: ((activityId: Int) -> Unit)? = null,
     onLikeClick: ((activityId: Int) -> Unit)? = null,
@@ -2743,7 +2797,12 @@ fun ActivityCard(
                             .then(
                                 if (isClickable) {
                                     Modifier.clickable {
-                                        val mType = if (activity.mediaType == "MANGA") MediaType.Manga else MediaType.Anime
+                                        val mType = when (activity.mediaType?.uppercase()) {
+                                            "MANGA" -> MediaType.Manga
+                                            "MOVIE" -> MediaType.Movie
+                                            "TV", "TV_SHOW" -> MediaType.TvShow
+                                            else -> MediaType.Anime
+                                        }
                                         onMediaClick?.invoke(activity.mediaId!!, mType)
                                     }
                                 } else Modifier
@@ -2756,7 +2815,8 @@ fun ActivityCard(
                             contentDescription = null,
                             modifier = Modifier
                                 .size(45.dp, 64.dp)
-                                .clip(RoundedCornerShape(6.dp)),
+                                .clip(RoundedCornerShape(6.dp))
+                                .then(if (blurAdultMedia && (activity as? ProfileActivityItem.ListActivity)?.isAdult == true) Modifier.blur(24.dp) else Modifier),
                             contentScale = ContentScale.Crop
                         )
                         Spacer(modifier = Modifier.width(12.dp))

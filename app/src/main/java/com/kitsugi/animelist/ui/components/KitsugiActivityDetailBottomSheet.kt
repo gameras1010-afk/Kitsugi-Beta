@@ -2,6 +2,7 @@ package com.kitsugi.animelist.ui.components
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import com.kitsugi.animelist.ui.utils.tvClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -37,6 +39,8 @@ fun KitsugiActivityDetailBottomSheet(
     activityId: Int,
     apiClient: JikanApiClient,
     titleLanguage: String = "ROMAJI",
+    blurAdultMedia: Boolean = false,
+    onMediaClick: ((mediaId: Int, mediaType: com.kitsugi.animelist.model.MediaType, source: String) -> Unit)? = null,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
@@ -252,10 +256,26 @@ fun KitsugiActivityDetailBottomSheet(
 
                             Spacer(modifier = Modifier.height(12.dp))
 
+                            val isMediaClickable = act.mediaId != null && onMediaClick != null
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(KitsugiColors.SurfaceStrong, RoundedCornerShape(12.dp))
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(KitsugiColors.SurfaceStrong)
+                                    .then(
+                                        if (isMediaClickable) {
+                                            Modifier.clickable {
+                                                val mType = when (act.mediaType?.uppercase()) {
+                                                    "MANGA" -> com.kitsugi.animelist.model.MediaType.Manga
+                                                    "MOVIE" -> com.kitsugi.animelist.model.MediaType.Movie
+                                                    "TV", "TV_SHOW" -> com.kitsugi.animelist.model.MediaType.TvShow
+                                                    else -> com.kitsugi.animelist.model.MediaType.Anime
+                                                }
+                                                onMediaClick?.invoke(act.mediaId!!, mType, "anilist")
+                                                onDismiss()
+                                            }
+                                        } else Modifier
+                                    )
                                     .padding(14.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
@@ -289,7 +309,8 @@ fun KitsugiActivityDetailBottomSheet(
                                         contentDescription = act.mediaTitle,
                                         modifier = Modifier
                                             .size(width = 40.dp, height = 56.dp)
-                                            .clip(RoundedCornerShape(8.dp)),
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .then(if (blurAdultMedia && act.isAdult) Modifier.blur(24.dp) else Modifier),
                                         contentScale = ContentScale.Crop
                                     )
                                 }
