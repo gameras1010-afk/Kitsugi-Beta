@@ -1,7 +1,3 @@
-# Kitsugi v2.4.49 Release Notes 🚀
-
----
-
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
 ### 📋 Medya Listesi Filtreleme & Görsel Yenilikler
@@ -23,7 +19,7 @@
 - **Bottom Sheet Filter Integration:** Replaced static top status chips on user media list screens with a clean bottom sheet filter modal accessible via the floating action button.
 - **Design Alignment:** Standardized user media list pages to match the My List layout seamlessly.
 
-### ⚡ Performance & Notification Optimizations
+### ⚡ Performance & Optimization
 - **Optimized Data Refresh:** Prevented redundant background sync operations when navigating to media detail pages.
 - **Clean Navigation Experience:** Removed unexpected sync notifications and toasts when opening detail views.
 
