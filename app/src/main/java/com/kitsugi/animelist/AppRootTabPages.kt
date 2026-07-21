@@ -126,8 +126,12 @@ fun AppRootTabPages(
                     onLoginMal = { ctx.authViewModel.startExternalAuth("mal") },
                     onLoginSimkl = { ctx.authViewModel.startExternalAuth("simkl") },
                     onFavoriteMediaClick = { mediaId, mediaType, source ->
+                        // AniList kaynaklı anime/manga favorilerinde gelen ID direkt AniList ID'sidir.
+                        // KitsugiAniListDetailClient 100M+ offset'e göre id: vs idMal: ayrımı yapar.
+                        // Offset eklenerek doğru sorgulama sağlanır.
+                        val stableId = if (source == "anilist") mediaId + 100_000_000 else mediaId
                         val result = com.kitsugi.animelist.data.remote.JikanSearchResult(
-                            malId = mediaId,
+                            malId = stableId,
                             title = "Yükleniyor...",
                             subtitle = "",
                             type = mediaType,

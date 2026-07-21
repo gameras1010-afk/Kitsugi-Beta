@@ -372,8 +372,9 @@ fun AppRootDetailPages(
                     mediaEntries = mediaEntries,
                     onBackClick = { navState.popDetailStack() },
                     onFavoriteMediaClick = { mediaId, mediaType, source ->
+                        val stableId = if (source == "anilist") mediaId + 100_000_000 else mediaId
                         val searchResult = com.kitsugi.animelist.data.remote.JikanSearchResult(
-                            malId = mediaId,
+                            malId = stableId,
                             title = "Yükleniyor...",
                             subtitle = "",
                             type = mediaType,
@@ -384,7 +385,12 @@ fun AppRootDetailPages(
                             year = null,
                             source = source
                         )
-                        navState.navigateToDetail(DetailScreen.ApiResultDetail(searchResult))
+                        val existingEntry = mediaEntries.firstOrNull { it.matches(searchResult) }
+                        if (existingEntry != null) {
+                            navState.navigateToDetail(DetailScreen.MediaDetail(existingEntry.id))
+                        } else {
+                            navState.navigateToDetail(DetailScreen.ApiResultDetail(searchResult))
+                        }
                     },
                     onFavoriteCharacterClick = { charId, source, name, imageUrl ->
                         navState.navigateToDetail(DetailScreen.CharacterDetail(charId, source, name, imageUrl))
@@ -399,7 +405,29 @@ fun AppRootDetailPages(
                         navState.navigateToDetail(DetailScreen.UserProfile(newUserId, newUsername, newAvatar))
                     },
                     onGenreClick = { genre -> triggerSearch(genre) },
-                    onTagClick = { tag -> triggerSearch(tag) }
+                    onTagClick = { tag -> triggerSearch(tag) },
+                    onOpenUserMediaList = { uId, mType ->
+                        navState.navigateToDetail(DetailScreen.UserMediaList(uId, key.username ?: "Kullanıcı", mType))
+                    }
+                )
+            }
+        }
+
+        is AppStateKey.UserMediaList -> {
+            navState.stateHolder.SaveableStateProvider(key = "user_media_list_${key.depth}_${key.userId}_${key.initialMediaType.name}") {
+                com.kitsugi.animelist.ui.screens.profile.KitsugiUserMediaListScreen(
+                    userId = key.userId,
+                    username = key.username,
+                    initialMediaType = key.initialMediaType,
+                    appSettings = appSettings,
+                    mediaEntries = mediaEntries,
+                    onBackClick = { navState.popDetailStack() },
+                    onMediaClick = { result ->
+                        navState.navigateToDetail(DetailScreen.ApiResultDetail(result))
+                    },
+                    onLocalEntryClick = { entry ->
+                        navState.navigateToDetail(DetailScreen.MediaDetail(entry.id))
+                    }
                 )
             }
         }

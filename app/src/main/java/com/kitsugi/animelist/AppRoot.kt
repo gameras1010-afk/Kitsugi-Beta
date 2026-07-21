@@ -831,6 +831,7 @@ fun AppRoot(
                     activeScreen is DetailScreen.Favourites -> AppStateKey.Favourites(depth = currentDepth)
                     activeScreen is DetailScreen.About -> AppStateKey.About(depth = currentDepth)
                     activeScreen is DetailScreen.UserProfile -> AppStateKey.UserProfile(activeScreen.userId, depth = currentDepth, username = activeScreen.username, avatarUrl = activeScreen.avatarUrl)
+                    activeScreen is DetailScreen.UserMediaList -> AppStateKey.UserMediaList(activeScreen.userId, depth = currentDepth, username = activeScreen.username, initialMediaType = activeScreen.initialMediaType)
                     else                         -> AppStateKey.Tab(selectedTab)
                 }
 
@@ -1031,6 +1032,7 @@ private fun AppNavigationContent(
             is AppStateKey.Favourites,
             is AppStateKey.About,
             is AppStateKey.UserProfile,
+            is AppStateKey.UserMediaList,
             is AppStateKey.MediaDetail -> {
                 AppRootDetailPages(
                     key = key,

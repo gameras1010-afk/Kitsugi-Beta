@@ -74,6 +74,7 @@ class AppNavigationState(
                 DetailScreen.Favourites -> "favourites"
                 DetailScreen.About -> "about"
                 is DetailScreen.UserProfile -> "user_profile_${screen.userId}"
+                is DetailScreen.UserMediaList -> "user_media_list_${screen.userId}_${screen.initialMediaType.name}"
             }
             stateHolder.removeState(key)
         }

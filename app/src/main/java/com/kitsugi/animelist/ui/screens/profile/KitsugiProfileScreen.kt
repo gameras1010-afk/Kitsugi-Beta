@@ -40,6 +40,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import com.kitsugi.animelist.ui.components.KitsugiSheetOrDialog
 import com.kitsugi.animelist.ui.components.KitsugiActivityDetailBottomSheet
+import com.kitsugi.animelist.ui.components.KitsugiImageGalleryDialog
 import com.kitsugi.animelist.data.remote.JikanApiClient
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
@@ -128,6 +129,7 @@ fun KitsugiProfileScreen(
     var onSheetItemClick by remember { mutableStateOf<((ProfileFavoriteItem) -> Unit)?>(null) }
     var activeActivityIdForDetail by remember { mutableStateOf<Int?>(null) }
     var showDeleteConfirmDialog by remember { mutableStateOf<String?>(null) }
+    var activeGalleryImages by remember { mutableStateOf<Triple<List<String>, Int, String>?>(null) }
 
     val openFavoriteSheet: (String, List<ProfileFavoriteItem>, (ProfileFavoriteItem) -> Unit) -> Unit = { title, items, onClick ->
         activeFavoriteSheet = title to items
@@ -294,7 +296,8 @@ fun KitsugiProfileScreen(
                                 onTagClick = onTagClick,
                                 onFavoriteStudioClick = onFavoriteStudioClick,
                                 onUserProfileClick = onUserProfileClick,
-                                accentColor = accentColor
+                                accentColor = accentColor,
+                                onImageClick = { urls, idx, title -> activeGalleryImages = Triple(urls, idx, title) }
                             )
                         }
                         1 -> ExternalProfileWrapper(
@@ -317,7 +320,8 @@ fun KitsugiProfileScreen(
                                 onOpenFavoriteSheet = openFavoriteSheet,
                                 onOpenStatsClick = onOpenStatsClick,
                                 isLandscape = isLandscape,
-                                accentColor = accentColor
+                                accentColor = accentColor,
+                                onImageClick = { urls, idx, title -> activeGalleryImages = Triple(urls, idx, title) }
                             )
                         }
                         2 -> ExternalProfileWrapper(
@@ -338,7 +342,8 @@ fun KitsugiProfileScreen(
                                 onOpenFavoriteSheet = openFavoriteSheet,
                                 onOpenStatsClick = onOpenStatsClick,
                                 isLandscape = isLandscape,
-                                accentColor = accentColor
+                                accentColor = accentColor,
+                                onImageClick = { urls, idx, title -> activeGalleryImages = Triple(urls, idx, title) }
                             )
                         }
                     }
@@ -407,6 +412,16 @@ fun KitsugiProfileScreen(
             },
             containerColor = KitsugiColors.Surface,
             shape = RoundedCornerShape(20.dp)
+        )
+    }
+
+    if (activeGalleryImages != null) {
+        val (urls, initialIdx, title) = activeGalleryImages!!
+        KitsugiImageGalleryDialog(
+            imageUrls = urls,
+            initialIndex = initialIdx,
+            title = title,
+            onDismiss = { activeGalleryImages = null }
         )
     }
 }
@@ -669,7 +684,8 @@ fun AniListProfileContent(
     onTagClick: (String) -> Unit = {},
     onUserProfileClick: (userId: Int, username: String, avatarUrl: String?) -> Unit = { _, _, _ -> },
     isLandscape: Boolean,
-    accentColor: Color
+    accentColor: Color,
+    onImageClick: ((urls: List<String>, initialIndex: Int, title: String) -> Unit)? = null
 ) {
     var activeTab by rememberSaveable { mutableIntStateOf(viewModel.aniListActiveTab) } // 0: Info, 1: Activity, 2: Stats, 3: Favorites, 4: Social
     LaunchedEffect(activeTab) { viewModel.aniListActiveTab = activeTab }
@@ -723,11 +739,24 @@ fun AniListProfileContent(
         // Banner and Avatar
         item {
             val context = LocalContext.current
+            val avatarUrl = state.avatarUrl?.takeIf { it.isNotBlank() }
+            val bannerUrl = state.bannerUrl?.takeIf { it.isNotBlank() }
+            val imageList = listOfNotNull(avatarUrl, bannerUrl)
+            val username = state.name.ifBlank { "Kullanıcı" }
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(160.dp)
                     .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                    .then(
+                        if (!bannerUrl.isNullOrBlank()) {
+                            Modifier.clickable {
+                                val idx = imageList.indexOf(bannerUrl).coerceAtLeast(0)
+                                onImageClick?.invoke(imageList, idx, "$username Banner")
+                            }
+                        } else Modifier
+                    )
             ) {
                 if (!state.bannerUrl.isNullOrBlank()) {
                     AsyncImage(
@@ -787,7 +816,15 @@ fun AniListProfileContent(
                         modifier = Modifier
                             .size(64.dp)
                             .clip(CircleShape)
-                            .border(3.dp, KitsugiColors.Background, CircleShape),
+                            .border(3.dp, KitsugiColors.Background, CircleShape)
+                            .then(
+                                if (!avatarUrl.isNullOrBlank()) {
+                                    Modifier.clickable {
+                                        val idx = imageList.indexOf(avatarUrl).coerceAtLeast(0)
+                                        onImageClick?.invoke(imageList, idx, "$username Profil Resmi")
+                                    }
+                                } else Modifier
+                            ),
                         contentScale = ContentScale.Crop
                     )
                     Spacer(modifier = Modifier.width(12.dp))
@@ -1692,7 +1729,8 @@ fun MalProfileContent(
     onOpenFavoriteSheet: (title: String, items: List<ProfileFavoriteItem>, onClick: (ProfileFavoriteItem) -> Unit) -> Unit,
     onOpenStatsClick: (() -> Unit)? = null,
     isLandscape: Boolean,
-    accentColor: Color
+    accentColor: Color,
+    onImageClick: ((urls: List<String>, initialIndex: Int, title: String) -> Unit)? = null
 ) {
     var activeTab by rememberSaveable { mutableIntStateOf(viewModel.malActiveTab) }
     LaunchedEffect(activeTab) { viewModel.malActiveTab = activeTab }
@@ -1725,6 +1763,9 @@ fun MalProfileContent(
         // Banner and Avatar
         item {
             val context = LocalContext.current
+            val avatarUrl = state.avatarUrl?.takeIf { it.isNotBlank() }
+            val username = state.name.ifBlank { "MyAnimeList Kullanıcısı" }
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1781,7 +1822,14 @@ fun MalProfileContent(
                         modifier = Modifier
                             .size(64.dp)
                             .clip(CircleShape)
-                            .border(3.dp, KitsugiColors.Background, CircleShape),
+                            .border(3.dp, KitsugiColors.Background, CircleShape)
+                            .then(
+                                if (!avatarUrl.isNullOrBlank()) {
+                                    Modifier.clickable {
+                                        onImageClick?.invoke(listOf(avatarUrl), 0, "$username Profil Resmi")
+                                    }
+                                } else Modifier
+                            ),
                         contentScale = ContentScale.Crop
                     )
                     Spacer(modifier = Modifier.width(12.dp))
@@ -2209,7 +2257,8 @@ fun SimklProfileContent(
     onOpenFavoriteSheet: (title: String, items: List<ProfileFavoriteItem>, onClick: (ProfileFavoriteItem) -> Unit) -> Unit,
     onOpenStatsClick: (() -> Unit)? = null,
     isLandscape: Boolean,
-    accentColor: Color
+    accentColor: Color,
+    onImageClick: ((urls: List<String>, initialIndex: Int, title: String) -> Unit)? = null
 ) {
     var activeTab by rememberSaveable { mutableIntStateOf(viewModel.simklActiveTab) }
     LaunchedEffect(activeTab) { viewModel.simklActiveTab = activeTab }
@@ -2235,6 +2284,9 @@ fun SimklProfileContent(
     ) {
         // Banner and Avatar
         item {
+            val avatarUrl = state.avatarUrl?.takeIf { it.isNotBlank() }
+            val username = state.name.ifBlank { "Simkl Kullanıcısı" }
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -2291,7 +2343,14 @@ fun SimklProfileContent(
                         modifier = Modifier
                             .size(64.dp)
                             .clip(CircleShape)
-                            .border(3.dp, KitsugiColors.Background, CircleShape),
+                            .border(3.dp, KitsugiColors.Background, CircleShape)
+                            .then(
+                                if (!avatarUrl.isNullOrBlank()) {
+                                    Modifier.clickable {
+                                        onImageClick?.invoke(listOf(avatarUrl), 0, "$username Profil Resmi")
+                                    }
+                                } else Modifier
+                            ),
                         contentScale = ContentScale.Crop
                     )
                     Spacer(modifier = Modifier.width(12.dp))
