@@ -1,23 +1,19 @@
-# Kitsugi v2.4.36 Release Notes 🚀
+# Kitsugi v2.4.38 Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### 👥 Sosyal Bağlantılar & Arkadaş Listesi Düzeltmeleri
-- **AniList Sosyal Veri Düzeltmesi**: AniList takipçi ve takip edilen listelerinin GraphQL sorgu şeması güncellenerek veri yüklenmeme sorunu çözüldü.
-- **MyAnimeList (MAL) Arkadaş Entegrasyonu**: Jikan API entegrasyonu ile MAL profilinde arkadaş listesi çekme desteği getirildi. Arkadaş listesi profilin "Sosyal" sekmesinde grid düzeninde gösterilir.
-
-### 🧹 Simkl Profil Arayüzü Temizliği
-- Simkl platformunda API desteği olmayan boş "Favoriler" ve "Sosyal" sekmeleri gizlenerek kullanıcı arayüzü daha sade hale getirildi.
+### 🎨 Yayın Takvimi Tema Uyumlaştırması
+- **Dinamik Renk Entegrasyonu**: Haftalık yayın takvimi ekranı (`KitsugiAiringCalendarScreen`), artık uygulamanın genel dinamik tema renklerine (`KitsugiColors.Accent`) tam olarak uyum sağlıyor.
+- **Seçili Durum Kontrast İyileştirmesi**: Gün seçimi sekmelerindeki metinlerin ve bölüm sayı rozetlerinin renkleri, seçili olunduğunda arka planın dynamic accent rengiyle çakışmayacak ve yüksek kontrastlı (okunabilir) olacak şekilde KitsugiColors.Background ile güncellendi.
+- **Yükleme ve Hata Arayüzü Güncellemesi**: Yükleme göstergesi ve hata ekranındaki yeniden deneme butonları da artık uygulamanın aktif tema renklerini kullanıyor.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### 👥 Social Connections & Friends List Fixes
-- **AniList Social Fetching Fix**: Updated GraphQL API query fields for AniList followers and following to resolve loading failures.
-- **MyAnimeList (MAL) Friends Integration**: Added friends list fetching via the Jikan API. Friend profiles are now displayed in a clean grid layout under the "Social" sub-tab.
-
-### 🧹 Simkl Profile UI Cleanup
-- Hidden unsupported and empty "Favorites" and "Social" tabs in Simkl profile view to streamline the UI.
+### 🎨 Airing Calendar Theme Synchronization
+- **Dynamic Accent Color Integration**: The weekly airing calendar screen (`KitsugiAiringCalendarScreen`) has been refactored to utilize the application's active dynamic accent color (`KitsugiColors.Accent`).
+- **Selected Tab Contrast Enhancements**: The text and episode count badge colors for the selected day tab have been updated to use `KitsugiColors.Background` instead of static white, ensuring readable contrast on top of light dynamic accent backgrounds.
+- **Loading & Error UI Theming**: The refresh loading indicator and "Retry" buttons now seamlessly adapt to the current theme configuration.

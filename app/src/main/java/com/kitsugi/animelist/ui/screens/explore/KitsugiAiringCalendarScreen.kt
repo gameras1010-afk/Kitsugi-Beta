@@ -104,7 +104,7 @@ fun KitsugiAiringCalendarScreen(
     onBackClick: () -> Unit = {},
     viewModel: KitsugiAiringCalendarViewModel = viewModel()
 ) {
-    val accentColor = KitsugiColors.AccentPurple
+    val accentColor = KitsugiColors.Accent
 
     Column(
         modifier = Modifier
@@ -193,7 +193,7 @@ private fun AiringCalendarHeader(
         Icon(
             imageVector = Icons.Rounded.CalendarMonth,
             contentDescription = null,
-            tint = KitsugiColors.AccentPurple,
+            tint = KitsugiColors.Accent,
             modifier = Modifier.size(22.dp)
         )
         Spacer(modifier = Modifier.width(10.dp))
@@ -216,7 +216,7 @@ private fun AiringCalendarHeader(
             if (isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
-                    color = KitsugiColors.AccentPurple,
+                    color = KitsugiColors.Accent,
                     strokeWidth = 2.dp
                 )
             } else {
@@ -276,7 +276,7 @@ private fun AiringDayTab(
         else       -> KitsugiColors.Surface
     }
     val textColor = when {
-        isSelected -> Color.White
+        isSelected -> KitsugiColors.Background
         isToday    -> accentColor
         else       -> KitsugiColors.TextSecondary
     }
@@ -305,14 +305,14 @@ private fun AiringDayTab(
                 modifier = Modifier
                     .size(18.dp)
                     .clip(CircleShape)
-                    .background(if (isSelected) Color.White.copy(0.25f) else accentColor.copy(0.18f)),
+                    .background(if (isSelected) KitsugiColors.Background.copy(0.15f) else accentColor.copy(0.18f)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = count.coerceAtMost(99).toString(),
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isSelected) Color.White else accentColor
+                    color = if (isSelected) KitsugiColors.Background else accentColor
                 )
             }
         }
@@ -384,7 +384,7 @@ fun AiringEntryCard(
         else      -> entry.title
     }
 
-    val accentColor = if (isInWatchingList) KitsugiColors.AccentGreen else KitsugiColors.AccentPurple
+    val accentColor = if (isInWatchingList) KitsugiColors.AccentGreen else KitsugiColors.Accent
     val hasAired = entry.hasAired()
 
     Row(
@@ -538,13 +538,13 @@ private fun AiringErrorState(
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(12.dp))
-                .background(KitsugiColors.AccentPurple)
+                .background(KitsugiColors.Accent)
                 .clickable(onClick = onRetry)
                 .padding(horizontal = 24.dp, vertical = 10.dp)
         ) {
             Text(
                 text = "Tekrar Dene",
-                color = Color.White,
+                color = KitsugiColors.Background,
                 fontWeight = FontWeight.Bold
             )
         }
