@@ -1606,20 +1606,16 @@ fun MalProfileContent(
                     }
                 }
             } else {
-                item {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(3),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        userScrollEnabled = false
+                // Arkadaş listesini 3'lü satırlar halinde göster (LazyVerticalGrid yerine)
+                items(userList.chunked(3)) { rowItems ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        items(userList, key = { it.id }) { u ->
+                        rowItems.forEach { u ->
                             Column(
                                 modifier = Modifier
-                                    .fillMaxWidth()
+                                    .weight(1f)
                                     .clip(RoundedCornerShape(16.dp))
                                     .background(KitsugiColors.Surface)
                                     .padding(12.dp),
@@ -1643,6 +1639,10 @@ fun MalProfileContent(
                                     overflow = TextOverflow.Ellipsis
                                 )
                             }
+                        }
+                        // Satır 3'ten az elemanla dolmadıysa boş weight doldur
+                        repeat(3 - rowItems.size) {
+                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
                 }
