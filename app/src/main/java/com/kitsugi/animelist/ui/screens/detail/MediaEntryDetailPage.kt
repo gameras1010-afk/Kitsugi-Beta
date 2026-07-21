@@ -751,7 +751,8 @@ fun MediaEntryDetailPage(
                             state = pagerState,
                             userScrollEnabled = !isTv,
                             beyondViewportPageCount = 1,
-                            pageSpacing = 16.dp,
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
+                            pageSpacing = 12.dp,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .wrapContentHeight()
@@ -761,7 +762,6 @@ fun MediaEntryDetailPage(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .heightIn(min = 600.dp)
-                                    .padding(horizontal = 16.dp)
                             ) {
                                 when (page) {
                                     0 -> {
