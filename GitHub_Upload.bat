@@ -38,8 +38,10 @@ echo.
 echo [+] 3. FOSS ve GMS APK'lari Derleniyor (Lutfen bekleyin)...
 call gradlew.bat assembleFossDebug assembleGmsDebug
 
-set "FOSS_APK=app\build\outputs\apk\foss\debug\app-foss-debug.apk"
-set "GMS_APK=app\build\outputs\apk\gms\debug\app-gms-debug.apk"
+set "FOSS_APK="
+for %%F in ("app\build\outputs\apk\foss\debug\*.apk") do set "FOSS_APK=%%F"
+set "GMS_APK="
+for %%F in ("app\build\outputs\apk\gms\debug\*.apk") do set "GMS_APK=%%F"
 
 if exist "!FOSS_APK!" (
     echo.
