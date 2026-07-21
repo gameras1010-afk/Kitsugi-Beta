@@ -165,7 +165,16 @@ class KitsugiDetailClient {
                             trMeta.totalSeasons ?: detail.totalSeasons
                         } else {
                             detail.totalSeasons ?: 1
-                        }
+                        },
+                        meanScore = detail.meanScore ?: trMeta.meanScore,
+                        averageScore = detail.averageScore ?: trMeta.averageScore,
+                        popularity = detail.popularity ?: trMeta.popularity,
+                        favorites = detail.favorites ?: trMeta.favorites,
+                        rank = detail.rank ?: trMeta.rank,
+                        popularityRank = detail.popularityRank ?: trMeta.popularityRank,
+                        scoredBy = detail.scoredBy ?: trMeta.scoredBy,
+                        members = detail.members ?: trMeta.members,
+                        nextAiringEpisode = detail.nextAiringEpisode ?: trMeta.nextAiringEpisode
                     )
                 }
             }

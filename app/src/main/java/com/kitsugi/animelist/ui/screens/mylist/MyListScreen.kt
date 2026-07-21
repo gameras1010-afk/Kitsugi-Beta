@@ -1,4 +1,7 @@
-@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@file:OptIn(
+    androidx.compose.foundation.ExperimentalFoundationApi::class,
+    androidx.compose.material3.ExperimentalMaterial3Api::class
+)
 
 package com.kitsugi.animelist.ui.screens.mylist
 
@@ -20,18 +23,28 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.FilterList
+import androidx.compose.material.icons.rounded.FormatListBulleted
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Sort
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.zIndex
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,6 +55,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import com.kitsugi.animelist.ui.screens.mylist.components.KitsugiListStatusBottomSheet
+import com.kitsugi.animelist.ui.screens.mylist.components.KitsugiMyListSortMenu
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -179,6 +194,29 @@ fun MyListScreen(
         mutableStateOf(false)
     }
 
+    var showStatusBottomSheet by rememberSaveable { mutableStateOf(false) }
+    var showSortMenu by rememberSaveable { mutableStateOf(false) }
+    var showSearchField by rememberSaveable { mutableStateOf(false) }
+
+    var isFabVisible by remember { mutableStateOf(true) }
+    var prevIndex by remember { mutableIntStateOf(0) }
+    var prevOffset by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(lazyListState) {
+        snapshotFlow { lazyListState.firstVisibleItemIndex to lazyListState.firstVisibleItemScrollOffset }
+            .collect { (index, offset) ->
+                if (index == 0 && offset < 40) {
+                    isFabVisible = true
+                } else if (index > prevIndex || (index == prevIndex && offset > prevOffset + 15)) {
+                    isFabVisible = false
+                } else if (index < prevIndex || (index == prevIndex && offset < prevOffset - 15)) {
+                    isFabVisible = true
+                }
+                prevIndex = index
+                prevOffset = offset
+            }
+    }
+
     var duplicateMessage by rememberSaveable {
         mutableStateOf<String?>(null)
     }
@@ -291,6 +329,9 @@ fun MyListScreen(
     val isTvDevice = com.kitsugi.animelist.ui.theme.LocalIsTvDevice.current
     val accentColor = com.kitsugi.animelist.ui.theme.LocalKitsugiAccent.current
 
+    var isListRefreshing by remember { mutableStateOf(false) }
+    val pullRefreshState = rememberPullToRefreshState()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -301,23 +342,84 @@ fun MyListScreen(
         CompositionLocalProvider(
             LocalBringIntoViewSpec provides if (isTvDevice) tvSpec else LocalBringIntoViewSpec.current
         ) {
-            LazyColumn(
-                state = lazyListState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = horizontalPadding)
-                    .then(if (isTvDevice) Modifier.dpadVerticalFastScroll(lazyListState) else Modifier),
-                verticalArrangement = Arrangement.Top
+            PullToRefreshBox(
+                isRefreshing = isListRefreshing,
+                onRefresh = {
+                    coroutineScope.launch {
+                        isListRefreshing = true
+                        when (selectedTabIndex) {
+                            0 -> onSyncAniList()
+                            1 -> onSyncMal()
+                            else -> onSyncSimkl()
+                        }
+                        isListRefreshing = false
+                    }
+                },
+                modifier = Modifier.fillMaxSize(),
+                state = pullRefreshState,
+                indicator = {
+                    PullToRefreshDefaults.Indicator(
+                        state = pullRefreshState,
+                        isRefreshing = isListRefreshing,
+                        modifier = Modifier.align(Alignment.TopCenter),
+                        containerColor = KitsugiColors.surface,
+                        color = accentColor
+                    )
+                }
             ) {
+                LazyColumn(
+                    state = lazyListState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = horizontalPadding)
+                        .then(if (isTvDevice) Modifier.dpadVerticalFastScroll(lazyListState) else Modifier),
+                    verticalArrangement = Arrangement.Top
+                ) {
         item {
             Spacer(modifier = Modifier.height(if (isLandscape) 14.dp else 28.dp))
 
-            Text(
-                text = "Listem",
-                color = KitsugiColors.textPrimary,
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Listem",
+                    color = KitsugiColors.textPrimary,
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    IconButton(onClick = { showSearchField = !showSearchField }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Search,
+                            contentDescription = "Arama",
+                            tint = if (showSearchField || searchQuery.isNotBlank()) accentColor else KitsugiColors.textSecondary
+                        )
+                    }
+
+                    Box {
+                        IconButton(onClick = { showSortMenu = true }) {
+                            Icon(
+                                imageVector = Icons.Rounded.Sort,
+                                contentDescription = "Sıralama",
+                                tint = accentColor
+                            )
+                        }
+
+                        KitsugiMyListSortMenu(
+                            expanded = showSortMenu,
+                            selectedSortId = selectedSortId,
+                            onSortSelected = onSortChange,
+                            onDismissRequest = { showSortMenu = false }
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(18.dp))
         }
@@ -554,9 +656,6 @@ fun MyListScreen(
                     activeSortTitle
                 ).filterNotNull().joinToString("  •  ")
 
-                val accentColor = LocalKitsugiAccent.current
-
-                // Filter expand/collapse button card
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -616,77 +715,33 @@ fun MyListScreen(
                     enter = expandVertically(),
                     exit = shrinkVertically()
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(KitsugiColors.surface.copy(alpha = 0.5f))
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
-                    ) {
-                        Column {
-                            FilterLabel(text = "Durum")
-                            Spacer(modifier = Modifier.height(8.dp))
-                            StatusFilterRow(
-                                selectedStatusFilterId = selectedStatusFilterId,
-                                onStatusSelected = onStatusFilterChange
-                            )
+                    RichMyListFilterPanel(
+                        selectedStatusFilterId = selectedStatusFilterId,
+                        selectedTypeFilterId = selectedTypeFilterId,
+                        selectedFavoriteFilterId = selectedFavoriteFilterId,
+                        selectedScoreFilterId = selectedScoreFilterId,
+                        selectedYearFilterId = selectedYearFilterId,
+                        selectedExtraFilterId = selectedExtraFilterId,
+                        selectedSortId = selectedSortId,
+                        onStatusSelected = onStatusFilterChange,
+                        onTypeSelected = onTypeFilterChange,
+                        onFavoriteSelected = onFavoriteFilterChange,
+                        onScoreSelected = onScoreFilterChange,
+                        onYearSelected = onYearFilterChange,
+                        onExtraSelected = onExtraFilterChange,
+                        onSortSelected = onSortChange,
+                        onResetFilters = {
+                            onStatusFilterChange("all")
+                            onTypeFilterChange("all")
+                            onFavoriteFilterChange("all")
+                            onScoreFilterChange("all")
+                            onYearFilterChange("all")
+                            onExtraFilterChange("all")
+                        },
+                        onHideFilters = {
+                            isFiltersExpanded = false
                         }
-
-                        Column {
-                            FilterLabel(text = "Tür")
-                            Spacer(modifier = Modifier.height(8.dp))
-                            TypeFilterRow(
-                                selectedTypeFilterId = selectedTypeFilterId,
-                                onTypeSelected = onTypeFilterChange
-                            )
-                        }
-
-                        Column {
-                            FilterLabel(text = "Favoriler")
-                            Spacer(modifier = Modifier.height(8.dp))
-                            FavoriteFilterRow(
-                                selectedFavoriteFilterId = selectedFavoriteFilterId,
-                                onFavoriteFilterSelected = onFavoriteFilterChange
-                            )
-                        }
-
-                        Column {
-                            FilterLabel(text = "Puan Aralığı")
-                            Spacer(modifier = Modifier.height(8.dp))
-                            ScoreFilterRow(
-                                selectedScoreFilterId = selectedScoreFilterId,
-                                onScoreSelected = onScoreFilterChange
-                            )
-                        }
-
-                        Column {
-                            FilterLabel(text = "Yayın Yılı")
-                            Spacer(modifier = Modifier.height(8.dp))
-                            YearFilterRow(
-                                selectedYearFilterId = selectedYearFilterId,
-                                onYearSelected = onYearFilterChange
-                            )
-                        }
-
-                        Column {
-                            FilterLabel(text = "Diğer")
-                            Spacer(modifier = Modifier.height(8.dp))
-                            ExtraFilterRow(
-                                selectedExtraFilterId = selectedExtraFilterId,
-                                onExtraSelected = onExtraFilterChange
-                            )
-                        }
-
-                        Column {
-                            FilterLabel(text = "Sıralama")
-                            Spacer(modifier = Modifier.height(8.dp))
-                            SortFilterRow(
-                                selectedSortId = selectedSortId,
-                                onSortSelected = onSortChange
-                            )
-                        }
-                    }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
@@ -728,6 +783,7 @@ fun MyListScreen(
                         titleLanguage = appSettings.titleLanguage,
                         scoreFormat = appSettings.scoreFormat,
                         hideScores = appSettings.hideScores,
+                        blurAdultMedia = appSettings.blurAdultMedia,
                         onEntryClick = onEntryClick,
                         onIncrementProgress = { incrementEntryProgress(it) },
                         onPosterLongClick = { imageUrl ->
@@ -742,6 +798,7 @@ fun MyListScreen(
                         titleLanguage = appSettings.titleLanguage,
                         scoreFormat = appSettings.scoreFormat,
                         hideScores = appSettings.hideScores,
+                        blurAdultMedia = appSettings.blurAdultMedia,
                         onEntryClick = onEntryClick,
                         onIncrementProgress = { incrementEntryProgress(it) },
                         onPosterLongClick = { imageUrl ->
@@ -750,14 +807,70 @@ fun MyListScreen(
                         }
                     )
                 }
+            }
+        }
+    } // end LazyColumn
 
-                item {
-                    Spacer(modifier = Modifier.height(90.dp))
+        // ── Scroll-aware floating category button (inside Box so .align works) ──
+        val isTv = com.kitsugi.animelist.ui.theme.LocalIsTvDevice.current
+        if (!isTv) {
+            AnimatedVisibility(
+                visible = isFabVisible,
+                enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+                exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(bottom = 76.dp, end = 20.dp)
+                    .zIndex(10f)
+            ) {
+                val activeStatusLabel = statusFilters.firstOrNull { it.id == selectedStatusFilterId }?.title
+                    ?: if (selectedStatusFilterId == "adult") "Yetişkin"
+                    else if (selectedStatusFilterId == "favorites") "Favoriler"
+                    else "Tümü"
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(accentColor)
+                        .tvClickable(shape = RoundedCornerShape(999.dp), onClick = { showStatusBottomSheet = true })
+                        .padding(horizontal = 20.dp, vertical = 14.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Rounded.FormatListBulleted,
+                            contentDescription = "Kategori",
+                            tint = KitsugiColors.background,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = activeStatusLabel,
+                            color = KitsugiColors.background,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
                 }
             }
         }
     }
-    }
+}
+}
+
+    if (showStatusBottomSheet) {
+        KitsugiListStatusBottomSheet(
+            entries = selectedTabEntries,
+            selectedStatusFilterId = selectedStatusFilterId,
+            showAdultContent = showAdultContent,
+            onStatusSelected = { newStatusId ->
+                onStatusFilterChange(newStatusId)
+                showStatusBottomSheet = false
+            },
+            onDismissRequest = {
+                showStatusBottomSheet = false
+            }
+        )
     }
 
 

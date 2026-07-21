@@ -157,10 +157,19 @@ class KitsugiApplication : Application(), SingletonImageLoader.Factory {
             }
         }
 
-        // T3.3: Yayın takvimi bildirim kanalını oluştur (API 26+ için gerekli)
-        com.kitsugi.animelist.core.notifications.KitsugiAiringNotificationScheduler.createNotificationChannel(this)
-        // T3.3: Ayarlar açıksa yayın alarmlarını planla (AlarmManager tabanlı)
-        com.kitsugi.animelist.core.notifications.AiringNotificationWorker.scheduleIfEnabled(this)
+        // T3.3: WorkManager tabanlı bildirim planlaması
+        applicationScope.launch {
+            try {
+                val settings = com.kitsugi.animelist.data.settings.SettingsDataStore(this@KitsugiApplication).settingsFlow.first()
+                if (settings.airingNotificationsEnabled || settings.aniListNotificationsEnabled || settings.malNotificationsEnabled || settings.simklNotificationsEnabled) {
+                    com.kitsugi.animelist.core.notifications.NotificationScheduler.schedule(this@KitsugiApplication, settings.notificationInterval)
+                } else {
+                    com.kitsugi.animelist.core.notifications.NotificationScheduler.cancel(this@KitsugiApplication)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("KitsugiApplication", "Failed to schedule notifications: ${e.message}")
+            }
+        }
 
         // Initialize Cloudstream runtime singleton context and client
         com.kitsugi.animelist.data.cloudstream.CsRuntimeInit.init(this)

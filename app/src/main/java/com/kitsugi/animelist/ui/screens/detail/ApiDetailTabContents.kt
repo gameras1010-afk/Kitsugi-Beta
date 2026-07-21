@@ -56,6 +56,11 @@ internal fun ApiDetailOverviewTab(
             onCopyClick = onCopyClick
         )
 
+        if (detail != null) {
+            Spacer(modifier = Modifier.height(14.dp))
+            DetailOverviewStatsCard(detail = detail)
+        }
+
         Spacer(modifier = Modifier.height(14.dp))
 
         // MDBList external ratings

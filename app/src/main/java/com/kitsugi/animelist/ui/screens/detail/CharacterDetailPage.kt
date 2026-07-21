@@ -38,6 +38,8 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ContentCopy
+import androidx.compose.material.icons.rounded.Share
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -93,7 +95,8 @@ fun CharacterDetailPage(
     onStaffClick: (staffId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
     name: String? = null,
     imageUrl: String? = null,
-    titleLanguage: String = "ROMAJI"
+    titleLanguage: String = "ROMAJI",
+    preferredTranslator: String = "DEFAULT"
 ) {
     val accentColor = LocalKitsugiAccent.current
     val context = LocalContext.current
@@ -243,14 +246,47 @@ fun CharacterDetailPage(
                                                     )
                                                 )
                                         )
-                                        TextButton(
-                                            onClick = onBackClick,
+                                        // Top action bar: Back + Share
+                                        Row(
                                             modifier = Modifier
                                                 .align(Alignment.TopStart)
-                                                .padding(start = 8.dp, top = 8.dp)
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 8.dp, vertical = 16.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            if (!isTv) {
-                                                Text("Geri", color = KitsugiColors.TextPrimary, fontWeight = FontWeight.Bold)
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(40.dp)
+                                                    .clip(CircleShape)
+                                                    .background(KitsugiColors.Background.copy(alpha = 0.45f)),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                IconButton(onClick = onBackClick) {
+                                                    Icon(
+                                                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                                        contentDescription = "Geri",
+                                                        tint = KitsugiColors.TextPrimary
+                                                    )
+                                                }
+                                            }
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(40.dp)
+                                                    .clip(CircleShape)
+                                                    .background(KitsugiColors.Background.copy(alpha = 0.45f)),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                IconButton(onClick = {
+                                                    val url = com.kitsugi.animelist.utils.ShareUtils.buildCharacterUrl(source, characterId)
+                                                    com.kitsugi.animelist.utils.ShareUtils.shareText(context, detail.name, url)
+                                                }) {
+                                                    Icon(
+                                                        imageVector = Icons.Rounded.Share,
+                                                        contentDescription = "Paylaş",
+                                                        tint = KitsugiColors.TextPrimary
+                                                    )
+                                                }
                                             }
                                         }
                                     }
@@ -378,7 +414,7 @@ fun CharacterDetailPage(
                                                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                                             Text("Biyografi", color = KitsugiColors.TextPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                                                             if (!detail.biography.isNullOrBlank()) {
-                                                                IconButton(onClick = { context.openTranslator(detail.biography) }, modifier = Modifier.size(36.dp)) {
+                                                                IconButton(onClick = { context.openTranslator(detail.biography, preferredTranslator) }, modifier = Modifier.size(36.dp)) {
                                                                     Icon(Icons.Rounded.Translate, contentDescription = "Çevir", tint = accentColor)
                                                                 }
                                                                 Spacer(modifier = Modifier.width(6.dp))
@@ -679,7 +715,7 @@ fun CharacterDetailPage(
 
                                                         if (!detail.biography.isNullOrBlank()) {
                                                             IconButton(
-                                                                onClick = { context.openTranslator(detail.biography) },
+                                                                onClick = { context.openTranslator(detail.biography, preferredTranslator) },
                                                                 modifier = Modifier.size(36.dp)
                                                             ) {
                                                                 Icon(Icons.Rounded.Translate, contentDescription = "Çevir", tint = accentColor)
@@ -776,6 +812,16 @@ fun CharacterDetailPage(
                                     overflow = TextOverflow.Ellipsis,
                                     modifier = Modifier.weight(1f)
                                 )
+                                IconButton(onClick = {
+                                    val url = com.kitsugi.animelist.utils.ShareUtils.buildCharacterUrl(source, characterId)
+                                    com.kitsugi.animelist.utils.ShareUtils.shareText(context, detail.name, url)
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Share,
+                                        contentDescription = "Paylaş",
+                                        tint = KitsugiColors.TextSecondary
+                                    )
+                                }
                             }
                         }
                     }

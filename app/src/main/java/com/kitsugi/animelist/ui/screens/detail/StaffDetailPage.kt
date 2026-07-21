@@ -39,6 +39,7 @@ import coil3.compose.AsyncImage
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Translate
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.platform.LocalContext
@@ -92,7 +93,8 @@ fun StaffDetailPage(
     onCharacterClick: (characterId: Int, characterSource: String, name: String?, imageUrl: String?) -> Unit,
     onMediaClick: (mediaId: Int, mediaType: String, mediaSource: String) -> Unit,
     name: String? = null,
-    imageUrl: String? = null
+    imageUrl: String? = null,
+    preferredTranslator: String = "DEFAULT"
 ) {
     val accentColor = LocalKitsugiAccent.current
     val context = LocalContext.current
@@ -312,7 +314,7 @@ fun StaffDetailPage(
                                                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                                             Text("Biyografi", color = KitsugiColors.TextPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                                                             if (!detail.biography.isNullOrBlank()) {
-                                                                IconButton(onClick = { context.openTranslator(detail.biography) }, modifier = Modifier.size(36.dp)) {
+                                                                IconButton(onClick = { context.openTranslator(detail.biography, preferredTranslator) }, modifier = Modifier.size(36.dp)) {
                                                                     Icon(Icons.Rounded.Translate, contentDescription = "Çevir", tint = accentColor)
                                                                 }
                                                                 Spacer(modifier = Modifier.width(6.dp))
@@ -590,7 +592,7 @@ fun StaffDetailPage(
 
                                                         if (!detail.biography.isNullOrBlank()) {
                                                             IconButton(
-                                                                onClick = { context.openTranslator(detail.biography) },
+                                                                onClick = { context.openTranslator(detail.biography, preferredTranslator) },
                                                                 modifier = Modifier.size(36.dp)
                                                             ) {
                                                                 Icon(Icons.Rounded.Translate, contentDescription = "Çevir", tint = accentColor)
@@ -687,6 +689,16 @@ fun StaffDetailPage(
                                     overflow = TextOverflow.Ellipsis,
                                     modifier = Modifier.weight(1f)
                                 )
+                                IconButton(onClick = {
+                                    val url = com.kitsugi.animelist.utils.ShareUtils.buildStaffUrl(source, staffId)
+                                    com.kitsugi.animelist.utils.ShareUtils.shareText(context, detail.name, url)
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Share,
+                                        contentDescription = "Paylaş",
+                                        tint = KitsugiColors.TextSecondary
+                                    )
+                                }
                             }
                         }
                     }

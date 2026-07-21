@@ -29,6 +29,7 @@ ktor = "2.3.12"
 haze = "0.7.3"
 nanohttpd = "2.3.1"
 playServicesCast = "21.5.0"
+work = "2.9.1"
 
 
 junit = "4.13.2"
@@ -101,6 +102,7 @@ hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-com
 haze-android = { group = "dev.chrisbanes.haze", name = "haze-android", version.ref = "haze" }
 nanohttpd = { group = "org.nanohttpd", name = "nanohttpd", version.ref = "nanohttpd" }
 play-services-cast-framework = { group = "com.google.android.gms", name = "play-services-cast-framework", version.ref = "playServicesCast" }
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

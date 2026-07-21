@@ -153,17 +153,23 @@ class AniListSearchClient(
         }
     }
 
-    suspend fun aniListSeasonalAnime(page: Int = 1, showAdultContent: Boolean = false): List<JikanSearchResult> {
+    suspend fun aniListSeasonalAnime(
+        page: Int = 1,
+        showAdultContent: Boolean = false,
+        year: Int? = null,
+        season: String? = null,
+        sort: List<String> = listOf("POPULARITY_DESC")
+    ): List<JikanSearchResult> {
         return withContext(Dispatchers.IO) {
-            val (season, year) = getCurrentSeasonAndYear()
+            val (currentSeason, currentYear) = getCurrentSeasonAndYear()
             requestAniList(
                 mediaType = MediaType.Anime,
                 search = null,
                 status = null,
-                sort = listOf("POPULARITY_DESC"),
+                sort = sort,
                 perPage = 20,
-                season = season,
-                seasonYear = year,
+                season = season?.uppercase() ?: currentSeason,
+                seasonYear = year ?: currentYear,
                 page = page,
                 showAdultContent = showAdultContent
             )
@@ -238,6 +244,8 @@ class AniListSearchClient(
                         episodes
                         chapters
                         averageScore
+                        popularity
+                        favourites
                         isAdult
                         genres
                         startDate {
@@ -397,6 +405,9 @@ class AniListSearchClient(
             val averageScore = item.optionalPositiveInt("averageScore")
             val score = averageScore
                 ?.let { (it / 10.0).toInt().coerceIn(0, 10) }
+            val popularity = item.optionalPositiveInt("popularity")
+            val favourites = item.optionalPositiveInt("favourites")
+            val rawScore = averageScore?.let { it / 10.0 }
 
             val genres = item.namesFromStringArray("genres")
 
@@ -441,7 +452,10 @@ class AniListSearchClient(
                         realMalId = idMal,
                         titleEnglish = titleEnglish,
                         titleJapanese = titleJapanese,
-                        backdropUrl = bannerImage
+                        backdropUrl = bannerImage,
+                        members = popularity,
+                        favorites = favourites,
+                        rawScoreDouble = rawScore
                     )
                 )
             }

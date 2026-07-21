@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
@@ -48,6 +49,7 @@ fun KitsugiExploreMediaCard(
     titleLanguage: String = "ROMAJI",
     scoreFormat: String = "POINT_10",
     hideScores: Boolean = false,
+    blurAdultMedia: Boolean = false,
     forceVertical: Boolean = false
 ) {
     val accentColor = LocalKitsugiAccent.current
@@ -91,7 +93,12 @@ fun KitsugiExploreMediaCard(
                         AsyncImage(
                             model = result.imageUrl,
                             contentDescription = displayTitle,
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .then(
+                                    if (blurAdultMedia && result.isAdult) Modifier.blur(24.dp)
+                                    else Modifier
+                                ),
                             contentScale = ContentScale.Crop
                         )
                     } else {
@@ -167,7 +174,12 @@ fun KitsugiExploreMediaCard(
                         AsyncImage(
                             model = result.imageUrl,
                             contentDescription = displayTitle,
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .then(
+                                    if (blurAdultMedia && result.isAdult) Modifier.blur(24.dp)
+                                    else Modifier
+                                ),
                             contentScale = ContentScale.Crop
                         )
                     } else {
@@ -252,7 +264,12 @@ fun KitsugiExploreMediaCard(
                         AsyncImage(
                             model = result.imageUrl,
                             contentDescription = displayTitle,
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .then(
+                                    if (blurAdultMedia && result.isAdult) Modifier.blur(24.dp)
+                                    else Modifier
+                                ),
                             contentScale = ContentScale.Crop
                         )
                     } else {

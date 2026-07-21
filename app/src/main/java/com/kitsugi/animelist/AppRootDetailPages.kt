@@ -116,7 +116,8 @@ fun AppRootDetailPages(
                         }
                     },
                     name = key.name,
-                    imageUrl = key.imageUrl
+                    imageUrl = key.imageUrl,
+                    preferredTranslator = appSettings.preferredTranslator
                 )
             }
         }
@@ -155,7 +156,8 @@ fun AppRootDetailPages(
                     },
                     name = key.name,
                     imageUrl = key.imageUrl,
-                    titleLanguage = appSettings.titleLanguage
+                    titleLanguage = appSettings.titleLanguage,
+                    preferredTranslator = appSettings.preferredTranslator
                 )
             }
         }
@@ -279,9 +281,11 @@ fun AppRootDetailPages(
                         scoreFormat = appSettings.scoreFormat,
                         hideScores = appSettings.hideScores,
                         showAnimeLogos = appSettings.showAnimeLogos,
+                        blurAdultMedia = appSettings.blurAdultMedia,
                         onReadMangaClick = { mapping ->
                             onReadMangaClick(entry, mapping)
-                        }
+                        },
+                        preferredTranslator = appSettings.preferredTranslator
                     )
                 }
             }
@@ -332,6 +336,7 @@ fun AppRootDetailPages(
                     titleLanguage = appSettings.titleLanguage,
                     scoreFormat = appSettings.scoreFormat,
                     hideScores = appSettings.hideScores,
+                    blurAdultMedia = appSettings.blurAdultMedia,
                     onBackClick = { navState.popDetailStack() },
                     onEntryClick = { entry ->
                         navState.navigateToDetail(DetailScreen.MediaDetail(entry.id))

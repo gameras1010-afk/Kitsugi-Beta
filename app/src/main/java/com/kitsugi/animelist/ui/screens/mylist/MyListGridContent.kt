@@ -29,6 +29,7 @@ internal fun LazyListScope.MyListGroupedContent(
     titleLanguage: String,
     scoreFormat: String,
     hideScores: Boolean,
+    blurAdultMedia: Boolean,
     onEntryClick: (MediaEntry) -> Unit,
     onIncrementProgress: (MediaEntry) -> Unit,
     onPosterLongClick: (String) -> Unit
@@ -84,6 +85,7 @@ internal fun LazyListScope.MyListGroupedContent(
                                 titleLanguage = titleLanguage,
                                 scoreFormat = scoreFormat,
                                 hideScores = hideScores,
+                                blurAdultMedia = blurAdultMedia,
                                 onPosterLongClick = { imageUrl -> onPosterLongClick(imageUrl) }
                             )
                         }
@@ -108,6 +110,7 @@ internal fun LazyListScope.MyListGroupedContent(
                         titleLanguage = titleLanguage,
                         scoreFormat = scoreFormat,
                         hideScores = hideScores,
+                        blurAdultMedia = blurAdultMedia,
                         onPosterLongClick = { imageUrl -> onPosterLongClick(imageUrl) }
                     )
                     Spacer(modifier = Modifier.height(cardSpacingForLayout(selectedListLayoutId)))
@@ -128,6 +131,7 @@ internal fun LazyListScope.MyListFlatContent(
     titleLanguage: String,
     scoreFormat: String,
     hideScores: Boolean,
+    blurAdultMedia: Boolean,
     onEntryClick: (MediaEntry) -> Unit,
     onIncrementProgress: (MediaEntry) -> Unit,
     onPosterLongClick: (String) -> Unit
@@ -154,6 +158,7 @@ internal fun LazyListScope.MyListFlatContent(
                         titleLanguage = titleLanguage,
                         scoreFormat = scoreFormat,
                         hideScores = hideScores,
+                        blurAdultMedia = blurAdultMedia,
                         onPosterLongClick = { imageUrl -> onPosterLongClick(imageUrl) }
                     )
                 }
@@ -178,6 +183,7 @@ internal fun LazyListScope.MyListFlatContent(
                 titleLanguage = titleLanguage,
                 scoreFormat = scoreFormat,
                 hideScores = hideScores,
+                blurAdultMedia = blurAdultMedia,
                 onPosterLongClick = { imageUrl -> onPosterLongClick(imageUrl) }
             )
             Spacer(modifier = Modifier.height(cardSpacingForLayout(selectedListLayoutId)))

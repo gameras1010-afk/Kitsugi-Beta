@@ -19,7 +19,11 @@ data class JikanSearchResult(
     val titleEnglish: String? = null,
     val titleJapanese: String? = null,
     val tmdbId: Int? = null,
-    val backdropUrl: String? = null
+    val backdropUrl: String? = null,
+    val rank: Int? = null,
+    val members: Int? = null,
+    val favorites: Int? = null,
+    val rawScoreDouble: Double? = null
 )
 
 data class KitsugiTheme(
@@ -79,7 +83,16 @@ data class KitsugiMediaDetail(
     val tmdbId: Int? = null,   // SeriesGraph API için — AniList externalLinks'ten veya TVDB'den çıkarılır
     val tmdbSeason: Int? = null,
     val pictures: List<String> = emptyList(),  // Jikan /pictures endpoint'inden gelen ek resimler
-    val totalSeasons: Int? = null
+    val totalSeasons: Int? = null,
+    val nextAiringEpisode: String? = null,
+    val meanScore: Int? = null,
+    val averageScore: Int? = null,
+    val popularity: Int? = null,
+    val favorites: Int? = null,
+    val rank: Int? = null,
+    val popularityRank: Int? = null,
+    val scoredBy: Int? = null,
+    val members: Int? = null
 )
 
 data class KitsugiStreamingEpisode(
@@ -210,12 +223,23 @@ data class KitsugiScoreStat(
     val amount: Int
 )
 
+data class KitsugiRanking(
+    val rank: Int,
+    val type: String,
+    val context: String,
+    val allTime: Boolean = false,
+    val year: Int? = null,
+    val season: String? = null
+)
+
 data class KitsugiStats(
     val watching: Int?,
     val completed: Int?,
     val planned: Int?,
     val dropped: Int?,
-    val scoreDistribution: List<KitsugiScoreStat>
+    val paused: Int? = null,
+    val scoreDistribution: List<KitsugiScoreStat> = emptyList(),
+    val rankings: List<KitsugiRanking> = emptyList()
 )
 
 data class KitsugiReview(

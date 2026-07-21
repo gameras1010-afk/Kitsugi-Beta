@@ -1,4 +1,7 @@
-@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@file:OptIn(
+    androidx.compose.foundation.ExperimentalFoundationApi::class,
+    androidx.compose.material3.ExperimentalMaterial3Api::class
+)
 
 package com.kitsugi.animelist.ui.screens.detail
 
@@ -27,6 +30,9 @@ import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.runtime.CompositionLocalProvider
 import com.kitsugi.animelist.ui.utils.KitsugiScrollDefaults
 import com.kitsugi.animelist.ui.utils.dpadVerticalFastScroll
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -111,6 +117,7 @@ import com.kitsugi.animelist.ui.components.KitsugiIntegrationsSettingsDialog
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -171,6 +178,7 @@ fun ApiResultDetailPage(
     val apiClient = remember { JikanApiClient() }
 
     val settingsState = settingsDataStore?.settingsFlow?.collectAsState(initial = AppSettings())?.value
+    val blurAdultMedia = settingsState?.blurAdultMedia ?: false
     var showIntegrationsDialog by remember { mutableStateOf(false) }
     var showAuthWarningDialog by remember { mutableStateOf(false) }
 
@@ -285,8 +293,24 @@ fun ApiResultDetailPage(
                 logoUrl = if (showAnimeLogos) logoUrl else null
             )
         } else {
-            val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-            if (isLandscape) {
+            val pullRefreshState = rememberPullToRefreshState()
+            PullToRefreshBox(
+                isRefreshing = detailLoading,
+                onRefresh = { viewModel.loadResult(displayResult, showAnimeLogos, forceRefresh = true) },
+                modifier = Modifier.fillMaxSize(),
+                state = pullRefreshState,
+                indicator = {
+                    PullToRefreshDefaults.Indicator(
+                        state = pullRefreshState,
+                        isRefreshing = detailLoading,
+                        modifier = Modifier.align(Alignment.TopCenter),
+                        containerColor = KitsugiColors.Surface,
+                        color = accentColor
+                    )
+                }
+            ) {
+                val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+                if (isLandscape) {
                 // ── LANDSCAPE: Sol panel (Hero + Actions + Stats), Sağ panel (Tablar + İçerik) ──
                 Box(modifier = Modifier.fillMaxSize()) {
                     Row(modifier = Modifier.fillMaxSize()) {
@@ -318,6 +342,7 @@ fun ApiResultDetailPage(
                                 year = displayResult.year?.toString(),
                                 isAdult = displayResult.isAdult,
                                 onBackClick = onBackClick,
+                                blurAdultMedia = blurAdultMedia,
                                 onPosterClick = {
                                     val posterUrl = displayResult.imageUrl
                                     val idx = if (posterUrl != null) allImages.indexOf(posterUrl).coerceAtLeast(0) else 0
@@ -372,6 +397,44 @@ fun ApiResultDetailPage(
                                                 .padding(vertical = 14.dp),
                                             contentAlignment = Alignment.Center
                                         ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(64.dp)
+                                                    .background(KitsugiColors.Surface.copy(alpha = 0.92f))
+                                                    .padding(horizontal = 8.dp)
+                                            ) {
+                                                IconButton(onClick = onBackClick) {
+                                                    Icon(
+                                                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                                        contentDescription = "Geri",
+                                                        tint = KitsugiColors.TextPrimary
+                                                    )
+                                                }
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    text = displayResult.title,
+                                                    color = KitsugiColors.TextPrimary,
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    fontWeight = FontWeight.Black,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                    modifier = Modifier.weight(1f)
+                                                )
+                                                IconButton(onClick = {
+                                                    val url = buildExternalUrl(displayResult)
+                                                    if (!url.isNullOrBlank()) {
+                                                        com.kitsugi.animelist.utils.ShareUtils.shareText(context, displayResult.title, url)
+                                                    }
+                                                }) {
+                                                    Icon(
+                                                        imageVector = Icons.Rounded.Share,
+                                                        contentDescription = "Paylaş",
+                                                        tint = KitsugiColors.TextSecondary
+                                                    )
+                                                }
+                                            }
                                             Row(
                                                 verticalAlignment = Alignment.CenterVertically,
                                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -558,7 +621,7 @@ fun ApiResultDetailPage(
                                                     onStudioClick = onStudioClick,
                                                     onTranslateClick = {
                                                         val raw = detailState?.synopsis
-                                                        if (!raw.isNullOrBlank()) context.openTranslator(raw)
+                                                        if (!raw.isNullOrBlank()) context.openTranslator(raw, settingsState?.preferredTranslator ?: "DEFAULT")
                                                     },
                                                     onCopyClick = {
                                                         val text = displaySynopsis ?: detailState?.synopsis
@@ -637,7 +700,8 @@ fun ApiResultDetailPage(
                                                 externalId = result.malId,
                                                 mediaType = result.type,
                                                 apiClient = apiClient,
-                                                titleLanguage = titleLanguage
+                                                titleLanguage = titleLanguage,
+                                                 preferredTranslator = settingsState?.preferredTranslator ?: "DEFAULT"
                                             )
                                             7 -> {
                                                 ApiDetailEpisodesTab(
@@ -698,6 +762,7 @@ fun ApiResultDetailPage(
                             year = displayResult.year?.toString(),
                             isAdult = displayResult.isAdult,
                             onBackClick = onBackClick,
+                            blurAdultMedia = blurAdultMedia,
                             onPosterClick = {
                                 val posterUrl = displayResult.imageUrl
                                 val idx = if (posterUrl != null) allImages.indexOf(posterUrl).coerceAtLeast(0) else 0
@@ -910,6 +975,18 @@ fun ApiResultDetailPage(
                                         overflow = TextOverflow.Ellipsis,
                                         modifier = Modifier.weight(1f)
                                     )
+                                    IconButton(onClick = {
+                                        val url = buildExternalUrl(displayResult)
+                                        if (!url.isNullOrBlank()) {
+                                            com.kitsugi.animelist.utils.ShareUtils.shareText(context, displayResult.title, url)
+                                        }
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Share,
+                                            contentDescription = "Paylaş",
+                                            tint = KitsugiColors.TextSecondary
+                                        )
+                                    }
                                 }
                             }
 
@@ -981,7 +1058,7 @@ fun ApiResultDetailPage(
                                             onStudioClick = onStudioClick,
                                             onTranslateClick = {
                                                 val raw = detailState?.synopsis
-                                                if (!raw.isNullOrBlank()) context.openTranslator(raw)
+                                                if (!raw.isNullOrBlank()) context.openTranslator(raw, settingsState?.preferredTranslator ?: "DEFAULT")
                                             },
                                             onCopyClick = {
                                                 val text = displaySynopsis ?: detailState?.synopsis
@@ -1060,7 +1137,8 @@ fun ApiResultDetailPage(
                                         externalId = result.malId,
                                         mediaType = result.type,
                                         apiClient = apiClient,
-                                        titleLanguage = titleLanguage
+                                        titleLanguage = titleLanguage,
+                                                 preferredTranslator = settingsState?.preferredTranslator ?: "DEFAULT"
                                     )
                                     7 -> {
                                         ApiDetailEpisodesTab(
@@ -1095,6 +1173,7 @@ fun ApiResultDetailPage(
                 } // end LazyColumn
             } // end portrait Box
         } // end portrait else
+            } // end PullToRefreshBox
     } // end else (non-loading)
 
     activeEpisodeForOptions?.let { ep ->

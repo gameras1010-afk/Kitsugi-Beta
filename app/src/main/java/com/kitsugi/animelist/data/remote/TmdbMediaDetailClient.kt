@@ -59,6 +59,15 @@ internal object TmdbMediaDetailClient {
             }
 
             val rating = finalJson.optDouble("vote_average", 0.0)
+            val voteCount = finalJson.optInt("vote_count", 0).takeIf { it > 0 }
+            val tmdbPopularity = finalJson.optDouble("popularity", 0.0).toInt().takeIf { it > 0 }
+            val nextEpisodeObj = finalJson.optJSONObject("next_episode_to_air")
+            val nextAiring = if (nextEpisodeObj != null) {
+                val ep = nextEpisodeObj.optInt("episode_number")
+                val dateStr = nextEpisodeObj.optString("air_date")
+                if (ep > 0 && dateStr.isNotBlank()) "Bölüm $ep, $dateStr tarihinde yayında" else null
+            } else null
+
             val releaseDate = if (isMovie) finalJson.optString("release_date", "") else finalJson.optString("first_air_date", "")
             val status = finalJson.optString("status", "").toTurkishStatus()
             val year = releaseDate.split("-").firstOrNull()?.toIntOrNull()
@@ -105,6 +114,8 @@ internal object TmdbMediaDetailClient {
             val mediaImages = fetchMediaImages(tmdbId, isMovie, apiKey, executeGet)
             val (trailer, videoThemes) = fetchVideos(tmdbId, isMovie, apiKey, executeGet)
 
+            val score100 = (rating * 10).toInt().coerceIn(0, 100)
+
             KitsugiMediaDetail(
                 synopsis = finalOverview,
                 genres = genresList,
@@ -128,7 +139,7 @@ internal object TmdbMediaDetailClient {
                 trailerUrl = trailer,
                 title = title,
                 imageUrl = if (posterPath.isNotEmpty()) "$IMG_W500$posterPath" else null,
-                score = (rating * 10).toInt(),
+                score = (rating).toInt().coerceIn(0, 10),
                 year = year,
                 total = totalEpisodes,
                 isAdult = finalJson.optBoolean("adult", false),
@@ -140,7 +151,12 @@ internal object TmdbMediaDetailClient {
                 tmdbId = tmdbId,
                 tmdbSeason = 1,
                 pictures = mediaImages,
-                totalSeasons = totalSeasonsVal
+                totalSeasons = totalSeasonsVal,
+                nextAiringEpisode = nextAiring,
+                meanScore = score100,
+                averageScore = score100,
+                popularity = tmdbPopularity,
+                scoredBy = voteCount
             )
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching TMDB details: ${e.message}", e)

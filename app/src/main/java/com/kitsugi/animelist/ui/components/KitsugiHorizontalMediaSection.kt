@@ -49,7 +49,8 @@ fun KitsugiHorizontalMediaSection(
     onSeeAllClick: (() -> Unit)? = null,
     titleLanguage: String = "ROMAJI",
     scoreFormat: String = "POINT_10",
-    hideScores: Boolean = false
+    hideScores: Boolean = false,
+    blurAdultMedia: Boolean = false
 ) {
     val accentColor = LocalKitsugiAccent.current
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -137,6 +138,7 @@ fun KitsugiHorizontalMediaSection(
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
                                     hideScores = hideScores,
+                                    blurAdultMedia = blurAdultMedia,
                                     forceVertical = false
                                 )
                             }
@@ -163,6 +165,7 @@ fun KitsugiHorizontalMediaSection(
                                 titleLanguage = titleLanguage,
                                 scoreFormat = scoreFormat,
                                 hideScores = hideScores,
+                                blurAdultMedia = blurAdultMedia,
                                 forceVertical = false
                             )
                         }

@@ -110,12 +110,24 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
      * Initializes state and starts background jobs to fetch all entry-specific details.
      * Prevents redundant scanning if [entry] hasn't changed.
      */
-    fun loadEntry(entry: MediaEntry, showAnimeLogos: Boolean) {
+    fun loadEntry(entry: MediaEntry, showAnimeLogos: Boolean, forceRefresh: Boolean = false) {
         mangaMappingJob?.cancel()
         mangaMappingJob = viewModelScope.launch {
             mangaRepository.observeMangaMapping(entry.id).collect {
                 _mangaMapping.value = it
             }
+        }
+
+        val stableId = entry.malId ?: 0
+        if (forceRefresh) {
+            currentFetchKey = null
+            DetailCache.removeMediaDetail(entry.source, stableId)
+            DetailCache.removeMediaCharacters(entry.source, stableId)
+            DetailCache.removeMediaStaff(entry.source, stableId)
+            DetailCache.removeMediaRelations(entry.source, stableId)
+            DetailCache.removeMediaRecommendations(entry.source, stableId)
+            DetailCache.removeMediaReviews(entry.source, stableId)
+            DetailCache.removeMediaEpisodes(entry.source, stableId)
         }
 
         val newKey = "${entry.id}:${entry.source}:${entry.malId}"
@@ -248,28 +260,11 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
 
         if (detail != null) {
             val trSynopsis = detail.synopsis
-            if (!trSynopsis.isNullOrBlank() && trSynopsis != entry.synopsis) {
+            if (!trSynopsis.isNullOrBlank()) {
                 _originalSynopsis.value = trSynopsis
-                _translatedSynopsis.value = trSynopsis
-                _synopsisState.value = SynopsisState.Success(trSynopsis)
-
-                // TMDB'den gelen synopsis için de autoTranslate döngüsünü çalıştır
-                val autoTranslate = runCatching { settingsDataStore.settingsFlow.first() }.getOrNull()?.autoTranslateEnabled ?: false
-                if (autoTranslate) {
-                    val cachedTr = DetailCache.getTranslation("synopsis", entry.source, stableId)
-                    if (cachedTr != null) {
-                        _synopsisState.value = SynopsisState.Success(cachedTr)
-                        _translatedSynopsis.value = cachedTr
-                    } else {
-                        val tr = withContext(Dispatchers.IO) {
-                            translationManager.translateToTurkish(trSynopsis)
-                        }
-                        if (!tr.isNullOrBlank() && tr != trSynopsis) {
-                            DetailCache.putTranslation("synopsis", entry.source, stableId, tr)
-                            _synopsisState.value = SynopsisState.Success(tr)
-                            _translatedSynopsis.value = tr
-                        }
-                    }
+                if (_synopsisState.value !is SynopsisState.Success || _translatedSynopsis.value.isNullOrBlank()) {
+                    _synopsisState.value = SynopsisState.Success(trSynopsis)
+                    _translatedSynopsis.value = trSynopsis
                 }
             }
 
@@ -362,79 +357,59 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
         val stableId = entry.malId ?: 0
         val autoTranslate = runCatching { settingsDataStore.settingsFlow.first() }.getOrNull()?.autoTranslateEnabled ?: false
 
-        // fetchDetail zaten tamamlandı; TMDB'den Türkçe synopsis geldiyse kullan, tekrar işleme
-        val currentSynopsis = _synopsisState.value
-        if (currentSynopsis is SynopsisState.Success && !currentSynopsis.text.isNullOrBlank()) {
-            // TMDB zaten Türkçe synopsis sağladı; autoTranslate cache'ini kontrol et
-            if (autoTranslate) {
-                val cachedTr = DetailCache.getTranslation("synopsis", entry.source, stableId)
-                if (cachedTr != null) {
-                    _synopsisState.value = SynopsisState.Success(cachedTr)
-                    _translatedSynopsis.value = cachedTr
-                }
+        // 1. Prioritize cached translation if available
+        val cachedTr = DetailCache.getTranslation("synopsis", entry.source, stableId)
+        if (cachedTr != null) {
+            _synopsisState.value = SynopsisState.Success(cachedTr)
+            _translatedSynopsis.value = cachedTr
+            return
+        }
+
+        // 2. Identify the best raw synopsis text (TMDB/detail fetch, ViewModel state, or entry.synopsis)
+        var rawText: String? = _originalSynopsis.value
+            ?: (_synopsisState.value as? SynopsisState.Success)?.text
+            ?: entry.synopsis
+            ?: _detailState.value?.synopsis
+
+        // 3. If no synopsis is available yet, fetch from API
+        if (rawText.isNullOrBlank()) {
+            _synopsisState.value = SynopsisState.Loading
+            val fetched = withContext(Dispatchers.IO) {
+                apiClient.fetchSynopsis(
+                    source = entry.source,
+                    externalId = entry.malId,
+                    mediaType = entry.type
+                )
+            }
+            if (!fetched.isNullOrBlank()) {
+                rawText = fetched
+            }
+        }
+
+        if (rawText.isNullOrBlank()) {
+            if (_synopsisState.value !is SynopsisState.Success) {
+                _synopsisState.value = SynopsisState.Error
             }
             return
         }
 
-        _originalSynopsis.value = entry.synopsis
+        _originalSynopsis.value = rawText
 
-        // entry.synopsis doluysa hemen göster, arka planda çevir
-        if (!entry.synopsis.isNullOrBlank()) {
-            _synopsisState.value = SynopsisState.Success(entry.synopsis)
-            _translatedSynopsis.value = entry.synopsis
-            if (autoTranslate) {
-                val cachedTr = DetailCache.getTranslation("synopsis", entry.source, stableId)
-                if (cachedTr != null) {
-                    _synopsisState.value = SynopsisState.Success(cachedTr)
-                    _translatedSynopsis.value = cachedTr
-                } else {
-                    val tr = withContext(Dispatchers.IO) {
-                        translationManager.translateToTurkish(entry.synopsis)
-                    }
-                    if (!tr.isNullOrBlank() && tr != entry.synopsis) {
-                        DetailCache.putTranslation("synopsis", entry.source, stableId, tr)
-                        _synopsisState.value = SynopsisState.Success(tr)
-                        _translatedSynopsis.value = tr
-                    }
-                }
+        // 4. Perform auto-translation or apply rawText
+        if (autoTranslate) {
+            _synopsisState.value = SynopsisState.Success(rawText)
+            _translatedSynopsis.value = rawText
+            val tr = withContext(Dispatchers.IO) {
+                translationManager.translateToTurkish(rawText)
             }
-            return
-        }
-
-        // entry.synopsis de yok; API'den çek
-        _synopsisState.value = SynopsisState.Loading
-
-        val synopsis = withContext(Dispatchers.IO) {
-            apiClient.fetchSynopsis(
-                source = entry.source,
-                externalId = entry.malId,
-                mediaType = entry.type
-            )
-        }
-
-        if (synopsis.isNullOrBlank()) {
-            _synopsisState.value = SynopsisState.Error
+            if (!tr.isNullOrBlank() && tr != rawText) {
+                DetailCache.putTranslation("synopsis", entry.source, stableId, tr)
+                _synopsisState.value = SynopsisState.Success(tr)
+                _translatedSynopsis.value = tr
+            }
         } else {
-            _originalSynopsis.value = synopsis
-            _synopsisState.value = SynopsisState.Success(synopsis)
-            _translatedSynopsis.value = synopsis
-
-            if (autoTranslate) {
-                val cachedTr = DetailCache.getTranslation("synopsis", entry.source, stableId)
-                if (cachedTr != null) {
-                    _synopsisState.value = SynopsisState.Success(cachedTr)
-                    _translatedSynopsis.value = cachedTr
-                } else {
-                    val tr = withContext(Dispatchers.IO) {
-                        translationManager.translateToTurkish(synopsis)
-                    }
-                    if (!tr.isNullOrBlank() && tr != synopsis) {
-                        DetailCache.putTranslation("synopsis", entry.source, stableId, tr)
-                        _synopsisState.value = SynopsisState.Success(tr)
-                        _translatedSynopsis.value = tr
-                    }
-                }
-            }
+            _synopsisState.value = SynopsisState.Success(rawText)
+            _translatedSynopsis.value = rawText
         }
     }
 

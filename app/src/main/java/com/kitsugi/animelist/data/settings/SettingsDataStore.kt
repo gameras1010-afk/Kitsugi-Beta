@@ -26,6 +26,7 @@ class SettingsDataStore(
     private object Keys {
         val SelectedThemeId = stringPreferencesKey("selected_theme_id")
         val ShowAdultContent = booleanPreferencesKey("show_adult_content")
+        val BlurAdultMedia = booleanPreferencesKey("blur_adult_media")
         val SelectedListLayoutId = stringPreferencesKey("selected_list_layout_id")
         val ProfileName = stringPreferencesKey("profile_name")
         val ListTitle = stringPreferencesKey("list_title")
@@ -101,6 +102,7 @@ class SettingsDataStore(
         val AnimeSkipClientId = stringPreferencesKey("animeskip_client_id")
         // Açıklama Otomatik Çevirisi
         val AutoTranslateEnabled = booleanPreferencesKey("auto_translate_enabled")
+        val PreferredTranslator = stringPreferencesKey("preferred_translator")
         // TV ana sayfa yerleşim düzeni (classic / modern / grid)
         val SelectedHomeLayoutId = stringPreferencesKey("selected_home_layout_id")
         val FrameRateMatchingMode = stringPreferencesKey("frame_rate_matching_mode")
@@ -136,6 +138,10 @@ class SettingsDataStore(
         val QualityProfileJson = stringPreferencesKey("quality_profile_json")
         // ─── Airing Notifications (T3.3) ─────────────────────────────────────
         val AiringNotificationsEnabled = booleanPreferencesKey("airing_notifications_enabled")
+        val AniListNotificationsEnabled = booleanPreferencesKey("anilist_notifications_enabled")
+        val MalNotificationsEnabled = booleanPreferencesKey("mal_notifications_enabled")
+        val SimklNotificationsEnabled = booleanPreferencesKey("simkl_notifications_enabled")
+        val NotificationInterval = intPreferencesKey("notification_interval")
         val SearchHistoryEnabled = booleanPreferencesKey("search_history_enabled")
         // ─── T1.7 – StillWatching + PostPlayMode + AutoplaySessionRules ──────
         val StillWatchingEnabled = booleanPreferencesKey("still_watching_enabled")
@@ -167,6 +173,7 @@ class SettingsDataStore(
                 AppSettings(
                     selectedThemeId = preferences[Keys.SelectedThemeId] ?: "mint",
                     showAdultContent = preferences[Keys.ShowAdultContent] ?: false,
+                    blurAdultMedia = preferences[Keys.BlurAdultMedia] ?: false,
                     selectedListLayoutId = preferences[Keys.SelectedListLayoutId] ?: "comfortable",
                     profileName = preferences[Keys.ProfileName] ?: "Profilim",
                     listTitle = preferences[Keys.ListTitle] ?: "Anime & Manga Listem",
@@ -234,6 +241,7 @@ class SettingsDataStore(
                     aniSkipAutoSkip = preferences[Keys.AniSkipAutoSkip] ?: false,
                     animeSkipClientId = preferences[Keys.AnimeSkipClientId] ?: "",
                     autoTranslateEnabled = preferences[Keys.AutoTranslateEnabled] ?: false,
+                    preferredTranslator = preferences[Keys.PreferredTranslator] ?: "DEFAULT",
                     selectedHomeLayoutId = preferences[Keys.SelectedHomeLayoutId] ?: "classic",
                     frameRateMatchingMode = runCatching {
                         com.kitsugi.animelist.data.settings.FrameRateMatchingMode.valueOf(
@@ -270,6 +278,10 @@ class SettingsDataStore(
                     audioDelayPerRouteJson = preferences[Keys.AudioDelayPerRouteJson] ?: "{}",
                     qualityProfileJson = preferences[Keys.QualityProfileJson] ?: "",
                     airingNotificationsEnabled = preferences[Keys.AiringNotificationsEnabled] ?: false,
+                    aniListNotificationsEnabled = preferences[Keys.AniListNotificationsEnabled] ?: false,
+                    malNotificationsEnabled = preferences[Keys.MalNotificationsEnabled] ?: false,
+                    simklNotificationsEnabled = preferences[Keys.SimklNotificationsEnabled] ?: false,
+                    notificationInterval = preferences[Keys.NotificationInterval] ?: 180,
                     searchHistoryEnabled = preferences[Keys.SearchHistoryEnabled] ?: true,
                     // ─── T1.7 ─────────────────────────────────────────────────
                     stillWatchingEnabled = preferences[Keys.StillWatchingEnabled] ?: true,
@@ -325,6 +337,12 @@ class SettingsDataStore(
     suspend fun setShowAdultContent(show: Boolean) {
         context.settingsDataStore.edit { preferences ->
             preferences[Keys.ShowAdultContent] = show
+        }
+    }
+
+    suspend fun setBlurAdultMedia(blur: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[Keys.BlurAdultMedia] = blur
         }
     }
 
@@ -735,6 +753,10 @@ class SettingsDataStore(
         context.settingsDataStore.edit { it[Keys.AutoTranslateEnabled] = enabled }
     }
 
+    suspend fun setPreferredTranslator(translator: String) {
+        context.settingsDataStore.edit { it[Keys.PreferredTranslator] = translator }
+    }
+
     suspend fun setSelectedHomeLayoutId(layoutId: String) {
         context.settingsDataStore.edit { it[Keys.SelectedHomeLayoutId] = layoutId }
     }
@@ -872,6 +894,22 @@ class SettingsDataStore(
     // ─── Airing Notifications (T3.3) ─────────────────────────────────────
     suspend fun setAiringNotificationsEnabled(enabled: Boolean) {
         context.settingsDataStore.edit { it[Keys.AiringNotificationsEnabled] = enabled }
+    }
+
+    suspend fun setAniListNotificationsEnabled(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.AniListNotificationsEnabled] = enabled }
+    }
+
+    suspend fun setMalNotificationsEnabled(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.MalNotificationsEnabled] = enabled }
+    }
+
+    suspend fun setSimklNotificationsEnabled(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.SimklNotificationsEnabled] = enabled }
+    }
+
+    suspend fun setNotificationInterval(minutes: Int) {
+        context.settingsDataStore.edit { it[Keys.NotificationInterval] = minutes }
     }
 
     // ─── T1.7 – StillWatching + PostPlayMode + AutoplaySessionRules ──────────

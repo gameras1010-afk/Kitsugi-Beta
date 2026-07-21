@@ -114,6 +114,45 @@
                     android:host="v1" />
             </intent-filter>
 
+            <!-- ══ WEB APP LINKS (Varsayılan olarak aç / Open supported links) ══ -->
+            <!-- AniList, MyAnimeList, TMDB, Simkl -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+
+                <data android:host="anilist.co" />
+                <data android:host="www.anilist.co" />
+
+                <data android:host="myanimelist.net" />
+                <data android:host="www.myanimelist.net" />
+
+                <data android:host="themoviedb.org" />
+                <data android:host="www.themoviedb.org" />
+                <data android:host="tmdb.org" />
+                <data android:host="www.tmdb.org" />
+
+                <data android:host="simkl.com" />
+                <data android:host="www.simkl.com" />
+
+                <data android:pathPrefix="/anime/" />
+                <data android:pathPrefix="/manga/" />
+                <data android:pathPrefix="/character/" />
+                <data android:pathPrefix="/staff/" />
+                <data android:pathPrefix="/people/" />
+                <data android:pathPrefix="/studio/" />
+                <data android:pathPrefix="/user/" />
+                <data android:pathPrefix="/profile/" />
+                <data android:pathPrefix="/tv/" />
+                <data android:pathPrefix="/movie/" />
+                <data android:pathPrefix="/person/" />
+                <data android:pathPrefix="/shows/" />
+                <data android:pathPrefix="/movies/" />
+            </intent-filter>
+
         </activity>
 
         <activity
@@ -189,20 +228,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="androidx.tvprovider.media.tv.action.INITIALIZE_PROGRAMS" />
-            </intent-filter>
-        </receiver>
-        <!-- T3.3: Yayın takvimi bildirim receiver -->
-        <receiver
-            android:name=".core.notifications.KitsugiAiringNotificationReceiver"
-            android:exported="false" />
-        <!-- T3.3: Boot sonrası yayın alarmlarını yeniden kur -->
-        <receiver
-            android:name=".core.notifications.KitsugiAiringAlarmBootReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
-                <action android:name="com.kitsugi.animelist.AIRING_WEEKLY_REFRESH" />
             </intent-filter>
         </receiver>
     </application>

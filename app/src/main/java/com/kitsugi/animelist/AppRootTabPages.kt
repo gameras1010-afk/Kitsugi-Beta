@@ -161,6 +161,7 @@ private fun ExploreTabPage(ctx: TabPagesContext) {
     ExploreScreen(
         currentEntries = ctx.mediaEntries,
         showAdultContent = ctx.appSettings.showAdultContent,
+        blurAdultMedia = ctx.appSettings.blurAdultMedia,
         onAddSelectionToList = ctx.onAddApiSelectionToList,
         onSeeAllSection = ctx.onSeeAllSection,
         onOpenApiDetail = ctx.onOpenApiDetail,

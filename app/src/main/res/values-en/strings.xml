@@ -38,6 +38,9 @@
     <string name="settings_adult_content">Adult Content (+18)</string>
     <string name="settings_adult_content_enabled_desc">Adult themed (+18) anime and manga are shown in lists.</string>
     <string name="settings_adult_content_disabled_desc">Adult themed (+18) anime and manga are hidden.</string>
+    <string name="settings_blur_adult">Blur Adult Content (+18)</string>
+    <string name="settings_blur_adult_enabled_desc">Posters and cover images of +18 media will be blurred.</string>
+    <string name="settings_blur_adult_disabled_desc">Images of +18 media will be shown normally.</string>
     <string name="settings_list_layout">List View</string>
     <string name="settings_list_layout_desc">Select the card view style on the My List page.</string>
     <string name="settings_title_language">Title Language</string>

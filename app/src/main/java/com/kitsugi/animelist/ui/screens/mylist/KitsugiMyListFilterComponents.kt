@@ -264,6 +264,159 @@ internal fun SortFilterRow(
 }
 
 @Composable
+internal fun RichMyListFilterPanel(
+    selectedStatusFilterId: String,
+    selectedTypeFilterId: String,
+    selectedFavoriteFilterId: String,
+    selectedScoreFilterId: String,
+    selectedYearFilterId: String,
+    selectedExtraFilterId: String,
+    selectedSortId: String,
+    onStatusSelected: (String) -> Unit,
+    onTypeSelected: (String) -> Unit,
+    onFavoriteSelected: (String) -> Unit,
+    onScoreSelected: (String) -> Unit,
+    onYearSelected: (String) -> Unit,
+    onExtraSelected: (String) -> Unit,
+    onSortSelected: (String) -> Unit,
+    onResetFilters: () -> Unit,
+    onHideFilters: () -> Unit
+) {
+    val accentColor = LocalKitsugiAccent.current
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(KitsugiColors.Surface.copy(alpha = 0.65f))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        // Top Content Types
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            val typeItems = listOf(
+                "anime" to "✓ Anime",
+                "manga" to "Manga",
+                "characters" to "Karakterler",
+                "staff" to "Ekip",
+                "studios" to "Stüdyo"
+            )
+            typeItems.forEach { (id, label) ->
+                val isSelected = selectedTypeFilterId == id || (id == "anime" && selectedTypeFilterId == "all")
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (isSelected) accentColor else KitsugiColors.SurfaceSoft)
+                        .tvClickable(shape = RoundedCornerShape(12.dp), onClick = {
+                            if (id == "anime" || id == "manga") onTypeSelected(id)
+                        })
+                        .padding(horizontal = 14.dp, vertical = 9.dp)
+                ) {
+                    Text(
+                        text = label,
+                        color = if (isSelected) KitsugiColors.Background else KitsugiColors.TextPrimary,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+
+        // Section: Status Filters
+        Column {
+            FilterLabel(text = "Durum")
+            Spacer(modifier = Modifier.height(6.dp))
+            StatusFilterRow(
+                selectedStatusFilterId = selectedStatusFilterId,
+                onStatusSelected = onStatusSelected
+            )
+        }
+
+        // Section: Media Type
+        Column {
+            FilterLabel(text = "Medya Türü")
+            Spacer(modifier = Modifier.height(6.dp))
+            TypeFilterRow(
+                selectedTypeFilterId = selectedTypeFilterId,
+                onTypeSelected = onTypeSelected
+            )
+        }
+
+        // Section: Score Range
+        Column {
+            FilterLabel(text = "Puan Aralığı")
+            Spacer(modifier = Modifier.height(6.dp))
+            ScoreFilterRow(
+                selectedScoreFilterId = selectedScoreFilterId,
+                onScoreSelected = onScoreSelected
+            )
+        }
+
+        // Section: Release Year
+        Column {
+            FilterLabel(text = "Yayın Yılı")
+            Spacer(modifier = Modifier.height(6.dp))
+            YearFilterRow(
+                selectedYearFilterId = selectedYearFilterId,
+                onYearSelected = onYearSelected
+            )
+        }
+
+        // Section: Extra Options
+        Column {
+            FilterLabel(text = "Ekstra / Özel")
+            Spacer(modifier = Modifier.height(6.dp))
+            ExtraFilterRow(
+                selectedExtraFilterId = selectedExtraFilterId,
+                onExtraSelected = onExtraSelected
+            )
+        }
+
+        // Action Buttons: Hide & Reset Filters
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .tvClickable(shape = RoundedCornerShape(12.dp), onClick = onHideFilters)
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = "Filtreleri gizle",
+                    color = KitsugiColors.TextMuted,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .tvClickable(shape = RoundedCornerShape(12.dp), onClick = onResetFilters)
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = "Temizle",
+                    color = accentColor,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun FilterChipRow(
     items: List<Pair<String, String>>,
     selectedId: String,

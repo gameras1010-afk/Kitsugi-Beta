@@ -1,4 +1,7 @@
-@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@file:OptIn(
+    androidx.compose.foundation.ExperimentalFoundationApi::class,
+    androidx.compose.material3.ExperimentalMaterial3Api::class
+)
 
 package com.kitsugi.animelist.ui.screens.detail
 
@@ -23,6 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -30,6 +34,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -136,7 +143,9 @@ fun MediaEntryDetailPage(
     scoreFormat: String = "POINT_10",
     hideScores: Boolean = false,
     showAnimeLogos: Boolean = false,
-    onReadMangaClick: ((MangaMappingEntity?) -> Unit)? = null
+    blurAdultMedia: Boolean = false,
+    onReadMangaClick: ((MangaMappingEntity?) -> Unit)? = null,
+    preferredTranslator: String = "DEFAULT"
 ) {
     val uriHandler = LocalUriHandler.current
     val context = LocalContext.current
@@ -228,8 +237,24 @@ fun MediaEntryDetailPage(
                 logoUrl = if (showAnimeLogos) logoUrl else null
             )
         } else {
-            val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-            if (isLandscape) {
+            val pullRefreshState = rememberPullToRefreshState()
+            PullToRefreshBox(
+                isRefreshing = detailLoading,
+                onRefresh = { viewModel.loadEntry(entry, showAnimeLogos, forceRefresh = true) },
+                modifier = Modifier.fillMaxSize(),
+                state = pullRefreshState,
+                indicator = {
+                    PullToRefreshDefaults.Indicator(
+                        state = pullRefreshState,
+                        isRefreshing = detailLoading,
+                        modifier = Modifier.align(Alignment.TopCenter),
+                        containerColor = KitsugiColors.Surface,
+                        color = accentColor
+                    )
+                }
+            ) {
+                val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+                if (isLandscape) {
                 // ── LANDSCAPE: Sol panel (Hero + Actions + Stats), Sağ panel (Tablar + İçerik) ──
                 Box(modifier = Modifier.fillMaxSize()) {
                     Row(modifier = Modifier.fillMaxSize()) {
@@ -251,6 +276,7 @@ fun MediaEntryDetailPage(
                                 logoUrl = if (showAnimeLogos) logoUrl else null,
                                 onBackClick = onBackClick,
                                 titleLanguage = titleLanguage,
+                                blurAdultMedia = blurAdultMedia,
                                 onPosterClick = { clickedUrl ->
                                     val index = allImages.indexOf(clickedUrl).coerceAtLeast(0)
                                     activeGalleryImages = allImages
@@ -407,7 +433,8 @@ fun MediaEntryDetailPage(
                                                     originalSynopsis = originalSynopsis,
                                                     externalUrl = externalUrl,
                                                     onSearchQuery = onSearchQuery,
-                                                    onStudioClick = onStudioClick
+                                                    onStudioClick = onStudioClick,
+                                                    preferredTranslator = preferredTranslator
                                                 )
                                             }
                                             1 -> CharactersTabContent(state = charactersState, onCharacterClick = onCharacterClick, onStaffClick = onStaffClick)
@@ -467,7 +494,8 @@ fun MediaEntryDetailPage(
                                                 externalId = entry.malId ?: 0,
                                                 mediaType = entry.type,
                                                 apiClient = apiClient,
-                                                titleLanguage = titleLanguage
+                                                titleLanguage = titleLanguage,
+                                                preferredTranslator = preferredTranslator
                                             )
                                             7 -> {
                                                 EntryDetailEpisodesTab(
@@ -513,6 +541,7 @@ fun MediaEntryDetailPage(
                             logoUrl = if (showAnimeLogos) logoUrl else null,
                             onBackClick = onBackClick,
                             titleLanguage = titleLanguage,
+                            blurAdultMedia = blurAdultMedia,
                             onPosterClick = { clickedUrl ->
                                 val index = allImages.indexOf(clickedUrl).coerceAtLeast(0)
                                 activeGalleryImages = allImages
@@ -653,6 +682,17 @@ fun MediaEntryDetailPage(
                                         overflow = TextOverflow.Ellipsis,
                                         modifier = Modifier.weight(1f)
                                     )
+                                    IconButton(onClick = {
+                                        val mediaId = entry.malId ?: entry.id
+                                        val url = com.kitsugi.animelist.utils.ShareUtils.buildMediaUrl(entry.source, mediaId, entry.type)
+                                        com.kitsugi.animelist.utils.ShareUtils.shareText(context, entry.title, url)
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Share,
+                                            contentDescription = "Paylaş",
+                                            tint = KitsugiColors.TextSecondary
+                                        )
+                                    }
                                 }
                             }
 
@@ -721,7 +761,8 @@ fun MediaEntryDetailPage(
                                             originalSynopsis = originalSynopsis,
                                             externalUrl = externalUrl,
                                             onSearchQuery = onSearchQuery,
-                                            onStudioClick = onStudioClick
+                                            onStudioClick = onStudioClick,
+                                                    preferredTranslator = preferredTranslator
                                         )
                                     }
                                     1 -> CharactersTabContent(state = charactersState, onCharacterClick = onCharacterClick, onStaffClick = onStaffClick)
@@ -781,7 +822,8 @@ fun MediaEntryDetailPage(
                                         externalId = entry.malId ?: 0,
                                         mediaType = entry.type,
                                         apiClient = apiClient,
-                                        titleLanguage = titleLanguage
+                                        titleLanguage = titleLanguage,
+                                                preferredTranslator = preferredTranslator
                                     )
                                     7 -> {
                                         EntryDetailEpisodesTab(
@@ -808,6 +850,7 @@ fun MediaEntryDetailPage(
 
             } // end portrait Box
         } // end portrait else
+            } // end PullToRefreshBox
     } // end else (non-loading)
 
         if (activeGalleryImages.isNotEmpty()) {

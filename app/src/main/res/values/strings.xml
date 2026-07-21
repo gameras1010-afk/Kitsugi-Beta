@@ -39,6 +39,9 @@
     <string name="settings_adult_content">Yetişkin İçeriği (+18)</string>
     <string name="settings_adult_content_enabled_desc">Yetişkin içerikli (+18) anime ve mangalar listelerde gösterilir.</string>
     <string name="settings_adult_content_disabled_desc">Yetişkin içerikli (+18) anime ve mangalar gizlenir.</string>
+    <string name="settings_blur_adult">Yetişkin İçeriğini Bulanıklaştır (+18)</string>
+    <string name="settings_blur_adult_enabled_desc">+18 içeriklerin afiş ve görselleri bulanıklaştırılır.</string>
+    <string name="settings_blur_adult_disabled_desc">+18 içeriklerin görselleri normal gösterilir.</string>
     <string name="settings_list_layout">Liste Görünümü</string>
     <string name="settings_list_layout_desc">Listem sayfasındaki kart görünümünü seçin.</string>
     <string name="settings_title_language">Başlık Dili</string>

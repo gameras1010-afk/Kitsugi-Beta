@@ -84,4 +84,21 @@ class KitsugiMediaMutationsClient {
             }.getOrElse { false }
         }
     }
+
+    suspend fun deleteActivity(activityId: Int): Boolean {
+        return withContext(Dispatchers.IO) {
+            val query = """
+                mutation (${'$'}id: Int) {
+                    DeleteActivity(id: ${'$'}id) {
+                        deleted
+                    }
+                }
+            """.trimIndent()
+            val variables = JSONObject().put("id", activityId)
+            runCatching {
+                val response = KitsugiApiBase.executeAniListQuery(query, variables)
+                response != null && !response.contains("errors")
+            }.getOrElse { false }
+        }
+    }
 }

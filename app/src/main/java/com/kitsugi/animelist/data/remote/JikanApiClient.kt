@@ -82,7 +82,13 @@ class JikanApiClient(
     suspend fun completedManga(page: Int = 1, showAdultContent: Boolean = false) = jikanSearchClient.completedManga(page, showAdultContent)
     suspend fun trendingAnime(page: Int = 1, showAdultContent: Boolean = false) = jikanSearchClient.trendingAnime(page, showAdultContent)
     suspend fun movieAnime(page: Int = 1, showAdultContent: Boolean = false) = jikanSearchClient.movieAnime(page, showAdultContent)
-    suspend fun seasonalAnime(page: Int = 1, showAdultContent: Boolean = false) = jikanSearchClient.seasonalAnime(page, showAdultContent)
+    suspend fun seasonalAnime(
+        page: Int = 1,
+        showAdultContent: Boolean = false,
+        year: Int? = null,
+        season: String? = null,
+        sort: String? = null
+    ) = jikanSearchClient.seasonalAnime(page, showAdultContent, year, season, sort)
 
     // AniList Specific Search Methods
     suspend fun aniListTopAnime(page: Int = 1, showAdultContent: Boolean = false) = aniListSearchClient.aniListTopAnime(page, showAdultContent)
@@ -92,7 +98,19 @@ class JikanApiClient(
     suspend fun aniListPublishingManga(page: Int = 1, showAdultContent: Boolean = false) = aniListSearchClient.aniListPublishingManga(page, showAdultContent)
     suspend fun aniListTrendingAnime(page: Int = 1, showAdultContent: Boolean = false) = aniListSearchClient.aniListTrendingAnime(page, showAdultContent)
     suspend fun aniListMovieAnime(page: Int = 1, showAdultContent: Boolean = false) = aniListSearchClient.aniListMovieAnime(page, showAdultContent)
-    suspend fun aniListSeasonalAnime(page: Int = 1, showAdultContent: Boolean = false) = aniListSearchClient.aniListSeasonalAnime(page, showAdultContent)
+    suspend fun aniListSeasonalAnime(
+        page: Int = 1,
+        showAdultContent: Boolean = false,
+        year: Int? = null,
+        season: String? = null,
+        sort: String? = null
+    ) = aniListSearchClient.aniListSeasonalAnime(
+        page = page,
+        showAdultContent = showAdultContent,
+        year = year,
+        season = season,
+        sort = if (sort != null) listOf(sort) else listOf("POPULARITY_DESC")
+    )
 
     // Detail & Synopsis
     suspend fun fetchSynopsis(source: String, externalId: Int?, mediaType: MediaType) = detailClient.fetchSynopsis(source, externalId, mediaType)
@@ -144,4 +162,7 @@ class JikanApiClient(
 
     suspend fun rateReview(reviewId: Int, rating: String) =
         mediaMutationsClient.rateReview(reviewId, rating)
+
+    suspend fun deleteActivity(activityId: Int) =
+        mediaMutationsClient.deleteActivity(activityId)
 }

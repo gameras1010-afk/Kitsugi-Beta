@@ -3,6 +3,7 @@ package com.kitsugi.animelist.data.settings
 data class AppSettings(
     val selectedThemeId: String = "mint",
     val showAdultContent: Boolean = false,
+    val blurAdultMedia: Boolean = false,
     val selectedListLayoutId: String = "comfortable",
     val profileName: String = "Profilim",
     val listTitle: String = "Anime & Manga Listem",
@@ -78,6 +79,7 @@ data class AppSettings(
     val animeSkipClientId: String = "",
     // Açıklama Otomatik Çevirisi: Türkçe veri bulunamazsa Google Translate devreye girer
     val autoTranslateEnabled: Boolean = false,
+    val preferredTranslator: String = "DEFAULT",
     // TV ana sayfa yerleşim düzeni (classic / modern / grid)
     val selectedHomeLayoutId: String = "classic",
     // AFR (Auto Frame Rate) ayarları
@@ -118,6 +120,10 @@ data class AppSettings(
     // ─── Yayın Takvimi Bildirimleri (T3.3) ──────────────────────────────────
     // true = "İzliyorum" listesindeki animeler yayınlandığında bildirim gönder
     val airingNotificationsEnabled: Boolean = false,
+    val aniListNotificationsEnabled: Boolean = false,
+    val malNotificationsEnabled: Boolean = false,
+    val simklNotificationsEnabled: Boolean = false,
+    val notificationInterval: Int = 180, // Dakika bazında
     val searchHistoryEnabled: Boolean = true,
     // ─── T1.7 – StillWatching + PostPlayMode + AutoplaySessionRules ──────────
     /** true = N dakika hareketsizlik sonrası "Hâlâ izliyor musun?" sorusu gelir */

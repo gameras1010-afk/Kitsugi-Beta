@@ -91,7 +91,18 @@ class ApiResultDetailViewModel(application: Application) : AndroidViewModel(appl
     // --- Cache / Lock Key ---
     private var currentFetchKey: String? = null
 
-    fun loadResult(result: JikanSearchResult, showAnimeLogos: Boolean) {
+    fun loadResult(result: JikanSearchResult, showAnimeLogos: Boolean, forceRefresh: Boolean = false) {
+        if (forceRefresh) {
+            currentFetchKey = null
+            DetailCache.removeMediaDetail(result.source, result.malId)
+            DetailCache.removeMediaCharacters(result.source, result.malId)
+            DetailCache.removeMediaStaff(result.source, result.malId)
+            DetailCache.removeMediaRelations(result.source, result.malId)
+            DetailCache.removeMediaRecommendations(result.source, result.malId)
+            DetailCache.removeMediaReviews(result.source, result.malId)
+            DetailCache.removeMediaEpisodes(result.source, result.malId)
+        }
+
         val newKey = "${result.source}:${result.malId}:${result.type.name}"
         if (newKey == currentFetchKey) {
             Log.d(TAG, "loadResult: Cache hit for key=$newKey — skipping")

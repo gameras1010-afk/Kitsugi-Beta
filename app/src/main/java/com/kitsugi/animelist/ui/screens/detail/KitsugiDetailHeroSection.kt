@@ -7,15 +7,22 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
@@ -24,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -38,6 +46,7 @@ import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayTitle
 import com.kitsugi.animelist.utils.copyOnDoubleTap
+import com.kitsugi.animelist.utils.ShareUtils
 import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -47,10 +56,13 @@ internal fun DetailHero(
     logoUrl: String?,
     onBackClick: () -> Unit,
     titleLanguage: String,
-    onPosterClick: (String) -> Unit = {}
+    blurAdultMedia: Boolean = false,
+    onPosterClick: (String) -> Unit = {},
+    onShareClick: (() -> Unit)? = null
 ) {
     val accentColor = LocalKitsugiAccent.current
     val statusColor = statusColor(entry.status)
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -63,7 +75,11 @@ internal fun DetailHero(
                 contentDescription = entry.getDisplayTitle(titleLanguage),
                 modifier = Modifier
                     .fillMaxSize()
-                    .tvClickable { onPosterClick(entry.imageUrl) },
+                    .tvClickable { onPosterClick(entry.imageUrl) }
+                    .then(
+                        if (blurAdultMedia && entry.isAdult) Modifier.blur(24.dp)
+                        else Modifier
+                    ),
                 contentScale = ContentScale.Crop
             )
         } else {
@@ -97,17 +113,53 @@ internal fun DetailHero(
                 )
         )
 
-        TextButton(
-            onClick = onBackClick,
+        // ── Top action bar: Back (left) + Share (right) ───────────────────────
+        Row(
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(start = 12.dp, top = 24.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Geri",
-                color = KitsugiColors.TextPrimary,
-                fontWeight = FontWeight.Bold
-            )
+            // Geri butonu
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(KitsugiColors.Background.copy(alpha = 0.45f)),
+                contentAlignment = Alignment.Center
+            ) {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                        contentDescription = "Geri",
+                        tint = KitsugiColors.TextPrimary
+                    )
+                }
+            }
+
+            // Paylaş butonu
+            val shareAction: () -> Unit = onShareClick ?: {
+                val mediaId = entry.malId ?: entry.id
+                val url = ShareUtils.buildMediaUrl(entry.source, mediaId, entry.type)
+                ShareUtils.shareText(context, entry.title, url)
+            }
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(KitsugiColors.Background.copy(alpha = 0.45f)),
+                contentAlignment = Alignment.Center
+            ) {
+                IconButton(onClick = shareAction) {
+                    Icon(
+                        imageVector = Icons.Rounded.Share,
+                        contentDescription = "Paylaş",
+                        tint = KitsugiColors.TextPrimary
+                    )
+                }
+            }
         }
 
         Column(

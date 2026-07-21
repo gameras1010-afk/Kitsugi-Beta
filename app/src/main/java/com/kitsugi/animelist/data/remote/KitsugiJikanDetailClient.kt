@@ -228,6 +228,12 @@ internal object KitsugiJikanDetailClient {
 
                 val scoreDouble = data.optDouble("score", Double.NaN)
                 val score = if (scoreDouble.isNaN()) null else scoreDouble.toInt().coerceIn(0, 10)
+                val meanScoreInt = if (scoreDouble.isNaN()) null else (scoreDouble * 10).toInt()
+                val scoredBy = data.optionalPositiveInt("scored_by")
+                val members = data.optionalPositiveInt("members")
+                val favorites = data.optionalPositiveInt("favorites")
+                val rank = data.optionalPositiveInt("rank")
+                val popularityRank = data.optionalPositiveInt("popularity")
 
                 val directYear = data.optionalPositiveInt("year")
                 val year = if (directYear != null) {
@@ -334,7 +340,15 @@ internal object KitsugiJikanDetailClient {
                     total = total,
                     isAdult = isAdult,
                     streamingLinks = streamingLinks,
-                    externalLinks = externalLinks
+                    externalLinks = externalLinks,
+                    meanScore = meanScoreInt,
+                    averageScore = meanScoreInt,
+                    popularity = members,
+                    favorites = favorites,
+                    rank = rank,
+                    popularityRank = popularityRank,
+                    scoredBy = scoredBy,
+                    members = members
                 )
             }
         }.getOrNull()

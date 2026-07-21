@@ -29,9 +29,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -59,6 +61,7 @@ fun KitsugiMediaEntryCard(
     titleLanguage: String = "ROMAJI",
     scoreFormat: String = "POINT_10",
     hideScores: Boolean = false,
+    blurAdultMedia: Boolean = false,
     onPosterLongClick: ((String) -> Unit)? = null
 ) {
     when (layoutId) {
@@ -70,6 +73,7 @@ fun KitsugiMediaEntryCard(
             titleLanguage = titleLanguage,
             scoreFormat = scoreFormat,
             hideScores = hideScores,
+            blurAdultMedia = blurAdultMedia,
             onPosterLongClick = onPosterLongClick
         )
 
@@ -81,6 +85,7 @@ fun KitsugiMediaEntryCard(
             titleLanguage = titleLanguage,
             scoreFormat = scoreFormat,
             hideScores = hideScores,
+            blurAdultMedia = blurAdultMedia,
             onPosterLongClick = onPosterLongClick
         )
 
@@ -92,6 +97,7 @@ fun KitsugiMediaEntryCard(
             titleLanguage = titleLanguage,
             scoreFormat = scoreFormat,
             hideScores = hideScores,
+            blurAdultMedia = blurAdultMedia,
             onPosterLongClick = onPosterLongClick
         )
 
@@ -102,6 +108,7 @@ fun KitsugiMediaEntryCard(
             titleLanguage = titleLanguage,
             scoreFormat = scoreFormat,
             hideScores = hideScores,
+            blurAdultMedia = blurAdultMedia,
             onPosterLongClick = onPosterLongClick
         )
 
@@ -113,6 +120,7 @@ fun KitsugiMediaEntryCard(
             titleLanguage = titleLanguage,
             scoreFormat = scoreFormat,
             hideScores = hideScores,
+            blurAdultMedia = blurAdultMedia,
             onPosterLongClick = onPosterLongClick
         )
     }
@@ -128,6 +136,7 @@ private fun CompactMediaEntryCard(
     titleLanguage: String,
     scoreFormat: String,
     hideScores: Boolean,
+    blurAdultMedia: Boolean,
     onPosterLongClick: ((String) -> Unit)?
 ) {
     val statusColor = statusColor(entry.status)
@@ -149,6 +158,7 @@ private fun CompactMediaEntryCard(
                 entry = entry,
                 width = 50,
                 height = 70,
+                blurAdultMedia = blurAdultMedia,
                 onPosterLongClick = onPosterLongClick,
                 onPosterClick = onClick
             )
@@ -281,6 +291,7 @@ private fun ComfortableMediaEntryCard(
     titleLanguage: String,
     scoreFormat: String,
     hideScores: Boolean,
+    blurAdultMedia: Boolean,
     onPosterLongClick: ((String) -> Unit)?
 ) {
     val statusColor = statusColor(entry.status)
@@ -302,6 +313,7 @@ private fun ComfortableMediaEntryCard(
                 entry = entry,
                 width = 72,
                 height = 112,
+                blurAdultMedia = blurAdultMedia,
                 onPosterLongClick = onPosterLongClick,
                 onPosterClick = onClick
             )
@@ -388,7 +400,16 @@ private fun ComfortableMediaEntryCard(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+
+                EpisodeProgressBar(
+                    progress = entry.progress,
+                    total = entry.total,
+                    color = statusColor,
+                    modifier = Modifier.fillMaxWidth(0.95f)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -435,6 +456,7 @@ private fun LargeMediaEntryCard(
     titleLanguage: String,
     scoreFormat: String,
     hideScores: Boolean,
+    blurAdultMedia: Boolean,
     onPosterLongClick: ((String) -> Unit)?
 ) {
     val statusColor = statusColor(entry.status)
@@ -467,7 +489,11 @@ private fun LargeMediaEntryCard(
                             model = imageUrl,
                             contentDescription = entry.title,
                             modifier = Modifier
-                                .fillMaxSize(),
+                                .fillMaxSize()
+                                .then(
+                                    if (blurAdultMedia && entry.isAdult) Modifier.blur(24.dp)
+                                    else Modifier
+                                ),
                             contentScale = ContentScale.Crop
                         )
                     } else {
@@ -608,6 +634,7 @@ private fun LargeMediaEntryCard(
                 LargePosterView(
                     entry = entry,
                     statusColor = statusColor,
+                    blurAdultMedia = blurAdultMedia,
                     onPosterLongClick = onPosterLongClick,
                     onPosterClick = onClick
                 )
@@ -756,6 +783,7 @@ private fun PosterView(
     entry: MediaEntry,
     width: Int,
     height: Int,
+    blurAdultMedia: Boolean = false,
     onPosterLongClick: ((String) -> Unit)? = null,
     onPosterClick: (() -> Unit)? = null
 ) {
@@ -788,7 +816,12 @@ private fun PosterView(
             AsyncImage(
                 model = imageUrl,
                 contentDescription = entry.title,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(
+                        if (blurAdultMedia && entry.isAdult) Modifier.blur(24.dp)
+                        else Modifier
+                    ),
                 contentScale = ContentScale.Crop
             )
         } else {
@@ -807,6 +840,7 @@ private fun PosterView(
 private fun LargePosterView(
     entry: MediaEntry,
     statusColor: Color,
+    blurAdultMedia: Boolean = false,
     onPosterLongClick: ((String) -> Unit)? = null,
     onPosterClick: (() -> Unit)? = null
 ) {
@@ -837,7 +871,12 @@ private fun LargePosterView(
             AsyncImage(
                 model = imageUrl,
                 contentDescription = entry.title,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(
+                        if (blurAdultMedia && entry.isAdult) Modifier.blur(24.dp)
+                        else Modifier
+                    ),
                 contentScale = ContentScale.Crop
             )
         } else {
@@ -878,6 +917,35 @@ private fun StatusPill(
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             maxLines = 1
+        )
+    }
+}
+
+@Composable
+private fun EpisodeProgressBar(
+    progress: Int,
+    total: Int?,
+    color: Color = LocalKitsugiAccent.current,
+    modifier: Modifier = Modifier
+) {
+    val fraction = remember(progress, total) {
+        val maxVal = if (total != null && total > 0) total else if (progress > 0) progress else 1
+        (progress.toFloat() / maxVal.toFloat()).coerceIn(0f, 1f)
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(4.dp)
+            .clip(RoundedCornerShape(999.dp))
+            .background(KitsugiColors.SurfaceSoft)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(fraction)
+                .height(4.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(color)
         )
     }
 }
@@ -968,6 +1036,7 @@ private fun MinimalistMediaEntryCard(
     titleLanguage: String,
     scoreFormat: String,
     hideScores: Boolean,
+    blurAdultMedia: Boolean,
     onPosterLongClick: ((String) -> Unit)?
 ) {
     val statusColor = statusColor(entry.status)
@@ -989,6 +1058,7 @@ private fun MinimalistMediaEntryCard(
                 entry = entry,
                 width = 72,
                 height = 112,
+                blurAdultMedia = blurAdultMedia,
                 onPosterLongClick = onPosterLongClick,
                 onPosterClick = onClick
             )
@@ -1111,6 +1181,7 @@ private fun PosterGridMediaEntryCard(
     titleLanguage: String,
     scoreFormat: String,
     hideScores: Boolean,
+    blurAdultMedia: Boolean,
     onPosterLongClick: ((String) -> Unit)?
 ) {
     val statusColor = statusColor(entry.status)
@@ -1148,7 +1219,12 @@ private fun PosterGridMediaEntryCard(
                 AsyncImage(
                     model = imageUrl,
                     contentDescription = entry.getDisplayTitle(titleLanguage),
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(
+                            if (blurAdultMedia && entry.isAdult) Modifier.blur(24.dp)
+                            else Modifier
+                        ),
                     contentScale = ContentScale.Crop
                 )
             } else {

@@ -32,6 +32,7 @@ fun FavouritesScreen(
     titleLanguage: String,
     scoreFormat: String,
     hideScores: Boolean,
+    blurAdultMedia: Boolean = false,
     onBackClick: () -> Unit,
     onEntryClick: (MediaEntry) -> Unit
 ) {
@@ -193,7 +194,8 @@ fun FavouritesScreen(
                             onClick = { onEntryClick(entry) },
                             titleLanguage = titleLanguage,
                             scoreFormat = scoreFormat,
-                            hideScores = hideScores
+                            hideScores = hideScores,
+                            blurAdultMedia = blurAdultMedia
                         )
                     }
                 }

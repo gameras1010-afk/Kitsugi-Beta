@@ -40,12 +40,21 @@ internal object KitsugiAniListDetailClient {
                     streamingEpisodes { title thumbnail url site }
                     coverImage { extraLarge large }
                     bannerImage
+                    meanScore
                     averageScore
+                    popularity
+                    favourites
                     episodes
                     chapters
                     isAdult
                     tags { name rank isMediaSpoiler }
                     externalLinks { url site language type }
+                    nextAiringEpisode { episode timeUntilAiring }
+                    rankings { id rank type format year season allTime context }
+                    stats {
+                        statusDistribution { amount }
+                        scoreDistribution { amount }
+                    }
                 }
             }
         """.trimIndent()
@@ -200,8 +209,57 @@ internal object KitsugiAniListDetailClient {
                 cover.optNullableString("extraLarge") ?: cover.optNullableString("large")
             }
 
+            val meanScore = media.optionalPositiveInt("meanScore")
             val averageScore = media.optionalPositiveInt("averageScore")
-            val score = averageScore?.let { (it / 10.0).toInt().coerceIn(0, 10) }
+            val popularity = media.optionalPositiveInt("popularity")
+            val favorites = media.optionalPositiveInt("favourites")
+
+            val nextAiringObj = media.optJSONObject("nextAiringEpisode")
+            val nextAiringEpisode = if (nextAiringObj != null) {
+                val ep = nextAiringObj.optInt("episode")
+                val timeSec = nextAiringObj.optLong("timeUntilAiring")
+                val days = timeSec / 86400
+                val hours = (timeSec % 86400) / 3600
+                val timeText = when {
+                    days > 0 -> "$days gün"
+                    hours > 0 -> "$hours saat"
+                    else -> "yakında"
+                }
+                "Bölüm $ep, $timeText sonra yayında"
+            } else null
+
+            var parsedRank: Int? = null
+            var parsedPopularityRank: Int? = null
+            media.optJSONArray("rankings")?.let { arr ->
+                for (i in 0 until arr.length()) {
+                    val r = arr.getJSONObject(i)
+                    val rType = r.optString("type")
+                    val rVal = r.optionalPositiveInt("rank")
+                    val allTime = r.optBoolean("allTime", false)
+                    if (rType == "RATED" && (allTime || parsedRank == null)) {
+                        parsedRank = rVal
+                    }
+                    if (rType == "POPULAR" && (allTime || parsedPopularityRank == null)) {
+                        parsedPopularityRank = rVal
+                    }
+                }
+            }
+
+            var totalScoredBy: Int? = null
+            media.optJSONObject("stats")?.optJSONArray("scoreDistribution")?.let { arr ->
+                var sum = 0
+                for (i in 0 until arr.length()) sum += arr.getJSONObject(i).optInt("amount")
+                if (sum > 0) totalScoredBy = sum
+            }
+
+            var totalMembers: Int? = null
+            media.optJSONObject("stats")?.optJSONArray("statusDistribution")?.let { arr ->
+                var sum = 0
+                for (i in 0 until arr.length()) sum += arr.getJSONObject(i).optInt("amount")
+                if (sum > 0) totalMembers = sum
+            }
+
+            val score = (meanScore ?: averageScore)?.let { (it / 10.0).toInt().coerceIn(0, 10) }
 
             val year = media.optJSONObject("startDate")?.optionalPositiveInt("year") ?: media.optInt("seasonYear").takeIf { it > 0 }
 
@@ -331,7 +389,16 @@ internal object KitsugiAniListDetailClient {
                 endings = endings,
                 tmdbId = extractedTmdbId,
                 tmdbSeason = extractedTmdbSeason,
-                pictures = aniListPictures
+                pictures = aniListPictures,
+                nextAiringEpisode = nextAiringEpisode,
+                meanScore = meanScore,
+                averageScore = averageScore,
+                popularity = popularity,
+                favorites = favorites,
+                rank = parsedRank,
+                popularityRank = parsedPopularityRank,
+                scoredBy = totalScoredBy,
+                members = totalMembers ?: popularity
             )
         }.getOrNull()
     }

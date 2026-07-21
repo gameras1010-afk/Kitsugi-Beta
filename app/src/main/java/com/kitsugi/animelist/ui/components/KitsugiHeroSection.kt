@@ -44,6 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
@@ -97,7 +98,8 @@ fun KitsugiHeroSection(
     scoreFormat: String = "POINT_10",
     hideScores: Boolean = false,
     showAnimeLogos: Boolean = false,
-    isVisible: Boolean = true
+    isVisible: Boolean = true,
+    blurAdultMedia: Boolean = false
 ) {
     if (items.isEmpty()) return
 
@@ -357,6 +359,10 @@ fun KitsugiHeroSection(
                         contentDescription = displayTitle,
                         modifier = Modifier
                             .fillMaxSize()
+                            .then(
+                                if (blurAdultMedia && item.isAdult) Modifier.blur(24.dp)
+                                else Modifier
+                            )
                             .graphicsLayer {
                                 alpha = layer.visibility
                                 translationX = -layer.offset * heroWidthPx * HERO_BACKGROUND_PARALLAX

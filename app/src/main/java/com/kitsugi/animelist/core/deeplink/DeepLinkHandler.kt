@@ -2,14 +2,18 @@ package com.kitsugi.animelist.core.deeplink
 
 import android.content.Intent
 import android.net.Uri
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 /**
  * B1.1 - Deep-Link Handler
  *
- * Parsed TvDeepLink sonucunu pending state'e park eder.
- * TvRootScreen veya ViewModel bu state'i okuyup drain eder.
+ * Parsed TvDeepLink sonucunu pending state'e park eder ve deepLinkFlow uzerinden yayinlar.
+ * TvRootScreen, AppRoot veya ViewModel bu state'i okuyup drain eder.
  *
- * Tasarim karari: Handler, UI katmanina (TvNavigationState) dogrudan bagimli degil.
+ * Tasarim karari: Handler, UI katmanina dogrudan bagimli degil.
  * Bu sayede Activity seviyesinde kullanilabilir; circular dep riski yoktur.
  *
  * Auth callbackler (malapp://, Kitsugianimelist://tv-login) ayri yonetilir;
@@ -20,6 +24,12 @@ object DeepLinkHandler {
     // Thread-safe pending link - Activity ve Compose thread'leri arasinda guvenli.
     @Volatile
     private var pendingDeepLink: TvDeepLink? = null
+
+    private val _deepLinkFlow = MutableSharedFlow<TvDeepLink>(
+        replay = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    val deepLinkFlow: SharedFlow<TvDeepLink> = _deepLinkFlow.asSharedFlow()
 
     // -- Public API -----------------------------------------------------------
 
@@ -36,7 +46,11 @@ object DeepLinkHandler {
         return when (link) {
             TvDeepLink.None -> false
             TvDeepLink.Auth -> true  // Auth yonetimi caller'a
-            else            -> { pendingDeepLink = link; false }
+            else            -> {
+                pendingDeepLink = link
+                _deepLinkFlow.tryEmit(link)
+                false
+            }
         }
     }
 
@@ -48,6 +62,7 @@ object DeepLinkHandler {
         val link = DeepLinkParser.parse(uri)
         if (link == TvDeepLink.None || link == TvDeepLink.Auth) return
         pendingDeepLink = link
+        _deepLinkFlow.tryEmit(link)
     }
 
     /**
@@ -66,3 +81,4 @@ object DeepLinkHandler {
     /** Pending'i acikca temizler (logout / profile switch). */
     fun clearPending() { pendingDeepLink = null }
 }
+

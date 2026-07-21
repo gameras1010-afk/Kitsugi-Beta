@@ -339,12 +339,42 @@ private fun resolveRating(
     targetSeason: Int?,
     episodeRatings: Map<Pair<Int, Int>, Double>
 ): Double? {
-    if (episode.episodeNumber == null) return null
+    val epNum = episode.episodeNumber ?: return null
     val sNum = targetSeason ?: episode.seasonNumber ?: 1
-    return episodeRatings[sNum to episode.episodeNumber]
-        ?: episodeRatings[1 to episode.episodeNumber]
-        ?: episodeRatings.keys.firstOrNull { it.second == episode.episodeNumber }
-            ?.let { episodeRatings[it] }
+
+    // 1. Doğrudan sezon numarası ve bölüm numarası eşleşmesi
+    val direct = episodeRatings[sNum to epNum]
+        ?: episodeRatings[1 to epNum]
+    if (direct != null) return direct
+
+    // 2. Herhangi bir sezonda aynı bölüm numarasının doğrudan bulunması
+    val simpleMatch = episodeRatings.keys.firstOrNull { it.second == epNum }?.let { episodeRatings[it] }
+    if (simpleMatch != null) return simpleMatch
+
+    // 3. Mutlak bölüm numarası (Absolute Episode Number) → Sezon İçi Bölüm Hesaplama
+    // (Örn: MHA 26. bölüm → 2. Sezon 13. Bölüm gibi birikimli sezon aralıklarıyla eşleştirme)
+    if (episodeRatings.isNotEmpty() && epNum > 0) {
+        val seasonMaxEpisodes = episodeRatings.keys
+            .filter { it.first >= 1 }
+            .groupBy { it.first }
+            .mapValues { entry -> entry.value.maxOf { it.second } }
+            .toSortedMap()
+
+        if (seasonMaxEpisodes.isNotEmpty()) {
+            var cumulative = 0
+            for ((season, maxEpInSeason) in seasonMaxEpisodes) {
+                if (epNum <= cumulative + maxEpInSeason) {
+                    val inSeasonEp = epNum - cumulative
+                    val mappedRating = episodeRatings[season to inSeasonEp]
+                    if (mappedRating != null) return mappedRating
+                    break
+                }
+                cumulative += maxEpInSeason
+            }
+        }
+    }
+
+    return null
 }
 
 // ---------------------------------------------------------------------------

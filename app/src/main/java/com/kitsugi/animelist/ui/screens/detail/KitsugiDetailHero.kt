@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -54,6 +55,7 @@ fun KitsugiDetailHero(
     scoreLabel: String? = null,
     isFavorite: Boolean = false,
     alreadyInList: Boolean = false,
+    blurAdultMedia: Boolean = false
 ) {
     val accentColor = LocalKitsugiAccent.current
     val fallbackPlaceholderColor = statusColor ?: accentColor
@@ -73,7 +75,10 @@ fun KitsugiDetailHero(
             AsyncImage(
                 model = imageUrl,
                 contentDescription = title,
-                modifier = imageModifier,
+                modifier = imageModifier.then(
+                    if (blurAdultMedia && isAdult) Modifier.blur(24.dp)
+                    else Modifier
+                ),
                 contentScale = ContentScale.Crop
             )
         } else {

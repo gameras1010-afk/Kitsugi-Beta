@@ -53,6 +53,7 @@ fun KitsugiPreferencesSettingsDialog(
     onCustomAccentColorChanged: (Int) -> Unit,
     onDefaultTabSelected: (String) -> Unit,
     onAdultContentChanged: (Boolean) -> Unit,
+    onBlurAdultMediaChanged: (Boolean) -> Unit = {},
     onShowAnimeLogosChanged: (Boolean) -> Unit,
     onListLayoutSelected: (String) -> Unit,
     onTitleLanguageSelected: (String) -> Unit,
@@ -60,11 +61,16 @@ fun KitsugiPreferencesSettingsDialog(
     onHideScoresChanged: (Boolean) -> Unit,
     onHomeLayoutSelected: (String) -> Unit,
     onAutoTranslateEnabledChanged: (Boolean) -> Unit,
+    onPreferredTranslatorSelected: (String) -> Unit = {},
     onDismiss: () -> Unit,
     onAppLanguageSelected: (String) -> Unit = {},
     onFixedNavBarChanged: (Boolean) -> Unit = {},
     // T3.3: Yayın takvimi bildirimleri
     onAiringNotificationsChanged: (Boolean) -> Unit = {},
+    onAniListNotificationsChanged: (Boolean) -> Unit = {},
+    onMalNotificationsChanged: (Boolean) -> Unit = {},
+    onSimklNotificationsChanged: (Boolean) -> Unit = {},
+    onNotificationIntervalChanged: (Int) -> Unit = {},
     onSearchHistoryEnabledChanged: (Boolean) -> Unit = {},
     onSplashAnimationEnabledChanged: (Boolean) -> Unit = {},
     onSplashSoundEnabledChanged: (Boolean) -> Unit = {},
@@ -169,6 +175,7 @@ fun KitsugiPreferencesSettingsDialog(
                         onDefaultTabSelected = onDefaultTabSelected,
                         onHomeLayoutSelected = onHomeLayoutSelected,
                         onAdultContentChanged = onAdultContentChanged,
+                        onBlurAdultMediaChanged = onBlurAdultMediaChanged,
                         onShowAnimeLogosChanged = onShowAnimeLogosChanged,
                         onAppLanguageSelected = onAppLanguageSelected,
                         onFixedNavBarChanged = onFixedNavBarChanged,
@@ -183,7 +190,12 @@ fun KitsugiPreferencesSettingsDialog(
                         onScoreFormatSelected = onScoreFormatSelected,
                         onHideScoresChanged = onHideScoresChanged,
                         onAutoTranslateEnabledChanged = onAutoTranslateEnabledChanged,
+                        onPreferredTranslatorSelected = onPreferredTranslatorSelected,
                         onAiringNotificationsChanged = onAiringNotificationsChanged,
+                        onAniListNotificationsChanged = onAniListNotificationsChanged,
+                        onMalNotificationsChanged = onMalNotificationsChanged,
+                        onSimklNotificationsChanged = onSimklNotificationsChanged,
+                        onNotificationIntervalChanged = onNotificationIntervalChanged,
                         onSearchHistoryEnabledChanged = onSearchHistoryEnabledChanged,
                         accentColor = accentColor
                     )
@@ -224,6 +236,7 @@ private fun AppearanceTab(
     onDefaultTabSelected: (String) -> Unit,
     onHomeLayoutSelected: (String) -> Unit,
     onAdultContentChanged: (Boolean) -> Unit,
+    onBlurAdultMediaChanged: (Boolean) -> Unit = {},
     onShowAnimeLogosChanged: (Boolean) -> Unit,
     onAppLanguageSelected: (String) -> Unit,
     onFixedNavBarChanged: (Boolean) -> Unit,
@@ -239,6 +252,7 @@ private fun AppearanceTab(
     val defaultTab = appSettings.defaultTab
     val selectedHomeLayoutId = appSettings.selectedHomeLayoutId
     val showAdultContent = appSettings.showAdultContent
+    val blurAdultMedia = appSettings.blurAdultMedia
     val showAnimeLogos = appSettings.showAnimeLogos
     val fixedNavBar = appSettings.fixedNavBar
     val splashAnimationEnabled = appSettings.splashAnimationEnabled
@@ -526,6 +540,17 @@ private fun AppearanceTab(
             KitsugiSettingsDivider()
 
             KitsugiSettingsSwitchItem(
+                title = stringResource(R.string.settings_blur_adult),
+                description = if (blurAdultMedia) stringResource(R.string.settings_blur_adult_enabled_desc) else stringResource(R.string.settings_blur_adult_disabled_desc),
+                icon = Icons.Rounded.Palette,
+                iconColor = accentColor,
+                checked = blurAdultMedia,
+                onCheckedChange = onBlurAdultMediaChanged
+            )
+
+            KitsugiSettingsDivider()
+
+            KitsugiSettingsSwitchItem(
                 title = stringResource(R.string.settings_anime_logos),
                 description = if (showAnimeLogos) stringResource(R.string.settings_anime_logos_enabled_desc) else stringResource(R.string.settings_anime_logos_disabled_desc),
                 icon = Icons.Rounded.Palette,
@@ -582,7 +607,12 @@ private fun ListScoreTab(
     onScoreFormatSelected: (String) -> Unit,
     onHideScoresChanged: (Boolean) -> Unit,
     onAutoTranslateEnabledChanged: (Boolean) -> Unit,
+    onPreferredTranslatorSelected: (String) -> Unit = {},
     onAiringNotificationsChanged: (Boolean) -> Unit = {},
+    onAniListNotificationsChanged: (Boolean) -> Unit = {},
+    onMalNotificationsChanged: (Boolean) -> Unit = {},
+    onSimklNotificationsChanged: (Boolean) -> Unit = {},
+    onNotificationIntervalChanged: (Int) -> Unit = {},
     onSearchHistoryEnabledChanged: (Boolean) -> Unit = {},
     accentColor: Color
 ) {
@@ -631,6 +661,30 @@ private fun ListScoreTab(
         }
     } else null
 
+    val aniListPermissionLauncher = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission()
+        ) { granted ->
+            if (granted) onAniListNotificationsChanged(true)
+        }
+    } else null
+
+    val malPermissionLauncher = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission()
+        ) { granted ->
+            if (granted) onMalNotificationsChanged(true)
+        }
+    } else null
+
+    val simklPermissionLauncher = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission()
+        ) { granted ->
+            if (granted) onSimklNotificationsChanged(true)
+        }
+    } else null
+
     fun handleAiringNotificationsToggle(enabled: Boolean) {
         if (!enabled) {
             onAiringNotificationsChanged(false)
@@ -647,6 +701,63 @@ private fun ListScoreTab(
             }
         } else {
             onAiringNotificationsChanged(true)
+        }
+    }
+
+    fun handleAniListNotificationsToggle(enabled: Boolean) {
+        if (!enabled) {
+            onAniListNotificationsChanged(false)
+            return
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val hasPermission = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+            if (hasPermission) {
+                onAniListNotificationsChanged(true)
+            } else {
+                aniListPermissionLauncher?.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else {
+            onAniListNotificationsChanged(true)
+        }
+    }
+
+    fun handleMalNotificationsToggle(enabled: Boolean) {
+        if (!enabled) {
+            onMalNotificationsChanged(false)
+            return
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val hasPermission = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+            if (hasPermission) {
+                onMalNotificationsChanged(true)
+            } else {
+                malPermissionLauncher?.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else {
+            onMalNotificationsChanged(true)
+        }
+    }
+
+    fun handleSimklNotificationsToggle(enabled: Boolean) {
+        if (!enabled) {
+            onSimklNotificationsChanged(false)
+            return
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val hasPermission = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+            if (hasPermission) {
+                onSimklNotificationsChanged(true)
+            } else {
+                simklPermissionLauncher?.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else {
+            onSimklNotificationsChanged(true)
         }
     }
 
@@ -797,6 +908,92 @@ private fun ListScoreTab(
 
             KitsugiSettingsDivider()
 
+            val preferredTranslatorOptions = listOf(
+                KitsugiChoiceOption(id = "DEFAULT", title = "Varsayılan", description = "Tüm çeviri uygulamalarını sırayla dener"),
+                KitsugiChoiceOption(id = "GOOGLE", title = "Google Translate", description = "Google Çeviri uygulamasını kullanır"),
+                KitsugiChoiceOption(id = "DEEPL", title = "DeepL", description = "DeepL uygulamasını kullanır"),
+                KitsugiChoiceOption(id = "TRANSLATE_YOU", title = "TranslateYou", description = "TranslateYou uygulamasını kullanır")
+            )
+            var showTranslatorDialog by remember { mutableStateOf(false) }
+
+            KitsugiSettingsListItem(
+                title = "Çevirici",
+                description = "Metin çevirilerinde kullanılacak harici çeviri uygulamasını seçin",
+                value = preferredTranslatorOptions.find { it.id == appSettings.preferredTranslator }?.title ?: "Varsayılan",
+                icon = Icons.Rounded.Translate,
+                iconColor = accentColor,
+                onClick = { showTranslatorDialog = true }
+            )
+
+            if (showTranslatorDialog) {
+                AlertDialog(
+                    onDismissRequest = { showTranslatorDialog = false },
+                    containerColor = KitsugiColors.surface,
+                    title = {
+                        Text(
+                            text = "Translator",
+                            color = KitsugiColors.textPrimary,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    text = {
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            preferredTranslatorOptions.forEach { option ->
+                                val isSelected = option.id == appSettings.preferredTranslator
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(if (isSelected) KitsugiColors.surfaceSoft else Color.Transparent)
+                                        .tvClickable(shape = RoundedCornerShape(12.dp)) {
+                                            onPreferredTranslatorSelected(option.id)
+                                            showTranslatorDialog = false
+                                        }
+                                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    RadioButton(
+                                        selected = isSelected,
+                                        onClick = {
+                                            onPreferredTranslatorSelected(option.id)
+                                            showTranslatorDialog = false
+                                        },
+                                        colors = RadioButtonDefaults.colors(
+                                            selectedColor = accentColor,
+                                            unselectedColor = KitsugiColors.textMuted
+                                        )
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Column {
+                                        Text(
+                                            text = option.title,
+                                            color = KitsugiColors.textPrimary,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                        )
+                                        if (option.description.isNotBlank()) {
+                                            Text(
+                                                text = option.description,
+                                                color = KitsugiColors.textSecondary,
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showTranslatorDialog = false }) {
+                            Text("Kapat", color = accentColor, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                )
+            }
+
+            KitsugiSettingsDivider()
+
             KitsugiSettingsSwitchItem(
                 title = stringResource(R.string.settings_airing_notifications),
                 description = if (appSettings.airingNotificationsEnabled)
@@ -808,6 +1005,136 @@ private fun ListScoreTab(
                 checked = appSettings.airingNotificationsEnabled,
                 onCheckedChange = { handleAiringNotificationsToggle(it) }
             )
+
+            KitsugiSettingsDivider()
+
+            KitsugiSettingsSwitchItem(
+                title = "AniList Bildirimleri",
+                description = if (appSettings.aniListNotificationsEnabled)
+                    "Okunmamış AniList bildirimleri arka planda kontrol edilir"
+                else
+                    "Okunmamış AniList bildirimlerinin arka plan kontrolü devre dışı",
+                icon = Icons.Rounded.Settings,
+                iconColor = accentColor,
+                checked = appSettings.aniListNotificationsEnabled,
+                onCheckedChange = { handleAniListNotificationsToggle(it) }
+            )
+
+            KitsugiSettingsDivider()
+
+            KitsugiSettingsSwitchItem(
+                title = "MyAnimeList Bildirimleri",
+                description = if (appSettings.malNotificationsEnabled)
+                    "MyAnimeList takvimindeki yeni yayınlar arka planda kontrol edilir"
+                else
+                    "MyAnimeList yeni yayın kontrolü devre dışı",
+                icon = Icons.Rounded.Settings,
+                iconColor = accentColor,
+                checked = appSettings.malNotificationsEnabled,
+                onCheckedChange = { handleMalNotificationsToggle(it) }
+            )
+
+            KitsugiSettingsDivider()
+
+            KitsugiSettingsSwitchItem(
+                title = "Simkl Bildirimleri",
+                description = if (appSettings.simklNotificationsEnabled)
+                    "Simkl izleme listesindeki güncellemeler arka planda kontrol edilir"
+                else
+                    "Simkl izleme listesi kontrolü devre dışı",
+                icon = Icons.Rounded.Settings,
+                iconColor = accentColor,
+                checked = appSettings.simklNotificationsEnabled,
+                onCheckedChange = { handleSimklNotificationsToggle(it) }
+            )
+
+            KitsugiSettingsDivider()
+
+            val intervalOptions = listOf(
+                KitsugiChoiceOption(id = "30", title = "30 Dakika", description = "30 dakikada bir kontrol eder"),
+                KitsugiChoiceOption(id = "60", title = "1 Saat", description = "Her saat kontrol eder"),
+                KitsugiChoiceOption(id = "180", title = "3 Saat (Önerilen)", description = "Her 3 saatte bir kontrol eder"),
+                KitsugiChoiceOption(id = "360", title = "6 Saat", description = "Her 6 saatte bir kontrol eder"),
+                KitsugiChoiceOption(id = "720", title = "12 Saat", description = "Günde iki kez kontrol eder"),
+                KitsugiChoiceOption(id = "1440", title = "24 Saat", description = "Günde bir kez kontrol eder")
+            )
+            var showIntervalDialog by remember { mutableStateOf(false) }
+
+            KitsugiSettingsListItem(
+                title = "Bildirim Kontrol Sıklığı",
+                description = "Arka planda yapılacak bildirim kontrollerinin sıklığını belirleyin",
+                value = intervalOptions.find { it.id == appSettings.notificationInterval.toString() }?.title ?: "${appSettings.notificationInterval} Dakika",
+                icon = Icons.Rounded.Settings,
+                iconColor = accentColor,
+                onClick = { showIntervalDialog = true }
+            )
+
+            if (showIntervalDialog) {
+                AlertDialog(
+                    onDismissRequest = { showIntervalDialog = false },
+                    containerColor = KitsugiColors.surface,
+                    title = {
+                        Text(
+                            text = "Kontrol Sıklığı",
+                            color = KitsugiColors.textPrimary,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    text = {
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            intervalOptions.forEach { option ->
+                                val isSelected = option.id == appSettings.notificationInterval.toString()
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(if (isSelected) KitsugiColors.surfaceSoft else Color.Transparent)
+                                        .tvClickable(shape = RoundedCornerShape(12.dp)) {
+                                            onNotificationIntervalChanged(option.id.toInt())
+                                            showIntervalDialog = false
+                                        }
+                                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    RadioButton(
+                                        selected = isSelected,
+                                        onClick = {
+                                            onNotificationIntervalChanged(option.id.toInt())
+                                            showIntervalDialog = false
+                                        },
+                                        colors = RadioButtonDefaults.colors(
+                                            selectedColor = accentColor,
+                                            unselectedColor = KitsugiColors.textMuted
+                                        )
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Column {
+                                        Text(
+                                            text = option.title,
+                                            color = KitsugiColors.textPrimary,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                        )
+                                        if (option.description.isNotBlank()) {
+                                            Text(
+                                                text = option.description,
+                                                color = KitsugiColors.textSecondary,
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showIntervalDialog = false }) {
+                            Text("Kapat", color = accentColor, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                )
+            }
 
             KitsugiSettingsDivider()
 

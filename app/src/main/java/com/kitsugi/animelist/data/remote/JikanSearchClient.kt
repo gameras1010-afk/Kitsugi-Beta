@@ -292,26 +292,56 @@ class JikanSearchClient {
         }
     }
 
-    suspend fun seasonalAnime(page: Int = 1, showAdultContent: Boolean = false): List<JikanSearchResult> {
+    suspend fun seasonalAnime(
+        page: Int = 1,
+        showAdultContent: Boolean = false,
+        year: Int? = null,
+        season: String? = null,
+        sort: String? = null
+    ): List<JikanSearchResult> {
         return withContext(Dispatchers.IO) {
             val calendar = java.util.Calendar.getInstance()
-            val year = calendar.get(java.util.Calendar.YEAR)
-            val month = calendar.get(java.util.Calendar.MONTH)
-            val season = when (month) {
-                java.util.Calendar.DECEMBER, java.util.Calendar.JANUARY, java.util.Calendar.FEBRUARY -> "winter"
-                java.util.Calendar.MARCH, java.util.Calendar.APRIL, java.util.Calendar.MAY -> "spring"
-                java.util.Calendar.JUNE, java.util.Calendar.JULY, java.util.Calendar.AUGUST -> "summer"
-                else -> "fall"
+            val targetYear = year ?: calendar.get(java.util.Calendar.YEAR)
+            val targetSeason = season?.lowercase() ?: run {
+                val month = calendar.get(java.util.Calendar.MONTH)
+                when (month) {
+                    java.util.Calendar.DECEMBER, java.util.Calendar.JANUARY, java.util.Calendar.FEBRUARY -> "winter"
+                    java.util.Calendar.MARCH, java.util.Calendar.APRIL, java.util.Calendar.MAY -> "spring"
+                    java.util.Calendar.JUNE, java.util.Calendar.JULY, java.util.Calendar.AUGUST -> "summer"
+                    else -> "fall"
+                }
             }
+
+            val malSort = when (sort) {
+                "SCORE_DESC", "score" -> "anime_score"
+                "START_DATE_DESC", "start_date" -> "anime_start_date"
+                "END_DATE_DESC" -> "anime_start_date"
+                else -> "anime_num_list_users"
+            }
+
             val offset = (page - 1) * 20
             val fields = "id,title,main_picture,alternative_titles,start_date,mean,num_episodes,media_type,genres,nsfw"
-            val url = "https://api.myanimelist.net/v2/anime/season/$year/$season?limit=20&offset=$offset&fields=$fields&sort=anime_score"
+            val url = "https://api.myanimelist.net/v2/anime/season/$targetYear/$targetSeason?limit=20&offset=$offset&fields=$fields&sort=$malSort"
 
             val results = getOfficialMalRankingOrSeason(url, MediaType.Anime)
             if (results.isNotEmpty()) {
                 results
             } else {
-                runCatching { aniListSearchClient.aniListSeasonalAnime(page, showAdultContent) }.getOrDefault(emptyList())
+                val aniListSort = when (sort) {
+                    "SCORE_DESC", "score" -> listOf("SCORE_DESC")
+                    "START_DATE_DESC", "start_date" -> listOf("START_DATE_DESC")
+                    "END_DATE_DESC" -> listOf("END_DATE_DESC")
+                    else -> listOf("POPULARITY_DESC")
+                }
+                runCatching {
+                    aniListSearchClient.aniListSeasonalAnime(
+                        page = page,
+                        showAdultContent = showAdultContent,
+                        year = targetYear,
+                        season = targetSeason,
+                        sort = aniListSort
+                    )
+                }.getOrDefault(emptyList())
             }
         }
     }
@@ -434,6 +464,10 @@ class JikanSearchClient {
             } else {
                 scoreDouble.toInt().coerceIn(0, 10)
             }
+            val rawScore = if (scoreDouble.isNaN()) null else scoreDouble
+            val rankVal = item.optionalPositiveInt("rank")
+            val membersVal = item.optionalPositiveInt("members")
+            val favoritesVal = item.optionalPositiveInt("favorites")
 
             val total = when (mediaType) {
                 MediaType.Anime, MediaType.Movie, MediaType.TvShow -> item.optionalPositiveInt("episodes")
@@ -482,7 +516,11 @@ class JikanSearchClient {
                         year = year,
                         source = "jikan",
                         titleEnglish = titleEnglish,
-                        titleJapanese = titleJapanese
+                        titleJapanese = titleJapanese,
+                        rank = rankVal,
+                        members = membersVal,
+                        favorites = favoritesVal,
+                        rawScoreDouble = rawScore
                     )
                 )
             }

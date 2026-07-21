@@ -37,6 +37,7 @@ import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
 internal fun KitsugiReviewCard(
     rev: KitsugiReview,
     modifier: Modifier = Modifier.fillMaxWidth(),
+    preferredTranslator: String = "DEFAULT",
     onClick: () -> Unit,
     onHelpfulClick: () -> Unit
 ) {
@@ -94,7 +95,7 @@ internal fun KitsugiReviewCard(
             if (!rev.summary.isNullOrBlank()) {
                 Spacer(modifier = Modifier.width(4.dp))
                 IconButton(
-                    onClick = { context.openTranslator(rev.summary) },
+                    onClick = { context.openTranslator(rev.summary, preferredTranslator) },
                     modifier = Modifier.size(28.dp)
                 ) {
                     Icon(

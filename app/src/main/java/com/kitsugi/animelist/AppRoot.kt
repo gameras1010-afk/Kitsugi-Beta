@@ -267,6 +267,52 @@ fun AppRoot(
 
     LaunchedEffect(Unit) {
         appViewModel.loadFilters(context)
+
+        val handleDeepLinkItem = { link: com.kitsugi.animelist.core.deeplink.TvDeepLink ->
+            when (link) {
+                is com.kitsugi.animelist.core.deeplink.TvDeepLink.Detail -> {
+                    val malIdInt = link.mediaId.toIntOrNull() ?: 0
+                    val syntheticResult = JikanSearchResult(
+                        malId = malIdInt,
+                        title = "Yükleniyor...",
+                        subtitle = "",
+                        type = link.mediaType ?: com.kitsugi.animelist.model.MediaType.Anime,
+                        total = null,
+                        score = null,
+                        isAdult = false,
+                        imageUrl = null,
+                        year = null,
+                        source = link.source
+                    )
+                    navState.navigateToDetail(DetailScreen.ApiResultDetail(syntheticResult))
+                }
+                is com.kitsugi.animelist.core.deeplink.TvDeepLink.Character -> {
+                    navState.navigateToDetail(DetailScreen.CharacterDetail(characterId = link.characterId, source = link.source))
+                }
+                is com.kitsugi.animelist.core.deeplink.TvDeepLink.Staff -> {
+                    navState.navigateToDetail(DetailScreen.StaffDetail(staffId = link.staffId, source = link.source))
+                }
+                is com.kitsugi.animelist.core.deeplink.TvDeepLink.Studio -> {
+                    navState.navigateToDetail(DetailScreen.StudioDetail(studioId = link.studioId, source = link.source))
+                }
+                is com.kitsugi.animelist.core.deeplink.TvDeepLink.UserProfile -> {
+                    appViewModel.selectTab(MainTab.Profile)
+                }
+                is com.kitsugi.animelist.core.deeplink.TvDeepLink.Manga -> {
+                    navState.openMangaBrowse(mediaId = link.mangaId.toIntOrNull())
+                }
+                else -> {}
+            }
+        }
+
+        val pending = com.kitsugi.animelist.core.deeplink.DeepLinkHandler.drainPending()
+        if (pending != null) {
+            handleDeepLinkItem(pending)
+        }
+
+        com.kitsugi.animelist.core.deeplink.DeepLinkHandler.deepLinkFlow.collect { link ->
+            handleDeepLinkItem(link)
+        }
     }
 
     val triggerSearch: (String) -> Unit = { query ->

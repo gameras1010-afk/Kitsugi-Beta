@@ -74,7 +74,14 @@ class KitsugiMediaSocialClient {
                         } else null
                     }
                 }
-                "jikan", "mal" -> fetchStatsFromJikan(externalId, mediaType)
+                "jikan", "mal" -> {
+                    val aniStats = fetchStatsFromAniList(externalId, mediaType)
+                    if (aniStats != null && (aniStats.rankings.isNotEmpty() || aniStats.scoreDistribution.isNotEmpty())) {
+                        aniStats
+                    } else {
+                        fetchStatsFromJikan(externalId, mediaType)
+                    }
+                }
                 "anilist"      -> fetchStatsFromAniList(externalId, mediaType)
                 else           -> null
             }
@@ -103,10 +110,11 @@ class KitsugiMediaSocialClient {
                     }
                 }
                 KitsugiStats(
-                    watching = watching ?: onHold,
+                    watching = watching,
                     completed = completed,
                     planned = planToWatch,
                     dropped = dropped,
+                    paused = onHold,
                     scoreDistribution = scoreList
                 )
             }
@@ -120,6 +128,9 @@ class KitsugiMediaSocialClient {
         val query = """
             query (${'$'}type: MediaType, $idParam) {
                 Media($idFilter, type: ${'$'}type) {
+                    rankings {
+                        id rank type format year season allTime context
+                    }
                     stats {
                         statusDistribution { status amount }
                         scoreDistribution  { score amount }
@@ -134,11 +145,28 @@ class KitsugiMediaSocialClient {
             val response = KitsugiApiBase.executeAniListQuery(query, variables) ?: return@runCatching null
             val root = JSONObject(response)
             val mediaObj = root.optJSONObject("data")?.optJSONObject("Media") ?: return@runCatching null
+            
+            val rankingsArr = mediaObj.optJSONArray("rankings")
+            val rankingsList = mutableListOf<KitsugiRanking>()
+            if (rankingsArr != null) {
+                for (i in 0 until rankingsArr.length()) {
+                    val r = rankingsArr.optJSONObject(i) ?: continue
+                    val rank = r.optInt("rank", 0)
+                    if (rank <= 0) continue
+                    val type = r.optNullableString("type").orEmpty()
+                    val context = r.optNullableString("context").orEmpty()
+                    val allTime = r.optBoolean("allTime", false)
+                    val year = r.optionalPositiveInt("year")
+                    val season = r.optNullableString("season")
+                    rankingsList.add(KitsugiRanking(rank, type, context, allTime, year, season))
+                }
+            }
+
             val statsObj = mediaObj.optJSONObject("stats") ?: return@runCatching null
             val statusDist = statsObj.optJSONArray("statusDistribution")
             val scoreDist  = statsObj.optJSONArray("scoreDistribution")
             var watching: Int? = null; var completed: Int? = null
-            var planned: Int? = null;  var dropped: Int? = null
+            var planned: Int? = null;  var dropped: Int? = null; var paused: Int? = null
             if (statusDist != null) {
                 for (i in 0 until statusDist.length()) {
                     val item = statusDist.optJSONObject(i) ?: continue
@@ -147,6 +175,7 @@ class KitsugiMediaSocialClient {
                         "COMPLETED" -> completed = item.optInt("amount")
                         "PLANNING"  -> planned   = item.optInt("amount")
                         "DROPPED"   -> dropped   = item.optInt("amount")
+                        "PAUSED"    -> paused    = item.optInt("amount")
                     }
                 }
             }
@@ -157,7 +186,15 @@ class KitsugiMediaSocialClient {
                     scoreList.add(KitsugiScoreStat(item.optInt("score"), item.optInt("amount")))
                 }
             }
-            KitsugiStats(watching, completed, planned, dropped, scoreList)
+            KitsugiStats(
+                watching = watching,
+                completed = completed,
+                planned = planned,
+                dropped = dropped,
+                paused = paused,
+                scoreDistribution = scoreList,
+                rankings = rankingsList
+            )
         }.getOrNull()
     }
 

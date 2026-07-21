@@ -195,6 +195,18 @@ fun TvNavigationState.drainDeepLink() {
                 episode  = link.episode
             )
         }
+        is com.kitsugi.animelist.core.deeplink.TvDeepLink.Character -> {
+            navigateToCharacterDetail(characterId = link.characterId, source = link.source, name = null, imageUrl = null)
+        }
+        is com.kitsugi.animelist.core.deeplink.TvDeepLink.Staff -> {
+            navigateToStaffDetail(staffId = link.staffId, source = link.source, name = null, imageUrl = null)
+        }
+        is com.kitsugi.animelist.core.deeplink.TvDeepLink.Studio -> {
+            navigateToStudioDetail(studioId = link.studioId, source = link.source, name = null, imageUrl = null)
+        }
+        is com.kitsugi.animelist.core.deeplink.TvDeepLink.UserProfile -> {
+            currentTab = TvDestination.ACCOUNT
+        }
         is com.kitsugi.animelist.core.deeplink.TvDeepLink.Manga -> {
             currentTab = TvDestination.MANGA
             pendingDeepLinkManga = PendingMangaLink(

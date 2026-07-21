@@ -53,7 +53,8 @@ fun ReviewsTabContent(
     externalId: Int,
     mediaType: MediaType,
     apiClient: JikanApiClient,
-    titleLanguage: String = "ROMAJI"
+    titleLanguage: String = "ROMAJI",
+    preferredTranslator: String = "DEFAULT"
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -304,6 +305,7 @@ fun ReviewsTabContent(
                                 KitsugiReviewCard(
                                     rev = rev,
                                     modifier = Modifier.width(280.dp),
+                                    preferredTranslator = preferredTranslator,
                                     onClick = { activeReviewForDetail = rev },
                                     onHelpfulClick = {
                                         if (rev.id == null) {

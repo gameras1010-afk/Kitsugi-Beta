@@ -20,6 +20,7 @@ internal fun SettingsContext.buildSettingsParams() =
         general = com.kitsugi.animelist.ui.screens.settings.GeneralSettings(
             selectedThemeId = appSettings.selectedThemeId,
             showAdultContent = appSettings.showAdultContent,
+            blurAdultMedia = appSettings.blurAdultMedia,
             selectedListLayoutId = appSettings.selectedListLayoutId,
             selectedHomeLayoutId = appSettings.selectedHomeLayoutId,
             onHomeLayoutSelected = { onHomeLayoutSelected(it) },
@@ -29,6 +30,7 @@ internal fun SettingsContext.buildSettingsParams() =
             showAnimeLogos = appSettings.showAnimeLogos,
             onThemeSelected = { onThemeSelected(it) },
             onAdultContentChanged = { onAdultContentChanged(it) },
+            onBlurAdultMediaChanged = { onBlurAdultMediaChanged(it) },
             onListLayoutSelected = { onListLayoutSelected(it) },
             onTitleLanguageSelected = { onTitleLanguageSelected(it) },
             onScoreFormatSelected = { onScoreFormatSelected(it) },
@@ -48,6 +50,14 @@ internal fun SettingsContext.buildSettingsParams() =
             onFixedNavBarChanged = { onFixedNavBarChanged(it) },
             airingNotificationsEnabled = appSettings.airingNotificationsEnabled,
             onAiringNotificationsChanged = { onAiringNotificationsChanged(it) },
+            aniListNotificationsEnabled = appSettings.aniListNotificationsEnabled,
+            onAniListNotificationsChanged = { onAniListNotificationsChanged(it) },
+            malNotificationsEnabled = appSettings.malNotificationsEnabled,
+            onMalNotificationsChanged = { onMalNotificationsChanged(it) },
+            simklNotificationsEnabled = appSettings.simklNotificationsEnabled,
+            onSimklNotificationsChanged = { onSimklNotificationsChanged(it) },
+            notificationInterval = appSettings.notificationInterval,
+            onNotificationIntervalChanged = { onNotificationIntervalChanged(it) },
             splashAnimationEnabled = appSettings.splashAnimationEnabled,
             splashSoundEnabled = appSettings.splashSoundEnabled,
             onSplashAnimationEnabledChanged = { onSplashAnimationEnabledChanged(it) },
@@ -332,6 +342,8 @@ internal fun SettingsContext.buildSettingsParams() =
             onAnimeSkipClientIdChanged = { onAnimeSkipClientIdChanged(it) },
             autoTranslateEnabled = appSettings.autoTranslateEnabled,
             onAutoTranslateEnabledChanged = { onAutoTranslateEnabledChanged(it) },
+            preferredTranslator = appSettings.preferredTranslator,
+            onPreferredTranslatorSelected = { onPreferredTranslatorSelected(it) },
             onOpenStats = { onOpenStats() },
             onOpenFavourites = { onOpenFavourites() },
             onOpenAbout = { onOpenAbout() }
@@ -390,6 +402,13 @@ internal fun SettingsContext.onAdultContentChanged(show: Boolean) {
     }
 }
 
+internal fun SettingsContext.onBlurAdultMediaChanged(enabled: Boolean) {
+    coroutineScope.launch {
+        settingsDataStore.setBlurAdultMedia(enabled)
+        appViewModel.showSnackbarMessage(if (enabled) "+18 görseller blurlanacak" else "+18 görseller blurlanmayacak")
+    }
+}
+
 internal fun SettingsContext.onFixedNavBarChanged(enabled: Boolean) {
     coroutineScope.launch {
         settingsDataStore.setFixedNavBar(enabled)
@@ -401,6 +420,57 @@ internal fun SettingsContext.onAiringNotificationsChanged(enabled: Boolean) {
     coroutineScope.launch {
         settingsDataStore.setAiringNotificationsEnabled(enabled)
         appViewModel.showSnackbarMessage(if (enabled) "Yayın bildirimleri etkinleştirildi" else "Yayın bildirimleri devre dışı bırakıldı")
+        if (enabled) {
+            com.kitsugi.animelist.core.notifications.NotificationScheduler.schedule(context, appSettings.notificationInterval)
+        } else if (!appSettings.aniListNotificationsEnabled && !appSettings.malNotificationsEnabled && !appSettings.simklNotificationsEnabled) {
+            com.kitsugi.animelist.core.notifications.NotificationScheduler.cancel(context)
+        }
+    }
+}
+
+internal fun SettingsContext.onAniListNotificationsChanged(enabled: Boolean) {
+    coroutineScope.launch {
+        settingsDataStore.setAniListNotificationsEnabled(enabled)
+        appViewModel.showSnackbarMessage(if (enabled) "AniList bildirimleri etkinleştirildi" else "AniList bildirimleri devre dışı bırakıldı")
+        if (enabled) {
+            com.kitsugi.animelist.core.notifications.NotificationScheduler.schedule(context, appSettings.notificationInterval)
+        } else if (!appSettings.airingNotificationsEnabled && !appSettings.malNotificationsEnabled && !appSettings.simklNotificationsEnabled) {
+            com.kitsugi.animelist.core.notifications.NotificationScheduler.cancel(context)
+        }
+    }
+}
+
+internal fun SettingsContext.onMalNotificationsChanged(enabled: Boolean) {
+    coroutineScope.launch {
+        settingsDataStore.setMalNotificationsEnabled(enabled)
+        appViewModel.showSnackbarMessage(if (enabled) "MyAnimeList bildirimleri etkinleştirildi" else "MyAnimeList bildirimleri devre dışı bırakıldı")
+        if (enabled) {
+            com.kitsugi.animelist.core.notifications.NotificationScheduler.schedule(context, appSettings.notificationInterval)
+        } else if (!appSettings.airingNotificationsEnabled && !appSettings.aniListNotificationsEnabled && !appSettings.simklNotificationsEnabled) {
+            com.kitsugi.animelist.core.notifications.NotificationScheduler.cancel(context)
+        }
+    }
+}
+
+internal fun SettingsContext.onSimklNotificationsChanged(enabled: Boolean) {
+    coroutineScope.launch {
+        settingsDataStore.setSimklNotificationsEnabled(enabled)
+        appViewModel.showSnackbarMessage(if (enabled) "Simkl bildirimleri etkinleştirildi" else "Simkl bildirimleri devre dışı bırakıldı")
+        if (enabled) {
+            com.kitsugi.animelist.core.notifications.NotificationScheduler.schedule(context, appSettings.notificationInterval)
+        } else if (!appSettings.airingNotificationsEnabled && !appSettings.aniListNotificationsEnabled && !appSettings.malNotificationsEnabled) {
+            com.kitsugi.animelist.core.notifications.NotificationScheduler.cancel(context)
+        }
+    }
+}
+
+internal fun SettingsContext.onNotificationIntervalChanged(minutes: Int) {
+    coroutineScope.launch {
+        settingsDataStore.setNotificationInterval(minutes)
+        appViewModel.showSnackbarMessage("Bildirim sıklığı $minutes dakika olarak ayarlandı")
+        if (appSettings.airingNotificationsEnabled || appSettings.aniListNotificationsEnabled || appSettings.malNotificationsEnabled || appSettings.simklNotificationsEnabled) {
+            com.kitsugi.animelist.core.notifications.NotificationScheduler.schedule(context, minutes)
+        }
     }
 }
 
@@ -633,6 +703,10 @@ internal fun SettingsContext.onAnimeSkipClientIdChanged(clientId: String) {
 
 internal fun SettingsContext.onAutoTranslateEnabledChanged(enabled: Boolean) {
     coroutineScope.launch { settingsDataStore.setAutoTranslateEnabled(enabled) }
+}
+
+internal fun SettingsContext.onPreferredTranslatorSelected(translator: String) {
+    coroutineScope.launch { settingsDataStore.setPreferredTranslator(translator) }
 }
 
 internal fun SettingsContext.onThemeModeSelected(mode: String) {

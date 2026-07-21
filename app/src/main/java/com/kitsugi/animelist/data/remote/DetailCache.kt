@@ -31,6 +31,10 @@ object DetailCache {
         mediaDetails[makeKey(source, id)] = detail
     }
 
+    fun removeMediaDetail(source: String, id: Int) {
+        mediaDetails.remove(makeKey(source, id))
+    }
+
     // Characters Tab
     fun getMediaCharacters(source: String, id: Int): List<KitsugiCharacter>? {
         return mediaCharacters[makeKey(source, id)]
@@ -78,6 +82,10 @@ object DetailCache {
 
     fun putMediaReviews(source: String, id: Int, list: List<KitsugiReview>) {
         mediaReviews[makeKey(source, id)] = list
+    }
+
+    fun removeMediaReviews(source: String, id: Int) {
+        mediaReviews.remove(makeKey(source, id))
     }
 
     // Episodes Tab

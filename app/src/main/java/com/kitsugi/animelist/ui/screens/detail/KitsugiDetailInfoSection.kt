@@ -66,13 +66,16 @@ internal fun QuickActions(
     primaryFocusRequester: FocusRequester? = null,
     tabBarFocusRequester: FocusRequester? = null
 ) {
-    // Anime ise İzle butonunu öne çıkar
-    if (entry.type == MediaType.Anime && onWatchClick != null) {
+    val isWatchable = entry.type == MediaType.Anime || entry.type == MediaType.TvShow || entry.type == MediaType.Movie
+
+    // Anime, Dizi ve Film ise İzle butonunu öne çıkar
+    if (isWatchable && onWatchClick != null) {
         val accentColor = LocalKitsugiAccent.current
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(18.dp))
+                .background(accentColor)
                 .then(if (primaryFocusRequester != null) Modifier.focusRequester(primaryFocusRequester) else Modifier)
                 .then(if (tabBarFocusRequester != null) Modifier.focusProperties { right = tabBarFocusRequester } else Modifier)
                 .tvClickable(shape = RoundedCornerShape(18.dp), onClick = onWatchClick)
@@ -107,6 +110,7 @@ internal fun QuickActions(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(18.dp))
+                .background(accentColor)
                 .then(if (primaryFocusRequester != null) Modifier.focusRequester(primaryFocusRequester) else Modifier)
                 .then(if (tabBarFocusRequester != null) Modifier.focusProperties { right = tabBarFocusRequester } else Modifier)
                 .tvClickable(shape = RoundedCornerShape(18.dp), onClick = onReadClick)
@@ -241,7 +245,7 @@ internal fun QuickActions(
 
     val btnModifier = if (tabBarFocusRequester != null) Modifier.focusProperties { right = tabBarFocusRequester } else Modifier
     val firstBtnModifier = btnModifier.then(
-        if (primaryFocusRequester != null && entry.type != MediaType.Anime && entry.type != MediaType.Manga) {
+        if (primaryFocusRequester != null && !isWatchable && entry.type != MediaType.Manga) {
             Modifier.focusRequester(primaryFocusRequester)
         } else Modifier
     )
@@ -399,6 +403,104 @@ private fun MiniStatCard(
             maxLines = 1
         )
     }
+}
+
+@Composable
+internal fun DetailOverviewStatsCard(
+    detail: KitsugiMediaDetail
+) {
+    val rank = detail.rank
+    val scoredBy = detail.scoredBy
+    val members = detail.members ?: detail.popularity
+    val popularityRank = detail.popularityRank
+
+    if (rank == null && scoredBy == null && members == null && popularityRank == null) return
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(22.dp))
+            .background(KitsugiColors.Surface)
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "İstatistikler",
+            color = KitsugiColors.TextPrimary,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            StatOverviewItem(
+                label = "Puan Sırası",
+                value = rank?.let { "#$it" } ?: "-",
+                accentColor = LocalKitsugiAccent.current,
+                modifier = Modifier.weight(1f)
+            )
+
+            StatOverviewItem(
+                label = "Oy Sayısı",
+                value = scoredBy?.let { formatCompactNumber(it) } ?: "-",
+                accentColor = KitsugiColors.AccentGreen,
+                modifier = Modifier.weight(1f)
+            )
+
+            StatOverviewItem(
+                label = "Takip Edenler",
+                value = members?.let { formatCompactNumber(it) } ?: "-",
+                accentColor = KitsugiColors.AccentBlue,
+                modifier = Modifier.weight(1f)
+            )
+
+            StatOverviewItem(
+                label = "Popülerlik Sırası",
+                value = popularityRank?.let { "#$it" } ?: "-",
+                accentColor = KitsugiColors.AccentOrange,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun StatOverviewItem(
+    label: String,
+    value: String,
+    accentColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.padding(horizontal = 2.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = value,
+            color = accentColor,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Black,
+            maxLines = 1
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = label,
+            color = KitsugiColors.TextMuted,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1
+        )
+    }
+}
+
+private fun formatCompactNumber(number: Int): String {
+    val javaLocale = java.util.Locale("tr", "TR")
+    val formatter = java.text.NumberFormat.getInstance(javaLocale)
+    return formatter.format(number)
 }
 
 @Composable

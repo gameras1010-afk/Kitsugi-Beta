@@ -1,4 +1,7 @@
-@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@file:OptIn(
+    androidx.compose.foundation.ExperimentalFoundationApi::class,
+    androidx.compose.material3.ExperimentalMaterial3Api::class
+)
 
 package com.kitsugi.animelist.ui.screens.explore
 
@@ -36,14 +39,20 @@ import androidx.compose.material.icons.automirrored.rounded.TrendingUp
 import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.CalendarMonth
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.derivedStateOf
+import com.kitsugi.animelist.model.MediaType
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -93,7 +102,8 @@ fun ExploreScreen(
     scoreFormat: String = "POINT_10",
     hideScores: Boolean = false,
     showAnimeLogos: Boolean = false,
-    isSimklConnected: Boolean = false
+    isSimklConnected: Boolean = false,
+    blurAdultMedia: Boolean = false
 ) {
     val accentColor = LocalKitsugiAccent.current
 
@@ -189,6 +199,8 @@ fun ExploreScreen(
 
     val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = initialScrollOffset)
 
+    var activeRankingSheetData by remember { mutableStateOf<Triple<String, MediaType, List<JikanSearchResult>>?>(null) }
+
     val isHeroGone by remember {
         androidx.compose.runtime.derivedStateOf {
             lazyListState.firstVisibleItemIndex > 0 || lazyListState.firstVisibleItemScrollOffset > 300
@@ -222,14 +234,30 @@ fun ExploreScreen(
                 .fillMaxHeight()
         ) {
             val tvSpec = KitsugiScrollDefaults.rememberTvCenteredSpec()
+            val pullRefreshState = rememberPullToRefreshState()
             CompositionLocalProvider(
                 LocalBringIntoViewSpec provides if (isTvDevice) tvSpec else LocalBringIntoViewSpec.current
             ) {
-                LazyColumn(
-                    state = lazyListState,
+                PullToRefreshBox(
+                    isRefreshing = viewModel.isLoading,
+                    onRefresh = { viewModel.loadData(forceRefresh = true) },
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 100.dp)
+                    state = pullRefreshState,
+                    indicator = {
+                        PullToRefreshDefaults.Indicator(
+                            state = pullRefreshState,
+                            isRefreshing = viewModel.isLoading,
+                            modifier = Modifier.align(Alignment.TopCenter),
+                            containerColor = KitsugiColors.Surface,
+                            color = accentColor
+                        )
+                    }
                 ) {
+                    LazyColumn(
+                        state = lazyListState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 100.dp)
+                    ) {
                         if (heroItems.isNotEmpty()) {
                             item {
                                 KitsugiHeroSection(
@@ -241,6 +269,7 @@ fun ExploreScreen(
                                     scoreFormat = scoreFormat,
                                     hideScores = hideScores,
                                     showAnimeLogos = showAnimeLogos,
+                                    blurAdultMedia = blurAdultMedia,
                                     isVisible = lazyListState.firstVisibleItemIndex == 0
                                 )
                                 Spacer(modifier = Modifier.height(26.dp))
@@ -333,7 +362,8 @@ fun ExploreScreen(
                                     onSeeAllClick = { onSeeAllSection("Trend Her Şey", ExploreCategoryType.TOP_ANIME, filteredTopAnime) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
-                                    hideScores = hideScores
+                                    hideScores = hideScores,
+                                    blurAdultMedia = blurAdultMedia
                                 )
                                 Spacer(modifier = Modifier.height(26.dp))
                             }
@@ -348,7 +378,8 @@ fun ExploreScreen(
                                     onSeeAllClick = { onSeeAllSection("Trend Diziler", ExploreCategoryType.AIRING_ANIME, filteredAiringAnime) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
-                                    hideScores = hideScores
+                                    hideScores = hideScores,
+                                    blurAdultMedia = blurAdultMedia
                                 )
                                 Spacer(modifier = Modifier.height(26.dp))
                             }
@@ -363,7 +394,8 @@ fun ExploreScreen(
                                     onSeeAllClick = { onSeeAllSection("Trend Filmler", ExploreCategoryType.MOVIE_ANIME, filteredMovieAnime) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
-                                    hideScores = hideScores
+                                    hideScores = hideScores,
+                                    blurAdultMedia = blurAdultMedia
                                 )
                                 Spacer(modifier = Modifier.height(26.dp))
                             }
@@ -378,7 +410,8 @@ fun ExploreScreen(
                                     onSeeAllClick = { onSeeAllSection("Popüler Diziler", ExploreCategoryType.AIRING_ANIME, filteredTopManga) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
-                                    hideScores = hideScores
+                                    hideScores = hideScores,
+                                    blurAdultMedia = blurAdultMedia
                                 )
                                 Spacer(modifier = Modifier.height(26.dp))
                             }
@@ -393,7 +426,8 @@ fun ExploreScreen(
                                     onSeeAllClick = { onSeeAllSection("Popüler Filmler", ExploreCategoryType.UPCOMING_ANIME, filteredUpcomingAnime) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
-                                    hideScores = hideScores
+                                    hideScores = hideScores,
+                                    blurAdultMedia = blurAdultMedia
                                 )
                                 Spacer(modifier = Modifier.height(26.dp))
                             }
@@ -408,7 +442,8 @@ fun ExploreScreen(
                                     onSeeAllClick = { onSeeAllSection("En Yüksek Puanlı Filmler", ExploreCategoryType.TOP_MANGA, filteredPublishingManga) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
-                                    hideScores = hideScores
+                                    hideScores = hideScores,
+                                    blurAdultMedia = blurAdultMedia
                                 )
                                 Spacer(modifier = Modifier.height(26.dp))
                             }
@@ -423,7 +458,8 @@ fun ExploreScreen(
                                     onSeeAllClick = { onSeeAllSection("En Yüksek Puanlı Diziler", ExploreCategoryType.SEASONAL_ANIME, filteredSeasonalAnime) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
-                                    hideScores = hideScores
+                                    hideScores = hideScores,
+                                    blurAdultMedia = blurAdultMedia
                                 )
                             }
 
@@ -440,7 +476,8 @@ fun ExploreScreen(
                                         onSeeAllClick = { onSeeAllSection("İzlemeye Devam Et — Diziler", ExploreCategoryType.AIRING_ANIME, viewModel.simklContinueSeries) },
                                         titleLanguage = titleLanguage,
                                         scoreFormat = scoreFormat,
-                                        hideScores = hideScores
+                                        hideScores = hideScores,
+                                        blurAdultMedia = blurAdultMedia
                                     )
                                 }
                             }
@@ -457,7 +494,8 @@ fun ExploreScreen(
                                         onSeeAllClick = { onSeeAllSection("İzlemeye Devam Et — Filmler", ExploreCategoryType.MOVIE_ANIME, viewModel.simklContinueMovies) },
                                         titleLanguage = titleLanguage,
                                         scoreFormat = scoreFormat,
-                                        hideScores = hideScores
+                                        hideScores = hideScores,
+                                        blurAdultMedia = blurAdultMedia
                                     )
                                 }
                             }
@@ -474,7 +512,8 @@ fun ExploreScreen(
                                         onSeeAllClick = { onSeeAllSection("Planladıklarım — Diziler", ExploreCategoryType.AIRING_ANIME, viewModel.simklPlannedSeries) },
                                         titleLanguage = titleLanguage,
                                         scoreFormat = scoreFormat,
-                                        hideScores = hideScores
+                                        hideScores = hideScores,
+                                        blurAdultMedia = blurAdultMedia
                                     )
                                 }
                             }
@@ -491,7 +530,8 @@ fun ExploreScreen(
                                         onSeeAllClick = { onSeeAllSection("Planladıklarım — Filmler", ExploreCategoryType.MOVIE_ANIME, viewModel.simklPlannedMovies) },
                                         titleLanguage = titleLanguage,
                                         scoreFormat = scoreFormat,
-                                        hideScores = hideScores
+                                        hideScores = hideScores,
+                                        blurAdultMedia = blurAdultMedia
                                     )
                                 }
                             }
@@ -559,7 +599,8 @@ fun ExploreScreen(
                                     onSeeAllClick = { onSeeAllSection("Popüler Anime", ExploreCategoryType.TOP_ANIME, filteredTopAnime) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
-                                    hideScores = hideScores
+                                    hideScores = hideScores,
+                                    blurAdultMedia = blurAdultMedia
                                 )
                                 Spacer(modifier = Modifier.height(26.dp))
                             }
@@ -574,7 +615,8 @@ fun ExploreScreen(
                                     onSeeAllClick = { onSeeAllSection("Yayındaki Anime", ExploreCategoryType.AIRING_ANIME, filteredAiringAnime) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
-                                    hideScores = hideScores
+                                    hideScores = hideScores,
+                                    blurAdultMedia = blurAdultMedia
                                 )
                                 Spacer(modifier = Modifier.height(26.dp))
                             }
@@ -589,7 +631,8 @@ fun ExploreScreen(
                                     onSeeAllClick = { onSeeAllSection("Yaklaşan Anime", ExploreCategoryType.UPCOMING_ANIME, filteredUpcomingAnime) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
-                                    hideScores = hideScores
+                                    hideScores = hideScores,
+                                    blurAdultMedia = blurAdultMedia
                                 )
                                 Spacer(modifier = Modifier.height(26.dp))
                             }
@@ -604,7 +647,8 @@ fun ExploreScreen(
                                     onSeeAllClick = { onSeeAllSection("Popüler Manga", ExploreCategoryType.TOP_MANGA, filteredTopManga) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
-                                    hideScores = hideScores
+                                    hideScores = hideScores,
+                                    blurAdultMedia = blurAdultMedia
                                 )
                                 Spacer(modifier = Modifier.height(26.dp))
                             }
@@ -619,11 +663,13 @@ fun ExploreScreen(
                                     onSeeAllClick = { onSeeAllSection("Yayındaki Manga", ExploreCategoryType.PUBLISHING_MANGA, filteredPublishingManga) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
-                                    hideScores = hideScores
+                                    hideScores = hideScores,
+                                    blurAdultMedia = blurAdultMedia
                                 )
                             }
                         }
                     }
+                }
             }
         }
 
@@ -644,5 +690,22 @@ fun ExploreScreen(
                 )
             }
         }
+    }
+
+    val rankingSheet = activeRankingSheetData
+    if (rankingSheet != null) {
+        com.kitsugi.animelist.ui.components.KitsugiRankingBottomSheet(
+            title = rankingSheet.first,
+            mediaType = rankingSheet.second,
+            platform = viewModel.selectedPlatform,
+            initialResults = rankingSheet.third,
+            alreadyInList = isAlreadyInList,
+            onItemClick = onOpenApiDetail,
+            onDismissRequest = { activeRankingSheetData = null },
+            titleLanguage = titleLanguage,
+            hideScores = hideScores,
+            showAdultContent = showAdultContent,
+            blurAdultMedia = blurAdultMedia
+        )
     }
 }

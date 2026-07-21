@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package com.kitsugi.animelist.ui.screens.profile
 
 import android.content.res.Configuration
@@ -19,14 +21,22 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import com.kitsugi.animelist.ui.app.RankedStatItem
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import com.kitsugi.animelist.ui.components.KitsugiSheetOrDialog
+import com.kitsugi.animelist.ui.components.KitsugiActivityDetailBottomSheet
+import com.kitsugi.animelist.data.remote.JikanApiClient
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -97,8 +107,14 @@ fun KitsugiProfileScreen(
 
     val scrollState = rememberScrollVisibilityState(initialVisible = true)
 
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val apiClient = remember { JikanApiClient() }
+
     var activeFavoriteSheet by remember { mutableStateOf<Pair<String, List<ProfileFavoriteItem>>?>(null) }
     var onSheetItemClick by remember { mutableStateOf<((ProfileFavoriteItem) -> Unit)?>(null) }
+    var activeActivityIdForDetail by remember { mutableStateOf<Int?>(null) }
+    var showDeleteConfirmDialog by remember { mutableStateOf<String?>(null) }
 
     val openFavoriteSheet: (String, List<ProfileFavoriteItem>, (ProfileFavoriteItem) -> Unit) -> Unit = { title, items, onClick ->
         activeFavoriteSheet = title to items
@@ -205,76 +221,106 @@ fun KitsugiProfileScreen(
             }
 
             // Main Content Area
-            Box(
+            val isProfileLoading = when (activeSubTab) {
+                0 -> aniListState.isLoading
+                1 -> malState.isLoading
+                else -> simklState.isLoading
+            }
+            val pullRefreshState = rememberPullToRefreshState()
+
+            PullToRefreshBox(
+                isRefreshing = isProfileLoading,
+                onRefresh = { viewModel.refreshActiveProfile() },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
+                    .weight(1f),
+                state = pullRefreshState,
+                indicator = {
+                    PullToRefreshDefaults.Indicator(
+                        state = pullRefreshState,
+                        isRefreshing = isProfileLoading,
+                        modifier = Modifier.align(Alignment.TopCenter),
+                        containerColor = KitsugiColors.Surface,
+                        color = accentColor
+                    )
+                }
             ) {
-                when (activeSubTab) {
-                    0 -> ExternalProfileWrapper(
-                        isConnected = isAniListConnected,
-                        isLoading = aniListState.isLoading,
-                        error = aniListState.error,
-                        onConnectClick = onLoginAniList,
-                        accentColor = accentColor,
-                        platformName = "AniList"
-                    ) {
-                        AniListProfileContent(
-                            state = aniListState,
-                            mediaEntries = mediaEntries,
-                            appSettings = appSettings,
-                            onEntryClick = onEntryClick,
-                            onFavoriteMediaClick = onFavoriteMediaClick,
-                            onFavoriteCharacterClick = onFavoriteCharacterClick,
-                            onFavoriteStaffClick = onFavoriteStaffClick,
-                            onLoadMoreActivities = { viewModel.loadNextAniListActivitiesPage() },
-                            onOpenFavoriteSheet = openFavoriteSheet,
-                            onOpenStatsClick = onOpenStatsClick,
-                            isLandscape = isLandscape,
-                            accentColor = accentColor
-                        )
-                    }
-                    1 -> ExternalProfileWrapper(
-                        isConnected = isMalConnected,
-                        isLoading = malState.isLoading,
-                        error = malState.error,
-                        onConnectClick = onLoginMal,
-                        accentColor = accentColor,
-                        platformName = "MyAnimeList"
-                    ) {
-                        MalProfileContent(
-                            state = malState,
-                            mediaEntries = mediaEntries,
-                            appSettings = appSettings,
-                            onEntryClick = onEntryClick,
-                            onFavoriteMediaClick = onFavoriteMediaClick,
-                            onFavoriteCharacterClick = onFavoriteCharacterClick,
-                            onFavoriteStaffClick = onFavoriteStaffClick,
-                            onOpenFavoriteSheet = openFavoriteSheet,
-                            onOpenStatsClick = onOpenStatsClick,
-                            isLandscape = isLandscape,
-                            accentColor = accentColor
-                        )
-                    }
-                    2 -> ExternalProfileWrapper(
-                        isConnected = isSimklConnected,
-                        isLoading = simklState.isLoading,
-                        error = simklState.error,
-                        onConnectClick = onLoginSimkl,
-                        accentColor = accentColor,
-                        platformName = "Simkl"
-                    ) {
-                        SimklProfileContent(
-                            state = simklState,
-                            mediaEntries = mediaEntries,
-                            appSettings = appSettings,
-                            onEntryClick = onEntryClick,
-                            onFavoriteMediaClick = onFavoriteMediaClick,
-                            onOpenFavoriteSheet = openFavoriteSheet,
-                            onOpenStatsClick = onOpenStatsClick,
-                            isLandscape = isLandscape,
-                            accentColor = accentColor
-                        )
+                Box(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    when (activeSubTab) {
+                        0 -> ExternalProfileWrapper(
+                            isConnected = isAniListConnected,
+                            isLoading = aniListState.isLoading,
+                            error = aniListState.error,
+                            onConnectClick = onLoginAniList,
+                            accentColor = accentColor,
+                            platformName = "AniList"
+                        ) {
+                            AniListProfileContent(
+                                state = aniListState,
+                                mediaEntries = mediaEntries,
+                                appSettings = appSettings,
+                                onEntryClick = onEntryClick,
+                                onFavoriteMediaClick = onFavoriteMediaClick,
+                                onFavoriteCharacterClick = onFavoriteCharacterClick,
+                                onFavoriteStaffClick = onFavoriteStaffClick,
+                                onLoadMoreActivities = { viewModel.loadNextAniListActivitiesPage() },
+                                onOpenFavoriteSheet = openFavoriteSheet,
+                                onOpenStatsClick = onOpenStatsClick,
+                                onActivityClick = { actId -> activeActivityIdForDetail = actId },
+                                onLikeClick = { actId ->
+                                    coroutineScope.launch {
+                                        apiClient.toggleLike(actId, "ACTIVITY")
+                                    }
+                                },
+                                onDeleteClick = { actId -> showDeleteConfirmDialog = actId.toString() },
+                                isLandscape = isLandscape,
+                                accentColor = accentColor
+                            )
+                        }
+                        1 -> ExternalProfileWrapper(
+                            isConnected = isMalConnected,
+                            isLoading = malState.isLoading,
+                            error = malState.error,
+                            onConnectClick = onLoginMal,
+                            accentColor = accentColor,
+                            platformName = "MyAnimeList"
+                        ) {
+                            MalProfileContent(
+                                state = malState,
+                                mediaEntries = mediaEntries,
+                                appSettings = appSettings,
+                                onEntryClick = onEntryClick,
+                                onFavoriteMediaClick = onFavoriteMediaClick,
+                                onFavoriteCharacterClick = onFavoriteCharacterClick,
+                                onFavoriteStaffClick = onFavoriteStaffClick,
+                                onOpenFavoriteSheet = openFavoriteSheet,
+                                onOpenStatsClick = onOpenStatsClick,
+                                isLandscape = isLandscape,
+                                accentColor = accentColor
+                            )
+                        }
+                        2 -> ExternalProfileWrapper(
+                            isConnected = isSimklConnected,
+                            isLoading = simklState.isLoading,
+                            error = simklState.error,
+                            onConnectClick = onLoginSimkl,
+                            accentColor = accentColor,
+                            platformName = "Simkl"
+                        ) {
+                            SimklProfileContent(
+                                state = simklState,
+                                mediaEntries = mediaEntries,
+                                appSettings = appSettings,
+                                onEntryClick = onEntryClick,
+                                onFavoriteMediaClick = onFavoriteMediaClick,
+                                onOpenFavoriteSheet = openFavoriteSheet,
+                                onOpenStatsClick = onOpenStatsClick,
+                                isLandscape = isLandscape,
+                                accentColor = accentColor
+                            )
+                        }
                     }
                 }
             }
@@ -292,6 +338,50 @@ fun KitsugiProfileScreen(
                 activeFavoriteSheet = null
                 onSheetItemClick = null
             }
+        )
+    }
+
+    if (activeActivityIdForDetail != null) {
+        KitsugiActivityDetailBottomSheet(
+            activityId = activeActivityIdForDetail!!,
+            apiClient = apiClient,
+            titleLanguage = appSettings.titleLanguage.toString(),
+            onDismiss = {
+                activeActivityIdForDetail = null
+                viewModel.fetchAniListProfile()
+            }
+        )
+    }
+
+    if (showDeleteConfirmDialog != null) {
+        val actIdStr = showDeleteConfirmDialog!!
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmDialog = null },
+            title = { Text("Aktiviteyi Sil", color = KitsugiColors.TextPrimary, fontWeight = FontWeight.Bold) },
+            text = { Text("Bu aktiviteyi silmek istediğinize emin misiniz?", color = KitsugiColors.TextSecondary) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            val actId = actIdStr.toIntOrNull() ?: 0
+                            val success = apiClient.deleteActivity(actId)
+                            if (success) {
+                                viewModel.fetchAniListProfile()
+                            }
+                        }
+                        showDeleteConfirmDialog = null
+                    }
+                ) {
+                    Text("Sil", color = KitsugiColors.AccentRed, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmDialog = null }) {
+                    Text("İptal", color = KitsugiColors.TextMuted)
+                }
+            },
+            containerColor = KitsugiColors.Surface,
+            shape = RoundedCornerShape(20.dp)
         )
     }
 }
@@ -376,7 +466,167 @@ fun ExternalProfileWrapper(
     }
 }
 
+@Composable
+fun VerticalStatsBar(
+    stats: List<Pair<String, Float>>,
+    accentColor: Color = LocalKitsugiAccent.current,
+    maxHeightDp: Int = 90,
+    modifier: Modifier = Modifier
+) {
+    if (stats.isEmpty()) return
+    val maxValue = remember(stats) { stats.maxOfOrNull { it.second } ?: 1f }.coerceAtLeast(1f)
 
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.Bottom
+    ) {
+        stats.forEach { (label, value) ->
+            val barHeight = ((value / maxValue) * maxHeightDp).coerceAtLeast(4f).dp
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Bottom
+            ) {
+                Text(
+                    text = value.toInt().toString(),
+                    color = KitsugiColors.TextPrimary,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 2.dp)
+                )
+                Box(
+                    modifier = Modifier
+                        .width(22.dp)
+                        .height(barHeight)
+                        .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+                        .background(accentColor)
+                )
+                Text(
+                    text = label,
+                    color = KitsugiColors.TextMuted,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontSize = 10.sp,
+                    modifier = Modifier.padding(top = 4.dp),
+                    maxLines = 1
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun HorizontalStatsBar(
+    stats: List<Triple<String, Int, Color>>,
+    modifier: Modifier = Modifier
+) {
+    if (stats.isEmpty()) return
+    val total = remember(stats) { stats.sumOf { it.second } }.coerceAtLeast(1)
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+                .padding(bottom = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            stats.forEach { (label, count, color) ->
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(KitsugiColors.SurfaceStrong)
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(color)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "$count $label",
+                        color = KitsugiColors.TextPrimary,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(12.dp)
+                .clip(RoundedCornerShape(6.dp))
+                .background(KitsugiColors.SurfaceStrong)
+        ) {
+            stats.forEach { (_, count, color) ->
+                val weight = count.toFloat() / total.toFloat()
+                if (weight > 0) {
+                    Box(
+                        modifier = Modifier
+                            .weight(weight)
+                            .fillMaxHeight()
+                            .background(color)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ProfileHeaderIconTabs(
+    selectedTab: Int,
+    onTabSelected: (Int) -> Unit,
+    accentColor: Color
+) {
+    val tabs = listOf(
+        Icons.Rounded.Info to "Hakkında",
+        Icons.Rounded.ChatBubble to "Aktivite",
+        Icons.Rounded.BarChart to "İstatistikler",
+        Icons.Rounded.Star to "Favoriler",
+        Icons.Rounded.People to "Sosyal"
+    )
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(22.dp))
+            .background(KitsugiColors.Surface)
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        tabs.forEachIndexed { index, (icon, label) ->
+            val isSelected = selectedTab == index
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(if (isSelected) accentColor else Color.Transparent)
+                    .clickable { onTabSelected(index) }
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = label,
+                    tint = if (isSelected) KitsugiColors.Background else KitsugiColors.TextMuted,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun AniListProfileContent(
@@ -390,11 +640,17 @@ fun AniListProfileContent(
     onLoadMoreActivities: () -> Unit,
     onOpenFavoriteSheet: (title: String, items: List<ProfileFavoriteItem>, onClick: (ProfileFavoriteItem) -> Unit) -> Unit,
     onOpenStatsClick: (() -> Unit)? = null,
+    onActivityClick: ((Int) -> Unit)? = null,
+    onLikeClick: ((Int) -> Unit)? = null,
+    onDeleteClick: ((Int) -> Unit)? = null,
     isLandscape: Boolean,
     accentColor: Color
 ) {
-    var activeTab by remember { mutableStateOf(0) } // 0: Profil, 1: Aktivite
-    val tabs = listOf("Profil", "Aktivite")
+    var activeTab by remember { mutableStateOf(0) } // 0: Info, 1: Activity, 2: Stats, 3: Favorites, 4: Social
+    var statsMediaType by remember { mutableStateOf(0) } // 0: Anime, 1: Manga
+    var statsSubTab by remember { mutableStateOf(0) } // 0: Genel Bakış, 1: Türler, 2: Etiketler, 3: Ekip, 4: Seslendirenler, 5: Stüdyolar
+    var favoritesFilter by remember { mutableStateOf(0) } // 0: Anime, 1: Manga, 2: Character, 3: Staff, 4: Studio
+    var socialFilter by remember { mutableStateOf(0) } // 0: Followers, 1: Following
 
     LazyColumn(
         modifier = Modifier
@@ -404,6 +660,7 @@ fun AniListProfileContent(
     ) {
         // Banner and Avatar
         item {
+            val context = LocalContext.current
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -429,6 +686,31 @@ fun AniListProfileContent(
                         .fillMaxSize()
                         .background(Brush.verticalGradient(listOf(Color.Transparent, KitsugiColors.Background.copy(alpha = 0.8f))))
                 )
+
+                // Share butonu – sağ üst köşe
+                if (state.name.isNotBlank()) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(10.dp)
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(KitsugiColors.Background.copy(alpha = 0.50f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        IconButton(onClick = {
+                            val url = com.kitsugi.animelist.utils.ShareUtils.buildProfileUrl("anilist", state.name)
+                            com.kitsugi.animelist.utils.ShareUtils.shareText(context, state.name, url)
+                        }) {
+                            Icon(
+                                imageVector = Icons.Rounded.Share,
+                                contentDescription = "Profili Paylaş",
+                                tint = KitsugiColors.TextPrimary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
 
                 // Avatar overlay
                 Row(
@@ -467,336 +749,834 @@ fun AniListProfileContent(
             }
         }
 
-        // About / Bio snippet
-        if (state.about.isNotBlank() && activeTab == 0) {
+        // Top 5 Icon Sub-Tabs
+        item {
+            ProfileHeaderIconTabs(
+                selectedTab = activeTab,
+                onTabSelected = { activeTab = it },
+                accentColor = accentColor
+            )
+        }
+
+        // TAB 0: INFO
+        if (activeTab == 0) {
+            if (state.about.isNotBlank()) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(KitsugiColors.Surface)
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = "Hakkında",
+                            color = KitsugiColors.TextPrimary,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = state.about,
+                            color = KitsugiColors.TextSecondary,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
+
             item {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(24.dp))
                         .background(KitsugiColors.Surface)
-                        .padding(16.dp)
+                        .padding(18.dp)
                 ) {
                     Text(
-                        text = "Hakkında",
+                        text = "Profil Özeti",
                         color = KitsugiColors.TextPrimary,
-                        style = MaterialTheme.typography.titleSmall,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        StatCard("Anime", state.animeStats?.count?.toString() ?: "0")
+                        StatCard("Manga", state.mangaStats?.count?.toString() ?: "0")
+                    }
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = state.about,
-                        color = KitsugiColors.TextSecondary,
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        StatCard("Takipçi", state.socialState.followers.size.toString())
+                        StatCard("Takip Edilen", state.socialState.following.size.toString())
+                    }
                 }
             }
         }
 
-        // Sub-tabs row
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(KitsugiColors.Surface)
-            ) {
-                tabs.forEachIndexed { index, label ->
-                    val isSelected = activeTab == index
+        // TAB 1: ACTIVITY
+        if (activeTab == 1) {
+            item {
+                if (state.activities.isEmpty()) {
                     Box(
                         modifier = Modifier
-                            .weight(1f)
-                            .clickable { activeTab = index }
-                            .padding(vertical = 12.dp),
+                            .fillMaxWidth()
+                            .padding(32.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = label,
-                            color = if (isSelected) accentColor else KitsugiColors.TextMuted,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                        Text(text = "Henüz aktivite bulunmuyor.", color = KitsugiColors.TextMuted)
+                    }
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        state.activities.forEach { act ->
+                            ActivityCard(
+                                activity = act,
+                                accentColor = accentColor,
+                                onMediaClick = { mediaId, mType ->
+                                    onFavoriteMediaClick(mediaId, mType, "anilist")
+                                },
+                                onActivityClick = { actId -> onActivityClick?.invoke(actId) },
+                                onLikeClick = { actId -> onLikeClick?.invoke(actId) },
+                                onDeleteClick = { actId -> onDeleteClick?.invoke(actId) }
+                            )
+                        }
                     }
                 }
             }
         }
 
-        // Sub-tab contents
-        when (activeTab) {
-            0 -> {
-                // PROFIL
-                state.animeStats?.let { stats ->
-                    item {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(24.dp))
-                                .background(KitsugiColors.Surface)
-                                .padding(18.dp)
-                        ) {
-                            Text(
-                                text = "Anime İstatistikleri",
-                                color = KitsugiColors.TextPrimary,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            SegmentedDistributionBar(
-                                watching = stats.watching,
-                                completed = stats.completed,
-                                planned = stats.planned,
-                                paused = stats.paused,
-                                dropped = stats.dropped,
-                                total = stats.count,
-                                accentColor = KitsugiColors.AccentBlue
-                            )
-                            Spacer(modifier = Modifier.height(14.dp))
-                            StatItemRow("İzleniyor", stats.watching, stats.count, KitsugiColors.AccentBlue)
-                            StatItemRow("Tamamlandı", stats.completed, stats.count, KitsugiColors.AccentGreen)
-                            StatItemRow("Planlanıyor", stats.planned, stats.count, KitsugiColors.TextMuted)
-                            StatItemRow("Durduruldu", stats.paused, stats.count, KitsugiColors.AccentOrange)
-                            StatItemRow("Bırakıldı", stats.dropped, stats.count, KitsugiColors.AccentPink)
-
-                            Spacer(modifier = Modifier.height(16.dp))
-                            HorizontalDivider(color = KitsugiColors.SurfaceStrong)
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                StatCard("Toplam Anime", stats.count.toString())
-                                StatCard("Ortalama Skor", "%.1f".format(stats.meanScore))
-                                StatCard("Süre", "${stats.minutesWatched / 60 / 24} Gün")
-                            }
-                        }
-                    }
-                }
-
-                state.mangaStats?.let { stats ->
-                    item {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(24.dp))
-                                .background(KitsugiColors.Surface)
-                                .padding(18.dp)
-                        ) {
-                            Text(
-                                text = "Manga İstatistikleri",
-                                color = KitsugiColors.TextPrimary,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            SegmentedDistributionBar(
-                                watching = stats.watching,
-                                completed = stats.completed,
-                                planned = stats.planned,
-                                paused = stats.paused,
-                                dropped = stats.dropped,
-                                total = stats.count,
-                                accentColor = KitsugiColors.AccentBlue
-                            )
-                            Spacer(modifier = Modifier.height(14.dp))
-                            StatItemRow("Okuyor", stats.watching, stats.count, KitsugiColors.AccentBlue)
-                            StatItemRow("Tamamlandı", stats.completed, stats.count, KitsugiColors.AccentGreen)
-                            StatItemRow("Planlanıyor", stats.planned, stats.count, KitsugiColors.TextMuted)
-                            StatItemRow("Durduruldu", stats.paused, stats.count, KitsugiColors.AccentOrange)
-                            StatItemRow("Bırakıldı", stats.dropped, stats.count, KitsugiColors.AccentPink)
-
-                            Spacer(modifier = Modifier.height(16.dp))
-                            HorizontalDivider(color = KitsugiColors.SurfaceStrong)
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                StatCard("Toplam Manga", stats.count.toString())
-                                StatCard("Ortalama Skor", "%.1f".format(stats.meanScore))
-                                StatCard("Bölümler", stats.episodesWatched.toString())
-                            }
-                        }
-                    }
-                }
-
-                if (state.animeStats == null && state.mangaStats == null && mediaEntries.isNotEmpty()) {
-                    item {
-                        val animeEntries = remember(mediaEntries) { mediaEntries.filter { it.type == MediaType.Anime || it.type == MediaType.Movie || it.type == MediaType.TvShow } }
-                        val mangaEntries = remember(mediaEntries) { mediaEntries.filter { it.type == MediaType.Manga } }
-                        val totalCount = mediaEntries.size
-                        val avgScore = remember(mediaEntries) {
-                            val scored = mediaEntries.mapNotNull { it.score }
-                            if (scored.isNotEmpty()) scored.average() else 0.0
-                        }
-
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(24.dp))
-                                .background(KitsugiColors.Surface)
-                                .padding(18.dp)
-                        ) {
-                            Text(
-                                text = "Kütüphane İstatistikleri",
-                                color = KitsugiColors.TextPrimary,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Row(modifier = Modifier.fillMaxWidth()) {
-                                StatCard("Toplam Kayıt", totalCount.toString())
-                                StatCard("Ort. Skor", if (avgScore > 0) "%.1f".format(avgScore) else "-")
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(modifier = Modifier.fillMaxWidth()) {
-                                StatCard("Animeler", animeEntries.size.toString())
-                                StatCard("Mangalar", mangaEntries.size.toString())
-                            }
-
-                            Spacer(modifier = Modifier.height(16.dp))
-                            HorizontalDivider(color = KitsugiColors.SurfaceStrong)
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            StatItemRow("İzleniyor / Okunuyor", mediaEntries.count { it.status == WatchStatus.Watching || it.status == WatchStatus.Repeating }, totalCount, accentColor)
-                            StatItemRow("Tamamlandı", mediaEntries.count { it.status == WatchStatus.Completed }, totalCount, KitsugiColors.AccentGreen)
-                            StatItemRow("Planlandı", mediaEntries.count { it.status == WatchStatus.Planned }, totalCount, KitsugiColors.TextMuted)
-                            StatItemRow("Durduruldu", mediaEntries.count { it.status == WatchStatus.Paused }, totalCount, KitsugiColors.AccentOrange)
-                            StatItemRow("Bırakıldı", mediaEntries.count { it.status == WatchStatus.Dropped }, totalCount, KitsugiColors.AccentPink)
-                        }
-                    }
-                }
-
-                item {
-                    val localFavs = remember(mediaEntries) {
-                        mediaEntries.filter { it.isFavorite }.map { entry ->
-                            ProfileFavoriteItem(
-                                id = entry.id.toString(),
-                                title = entry.title,
-                                imageUrl = entry.imageUrl ?: ""
-                            ) to entry
-                        }
-                    }
-
-                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        if (localFavs.isNotEmpty()) {
-                            val localFavItems = localFavs.map { it.first }
-                            FavoritesHorizontalSection(
-                                title = "Yerel Favoriler",
-                                items = localFavItems,
-                                onSeeAllClick = {
-                                    onOpenFavoriteSheet("Yerel Favoriler", localFavItems) { item ->
-                                        localFavs.find { it.first.id == item.id }?.second?.let { onEntryClick(it) }
-                                    }
-                                },
-                                onItemClick = { item ->
-                                    localFavs.find { it.first.id == item.id }?.second?.let { onEntryClick(it) }
-                                }
-                            )
-                        }
-                        FavoritesHorizontalSection(
-                            title = "Favori Animeler",
-                            items = state.favoriteAnime,
-                            onSeeAllClick = {
-                                onOpenFavoriteSheet("Favori Animeler", state.favoriteAnime) { item ->
-                                    item.id.toIntOrNull()?.let { id ->
-                                        onFavoriteMediaClick(id + 100_000_000, MediaType.Anime, "anilist")
-                                    }
-                                }
-                            },
-                            onItemClick = { item ->
-                                item.id.toIntOrNull()?.let { id ->
-                                    onFavoriteMediaClick(id + 100_000_000, MediaType.Anime, "anilist")
-                                }
-                            }
-                        )
-                        FavoritesHorizontalSection(
-                            title = "Favori Mangalar",
-                            items = state.favoriteManga,
-                            onSeeAllClick = {
-                                onOpenFavoriteSheet("Favori Mangalar", state.favoriteManga) { item ->
-                                    item.id.toIntOrNull()?.let { id ->
-                                        onFavoriteMediaClick(id + 100_000_000, MediaType.Manga, "anilist")
-                                    }
-                                }
-                            },
-                            onItemClick = { item ->
-                                item.id.toIntOrNull()?.let { id ->
-                                    onFavoriteMediaClick(id + 100_000_000, MediaType.Manga, "anilist")
-                                }
-                            }
-                        )
-                        FavoritesHorizontalSection(
-                            title = "Favori Karakterler",
-                            items = state.favoriteCharacters,
-                            onSeeAllClick = {
-                                onOpenFavoriteSheet("Favori Karakterler", state.favoriteCharacters) { item ->
-                                    item.id.toIntOrNull()?.let { id ->
-                                        onFavoriteCharacterClick(id, "anilist", item.title, item.imageUrl)
-                                    }
-                                }
-                            },
-                            onItemClick = { item ->
-                                item.id.toIntOrNull()?.let { id ->
-                                    onFavoriteCharacterClick(id, "anilist", item.title, item.imageUrl)
-                                }
-                            }
-                        )
-                        FavoritesHorizontalSection(
-                            title = "Favori Ekip (Staff)",
-                            items = state.favoriteStaff,
-                            onSeeAllClick = {
-                                onOpenFavoriteSheet("Favori Ekip (Staff)", state.favoriteStaff) { item ->
-                                    item.id.toIntOrNull()?.let { id ->
-                                        onFavoriteStaffClick(id, "anilist", item.title, item.imageUrl)
-                                    }
-                                }
-                            },
-                            onItemClick = { item ->
-                                item.id.toIntOrNull()?.let { id ->
-                                    onFavoriteStaffClick(id, "anilist", item.title, item.imageUrl)
-                                }
-                            }
+        // TAB 2: STATS
+        if (activeTab == 2) {
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf("Genel Bakış", "Türler", "Etiketler", "Ekip", "Seslendirenler", "Stüdyolar").forEachIndexed { idx, label ->
+                        ProfileFilterChip(
+                            text = label,
+                            isSelected = statsSubTab == idx,
+                            accentColor = accentColor,
+                            onClick = { statsSubTab = idx }
                         )
                     }
                 }
             }
-            1 -> {
-                // ACTIVITY
-                if (state.activities.isEmpty()) {
+
+            val overview = if (statsMediaType == 0) state.animeOverviewStats else state.mangaOverviewStats
+
+            if (statsSubTab == 0) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(KitsugiColors.Surface)
+                            .padding(18.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // Media Switcher
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(KitsugiColors.SurfaceStrong)
+                                .padding(4.dp)
+                        ) {
+                            listOf("Anime", "Manga").forEachIndexed { idx, label ->
+                                val isSel = statsMediaType == idx
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(if (isSel) accentColor else Color.Transparent)
+                                        .clickable { statsMediaType = idx }
+                                        .padding(vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = label,
+                                        color = if (isSel) KitsugiColors.Background else KitsugiColors.TextMuted,
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.labelLarge
+                                    )
+                                }
+                            }
+                        }
+
+                        if (overview != null) {
+                            // Key Stats Grid
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Row(modifier = Modifier.fillMaxWidth()) {
+                                    StatCard("Toplam", overview.count.toString())
+                                    StatCard(if (statsMediaType == 0) "İzlenen Bölüm" else "Okunan Bölüm", overview.episodesWatched.toString())
+                                    StatCard(if (statsMediaType == 0) "İzlenen Gün" else "Okunan Cilt", "%.1f".format(overview.daysWatched))
+                                }
+                                Row(modifier = Modifier.fillMaxWidth()) {
+                                    StatCard("Ortalama Skor", "%.1f".format(overview.meanScore))
+                                    StatCard("Standart Sapma", "%.1f".format(overview.standardDeviation))
+                                }
+                            }
+
+                            HorizontalDivider(color = KitsugiColors.SurfaceStrong)
+
+                            // Score Distribution
+                            if (overview.scoreList.isNotEmpty()) {
+                                Column {
+                                    Text(
+                                        text = "Puan Dağılımı",
+                                        color = KitsugiColors.TextPrimary,
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    VerticalStatsBar(
+                                        stats = overview.scoreList.map { it.score.toString() to it.count.toFloat() },
+                                        accentColor = accentColor
+                                    )
+                                }
+                            }
+
+                            // Format Distribution
+                            if (overview.formatList.isNotEmpty()) {
+                                Column {
+                                    Text(
+                                        text = "Format Dağılımı",
+                                        color = KitsugiColors.TextPrimary,
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    HorizontalStatsBar(
+                                        stats = overview.formatList.map {
+                                            Triple(it.format, it.count, accentColor)
+                                        }
+                                    )
+                                }
+                            }
+
+                            // Status Distribution
+                            if (overview.statusList.isNotEmpty()) {
+                                Column {
+                                    Text(
+                                        text = "Durum Dağılımı",
+                                        color = KitsugiColors.TextPrimary,
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    HorizontalStatsBar(
+                                        stats = overview.statusList.map {
+                                            val color = when (it.status) {
+                                                "CURRENT" -> KitsugiColors.AccentBlue
+                                                "COMPLETED" -> KitsugiColors.AccentGreen
+                                                "PLANNING" -> KitsugiColors.TextMuted
+                                                "PAUSED" -> KitsugiColors.AccentOrange
+                                                "DROPPED" -> KitsugiColors.AccentPink
+                                                else -> accentColor
+                                            }
+                                            Triple(it.status, it.count, color)
+                                        }
+                                    )
+                                }
+                            }
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(24.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(text = "İstatistik verisi hazırlanamadı.", color = KitsugiColors.TextMuted)
+                            }
+                        }
+                    }
+                }
+            } else {
+                val currentList: List<RankedStatItem> = when (statsSubTab) {
+                    1 -> overview?.genreList.orEmpty()
+                    2 -> overview?.tagList.orEmpty()
+                    3 -> overview?.staffList.orEmpty()
+                    4 -> overview?.voiceActorList.orEmpty()
+                    5 -> overview?.studioList.orEmpty()
+                    else -> emptyList()
+                }
+
+                if (currentList.isEmpty()) {
                     item {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(24.dp),
+                                .padding(32.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(text = "Son aktivite bulunamadı", color = KitsugiColors.TextMuted)
+                            Text(text = "İstatistik verisi bulunamadı.", color = KitsugiColors.TextMuted)
                         }
                     }
                 } else {
-                    items(state.activities) { activity ->
-                        ActivityCard(
-                            activity = activity,
+                    itemsIndexed(currentList) { idx, item ->
+                        Column {
+                            PositionalStatItemCard(
+                                rank = idx + 1,
+                                title = item.name,
+                                count = item.count,
+                                meanScore = item.meanScore,
+                                timeSpentMinutes = item.timeSpentMinutes,
+                                chaptersRead = item.chaptersRead,
+                                imageUrl = item.imageUrl,
+                                accentColor = accentColor,
+                                onClick = {
+                                    if ((statsSubTab == 3 || statsSubTab == 4) && item.id != null) {
+                                        onFavoriteStaffClick(item.id, "anilist", item.name, item.imageUrl)
+                                    }
+                                }
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+                }
+            }
+        }
+
+        // TAB 3: FAVORITES
+        if (activeTab == 3) {
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf("Anime", "Manga", "Karakterler", "Ekip", "Stüdyolar").forEachIndexed { idx, label ->
+                        ProfileFilterChip(
+                            text = label,
+                            isSelected = favoritesFilter == idx,
                             accentColor = accentColor,
-                            onMediaClick = { mediaId, mediaType ->
-                                onFavoriteMediaClick(mediaId + 100_000_000, mediaType, "anilist")
-                            }
+                            onClick = { favoritesFilter = idx }
                         )
                     }
-                    item {
-                        if (state.activitiesHasNext) {
-                            Button(
-                                onClick = onLoadMoreActivities,
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(containerColor = KitsugiColors.Surface)
+                }
+            }
+
+            val currentFavList = when (favoritesFilter) {
+                0 -> state.favoriteAnime
+                1 -> state.favoriteManga
+                2 -> state.favoriteCharacters
+                3 -> state.favoriteStaff
+                4 -> state.favoriteStudios
+                else -> emptyList()
+            }
+
+            if (currentFavList.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "Favori öge bulunamadı.", color = KitsugiColors.TextMuted)
+                    }
+                }
+            } else {
+                item {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 1200.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        userScrollEnabled = false
+                    ) {
+                        items(currentFavList, key = { it.id }) { item ->
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        item.id.toIntOrNull()?.let { id ->
+                                            when (favoritesFilter) {
+                                                0 -> onFavoriteMediaClick(id, MediaType.Anime, "anilist")
+                                                1 -> onFavoriteMediaClick(id, MediaType.Manga, "anilist")
+                                                2 -> onFavoriteCharacterClick(id, "anilist", item.title, item.imageUrl)
+                                                3 -> onFavoriteStaffClick(id, "anilist", item.title, item.imageUrl)
+                                            }
+                                        }
+                                    },
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text(text = "Daha Fazla Yükle", color = KitsugiColors.TextPrimary)
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .aspectRatio(0.7f)
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(KitsugiColors.Surface)
+                                ) {
+                                    if (item.imageUrl.isNotBlank()) {
+                                        AsyncImage(
+                                            model = item.imageUrl,
+                                            contentDescription = item.title,
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                    } else {
+                                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                            Icon(imageVector = Icons.Rounded.Favorite, contentDescription = null, tint = accentColor)
+                                        }
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = item.title,
+                                    color = KitsugiColors.TextPrimary,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 11.sp
+                                )
                             }
                         }
                     }
+                }
+            }
+        }
+
+        // TAB 4: SOCIAL
+        if (activeTab == 4) {
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    ProfileFilterChip(
+                        text = "Takipçiler (${state.socialState.followers.size})",
+                        isSelected = socialFilter == 0,
+                        accentColor = accentColor,
+                        onClick = { socialFilter = 0 }
+                    )
+                    ProfileFilterChip(
+                        text = "Takip Edilen (${state.socialState.following.size})",
+                        isSelected = socialFilter == 1,
+                        accentColor = accentColor,
+                        onClick = { socialFilter = 1 }
+                    )
+                }
+            }
+
+            val userList = if (socialFilter == 0) state.socialState.followers else state.socialState.following
+            if (userList.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "Kullanıcı bulunamadı.", color = KitsugiColors.TextMuted)
+                    }
+                }
+            } else {
+                item {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 1200.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        userScrollEnabled = false
+                    ) {
+                        items(userList, key = { it.id }) { u ->
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(KitsugiColors.Surface)
+                                    .padding(12.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                AsyncImage(
+                                    model = u.avatarUrl ?: "",
+                                    contentDescription = u.name,
+                                    modifier = Modifier
+                                        .size(56.dp)
+                                        .clip(CircleShape),
+                                    contentScale = ContentScale.Crop
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = u.name,
+                                    color = KitsugiColors.TextPrimary,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(80.dp))
+        }
+    }
+}
+
+@Composable
+fun MalProfileContent(
+    state: MalProfileState,
+    mediaEntries: List<MediaEntry>,
+    appSettings: AppSettings,
+    onEntryClick: (MediaEntry) -> Unit,
+    onFavoriteMediaClick: (mediaId: Int, mediaType: MediaType, source: String) -> Unit,
+    onFavoriteCharacterClick: (charId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
+    onFavoriteStaffClick: (staffId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
+    onOpenFavoriteSheet: (title: String, items: List<ProfileFavoriteItem>, onClick: (ProfileFavoriteItem) -> Unit) -> Unit,
+    onOpenStatsClick: (() -> Unit)? = null,
+    isLandscape: Boolean,
+    accentColor: Color
+) {
+    var activeTab by remember { mutableStateOf(0) }
+    var statsMediaType by remember { mutableStateOf(0) }
+    var favoritesFilter by remember { mutableStateOf(0) }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = if (isLandscape) 18.dp else 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Banner and Avatar
+        item {
+            val context = LocalContext.current
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp)
+                    .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Brush.horizontalGradient(listOf(accentColor, KitsugiColors.AccentBlue)))
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Brush.verticalGradient(listOf(Color.Transparent, KitsugiColors.Background.copy(alpha = 0.8f))))
+                )
+
+                // Share butonu – sağ üst köşe
+                if (state.name.isNotBlank()) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(10.dp)
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(KitsugiColors.Background.copy(alpha = 0.50f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        IconButton(onClick = {
+                            val url = com.kitsugi.animelist.utils.ShareUtils.buildProfileUrl("mal", state.name)
+                            com.kitsugi.animelist.utils.ShareUtils.shareText(context, state.name, url)
+                        }) {
+                            Icon(
+                                imageVector = Icons.Rounded.Share,
+                                contentDescription = "Profili Paylaş",
+                                tint = KitsugiColors.TextPrimary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
+
+
+                // Avatar overlay
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    AsyncImage(
+                        model = state.avatarUrl ?: "",
+                        contentDescription = "Avatar",
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(CircleShape)
+                            .border(3.dp, KitsugiColors.Background, CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = state.name,
+                            color = KitsugiColors.TextPrimary,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        val details = buildList {
+                            if (state.location.isNotBlank()) add(state.location)
+                            if (state.joinedAt.isNotBlank()) {
+                                val dateStr = state.joinedAt.substringBefore("T")
+                                add("Katılım: $dateStr")
+                            }
+                        }.joinToString(" • ")
+
+                        if (details.isNotBlank()) {
+                            Text(
+                                text = details,
+                                color = KitsugiColors.TextMuted,
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // Top 5 Icon Sub-Tabs
+        item {
+            ProfileHeaderIconTabs(
+                selectedTab = activeTab,
+                onTabSelected = { activeTab = it },
+                accentColor = accentColor
+            )
+        }
+
+        if (activeTab == 0) {
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(KitsugiColors.Surface)
+                        .padding(18.dp)
+                ) {
+                    Text(
+                        text = "MyAnimeList Profil Özeti",
+                        color = KitsugiColors.TextPrimary,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        StatCard("Anime", state.animeStats?.count?.toString() ?: "0")
+                        StatCard("Manga", state.mangaStats?.count?.toString() ?: "0")
+                    }
+                }
+            }
+        }
+
+        if (activeTab == 1) {
+            item {
+                val malEntries = remember(mediaEntries) { mediaEntries.filter { it.source == "myanimelist" } }
+                if (malEntries.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "Henüz MyAnimeList aktivitesi bulunmuyor.", color = KitsugiColors.TextMuted)
+                    }
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        malEntries.take(15).forEach { entry ->
+                            ProfileActivityRow(
+                                title = entry.title,
+                                imageUrl = entry.imageUrl,
+                                statusStr = entry.status.label,
+                                progressStr = "Bölüm: ${entry.progress}",
+                                onClick = { onEntryClick(entry) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        if (activeTab == 2) {
+            val stats = if (statsMediaType == 0) state.animeStats else state.mangaStats
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(KitsugiColors.Surface)
+                        .padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(KitsugiColors.SurfaceStrong)
+                            .padding(4.dp)
+                    ) {
+                        listOf("Anime", "Manga").forEachIndexed { idx, label ->
+                            val isSel = statsMediaType == idx
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(if (isSel) accentColor else Color.Transparent)
+                                    .clickable { statsMediaType = idx }
+                                    .padding(vertical = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = label,
+                                    color = if (isSel) KitsugiColors.Background else KitsugiColors.TextMuted,
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.labelLarge
+                                )
+                            }
+                        }
+                    }
+
+                    stats?.let { s ->
+                        SegmentedDistributionBar(
+                            watching = s.watching,
+                            completed = s.completed,
+                            planned = s.planned,
+                            paused = s.paused,
+                            dropped = s.dropped,
+                            total = s.count,
+                            accentColor = accentColor
+                        )
+                        StatItemRow("İzliyor/Okuyor", s.watching, s.count, accentColor)
+                        StatItemRow("Tamamlandı", s.completed, s.count, KitsugiColors.AccentGreen)
+                        StatItemRow("Planlanıyor", s.planned, s.count, KitsugiColors.TextMuted)
+                        StatItemRow("Durduruldu", s.paused, s.count, KitsugiColors.AccentOrange)
+                        StatItemRow("Bırakıldı", s.dropped, s.count, KitsugiColors.AccentPink)
+
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            StatCard("Toplam Kayıt", s.count.toString())
+                            StatCard("Ortalama Skor", "%.1f".format(s.meanScore))
+                        }
+                    }
+                }
+            }
+        }
+
+        if (activeTab == 3) {
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf("Anime", "Manga", "Karakterler", "Ekip").forEachIndexed { idx, label ->
+                        ProfileFilterChip(
+                            text = label,
+                            isSelected = favoritesFilter == idx,
+                            accentColor = accentColor,
+                            onClick = { favoritesFilter = idx }
+                        )
+                    }
+                }
+            }
+
+            val currentFavList = when (favoritesFilter) {
+                0 -> state.favoriteAnime
+                1 -> state.favoriteManga
+                2 -> state.favoriteCharacters
+                3 -> state.favoriteStaff
+                else -> emptyList()
+            }
+
+            if (currentFavList.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "Favori öge bulunamadı.", color = KitsugiColors.TextMuted)
+                    }
+                }
+            } else {
+                item {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 1200.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        userScrollEnabled = false
+                    ) {
+                        items(currentFavList, key = { it.id }) { item ->
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        item.id.toIntOrNull()?.let { id ->
+                                            when (favoritesFilter) {
+                                                0 -> onFavoriteMediaClick(id, MediaType.Anime, "jikan")
+                                                1 -> onFavoriteMediaClick(id, MediaType.Manga, "jikan")
+                                                2 -> onFavoriteCharacterClick(id, "jikan", item.title, item.imageUrl)
+                                                3 -> onFavoriteStaffClick(id, "jikan", item.title, item.imageUrl)
+                                            }
+                                        }
+                                    },
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .aspectRatio(0.7f)
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(KitsugiColors.Surface)
+                                ) {
+                                    if (item.imageUrl.isNotBlank()) {
+                                        AsyncImage(
+                                            model = item.imageUrl,
+                                            contentDescription = item.title,
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                    } else {
+                                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                            Icon(imageVector = Icons.Rounded.Favorite, contentDescription = null, tint = accentColor)
+                                        }
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = item.title,
+                                    color = KitsugiColors.TextPrimary,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 11.sp
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (activeTab == 4) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "MyAnimeList için sosyal veriler mevcut değil.", color = KitsugiColors.TextMuted)
                 }
             }
         }
@@ -865,355 +1645,6 @@ fun ProfileActivityRow(
 }
 
 @Composable
-fun MalProfileContent(
-    state: MalProfileState,
-    mediaEntries: List<MediaEntry>,
-    appSettings: AppSettings,
-    onEntryClick: (MediaEntry) -> Unit,
-    onFavoriteMediaClick: (mediaId: Int, mediaType: MediaType, source: String) -> Unit,
-    onFavoriteCharacterClick: (charId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
-    onFavoriteStaffClick: (staffId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
-    onOpenFavoriteSheet: (title: String, items: List<ProfileFavoriteItem>, onClick: (ProfileFavoriteItem) -> Unit) -> Unit,
-    onOpenStatsClick: (() -> Unit)? = null,
-    isLandscape: Boolean,
-    accentColor: Color
-) {
-    var activeTab by remember { mutableStateOf(0) } // 0: Profil, 1: Aktivite
-    val tabs = listOf("Profil", "Aktivite")
-
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = if (isLandscape) 18.dp else 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Banner and Avatar
-        item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(160.dp)
-                    .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Brush.horizontalGradient(listOf(accentColor, KitsugiColors.AccentBlue)))
-                )
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Brush.verticalGradient(listOf(Color.Transparent, KitsugiColors.Background.copy(alpha = 0.8f))))
-                )
-
-                // Avatar overlay
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    AsyncImage(
-                        model = state.avatarUrl ?: "",
-                        contentDescription = "Avatar",
-                        modifier = Modifier
-                            .size(64.dp)
-                            .clip(CircleShape)
-                            .border(3.dp, KitsugiColors.Background, CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            text = state.name,
-                            color = KitsugiColors.TextPrimary,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                        val details = buildList {
-                            if (state.location.isNotBlank()) add(state.location)
-                            if (state.joinedAt.isNotBlank()) {
-                                val dateStr = state.joinedAt.substringBefore("T")
-                                add("Katılım: $dateStr")
-                            }
-                        }.joinToString(" • ")
-
-                        if (details.isNotBlank()) {
-                            Text(
-                                text = details,
-                                color = KitsugiColors.TextMuted,
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // Sub-tabs row
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(KitsugiColors.Surface)
-            ) {
-                tabs.forEachIndexed { index, label ->
-                    val isSelected = activeTab == index
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { activeTab = index }
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = label,
-                            color = if (isSelected) accentColor else KitsugiColors.TextMuted,
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                        )
-                    }
-                }
-            }
-        }
-
-        if (activeTab == 0) {
-            // PROFIL
-            state.animeStats?.let { stats ->
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(24.dp))
-                            .background(KitsugiColors.Surface)
-                            .padding(18.dp)
-                    ) {
-                        Text(
-                            text = "Anime İstatistikleri",
-                            color = KitsugiColors.TextPrimary,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        SegmentedDistributionBar(
-                            watching = stats.watching,
-                            completed = stats.completed,
-                            planned = stats.planned,
-                            paused = stats.paused,
-                            dropped = stats.dropped,
-                            total = stats.count,
-                            accentColor = KitsugiColors.AccentBlue
-                        )
-                        Spacer(modifier = Modifier.height(14.dp))
-                        StatItemRow("İzleniyor", stats.watching, stats.count, KitsugiColors.AccentBlue)
-                        StatItemRow("Tamamlandı", stats.completed, stats.count, KitsugiColors.AccentGreen)
-                        StatItemRow("Planlanıyor", stats.planned, stats.count, KitsugiColors.TextMuted)
-                        StatItemRow("Durduruldu", stats.paused, stats.count, KitsugiColors.AccentOrange)
-                        StatItemRow("Bırakıldı", stats.dropped, stats.count, KitsugiColors.AccentPink)
-
-                        Spacer(modifier = Modifier.height(16.dp))
-                        HorizontalDivider(color = KitsugiColors.SurfaceStrong)
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            StatCard("Toplam Anime", stats.count.toString())
-                            StatCard("Ortalama Skor", "%.1f".format(stats.meanScore))
-                            StatCard("Süre", "${stats.minutesWatched / 60 / 24} Gün")
-                        }
-                    }
-                }
-            }
-
-            state.mangaStats?.let { stats ->
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(24.dp))
-                            .background(KitsugiColors.Surface)
-                            .padding(18.dp)
-                    ) {
-                        Text(
-                            text = "Manga İstatistikleri",
-                            color = KitsugiColors.TextPrimary,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        SegmentedDistributionBar(
-                            watching = stats.watching,
-                            completed = stats.completed,
-                            planned = stats.planned,
-                            paused = stats.paused,
-                            dropped = stats.dropped,
-                            total = stats.count,
-                            accentColor = KitsugiColors.AccentBlue
-                        )
-                        Spacer(modifier = Modifier.height(14.dp))
-                        StatItemRow("Okuyor", stats.watching, stats.count, KitsugiColors.AccentBlue)
-                        StatItemRow("Tamamlandı", stats.completed, stats.count, KitsugiColors.AccentGreen)
-                        StatItemRow("Planlanıyor", stats.planned, stats.count, KitsugiColors.TextMuted)
-                        StatItemRow("Durduruldu", stats.paused, stats.count, KitsugiColors.AccentOrange)
-                        StatItemRow("Bırakıldı", stats.dropped, stats.count, KitsugiColors.AccentPink)
-
-                        Spacer(modifier = Modifier.height(16.dp))
-                        HorizontalDivider(color = KitsugiColors.SurfaceStrong)
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            StatCard("Toplam Manga", stats.count.toString())
-                            StatCard("Ortalama Skor", "%.1f".format(stats.meanScore))
-                            StatCard("Bölümler", stats.episodesWatched.toString())
-                        }
-                    }
-                }
-            }
-
-            item {
-                val localFavs = remember(mediaEntries) {
-                    mediaEntries.filter { it.isFavorite }.map { entry ->
-                        ProfileFavoriteItem(
-                            id = entry.id.toString(),
-                            title = entry.title,
-                            imageUrl = entry.imageUrl ?: ""
-                        ) to entry
-                    }
-                }
-
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    if (localFavs.isNotEmpty()) {
-                        val localFavItems = localFavs.map { it.first }
-                        FavoritesHorizontalSection(
-                            title = "Yerel Favoriler",
-                            items = localFavItems,
-                            onSeeAllClick = {
-                                onOpenFavoriteSheet("Yerel Favoriler", localFavItems) { item ->
-                                    localFavs.find { it.first.id == item.id }?.second?.let { onEntryClick(it) }
-                                }
-                            },
-                            onItemClick = { item ->
-                                localFavs.find { it.first.id == item.id }?.second?.let { onEntryClick(it) }
-                            }
-                        )
-                    }
-
-                    FavoritesHorizontalSection(
-                        title = "Favori Animeler",
-                        items = state.favoriteAnime,
-                        onSeeAllClick = {
-                            onOpenFavoriteSheet("Favori Animeler", state.favoriteAnime) { item ->
-                                item.id.toIntOrNull()?.let { id ->
-                                    onFavoriteMediaClick(id, MediaType.Anime, "jikan")
-                                }
-                            }
-                        },
-                        onItemClick = { item ->
-                            item.id.toIntOrNull()?.let { id ->
-                                onFavoriteMediaClick(id, MediaType.Anime, "jikan")
-                            }
-                        }
-                    )
-                    FavoritesHorizontalSection(
-                        title = "Favori Mangalar",
-                        items = state.favoriteManga,
-                        onSeeAllClick = {
-                            onOpenFavoriteSheet("Favori Mangalar", state.favoriteManga) { item ->
-                                item.id.toIntOrNull()?.let { id ->
-                                    onFavoriteMediaClick(id, MediaType.Manga, "jikan")
-                                }
-                            }
-                        },
-                        onItemClick = { item ->
-                            item.id.toIntOrNull()?.let { id ->
-                                onFavoriteMediaClick(id, MediaType.Manga, "jikan")
-                            }
-                        }
-                    )
-                    FavoritesHorizontalSection(
-                        title = "Favori Karakterler",
-                        items = state.favoriteCharacters,
-                        onSeeAllClick = {
-                            onOpenFavoriteSheet("Favori Karakterler", state.favoriteCharacters) { item ->
-                                item.id.toIntOrNull()?.let { id ->
-                                    onFavoriteCharacterClick(id, "jikan", item.title, item.imageUrl)
-                                }
-                            }
-                        },
-                        onItemClick = { item ->
-                            item.id.toIntOrNull()?.let { id ->
-                                onFavoriteCharacterClick(id, "jikan", item.title, item.imageUrl)
-                            }
-                        }
-                    )
-                    FavoritesHorizontalSection(
-                        title = "Favori Personeller",
-                        items = state.favoriteStaff,
-                        onSeeAllClick = {
-                            onOpenFavoriteSheet("Favori Personeller", state.favoriteStaff) { item ->
-                                item.id.toIntOrNull()?.let { id ->
-                                    onFavoriteStaffClick(id, "jikan", item.title, item.imageUrl)
-                                }
-                            }
-                        },
-                        onItemClick = { item ->
-                            item.id.toIntOrNull()?.let { id ->
-                                onFavoriteStaffClick(id, "jikan", item.title, item.imageUrl)
-                            }
-                        }
-                    )
-                }
-            }
-        } else {
-            // AKTİVİTE
-            item {
-                val malEntries = remember(mediaEntries) {
-                    mediaEntries.filter { it.source == "myanimelist" }
-                }
-                if (malEntries.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "Henüz MyAnimeList aktivitesi bulunmuyor.", color = KitsugiColors.TextMuted)
-                    }
-                } else {
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text(
-                            text = "Son Güncellenen Kitaplık İçerikleri",
-                            color = KitsugiColors.TextPrimary,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        malEntries.take(15).forEach { entry ->
-                            ProfileActivityRow(
-                                title = entry.title,
-                                imageUrl = entry.imageUrl,
-                                statusStr = entry.status.label,
-                                progressStr = "Bölüm: ${entry.progress}",
-                                onClick = { onEntryClick(entry) }
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(80.dp))
-        }
-    }
-}
-
-@Composable
 fun SimklProfileContent(
     state: SimklProfileState,
     mediaEntries: List<MediaEntry>,
@@ -1225,53 +1656,7 @@ fun SimklProfileContent(
     isLandscape: Boolean,
     accentColor: Color
 ) {
-    // Memoize stats calculations so scrolling is 100% smooth without re-computing on every frame
-    val hasApiStats = remember(state.totalAnime, state.totalShows, state.totalMovies) {
-        state.totalAnime > 0 || state.totalShows > 0 || state.totalMovies > 0
-    }
-
-    val simklEntries = remember(hasApiStats, mediaEntries) {
-        if (!hasApiStats) mediaEntries.filter { it.source == "simkl" || it.simklId != null } else emptyList()
-    }
-
-    val totalCount = remember(hasApiStats, state.totalAnime, state.totalShows, state.totalMovies, simklEntries) {
-        if (hasApiStats) state.totalAnime + state.totalShows + state.totalMovies else simklEntries.size
-    }
-    val animeCount = remember(hasApiStats, state.totalAnime, simklEntries) {
-        if (hasApiStats) state.totalAnime else simklEntries.count { it.type == MediaType.Anime }
-    }
-    val tvCount = remember(hasApiStats, state.totalShows, simklEntries) {
-        if (hasApiStats) state.totalShows else simklEntries.count { it.type == MediaType.TvShow }
-    }
-    val movieCount = remember(hasApiStats, state.totalMovies, simklEntries) {
-        if (hasApiStats) state.totalMovies else simklEntries.count { it.type == MediaType.Movie }
-    }
-
-    val watching = remember(hasApiStats, state.watching, simklEntries) {
-        if (hasApiStats) state.watching else simklEntries.count { it.status == WatchStatus.Watching || it.status == WatchStatus.Repeating }
-    }
-    val completed = remember(hasApiStats, state.completed, simklEntries) {
-        if (hasApiStats) state.completed else simklEntries.count { it.status == WatchStatus.Completed }
-    }
-    val planned = remember(hasApiStats, state.planned, simklEntries) {
-        if (hasApiStats) state.planned else simklEntries.count { it.status == WatchStatus.Planned }
-    }
-    val paused = remember(hasApiStats, state.paused, simklEntries) {
-        if (hasApiStats) state.paused else simklEntries.count { it.status == WatchStatus.Paused }
-    }
-    val dropped = remember(hasApiStats, state.dropped, simklEntries) {
-        if (hasApiStats) state.dropped else simklEntries.count { it.status == WatchStatus.Dropped }
-    }
-
-    val avgScore = remember(hasApiStats, state.avgScore, simklEntries) {
-        if (hasApiStats) state.avgScore else {
-            val scored = simklEntries.mapNotNull { it.score }
-            if (scored.isNotEmpty()) scored.average() else 0.0
-        }
-    }
-
-    var activeTab by remember { mutableStateOf(0) } // 0: Profil, 1: Aktivite
-    val tabs = listOf("Profil", "Aktivite")
+    var activeTab by remember { mutableStateOf(0) }
 
     LazyColumn(
         modifier = Modifier
@@ -1298,6 +1683,32 @@ fun SimklProfileContent(
                         .background(Brush.verticalGradient(listOf(Color.Transparent, KitsugiColors.Background.copy(alpha = 0.8f))))
                 )
 
+                // Share butonu – sağ üst köşe
+                if (state.name.isNotBlank()) {
+                    val context = LocalContext.current
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(10.dp)
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(KitsugiColors.Background.copy(alpha = 0.50f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        IconButton(onClick = {
+                            val url = com.kitsugi.animelist.utils.ShareUtils.buildProfileUrl("simkl", state.name)
+                            com.kitsugi.animelist.utils.ShareUtils.shareText(context, state.name, url)
+                        }) {
+                            Icon(
+                                imageVector = Icons.Rounded.Share,
+                                contentDescription = "Profili Paylaş",
+                                tint = KitsugiColors.TextPrimary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
+
                 // Avatar overlay
                 Row(
                     modifier = Modifier
@@ -1316,254 +1727,88 @@ fun SimklProfileContent(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = state.name,
+                            color = KitsugiColors.TextPrimary,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        if (!state.accountType.isNullOrBlank()) {
                             Text(
-                                text = state.name,
-                                color = KitsugiColors.TextPrimary,
-                                style = MaterialTheme.typography.titleLarge,
+                                text = "Hesap Türü: ${state.accountType}",
+                                color = KitsugiColors.AccentOrange,
+                                style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold
                             )
-                            if (!state.accountType.isNullOrBlank()) {
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(accentColor.copy(alpha = 0.2f))
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                                ) {
-                                    Text(
-                                        text = state.accountType.uppercase(),
-                                        color = accentColor,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 10.sp
-                                    )
-                                }
-                            }
                         }
-                        val details = remember(state.location, state.joinedAt) {
-                            buildList {
-                                if (!state.location.isNullOrBlank()) add(state.location)
-                                if (!state.joinedAt.isNullOrBlank()) {
-                                    val dateStr = state.joinedAt.substringBefore(" ")
-                                    add("Katılım: $dateStr")
-                                }
-                            }.joinToString(" • ")
-                        }
-
-                        Text(
-                            text = if (details.isNotBlank()) details else "Simkl Üyesi",
-                            color = KitsugiColors.TextMuted,
-                            style = MaterialTheme.typography.labelSmall
-                        )
                     }
                 }
             }
         }
 
-        // Sub-tabs row
+        // Top 5 Icon Sub-Tabs
         item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(KitsugiColors.Surface)
-            ) {
-                tabs.forEachIndexed { index, label ->
-                    val isSelected = activeTab == index
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { activeTab = index }
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = label,
-                            color = if (isSelected) accentColor else KitsugiColors.TextMuted,
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                        )
-                    }
-                }
-            }
+            ProfileHeaderIconTabs(
+                selectedTab = activeTab,
+                onTabSelected = { activeTab = it },
+                accentColor = accentColor
+            )
         }
 
         if (activeTab == 0) {
-            // PROFIL
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    // Connection Status Card
-                    Card(
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(containerColor = KitsugiColors.Surface),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(20.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Rounded.CheckCircle,
-                                    contentDescription = null,
-                                    tint = KitsugiColors.AccentGreen,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = "Simkl Bağlantısı Aktif",
-                                    color = KitsugiColors.TextPrimary,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            if (!state.bio.isNullOrBlank()) {
-                                Spacer(modifier = Modifier.height(12.dp))
-                                Text(
-                                    text = state.bio,
-                                    color = KitsugiColors.TextSecondary,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        }
-                    }
-
-                    // Statistics Section
+            if (!state.bio.isNullOrBlank()) {
+                item {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(24.dp))
                             .background(KitsugiColors.Surface)
-                            .padding(18.dp)
+                            .padding(16.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Kütüphane İstatistikleri",
-                                color = KitsugiColors.TextPrimary,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            if (onOpenStatsClick != null) {
-                                Text(
-                                    text = "Detaylar →",
-                                    color = accentColor,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.clickable { onOpenStatsClick() }
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Stats Cards Grid
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            StatCard("Toplam", totalCount.toString())
-                            StatCard("Ort. Skor", if (avgScore > 0) "%.2f".format(avgScore) else "-")
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            StatCard("Animeler", animeCount.toString())
-                            StatCard("Diziler", tvCount.toString())
-                            StatCard("Filmler", movieCount.toString())
-                        }
-
-                        Spacer(modifier = Modifier.height(20.dp))
                         Text(
-                            text = "İzleme Durumu Dağılımı",
+                            text = "Hakkında",
                             color = KitsugiColors.TextPrimary,
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold
                         )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        SegmentedDistributionBar(
-                            watching = watching,
-                            completed = completed,
-                            planned = planned,
-                            paused = paused,
-                            dropped = dropped,
-                            total = totalCount,
-                            accentColor = accentColor
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = state.bio,
+                            color = KitsugiColors.TextSecondary,
+                            style = MaterialTheme.typography.bodySmall
                         )
-                        Spacer(modifier = Modifier.height(14.dp))
-
-                        StatItemRow("İzleniyor", watching, totalCount, accentColor)
-                        StatItemRow("Tamamlandı", completed, totalCount, KitsugiColors.AccentGreen)
-                        StatItemRow("Planlandı", planned, totalCount, KitsugiColors.TextMuted)
-                        StatItemRow("Durduruldu", paused, totalCount, KitsugiColors.AccentOrange)
-                        StatItemRow("Bırakıldı", dropped, totalCount, KitsugiColors.AccentPink)
                     }
                 }
             }
 
-            // Yerel Favoriler
             item {
-                val localFavs = remember(mediaEntries) {
-                    mediaEntries.filter { it.isFavorite }.map { entry ->
-                        ProfileFavoriteItem(
-                            id = entry.id.toString(),
-                            title = entry.title,
-                            imageUrl = entry.imageUrl ?: ""
-                        ) to entry
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(KitsugiColors.Surface)
+                        .padding(18.dp)
+                ) {
+                    Text(
+                        text = "Simkl Profil Özeti",
+                        color = KitsugiColors.TextPrimary,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        StatCard("Anime Sayısı", state.totalAnime.toString())
+                        StatCard("Dizi/TV Sayısı", state.totalShows.toString())
+                        StatCard("Film Sayısı", state.totalMovies.toString())
                     }
                 }
-
-                if (localFavs.isNotEmpty()) {
-                    val localFavItems = localFavs.map { it.first }
-                    FavoritesHorizontalSection(
-                        title = "Yerel Favoriler",
-                        items = localFavItems,
-                        onSeeAllClick = {
-                            onOpenFavoriteSheet("Yerel Favoriler", localFavItems) { item ->
-                                localFavs.find { it.first.id == item.id }?.second?.let { onEntryClick(it) }
-                            }
-                        },
-                        onItemClick = { item ->
-                            localFavs.find { it.first.id == item.id }?.second?.let { onEntryClick(it) }
-                        }
-                    )
-                }
             }
+        }
 
-            // Son İzlenenler (Simkl history)
-            if (state.recentHistory.isNotEmpty()) {
-                item {
-                    FavoritesHorizontalSection(
-                        title = "Son İzlenenler",
-                        items = state.recentHistory,
-                        onSeeAllClick = {
-                            onOpenFavoriteSheet("Son İzlenenler", state.recentHistory) { item ->
-                                item.id.toIntOrNull()?.let { id ->
-                                    onFavoriteMediaClick(id, MediaType.Anime, "simkl")
-                                }
-                            }
-                        },
-                        onItemClick = { item ->
-                            item.id.toIntOrNull()?.let { id ->
-                                onFavoriteMediaClick(id, MediaType.Anime, "simkl")
-                            }
-                        }
-                    )
-                }
-            }
-        } else {
-            // AKTİVİTE
+        if (activeTab == 1) {
             item {
                 if (state.recentHistory.isNotEmpty()) {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text(
-                            text = "Son İzleme Geçmişi",
-                            color = KitsugiColors.TextPrimary,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
                         state.recentHistory.forEach { item ->
                             ProfileActivityRow(
                                 title = item.title,
@@ -1579,37 +1824,65 @@ fun SimklProfileContent(
                         }
                     }
                 } else {
-                    val simklEntries = remember(mediaEntries) {
-                        mediaEntries.filter { it.source == "simkl" || it.simklId != null }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "Henüz Simkl aktivitesi bulunmuyor.", color = KitsugiColors.TextMuted)
                     }
-                    if (simklEntries.isEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(32.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = "Henüz Simkl aktivitesi bulunmuyor.", color = KitsugiColors.TextMuted)
-                        }
-                    } else {
-                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Text(
-                                text = "Son Güncellenen Kitaplık İçerikleri",
-                                color = KitsugiColors.TextPrimary,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            simklEntries.take(15).forEach { entry ->
-                                ProfileActivityRow(
-                                    title = entry.title,
-                                    imageUrl = entry.imageUrl,
-                                    statusStr = entry.status.label,
-                                    progressStr = "Bölüm: ${entry.progress}",
-                                    onClick = { onEntryClick(entry) }
-                                )
-                            }
-                        }
+                }
+            }
+        }
+
+        if (activeTab == 2) {
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(KitsugiColors.Surface)
+                        .padding(18.dp)
+                ) {
+                    Text(
+                        text = "İstatistikler",
+                        color = KitsugiColors.TextPrimary,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        StatCard("Toplam Anime", state.totalAnime.toString())
+                        StatCard("Diziler", state.totalShows.toString())
+                        StatCard("Filmler", state.totalMovies.toString())
                     }
+                }
+            }
+        }
+
+        if (activeTab == 3) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "Simkl favori listesi boş.", color = KitsugiColors.TextMuted)
+                }
+            }
+        }
+
+        if (activeTab == 4) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "Simkl sosyal verileri mevcut değil.", color = KitsugiColors.TextMuted)
                 }
             }
         }
@@ -1972,10 +2245,20 @@ fun FavoritesExpandedBottomSheet(
 fun ActivityCard(
     activity: ProfileActivityItem,
     accentColor: Color,
-    onMediaClick: ((mediaId: Int, type: MediaType) -> Unit)? = null
+    onMediaClick: ((mediaId: Int, type: MediaType) -> Unit)? = null,
+    onActivityClick: ((activityId: Int) -> Unit)? = null,
+    onLikeClick: ((activityId: Int) -> Unit)? = null,
+    onDeleteClick: ((activityId: Int) -> Unit)? = null
 ) {
+    var showMenu by remember { mutableStateOf(false) }
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .clickable {
+                activity.id.toIntOrNull()?.let { id -> onActivityClick?.invoke(id) }
+            },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = KitsugiColors.Surface)
     ) {
@@ -2008,6 +2291,43 @@ fun ActivityCard(
                         color = KitsugiColors.TextMuted,
                         style = MaterialTheme.typography.labelSmall
                     )
+                }
+
+                if (onDeleteClick != null) {
+                    Box {
+                        IconButton(
+                            onClick = { showMenu = true },
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.MoreVert,
+                                contentDescription = "Seçenekler",
+                                tint = KitsugiColors.TextMuted,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false },
+                            modifier = Modifier.background(KitsugiColors.SurfaceStrong)
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Sil", color = KitsugiColors.AccentRed, fontSize = 13.sp, fontWeight = FontWeight.Bold) },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Delete,
+                                        contentDescription = null,
+                                        tint = KitsugiColors.AccentRed,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                },
+                                onClick = {
+                                    showMenu = false
+                                    activity.id.toIntOrNull()?.let { id -> onDeleteClick.invoke(id) }
+                                }
+                            )
+                        }
+                    }
                 }
             }
 
@@ -2085,23 +2405,58 @@ fun ActivityCard(
             }
 
             Spacer(modifier = Modifier.height(12.dp))
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(
-                    imageVector = if (activity.isLiked) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                    contentDescription = null,
-                    tint = if (activity.isLiked) KitsugiColors.AccentPink else KitsugiColors.TextMuted,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = activity.likeCount.toString(),
-                    color = KitsugiColors.TextMuted,
-                    style = MaterialTheme.typography.bodySmall
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.clickable {
+                        activity.id.toIntOrNull()?.let { id -> onActivityClick?.invoke(id) }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.ChatBubbleOutline,
+                        contentDescription = "Yanıtlar",
+                        tint = KitsugiColors.TextMuted,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = activity.replyCount.toString(),
+                        color = KitsugiColors.TextMuted,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                var isLikedState by remember(activity.isLiked) { mutableStateOf(activity.isLiked) }
+                var likeCountState by remember(activity.likeCount) { mutableStateOf(activity.likeCount) }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.clickable {
+                        isLikedState = !isLikedState
+                        likeCountState = if (isLikedState) likeCountState + 1 else likeCountState - 1
+                        activity.id.toIntOrNull()?.let { id -> onLikeClick?.invoke(id) }
+                    }
+                ) {
+                    Icon(
+                        imageVector = if (isLikedState) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                        contentDescription = "Beğen",
+                        tint = if (isLikedState) KitsugiColors.AccentPink else KitsugiColors.TextMuted,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = likeCountState.toString(),
+                        color = if (isLikedState) KitsugiColors.AccentPink else KitsugiColors.TextMuted,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
             }
         }
     }
@@ -2114,5 +2469,138 @@ private fun formatActivityTime(timestamp: Long): String {
         diff < 3600 -> "${diff / 60} dakika önce"
         diff < 86400 -> "${diff / 3600} saat önce"
         else -> "${diff / 86400} gün önce"
+    }
+}
+
+@Composable
+fun PositionalStatItemCard(
+    rank: Int,
+    title: String,
+    count: Int,
+    meanScore: Double,
+    timeSpentMinutes: Int? = null,
+    chaptersRead: Int? = null,
+    imageUrl: String? = null,
+    accentColor: Color,
+    onClick: (() -> Unit)? = null
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = KitsugiColors.Surface)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (!imageUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = imageUrl,
+                        contentDescription = title,
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                }
+                Text(
+                    text = title,
+                    color = KitsugiColors.TextPrimary,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Box(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(accentColor.copy(alpha = 0.2f))
+                        .padding(horizontal = 10.dp, vertical = 4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "#$rank",
+                        color = accentColor,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = count.toString(),
+                        color = KitsugiColors.TextPrimary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Başlık",
+                        color = KitsugiColors.TextMuted,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = if (meanScore > 0) "%.1f".format(meanScore) else "-",
+                        color = KitsugiColors.TextPrimary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Ortalama Puan",
+                        color = KitsugiColors.TextMuted,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+                if (timeSpentMinutes != null && timeSpentMinutes > 0) {
+                    val days = timeSpentMinutes / (60 * 24)
+                    val hours = (timeSpentMinutes % (60 * 24)) / 60
+                    val text = if (days > 0) "${days}g ${hours}s" else "${hours}s"
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = text,
+                            color = KitsugiColors.TextPrimary,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Geçirilen Süre",
+                            color = KitsugiColors.TextMuted,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+                } else if (chaptersRead != null && chaptersRead > 0) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = chaptersRead.toString(),
+                            color = KitsugiColors.TextPrimary,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Okunan Cilt/Bölüm",
+                            color = KitsugiColors.TextMuted,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+                }
+            }
+        }
     }
 }

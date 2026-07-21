@@ -8,22 +8,28 @@ import android.widget.Toast
 object KitsugiTranslateUtils {
 
     /**
-     * Tries to open the text in available translator apps in priority order:
-     * 1. DeepL (mini)
-     * 2. DeepL (full app)
-     * 3. Google Translate (mini / tap-to-translate)
-     * 4. Google Translate (full activity)
-     * 5. TranslateYou (open source)
+     * Tries to open the text in available translator apps.
+     * If a preferredTranslator is specified (GOOGLE, DEEPL, TRANSLATE_YOU), attempts that app first.
+     * If preferred fails or is DEFAULT, cycles through all apps in fallback order.
      * Shows a toast if no translator app is found.
      */
-    fun Context.openTranslator(text: String) {
-        if (!openInDeepLMini(text)
-            && !openInDeepL(text)
-            && !openInGoogleTranslateMini(text)
-            && !openInGoogleTranslate(text)
-            && !openInTranslateYou(text)
-        ) {
-            Toast.makeText(this, "Çeviri uygulaması bulunamadı", Toast.LENGTH_SHORT).show()
+    fun Context.openTranslator(text: String, preferredTranslator: String = "DEFAULT") {
+        val handled = when (preferredTranslator.uppercase()) {
+            "GOOGLE" -> openInGoogleTranslateMini(text) || openInGoogleTranslate(text)
+            "DEEPL" -> openInDeepLMini(text) || openInDeepL(text)
+            "TRANSLATE_YOU" -> openInTranslateYou(text)
+            else -> false
+        }
+
+        if (!handled) {
+            val fallbackSuccess = openInDeepLMini(text)
+                    || openInDeepL(text)
+                    || openInGoogleTranslateMini(text)
+                    || openInGoogleTranslate(text)
+                    || openInTranslateYou(text)
+            if (!fallbackSuccess) {
+                Toast.makeText(this, "Çeviri uygulaması bulunamadı", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

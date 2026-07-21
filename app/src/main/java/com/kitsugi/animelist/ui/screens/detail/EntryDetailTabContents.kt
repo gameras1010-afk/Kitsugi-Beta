@@ -41,7 +41,8 @@ internal fun EntryDetailOverviewTab(
     mdbListShowLetterboxd: Boolean = false,
     mdbListShowTmdb: Boolean = false,
     mdbListShowTrakt: Boolean = false,
-    onSettingsClick: (() -> Unit)? = null
+    onSettingsClick: (() -> Unit)? = null,
+    preferredTranslator: String = "DEFAULT"
 ) {
     val context = LocalContext.current
 
@@ -53,7 +54,7 @@ internal fun EntryDetailOverviewTab(
             synopsisState = synopsisState,
             originalText = originalSynopsis,
             onTranslateClick = { textToTranslate ->
-                context.openTranslator(textToTranslate)
+                context.openTranslator(textToTranslate, preferredTranslator)
             },
             onCopyClick = { textToCopy ->
                 val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
@@ -61,6 +62,11 @@ internal fun EntryDetailOverviewTab(
                 android.widget.Toast.makeText(context, "Panonya kopyalandı", android.widget.Toast.LENGTH_SHORT).show()
             }
         )
+
+        // İstatistikler Kartı (Puan Sırası, Oy Sayısı, Üyeler, Popülerlik)
+        if (detail != null) {
+            DetailOverviewStatsCard(detail = detail)
+        }
 
         // MDBList harici puanlar
         ApiMdbListRatingCard(
