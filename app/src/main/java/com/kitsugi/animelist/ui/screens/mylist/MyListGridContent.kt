@@ -24,7 +24,7 @@ import com.kitsugi.animelist.ui.theme.KitsugiColors
  * Supports all layout IDs including grid_2col (2-column poster grid).
  */
 internal fun LazyListScope.MyListGroupedContent(
-    visibleEntries: List<MediaEntry>,
+    groupedEntries: List<Pair<WatchStatus, List<MediaEntry>>>,
     selectedListLayoutId: String,
     titleLanguage: String,
     scoreFormat: String,
@@ -35,19 +35,9 @@ internal fun LazyListScope.MyListGroupedContent(
     onPosterLongClick: (String) -> Unit
 ) {
     val isGrid = selectedListLayoutId == "grid_2col"
-    val statusOrder = listOf(
-        WatchStatus.Watching,
-        WatchStatus.Repeating,
-        WatchStatus.Planned,
-        WatchStatus.Paused,
-        WatchStatus.Dropped,
-        WatchStatus.Completed
-    )
 
-    statusOrder.forEach { status ->
-        val itemsForStatus = visibleEntries.filter { it.status == status }
-        if (itemsForStatus.isNotEmpty()) {
-            item(key = "header_${status.name}") {
+    groupedEntries.forEach { (status, itemsForStatus) ->
+        item(key = "header_${status.name}") {
                 val headerTitle = when (status) {
                     WatchStatus.Watching   -> "İzleniyor"
                     WatchStatus.Repeating  -> "Yeniden İzleniyor"
@@ -118,7 +108,6 @@ internal fun LazyListScope.MyListGroupedContent(
             }
         }
     }
-}
 
 /**
  * Flat (non-grouped) list content rendering for MyListScreen.

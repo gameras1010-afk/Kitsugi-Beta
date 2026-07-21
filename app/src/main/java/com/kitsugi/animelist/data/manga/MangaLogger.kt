@@ -34,20 +34,32 @@ object MangaLogger {
     private const val MAX_LOG_BYTES = 3 * 1024 * 1024L
 
     private val dateFmt = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    private val logExecutor = java.util.concurrent.Executors.newSingleThreadExecutor()
+
+    @Synchronized
+    private fun formatDate(date: Date): String {
+        return dateFmt.format(date)
+    }
 
     // ── Genel Yazıcı ─────────────────────────────────────────────────────────
 
     private fun write(context: Context, level: String, tag: String, message: String) {
-        val line = "[${dateFmt.format(Date())}] [$level] [$tag] $message"
-        Log.d(TAG, line)
-        try {
-            val logFile = getOrCreateLogFile(context)
-            rotateIfNeeded(logFile)
-            FileWriter(logFile, /* append= */ true).use { fw ->
-                PrintWriter(fw).use { pw -> pw.println(line) }
+        val safeContext = context.applicationContext
+        Log.d(TAG, "[$level] [$tag] $message")
+        val logTime = Date()
+        logExecutor.execute {
+            val line = "[${formatDate(logTime)}] [$level] [$tag] $message"
+            synchronized(this) {
+                try {
+                    val logFile = getOrCreateLogFile(safeContext)
+                    rotateIfNeeded(logFile)
+                    FileWriter(logFile, /* append= */ true).use { fw ->
+                        PrintWriter(fw).use { pw -> pw.println(line) }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Manga log dosyasına yazılamadı: ${e.message}")
+                }
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Manga log dosyasına yazılamadı: ${e.message}")
         }
     }
 
@@ -262,13 +274,18 @@ object MangaLogger {
      * Log dosyasını temizler ve başlangıç satırı yazar.
      */
     fun clearLogs(context: Context) {
-        try {
-            getOrCreateLogFile(context).writeText(
-                "=== Kitsugi Manga Log Dosyası Temizlendi: ${dateFmt.format(Date())} ===\n"
-            )
-            Log.i(TAG, "Manga log dosyası temizlendi.")
-        } catch (e: Exception) {
-            Log.e(TAG, "Manga log temizlenemedi: ${e.message}")
+        val safeContext = context.applicationContext
+        logExecutor.execute {
+            synchronized(this) {
+                try {
+                    getOrCreateLogFile(safeContext).writeText(
+                        "=== Kitsugi Manga Log Dosyası Temizlendi: ${formatDate(Date())} ===\n"
+                    )
+                    Log.i(TAG, "Manga log dosyası temizlendi.")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Manga log temizlenemedi: ${e.message}")
+                }
+            }
         }
     }
 
@@ -289,7 +306,7 @@ object MangaLogger {
             val keepFrom = lines.size / 2
             val kept = lines.drop(keepFrom)
             file.writeText(
-                "=== Eski loglar temizlendi (boyut limiti): ${dateFmt.format(Date())} ===\n" +
+                "=== Eski loglar temizlendi (boyut limiti): ${formatDate(Date())} ===\n" +
                 kept.joinToString("\n") + "\n"
             )
         } catch (e: Exception) {

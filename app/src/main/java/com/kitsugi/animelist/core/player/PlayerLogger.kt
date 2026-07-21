@@ -31,27 +31,40 @@ object PlayerLogger {
     private const val MAX_LOG_BYTES = 2 * 1024 * 1024L
 
     private val dateFmt = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    private val logExecutor = java.util.concurrent.Executors.newSingleThreadExecutor()
+
+    @Synchronized
+    private fun formatDate(date: Date): String {
+        return dateFmt.format(date)
+    }
 
     // ── Genel Amaçlı Yazıcı ──────────────────────────────────────────────────
 
     private fun write(context: Context, level: String, tag: String, message: String) {
-        val line = "[${dateFmt.format(Date())}] [$level] [$tag] $message"
-        Log.d(TAG, line)
+        val safeContext = context.applicationContext
         val priority = when (level) {
             "INFO" -> Log.INFO
             "WARN" -> Log.WARN
             "ERROR" -> Log.ERROR
             else -> Log.DEBUG
         }
+        Log.d(TAG, "[$level] [$tag] $message")
         com.kitsugi.animelist.core.diagnostics.FileLoggingTree.log(priority, tag, message)
-        try {
-            val logFile = getOrCreateLogFile(context)
-            rotatIfNeeded(logFile)
-            FileWriter(logFile, /* append= */ true).use { fw ->
-                PrintWriter(fw).use { pw -> pw.println(line) }
+
+        val logTime = Date()
+        logExecutor.execute {
+            val line = "[${formatDate(logTime)}] [$level] [$tag] $message"
+            synchronized(this) {
+                try {
+                    val logFile = getOrCreateLogFile(safeContext)
+                    rotatIfNeeded(logFile)
+                    FileWriter(logFile, /* append= */ true).use { fw ->
+                        PrintWriter(fw).use { pw -> pw.println(line) }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Log dosyasına yazılamadı: ${e.message}")
+                }
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Log dosyasına yazılamadı: ${e.message}")
         }
     }
 
@@ -159,13 +172,18 @@ object PlayerLogger {
 
     /** Log dosyasını tamamen siler ve yeniden oluşturur. */
     fun clearLogs(context: Context) {
-        try {
-            getOrCreateLogFile(context).writeText(
-                "=== Kitsugi Player Log Dosyası Temizlendi: ${dateFmt.format(Date())} ===\n"
-            )
-            Log.i(TAG, "Log dosyası temizlendi.")
-        } catch (e: Exception) {
-            Log.e(TAG, "Log temizlenemedi: ${e.message}")
+        val safeContext = context.applicationContext
+        logExecutor.execute {
+            synchronized(this) {
+                try {
+                    getOrCreateLogFile(safeContext).writeText(
+                        "=== Kitsugi Player Log Dosyası Temizlendi: ${formatDate(Date())} ===\n"
+                    )
+                    Log.i(TAG, "Log dosyası temizlendi.")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Log temizlenemedi: ${e.message}")
+                }
+            }
         }
     }
 
@@ -187,7 +205,7 @@ object PlayerLogger {
             val keepFrom = lines.size / 2
             val kept = lines.drop(keepFrom)
             file.writeText(
-                "=== Eski loglar temizlendi (boyut limiti): ${dateFmt.format(Date())} ===\n" +
+                "=== Eski loglar temizlendi (boyut limiti): ${formatDate(Date())} ===\n" +
                 kept.joinToString("\n") + "\n"
             )
         } catch (e: Exception) {

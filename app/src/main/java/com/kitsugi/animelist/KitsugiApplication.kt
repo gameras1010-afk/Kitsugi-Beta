@@ -325,7 +325,7 @@ class KitsugiApplication : Application(), SingletonImageLoader.Factory {
             }
             .memoryCache {
                 MemoryCache.Builder()
-                    .maxSizePercent(context, 0.30)
+                    .maxSizePercent(context, 0.15)
                     .strongReferencesEnabled(true)
                     .build()
             }

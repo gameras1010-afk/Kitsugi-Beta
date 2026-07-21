@@ -208,8 +208,10 @@ fun MyListScreen(
         mutableStateOf(false)
     }
 
-    val entriesAfterAdultFilter = entries.filter { entry ->
-        showAdultContent || !entry.isAdult
+    val entriesAfterAdultFilter = remember(entries, showAdultContent) {
+        entries.filter { entry ->
+            showAdultContent || !entry.isAdult
+        }
     }
 
     val selectedTabEntries = remember(entriesAfterAdultFilter, selectedTabIndex) {
@@ -223,76 +225,112 @@ fun MyListScreen(
         }
     }
 
-    val selectedStatus = statusFilters.firstOrNull {
-        it.id == selectedStatusFilterId
-    }?.status
+    val selectedStatus = remember(selectedStatusFilterId) {
+        statusFilters.firstOrNull {
+            it.id == selectedStatusFilterId
+        }?.status
+    }
 
-    val selectedType = typeFilters.firstOrNull {
-        it.id == selectedTypeFilterId
-    }?.type
+    val selectedType = remember(selectedTypeFilterId) {
+        typeFilters.firstOrNull {
+            it.id == selectedTypeFilterId
+        }?.type
+    }
 
-    val favoritesOnly = selectedFavoriteFilterId == "favorites" || selectedStatusFilterId == "favorites"
-    val adultOnly = selectedStatusFilterId == "adult"
+    val favoritesOnly = remember(selectedFavoriteFilterId, selectedStatusFilterId) {
+        selectedFavoriteFilterId == "favorites" || selectedStatusFilterId == "favorites"
+    }
+    val adultOnly = remember(selectedStatusFilterId) {
+        selectedStatusFilterId == "adult"
+    }
 
-    val filteredEntries = selectedTabEntries
-        .filter { entry ->
-            if (selectedStatus == null) true else entry.status == selectedStatus
-        }
-        .filter { entry ->
-            if (selectedType == null) true else entry.type == selectedType
-        }
-        .filter { entry ->
-            if (favoritesOnly) entry.isFavorite else true
-        }
-        .filter { entry ->
-            if (adultOnly) entry.isAdult else true
-        }
-        .filter { entry ->
-            when (selectedScoreFilterId) {
-                "high" -> (entry.score ?: 0) >= 8
-                "mid" -> (entry.score ?: 0) in 5..7
-                "low" -> (entry.score ?: 0) in 1..4
-                "unrated" -> entry.score == null || entry.score == 0
-                else -> true
+    val filteredEntries = remember(
+        selectedTabEntries,
+        selectedStatus,
+        selectedType,
+        favoritesOnly,
+        adultOnly,
+        selectedScoreFilterId,
+        selectedYearFilterId,
+        selectedExtraFilterId,
+        searchQuery
+    ) {
+        selectedTabEntries
+            .filter { entry ->
+                if (selectedStatus == null) true else entry.status == selectedStatus
             }
-        }
-        .filter { entry ->
-            when (selectedYearFilterId) {
-                "new" -> (entry.year ?: 0) >= 2025
-                "2020s" -> (entry.year ?: 0) in 2020..2024
-                "2010s" -> (entry.year ?: 0) in 2010..2019
-                "2000s" -> (entry.year ?: 0) in 2000..2009
-                "classic" -> (entry.year ?: 0) in 1..1999
-                else -> true
+            .filter { entry ->
+                if (selectedType == null) true else entry.type == selectedType
             }
-        }
-        .filter { entry ->
-            when (selectedExtraFilterId) {
-                "repeating" -> entry.isRepeating
-                "private" -> entry.isPrivate
-                "ongoing" -> entry.status != WatchStatus.Completed && entry.status != WatchStatus.Dropped
-                else -> true
+            .filter { entry ->
+                if (favoritesOnly) entry.isFavorite else true
             }
-        }
-        .filter { entry ->
-            if (searchQuery.isBlank()) {
-                true
-            } else {
-                val query = searchQuery.trim().lowercase()
-                entry.title.lowercase().contains(query) ||
-                    entry.subtitle.lowercase().contains(query) ||
-                    entry.type.name.lowercase().contains(query) ||
-                    entry.status.label.lowercase().contains(query) ||
-                    entry.source.lowercase().contains(query) ||
-                    entry.year?.toString()?.contains(query) == true ||
-                    entry.malId?.toString()?.contains(query) == true
+            .filter { entry ->
+                if (adultOnly) entry.isAdult else true
             }
-        }
+            .filter { entry ->
+                when (selectedScoreFilterId) {
+                    "high" -> (entry.score ?: 0) >= 8
+                    "mid" -> (entry.score ?: 0) in 5..7
+                    "low" -> (entry.score ?: 0) in 1..4
+                    "unrated" -> entry.score == null || entry.score == 0
+                    else -> true
+                }
+            }
+            .filter { entry ->
+                when (selectedYearFilterId) {
+                    "new" -> (entry.year ?: 0) >= 2025
+                    "2020s" -> (entry.year ?: 0) in 2020..2024
+                    "2010s" -> (entry.year ?: 0) in 2010..2019
+                    "2000s" -> (entry.year ?: 0) in 2000..2009
+                    "classic" -> (entry.year ?: 0) in 1..1999
+                    else -> true
+                }
+            }
+            .filter { entry ->
+                when (selectedExtraFilterId) {
+                    "repeating" -> entry.isRepeating
+                    "private" -> entry.isPrivate
+                    "ongoing" -> entry.status != WatchStatus.Completed && entry.status != WatchStatus.Dropped
+                    else -> true
+                }
+            }
+            .filter { entry ->
+                if (searchQuery.isBlank()) {
+                    true
+                } else {
+                    val query = searchQuery.trim().lowercase()
+                    entry.title.lowercase().contains(query) ||
+                        entry.subtitle.lowercase().contains(query) ||
+                        entry.type.name.lowercase().contains(query) ||
+                        entry.status.label.lowercase().contains(query) ||
+                        entry.source.lowercase().contains(query) ||
+                        entry.year?.toString()?.contains(query) == true ||
+                        entry.malId?.toString()?.contains(query) == true
+                }
+            }
+    }
 
-    val visibleEntries = applySort(
-        entries = filteredEntries,
-        sortId = selectedSortId
-    )
+    val visibleEntries = remember(filteredEntries, selectedSortId) {
+        applySort(
+            entries = filteredEntries,
+            sortId = selectedSortId
+        )
+    }
+
+    val groupedVisibleEntries = remember(visibleEntries) {
+        val statusOrder = listOf(
+            WatchStatus.Watching,
+            WatchStatus.Repeating,
+            WatchStatus.Planned,
+            WatchStatus.Paused,
+            WatchStatus.Dropped,
+            WatchStatus.Completed
+        )
+        statusOrder.map { status ->
+            status to visibleEntries.filter { it.status == status }
+        }.filter { it.second.isNotEmpty() }
+    }
 
     val listStats = remember(selectedTabEntries) {
         ListStats.from(selectedTabEntries)
@@ -716,7 +754,7 @@ fun MyListScreen(
                     )
                 } else {
                     MyListGroupedContent(
-                        visibleEntries = visibleEntries,
+                        groupedEntries = groupedVisibleEntries,
                         selectedListLayoutId = selectedListLayoutId,
                         titleLanguage = appSettings.titleLanguage,
                         scoreFormat = appSettings.scoreFormat,

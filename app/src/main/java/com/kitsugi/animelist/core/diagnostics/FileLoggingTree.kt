@@ -8,6 +8,7 @@ import java.io.PrintWriter
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.Executors
 
 object FileLoggingTree {
     private const val TAG = "KitsugiDebugLog"
@@ -16,6 +17,7 @@ object FileLoggingTree {
     private const val MAX_LOG_BYTES = 5 * 1024 * 1024L // 5 MB
 
     private val dateFmt = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
+    private val logExecutor = Executors.newSingleThreadExecutor()
 
     @Volatile
     private var appContext: Context? = null
@@ -25,6 +27,10 @@ object FileLoggingTree {
     }
 
     @Synchronized
+    private fun formatDate(date: Date): String {
+        return dateFmt.format(date)
+    }
+
     fun log(priority: Int, tag: String?, message: String, throwable: Throwable? = null) {
         // Log to console logcat first
         val safeTag = tag ?: "Global"
@@ -50,18 +56,22 @@ object FileLoggingTree {
             else -> "UNKNOWN"
         }
 
-        val line = "[${dateFmt.format(Date())}] [$level] [$safeTag] $message$exceptionStr"
-
-        try {
-            val file = getOrCreateLogFile(context)
-            rotateIfNeeded(file)
-            FileWriter(file, true).use { fw ->
-                PrintWriter(fw).use { pw ->
-                    pw.println(line)
+        val logTime = Date()
+        logExecutor.execute {
+            val line = "[${formatDate(logTime)}] [$level] [$safeTag] $message$exceptionStr"
+            synchronized(this) {
+                try {
+                    val file = getOrCreateLogFile(context)
+                    rotateIfNeeded(file)
+                    FileWriter(file, true).use { fw ->
+                        PrintWriter(fw).use { pw ->
+                            pw.println(line)
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to write log to file: ${e.message}")
                 }
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to write log to file: ${e.message}")
         }
     }
 
@@ -77,12 +87,16 @@ object FileLoggingTree {
 
     @Synchronized
     fun clearLogs(context: Context) {
-        try {
-            getOrCreateLogFile(context).writeText(
-                "=== Kitsugi Debug Log Dosyası Temizlendi: ${dateFmt.format(Date())} ===\n"
-            )
-        } catch (e: Exception) {
-            Log.e(TAG, "Log temizlenemedi: ${e.message}")
+        logExecutor.execute {
+            synchronized(this) {
+                try {
+                    getOrCreateLogFile(context).writeText(
+                        "=== Kitsugi Debug Log Dosyası Temizlendi: ${formatDate(Date())} ===\n"
+                    )
+                } catch (e: Exception) {
+                    Log.e(TAG, "Log temizlenemedi: ${e.message}")
+                }
+            }
         }
     }
 
@@ -98,7 +112,7 @@ object FileLoggingTree {
             val keepFrom = lines.size / 2
             val kept = lines.drop(keepFrom)
             file.writeText(
-                "=== Eski loglar temizlendi (boyut limiti 5MB): ${dateFmt.format(Date())} ===\n" +
+                "=== Eski loglar temizlendi (boyut limiti 5MB): ${formatDate(Date())} ===\n" +
                 kept.joinToString("\n") + "\n"
             )
         } catch (e: Exception) {
