@@ -477,7 +477,8 @@ fun VerticalStatsBar(
     stats: List<Pair<String, Float>>,
     accentColor: Color = LocalKitsugiAccent.current,
     maxHeightDp: Int = 90,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    mapColorTo: ((String) -> Color)? = null
 ) {
     if (stats.isEmpty()) return
     val maxValue = remember(stats) { stats.maxOfOrNull { it.second } ?: 1f }.coerceAtLeast(1f)
@@ -492,13 +493,14 @@ fun VerticalStatsBar(
     ) {
         stats.forEach { (label, value) ->
             val barHeight = ((value / maxValue) * maxHeightDp).coerceAtLeast(4f).dp
+            val barColor = mapColorTo?.invoke(label) ?: accentColor
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {
                 Text(
-                    text = value.toInt().toString(),
+                    text = if (value % 1f == 0f) value.toInt().toString() else "%.1f".format(value),
                     color = KitsugiColors.TextPrimary,
                     style = MaterialTheme.typography.labelSmall,
                     fontSize = 10.sp,
@@ -510,7 +512,7 @@ fun VerticalStatsBar(
                         .width(22.dp)
                         .height(barHeight)
                         .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
-                        .background(accentColor)
+                        .background(barColor)
                 )
                 Text(
                     text = label,
@@ -650,6 +652,11 @@ fun AniListProfileContent(
     var statsSubTab by rememberSaveable { mutableIntStateOf(0) } // 0: Genel Bakış, 1: Türler, 2: Etiketler, 3: Ekip, 4: Seslendirenler, 5: Stüdyolar
     var favoritesFilter by rememberSaveable { mutableIntStateOf(0) } // 0: Anime, 1: Manga, 2: Character, 3: Staff, 4: Studio
     var socialFilter by rememberSaveable { mutableIntStateOf(0) } // 0: Followers, 1: Following
+
+    var scoreDistType by rememberSaveable { mutableIntStateOf(0) } // 0: Başlık sayısı, 1: Harcanan süre
+    var lengthDistType by rememberSaveable { mutableIntStateOf(0) } // 0: Başlık sayısı, 1: Harcanan süre, 2: Ortalama Puan
+    var releaseYearDistType by rememberSaveable { mutableIntStateOf(0) } // 0: Başlık sayısı, 1: Harcanan süre, 2: Ortalama Puan
+    var startYearDistType by rememberSaveable { mutableIntStateOf(0) } // 0: Başlık sayısı, 1: Harcanan süre, 2: Ortalama Puan
 
     val listState = rememberLazyListState()
 
@@ -962,78 +969,296 @@ fun AniListProfileContent(
                         }
 
                         if (overview != null) {
-                            // Key Stats Grid
+                            // 1. Key Stats Grid (3x2)
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 Row(modifier = Modifier.fillMaxWidth()) {
                                     StatCard("Toplam", overview.count.toString())
-                                    StatCard(if (statsMediaType == 0) "İzlenen Bölüm" else "Okunan Bölüm", overview.episodesWatched.toString())
-                                    StatCard(if (statsMediaType == 0) "İzlenen Gün" else "Okunan Cilt", "%.1f".format(overview.daysWatched))
+                                    StatCard(if (statsMediaType == 0) "İzlenen bölüm" else "Okunan bölüm", overview.episodesWatched.toString())
+                                    StatCard(if (statsMediaType == 0) "İzlenen gün" else "Okunan cilt", "%.1f".format(overview.daysWatched))
                                 }
                                 Row(modifier = Modifier.fillMaxWidth()) {
-                                    StatCard("Ortalama Skor", "%.1f".format(overview.meanScore))
-                                    StatCard("Standart Sapma", "%.1f".format(overview.standardDeviation))
+                                    StatCard(if (statsMediaType == 0) "Planlanan gün" else "Planlanan bölüm", "%.1f".format(overview.plannedDaysOrCount))
+                                    StatCard("Ortalama Puan", "%.2f".format(overview.meanScore))
+                                    StatCard("Standart sapma", "%.1f".format(overview.standardDeviation))
                                 }
                             }
 
                             HorizontalDivider(color = KitsugiColors.SurfaceStrong)
 
-                            // Score Distribution
+                            // 2. Score Distribution
                             if (overview.scoreList.isNotEmpty()) {
-                                Column {
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                     Text(
-                                        text = "Puan Dağılımı",
+                                        text = "Puan",
                                         color = KitsugiColors.TextPrimary,
-                                        style = MaterialTheme.typography.titleSmall,
+                                        style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold
                                     )
-                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.horizontalScroll(rememberScrollState())
+                                    ) {
+                                        FilterChipItem(
+                                            selected = scoreDistType == 0,
+                                            text = "Başlık sayısı",
+                                            onClick = { scoreDistType = 0 },
+                                            accentColor = accentColor
+                                        )
+                                        FilterChipItem(
+                                            selected = scoreDistType == 1,
+                                            text = "Harcanan süre",
+                                            onClick = { scoreDistType = 1 },
+                                            accentColor = accentColor
+                                        )
+                                    }
+                                    val mappedStats = overview.scoreList.map { item ->
+                                        val valFloat = if (scoreDistType == 0) item.count.toFloat() else (item.minutesWatched / 60.0f)
+                                        item.score.toString() to valFloat
+                                    }
                                     VerticalStatsBar(
-                                        stats = overview.scoreList.map { it.score.toString() to it.count.toFloat() },
+                                        stats = mappedStats,
+                                        accentColor = accentColor,
+                                        mapColorTo = { scoreStr ->
+                                            val scoreNum = scoreStr.toIntOrNull() ?: 0
+                                            when (scoreNum) {
+                                                in 1..3 -> Color(0xFFE57373)
+                                                in 4..5 -> Color(0xFFFFB74D)
+                                                in 6..7 -> Color(0xFFFFD54F)
+                                                in 8..9 -> Color(0xFF81C784)
+                                                10 -> Color(0xFF4FC3F7)
+                                                else -> accentColor
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+
+                            // 3. Episode / Chapter Length Distribution
+                            if (overview.lengthList.isNotEmpty()) {
+                                HorizontalDivider(color = KitsugiColors.SurfaceStrong)
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text(
+                                        text = if (statsMediaType == 0) "Bölüm Sayısı" else "Cilt/Bölüm Sayısı",
+                                        color = KitsugiColors.TextPrimary,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.horizontalScroll(rememberScrollState())
+                                    ) {
+                                        FilterChipItem(
+                                            selected = lengthDistType == 0,
+                                            text = "Başlık sayısı",
+                                            onClick = { lengthDistType = 0 },
+                                            accentColor = accentColor
+                                        )
+                                        FilterChipItem(
+                                            selected = lengthDistType == 1,
+                                            text = "Harcanan süre",
+                                            onClick = { lengthDistType = 1 },
+                                            accentColor = accentColor
+                                        )
+                                        FilterChipItem(
+                                            selected = lengthDistType == 2,
+                                            text = "Ortalama Puan",
+                                            onClick = { lengthDistType = 2 },
+                                            accentColor = accentColor
+                                        )
+                                    }
+                                    val mappedLength = overview.lengthList.map { item ->
+                                        val valFloat = when (lengthDistType) {
+                                            0 -> item.count.toFloat()
+                                            1 -> (item.minutesWatched / 60.0f)
+                                            else -> item.meanScore.toFloat()
+                                        }
+                                        item.length to valFloat
+                                    }
+                                    VerticalStatsBar(
+                                        stats = mappedLength,
                                         accentColor = accentColor
                                     )
                                 }
                             }
 
-                            // Format Distribution
-                            if (overview.formatList.isNotEmpty()) {
-                                Column {
+                            // 4. Status Distribution
+                            if (overview.statusList.isNotEmpty()) {
+                                HorizontalDivider(color = KitsugiColors.SurfaceStrong)
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                     Text(
-                                        text = "Format Dağılımı",
+                                        text = "Durum Dağılımı",
                                         color = KitsugiColors.TextPrimary,
-                                        style = MaterialTheme.typography.titleSmall,
+                                        style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold
                                     )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    HorizontalStatsBar(
-                                        stats = overview.formatList.map {
-                                            Triple(it.format, it.count, accentColor)
+                                    val statusItems = overview.statusList.map { item ->
+                                        val (label, color) = when (item.status.uppercase()) {
+                                            "CURRENT" -> (if (statsMediaType == 0) "Şimdiki" else "Okunuyor") to Color(0xFF81C784)
+                                            "COMPLETED" -> "Tamamlandı" to Color(0xFF64B5F6)
+                                            "PLANNING" -> "Planlanan" to Color(0xFFA1887F)
+                                            "PAUSED" -> "Durduruldu" to Color(0xFFFFB74D)
+                                            "DROPPED" -> "Bırakıldı" to Color(0xFFE57373)
+                                            "REPEATING" -> (if (statsMediaType == 0) "Tekrar İzleniyor" else "Tekrar Okunuyor") to Color(0xFFBA68C8)
+                                            else -> item.status to accentColor
                                         }
+                                        Triple(label, item.count, color)
+                                    }
+                                    HorizontalStatsBar(stats = statusItems)
+                                }
+                            }
+
+                            // 5. Format Distribution
+                            if (overview.formatList.isNotEmpty()) {
+                                HorizontalDivider(color = KitsugiColors.SurfaceStrong)
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text(
+                                        text = "Tür Dağılımı",
+                                        color = KitsugiColors.TextPrimary,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    val formatItems = overview.formatList.map { item ->
+                                        val (label, color) = when (item.format.uppercase()) {
+                                            "TV" -> "TV" to Color(0xFF5C6BC0)
+                                            "TV_SHORT" -> "TV Kısa" to Color(0xFF7E57C2)
+                                            "MOVIE" -> "Film" to Color(0xFF26A69A)
+                                            "SPECIAL" -> "Özel" to Color(0xFFFFA726)
+                                            "OVA" -> "OVA" to Color(0xFFFF7043)
+                                            "ONA" -> "ONA" to Color(0xFFEC407A)
+                                            "MUSIC" -> "Müzik Klip" to Color(0xFFAB47BC)
+                                            "MANGA" -> "Manga" to Color(0xFF42A5F5)
+                                            "NOVEL" -> "LN" to Color(0xFF8D6E63)
+                                            "ONE_SHOT" -> "One-Shot" to Color(0xFF78909C)
+                                            else -> item.format to accentColor
+                                        }
+                                        Triple(label, item.count, color)
+                                    }
+                                    HorizontalStatsBar(stats = formatItems)
+                                }
+                            }
+
+                            // 6. Country Distribution
+                            if (overview.countryList.isNotEmpty()) {
+                                HorizontalDivider(color = KitsugiColors.SurfaceStrong)
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text(
+                                        text = "Ülke Dağılımı",
+                                        color = KitsugiColors.TextPrimary,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    val countryItems = overview.countryList.map { item ->
+                                        val (label, color) = when (item.country.uppercase()) {
+                                            "JP" -> "Japonya" to Color(0xFF5C6BC0)
+                                            "KR" -> "Güney Kore" to Color(0xFF26A69A)
+                                            "CN" -> "Çin" to Color(0xFFFF7043)
+                                            "TW" -> "Tayvan" to Color(0xFFAB47BC)
+                                            else -> item.country to accentColor
+                                        }
+                                        Triple(label, item.count, color)
+                                    }
+                                    HorizontalStatsBar(stats = countryItems)
+                                }
+                            }
+
+                            // 7. Release Year Distribution
+                            if (overview.releaseYearList.isNotEmpty()) {
+                                HorizontalDivider(color = KitsugiColors.SurfaceStrong)
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text(
+                                        text = "Yayın Yılı",
+                                        color = KitsugiColors.TextPrimary,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.horizontalScroll(rememberScrollState())
+                                    ) {
+                                        FilterChipItem(
+                                            selected = releaseYearDistType == 0,
+                                            text = "Başlık sayısı",
+                                            onClick = { releaseYearDistType = 0 },
+                                            accentColor = accentColor
+                                        )
+                                        FilterChipItem(
+                                            selected = releaseYearDistType == 1,
+                                            text = "Harcanan süre",
+                                            onClick = { releaseYearDistType = 1 },
+                                            accentColor = accentColor
+                                        )
+                                        FilterChipItem(
+                                            selected = releaseYearDistType == 2,
+                                            text = "Ortalama Puan",
+                                            onClick = { releaseYearDistType = 2 },
+                                            accentColor = accentColor
+                                        )
+                                    }
+                                    val mappedYears = overview.releaseYearList
+                                        .filter { it.releaseYear > 0 }
+                                        .sortedBy { it.releaseYear }
+                                        .map { item ->
+                                            val valFloat = when (releaseYearDistType) {
+                                                0 -> item.count.toFloat()
+                                                1 -> (item.minutesWatched / 60.0f)
+                                                else -> item.meanScore.toFloat()
+                                            }
+                                            item.releaseYear.toString() to valFloat
+                                        }
+                                    VerticalStatsBar(
+                                        stats = mappedYears,
+                                        accentColor = accentColor
                                     )
                                 }
                             }
 
-                            // Status Distribution
-                            if (overview.statusList.isNotEmpty()) {
-                                Column {
+                            // 8. Watch / Read Year Distribution
+                            if (overview.startYearList.isNotEmpty()) {
+                                HorizontalDivider(color = KitsugiColors.SurfaceStrong)
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                     Text(
-                                        text = "Durum Dağılımı",
+                                        text = if (statsMediaType == 0) "İzleme Yılı" else "Okuma Yılı",
                                         color = KitsugiColors.TextPrimary,
-                                        style = MaterialTheme.typography.titleSmall,
+                                        style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold
                                     )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    HorizontalStatsBar(
-                                        stats = overview.statusList.map {
-                                            val color = when (it.status) {
-                                                "CURRENT" -> KitsugiColors.AccentBlue
-                                                "COMPLETED" -> KitsugiColors.AccentGreen
-                                                "PLANNING" -> KitsugiColors.TextMuted
-                                                "PAUSED" -> KitsugiColors.AccentOrange
-                                                "DROPPED" -> KitsugiColors.AccentPink
-                                                else -> accentColor
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.horizontalScroll(rememberScrollState())
+                                    ) {
+                                        FilterChipItem(
+                                            selected = startYearDistType == 0,
+                                            text = "Başlık sayısı",
+                                            onClick = { startYearDistType = 0 },
+                                            accentColor = accentColor
+                                        )
+                                        FilterChipItem(
+                                            selected = startYearDistType == 1,
+                                            text = "Harcanan süre",
+                                            onClick = { startYearDistType = 1 },
+                                            accentColor = accentColor
+                                        )
+                                        FilterChipItem(
+                                            selected = startYearDistType == 2,
+                                            text = "Ortalama Puan",
+                                            onClick = { startYearDistType = 2 },
+                                            accentColor = accentColor
+                                        )
+                                    }
+                                    val mappedStartYears = overview.startYearList
+                                        .filter { it.startYear > 0 }
+                                        .sortedBy { it.startYear }
+                                        .map { item ->
+                                            val valFloat = when (startYearDistType) {
+                                                0 -> item.count.toFloat()
+                                                1 -> (item.minutesWatched / 60.0f)
+                                                else -> item.meanScore.toFloat()
                                             }
-                                            Triple(it.status, it.count, color)
+                                            item.startYear.toString() to valFloat
                                         }
+                                    VerticalStatsBar(
+                                        stats = mappedStartYears,
+                                        accentColor = accentColor
                                     )
                                 }
                             }
@@ -2106,6 +2331,45 @@ fun StatItemRow(
                 .clip(RoundedCornerShape(3.dp)),
             color = color,
             trackColor = KitsugiColors.Background
+        )
+    }
+}
+
+@Composable
+fun FilterChipItem(
+    selected: Boolean,
+    text: String,
+    onClick: () -> Unit,
+    accentColor: Color = LocalKitsugiAccent.current
+) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (selected) accentColor.copy(alpha = 0.22f) else KitsugiColors.SurfaceStrong)
+            .border(
+                width = 1.dp,
+                color = if (selected) accentColor else Color.Transparent,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .clickable { onClick() }
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (selected) {
+            Icon(
+                imageVector = Icons.Rounded.Check,
+                contentDescription = null,
+                tint = accentColor,
+                modifier = Modifier.size(14.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+        }
+        Text(
+            text = text,
+            color = if (selected) KitsugiColors.TextPrimary else KitsugiColors.TextMuted,
+            style = MaterialTheme.typography.labelMedium,
+            fontSize = 11.sp,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
         )
     }
 }

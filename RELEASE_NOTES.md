@@ -1,4 +1,4 @@
-# Kitsugi v2.4.39 Release Notes 🚀
+# Kitsugi v2.4.40 Release Notes 🚀
 
 ---
 
@@ -7,6 +7,13 @@
 ### 🚀 Uygulama Açılış & Sıfır Gecikme (Zero-Delay Startup)
 - **Sıfır Suni Gecikme**: Cloudstream ve Manga eklentilerinin yüklenmesindeki yapay gecikmeler kaldırıldı. Tüm kaynaklar uygulamanın açıldığı ilk anda `Dispatchers.IO` arka plan thread havuzunda eşzamanlı olarak yüklenir.
 - **60/120 FPS Akıcı Açılış Animasyonu**: Arka plan yüklemeleri UI thread'ini etkilemediği için açılış animasyonu tamamen akıcı çalışır.
+
+### 📊 AniHyou / MoeList Gelişmiş Profil İstatistikleri Entegrasyonu
+- **Puan Dağılımı ve Skor Renklendirmesi**: Puan grafiği 1-10 arası renk skalasıyla (Kırmızı-Yeşil-Mavi gradient) görselleştirildi. `[Başlık sayısı]` ve `[Harcanan süre]` filtre çipleri eklendi.
+- **Bölüm Sayısı & Cilt Dağılımı**: Anime bölüm sayıları ve manga cilt gruplamaları grafik olarak eklendi. `[Başlık sayısı]`, `[Harcanan süre]` ve `[Ortalama Puan]` filtreleri entegre edildi.
+- **Detaylı Dağılım Grafikleri**: Durum Dağılımı (Türkçe durum etiketleriyle), Tür/Format Dağılımı (TV, Film, OVA, ONA vb.) ve Ülke Dağılımı (Japonya, Çin, Güney Kore) renk paletli çubuk grafiklerle zenginleştirildi.
+- **Yayın Yılı & İzleme Yılı Grafikleri**: Yayın yılları ve izleme/okuma yıllarına göre başlık sayısı, süre ve puan dağılım grafikleri eklendi.
+- **3x2 Özet İstatistik Izgarası**: Toplam kayıt, izlenen bölüm, izlenen gün, planlanan gün/bölüm, ortalama puan ve standart sapma verileri düzenli kart yapısına dönüştürüldü.
 
 ### 👤 Profil Ekranı Pozisyon Koruma & State İyileştirmesi
 - **Kaldığın Yerden Devam Etme**: Profil ekranındaki sekmeler (Hakkında, Aktivite, İstatistikler, Favoriler, Sosyal) ve kaydırma pozisyonu (`LazyListState`) `rememberSaveable` ile koruma altına alındı.
