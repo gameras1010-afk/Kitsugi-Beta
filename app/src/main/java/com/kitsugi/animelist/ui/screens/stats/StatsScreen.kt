@@ -72,193 +72,183 @@ fun StatsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(bottom = 20.dp)
+                .padding(bottom = 16.dp)
         ) {
             Spacer(modifier = Modifier.height(8.dp))
 
-        // ─── Özet Kartları ─────────────────────────────────────────────────────
-        AnimatedVisibility(
-            visible = !uiState.isLoading,
-            enter = fadeIn() + slideInVertically { it / 3 }
-        ) {
-            Column {
-                // Özet Row
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+            // ─── Özet Kartları ─────────────────────────────────────────────────────
+            AnimatedVisibility(
+                visible = !uiState.isLoading,
+                enter = fadeIn() + slideInVertically { it / 3 }
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    StatsSummaryCard(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Rounded.PlayCircle,
-                        iconColor = StatsChartColors.Watching,
-                        label = "Anime",
-                        value = uiState.totalAnime.toString()
-                    )
-                    StatsSummaryCard(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Rounded.MenuBook,
-                        iconColor = StatsChartColors.Completed,
-                        label = "Manga",
-                        value = uiState.totalManga.toString()
-                    )
-                    StatsSummaryCard(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Rounded.Favorite,
-                        iconColor = Color(0xFFE91E63),
-                        label = "Favori",
-                        value = uiState.totalFavorites.toString()
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    StatsSummaryCard(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Rounded.Slideshow,
-                        iconColor = StatsChartColors.Paused,
-                        label = "Bölüm",
-                        value = uiState.totalEpisodesWatched.toString()
-                    )
-                    StatsSummaryCard(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Rounded.AccessTime,
-                        iconColor = Color(0xFF00BCD4),
-                        label = "Gün",
-                        value = "%.1f".format(uiState.daysWatched)
-                    )
-                    StatsSummaryCard(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Rounded.Star,
-                        iconColor = Color(0xFFFFC107),
-                        label = "Ort. Puan",
-                        value = if (uiState.meanScore > 0) "%.1f".format(uiState.meanScore) else "-"
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // ─── Anime Durum Dağılımı ────────────────────────────────────────
-                if (uiState.animeStatusStats.isNotEmpty()) {
-                    StatsSection(title = "Anime Durum Dağılımı") {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            val totalAnime = uiState.animeStatusStats.sumOf { it.count }
-                            KitsugiDonutChart(
-                                segments = uiState.animeStatusStats.map { stat ->
-                                    DonutSegment(
-                                        label = stat.status.label,
-                                        count = stat.count,
-                                        color = statusColor(stat.status)
-                                    )
-                                },
-                                centerText = totalAnime.toString(),
-                                centerSubText = "toplam",
-                                modifier = Modifier.size(160.dp)
-                            )
-                            Column(modifier = Modifier.weight(1f)) {
-                                uiState.animeStatusStats.forEach { stat ->
-                                    StatsLegendRow(
-                                        label = stat.status.label,
-                                        count = stat.count,
-                                        color = statusColor(stat.status)
-                                    )
-                                }
-                            }
-                        }
+                    // Özet Row
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        StatsSummaryCard(
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Rounded.PlayCircle,
+                            iconColor = StatsChartColors.Watching,
+                            label = "Anime",
+                            value = uiState.totalAnime.toString()
+                        )
+                        StatsSummaryCard(
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Rounded.MenuBook,
+                            iconColor = StatsChartColors.Completed,
+                            label = "Manga",
+                            value = uiState.totalManga.toString()
+                        )
+                        StatsSummaryCard(
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Rounded.Favorite,
+                            iconColor = Color(0xFFE91E63),
+                            label = "Favori",
+                            value = uiState.totalFavorites.toString()
+                        )
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
-                }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        StatsSummaryCard(
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Rounded.Slideshow,
+                            iconColor = StatsChartColors.Paused,
+                            label = "Bölüm",
+                            value = uiState.totalEpisodesWatched.toString()
+                        )
+                        StatsSummaryCard(
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Rounded.AccessTime,
+                            iconColor = Color(0xFF00BCD4),
+                            label = "Gün",
+                            value = "%.1f".format(uiState.daysWatched)
+                        )
+                        StatsSummaryCard(
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Rounded.Star,
+                            iconColor = Color(0xFFFFC107),
+                            label = "Ort. Puan",
+                            value = if (uiState.meanScore > 0) "%.1f".format(uiState.meanScore) else "-"
+                        )
+                    }
 
-                // ─── Anime Puan Dağılımı ─────────────────────────────────────────
-                if (uiState.animeScoreStats.isNotEmpty()) {
-                    StatsSection(title = "Anime Puan Dağılımı") {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                        ) {
-                            val maxCount = uiState.animeScoreStats.maxOfOrNull { it.count } ?: 1
-                            uiState.animeScoreStats.sortedByDescending { it.score }.forEach { stat ->
-                                KitsugiHorizontalStatsBar(
-                                    label = "${stat.score} Puan",
-                                    count = stat.count,
-                                    maxCount = maxCount,
-                                    barColor = StatsChartColors.ScoreColors.getOrElse(stat.score - 1) {
-                                        MaterialTheme.colorScheme.primary
-                                    }
+                    // ─── Anime Durum Dağılımı ────────────────────────────────────────
+                    if (uiState.animeStatusStats.isNotEmpty()) {
+                        StatsSection(title = "Anime Durum Dağılımı") {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                val totalAnime = uiState.animeStatusStats.sumOf { it.count }
+                                KitsugiDonutChart(
+                                    segments = uiState.animeStatusStats.map { stat ->
+                                        DonutSegment(
+                                            label = stat.status.label,
+                                            count = stat.count,
+                                            color = statusColor(stat.status)
+                                        )
+                                    },
+                                    centerText = totalAnime.toString(),
+                                    centerSubText = "toplam",
+                                    modifier = Modifier.size(160.dp)
                                 )
+                                Column(modifier = Modifier.weight(1f)) {
+                                    uiState.animeStatusStats.forEach { stat ->
+                                        StatsLegendRow(
+                                            label = stat.status.label,
+                                            count = stat.count,
+                                            color = statusColor(stat.status)
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
-                }
-
-                // ─── Manga Durum Dağılımı ────────────────────────────────────────
-                if (uiState.mangaStatusStats.isNotEmpty()) {
-                    StatsSection(title = "Manga Durum Dağılımı") {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            val totalManga = uiState.mangaStatusStats.sumOf { it.count }
-                            KitsugiDonutChart(
-                                segments = uiState.mangaStatusStats.map { stat ->
-                                    DonutSegment(
-                                        label = stat.status.label,
+                    // ─── Anime Puan Dağılımı ─────────────────────────────────────────
+                    if (uiState.animeScoreStats.isNotEmpty()) {
+                        StatsSection(title = "Anime Puan Dağılımı") {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                            ) {
+                                val maxCount = uiState.animeScoreStats.maxOfOrNull { it.count } ?: 1
+                                uiState.animeScoreStats.sortedByDescending { it.score }.forEach { stat ->
+                                    KitsugiHorizontalStatsBar(
+                                        label = "${stat.score} Puan",
                                         count = stat.count,
-                                        color = statusColor(stat.status)
-                                    )
-                                },
-                                centerText = totalManga.toString(),
-                                centerSubText = "toplam",
-                                modifier = Modifier.size(160.dp)
-                            )
-                            Column(modifier = Modifier.weight(1f)) {
-                                uiState.mangaStatusStats.forEach { stat ->
-                                    StatsLegendRow(
-                                        label = stat.status.label,
-                                        count = stat.count,
-                                        color = statusColor(stat.status)
+                                        maxCount = maxCount,
+                                        barColor = StatsChartColors.ScoreColors.getOrElse(stat.score - 1) {
+                                            MaterialTheme.colorScheme.primary
+                                        }
                                     )
                                 }
                             }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
-                }
+                    // ─── Manga Durum Dağılımı ────────────────────────────────────────
+                    if (uiState.mangaStatusStats.isNotEmpty()) {
+                        StatsSection(title = "Manga Durum Dağılımı") {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                val totalManga = uiState.mangaStatusStats.sumOf { it.count }
+                                KitsugiDonutChart(
+                                    segments = uiState.mangaStatusStats.map { stat ->
+                                        DonutSegment(
+                                            label = stat.status.label,
+                                            count = stat.count,
+                                            color = statusColor(stat.status)
+                                        )
+                                    },
+                                    centerText = totalManga.toString(),
+                                    centerSubText = "toplam",
+                                    modifier = Modifier.size(160.dp)
+                                )
+                                Column(modifier = Modifier.weight(1f)) {
+                                    uiState.mangaStatusStats.forEach { stat ->
+                                        StatsLegendRow(
+                                            label = stat.status.label,
+                                            count = stat.count,
+                                            color = statusColor(stat.status)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
 
-                // T2-05: Standart boş durum bileşeni
-                if (uiState.totalAnime == 0 && uiState.totalManga == 0) {
-                    KitsugiEmptyState(
-                        title = "İstatistik için liste gerekli",
-                        subtitle = "Anime veya manga ekledikten sonra istatistikler burada görünür.",
-                        icon = Icons.Rounded.BarChart
-                    )
+                    // T2-05: Standart boş durum bileşeni
+                    if (uiState.totalAnime == 0 && uiState.totalManga == 0) {
+                        KitsugiEmptyState(
+                            title = "İstatistik için liste gerekli",
+                            subtitle = "Anime veya manga ekledikten sonra istatistikler burada görünür.",
+                            icon = Icons.Rounded.BarChart
+                        )
+                    }
                 }
-
-                Spacer(modifier = Modifier.height(80.dp))
             }
         }
-    }
 
     // T2-05: Yükleme durumu — accent renkli merkezi spinner
     if (uiState.isLoading) {

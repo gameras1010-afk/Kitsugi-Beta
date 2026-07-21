@@ -60,7 +60,9 @@ data class TabPagesContext(
     val onOpenApiDetail: (JikanSearchResult) -> Unit,
     val onAddApiSelectionToList: (ApiSearchSelection) -> Unit,
     val onSeeAllSection: (String, ExploreCategoryType, List<JikanSearchResult>) -> Unit,
-    val onOpenMangaReader: () -> Unit
+    val onOpenMangaReader: () -> Unit,
+    val onSearchByGenre: (String) -> Unit = {},
+    val onSearchByTag: (String) -> Unit = {}
 )
 
 @Composable
@@ -144,8 +146,16 @@ fun AppRootTabPages(
                     onFavoriteStaffClick = { staffId, source, name, imageUrl ->
                         ctx.navState.navigateToDetail(DetailScreen.StaffDetail(staffId, source, name, imageUrl))
                     },
+                    onFavoriteStudioClick = { studioId, source, name, imageUrl ->
+                        ctx.navState.navigateToDetail(DetailScreen.StudioDetail(studioId, source, name, imageUrl))
+                    },
                     onOpenStatsClick = {
                         ctx.navState.navigateToDetail(DetailScreen.Stats)
+                    },
+                    onGenreClick = ctx.onSearchByGenre,
+                    onTagClick = ctx.onSearchByTag,
+                    onUserProfileClick = { userId, username, avatarUrl ->
+                        ctx.navState.navigateToDetail(DetailScreen.UserProfile(userId, username, avatarUrl))
                     }
                 )
             }

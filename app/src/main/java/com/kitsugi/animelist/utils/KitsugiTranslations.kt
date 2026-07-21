@@ -105,6 +105,17 @@ fun String.toTurkishGenre(): String = genreMap[this] ?: this
 /** Tür listesini Türkçeye çevirir. */
 fun List<String>.toTurkishGenres(): List<String> = map { it.toTurkishGenre() }
 
+// Tersine dönüşüm: Türkçe → İngilizce (arama API'ları için)
+private val reverseGenreMap: Map<String, String> by lazy {
+    genreMap.entries.associate { (en, tr) -> tr to en }
+}
+
+/**
+ * Türkçe veya İngilizce tür adını İngilizce API adına dönüştürür.
+ * "Aksiyon" → "Action", "Action" → "Action"
+ */
+fun String.toEnglishGenreForSearch(): String = reverseGenreMap[this] ?: this
+
 // ─── Yayın Durumu / Status ─────────────────────────────────────────────────────
 
 private val statusMap = mapOf(

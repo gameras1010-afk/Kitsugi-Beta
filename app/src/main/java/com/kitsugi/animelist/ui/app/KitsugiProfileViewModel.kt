@@ -64,6 +64,26 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
         simklScrollOffset = offset
     }
 
+    // AniList Tab & Sub-Filter state persistence
+    var aniListActiveTab by mutableIntStateOf(0)
+    var aniListStatsMediaType by mutableIntStateOf(0)
+    var aniListStatsSubTab by mutableIntStateOf(0)
+    var aniListFavoritesFilter by mutableIntStateOf(0)
+    var aniListSocialFilter by mutableIntStateOf(0)
+    var aniListScoreDistType by mutableIntStateOf(0)
+    var aniListLengthDistType by mutableIntStateOf(0)
+    var aniListReleaseYearDistType by mutableIntStateOf(0)
+    var aniListStartYearDistType by mutableIntStateOf(0)
+    var aniListStatsSortType by mutableIntStateOf(0)
+
+    // MAL Tab & Sub-Filter state persistence
+    var malActiveTab by mutableIntStateOf(0)
+    var malStatsMediaType by mutableIntStateOf(0)
+    var malFavoritesFilter by mutableIntStateOf(0)
+
+    // Simkl Tab & Sub-Filter state persistence
+    var simklActiveTab by mutableIntStateOf(0)
+
     // AniList profile UI state
     private val _aniListState = MutableStateFlow(AniListProfileState())
     val aniListState: StateFlow<AniListProfileState> = _aniListState.asStateFlow()
@@ -109,14 +129,18 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
 
     fun refreshActiveProfile() {
         when (activeSubTab) {
-            0 -> fetchAniListProfile()
-            1 -> fetchMalProfile()
-            2 -> fetchSimklProfile()
+            0 -> fetchAniListProfile(forceRefresh = true)
+            1 -> fetchMalProfile(forceRefresh = true)
+            2 -> fetchSimklProfile(forceRefresh = true)
         }
     }
 
     // --- ANILIST API FETCHING ---
-    fun fetchAniListProfile() {
+    fun fetchAniListProfile(forceRefresh: Boolean = false) {
+        if (!forceRefresh && _aniListState.value.userId != null) {
+            return
+        }
+
         val token = ExternalAuthManager.getAniListToken(context)
         if (token.isNullOrBlank()) {
             _aniListState.update { it.copy(isConnected = false, isLoading = false, error = "Bağlantı bulunamadı") }
@@ -320,64 +344,6 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                                     }
                                 }
                             }
-                            favourites {
-                                anime(page: 1, perPage: 24) {
-                                    nodes {
-                                        id
-                                        type
-                                        isAdult
-                                        title {
-                                            romaji
-                                            english
-                                        }
-                                        coverImage {
-                                            large
-                                        }
-                                    }
-                                }
-                                manga(page: 1, perPage: 24) {
-                                    nodes {
-                                        id
-                                        type
-                                        isAdult
-                                        title {
-                                            romaji
-                                            english
-                                        }
-                                        coverImage {
-                                            large
-                                        }
-                                    }
-                                }
-                                characters(page: 1, perPage: 24) {
-                                    nodes {
-                                        id
-                                        name {
-                                            full
-                                        }
-                                        image {
-                                            large
-                                        }
-                                    }
-                                }
-                                staff(page: 1, perPage: 24) {
-                                    nodes {
-                                        id
-                                        name {
-                                            full
-                                        }
-                                        image {
-                                            large
-                                        }
-                                    }
-                                }
-                                studios(page: 1, perPage: 24) {
-                                    nodes {
-                                        id
-                                        name
-                                    }
-                                }
-                            }
                         }
                     }
                 """.trimIndent()
@@ -447,80 +413,12 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                     )
                 } else null
 
-                // Parse favorites
-                val favouritesObj = viewerJson.optJSONObject("favourites")
-                val favAnimeList = mutableListOf<ProfileFavoriteItem>()
-                val favMangaList = mutableListOf<ProfileFavoriteItem>()
-                val favCharList = mutableListOf<ProfileFavoriteItem>()
-                val favStaffList = mutableListOf<ProfileFavoriteItem>()
-                val favStudioList = mutableListOf<ProfileFavoriteItem>()
-
-                favouritesObj?.optJSONObject("anime")?.optJSONArray("nodes")?.let { arr ->
-                    for (i in 0 until arr.length()) {
-                        val node = arr.getJSONObject(i)
-                        favAnimeList.add(
-                            ProfileFavoriteItem(
-                                id = node.getInt("id").toString(),
-                                title = node.getJSONObject("title").optNullableString("romaji") ?: node.getJSONObject("title").optNullableString("english") ?: "İsimsiz",
-                                imageUrl = node.getJSONObject("coverImage").optNullableString("large") ?: "",
-                                isAdult = node.optBoolean("isAdult", false)
-                            )
-                        )
-                    }
-                }
-
-                favouritesObj?.optJSONObject("manga")?.optJSONArray("nodes")?.let { arr ->
-                    for (i in 0 until arr.length()) {
-                        val node = arr.getJSONObject(i)
-                        favMangaList.add(
-                            ProfileFavoriteItem(
-                                id = node.getInt("id").toString(),
-                                title = node.getJSONObject("title").optNullableString("romaji") ?: node.getJSONObject("title").optNullableString("english") ?: "İsimsiz",
-                                imageUrl = node.getJSONObject("coverImage").optNullableString("large") ?: "",
-                                isAdult = node.optBoolean("isAdult", false)
-                            )
-                        )
-                    }
-                }
-
-                favouritesObj?.optJSONObject("characters")?.optJSONArray("nodes")?.let { arr ->
-                    for (i in 0 until arr.length()) {
-                        val node = arr.getJSONObject(i)
-                        favCharList.add(
-                            ProfileFavoriteItem(
-                                id = node.getInt("id").toString(),
-                                title = node.getJSONObject("name").optNullableString("full") ?: "İsimsiz",
-                                imageUrl = node.getJSONObject("image").optNullableString("large") ?: ""
-                            )
-                        )
-                    }
-                }
-
-                favouritesObj?.optJSONObject("staff")?.optJSONArray("nodes")?.let { arr ->
-                    for (i in 0 until arr.length()) {
-                        val node = arr.getJSONObject(i)
-                        favStaffList.add(
-                            ProfileFavoriteItem(
-                                id = node.getInt("id").toString(),
-                                title = node.getJSONObject("name").optNullableString("full") ?: "İsimsiz",
-                                imageUrl = node.getJSONObject("image").optNullableString("large") ?: ""
-                            )
-                        )
-                    }
-                }
-
-                favouritesObj?.optJSONObject("studios")?.optJSONArray("nodes")?.let { arr ->
-                    for (i in 0 until arr.length()) {
-                        val node = arr.getJSONObject(i)
-                        favStudioList.add(
-                            ProfileFavoriteItem(
-                                id = node.getInt("id").toString(),
-                                title = node.optString("name", "İsimsiz"),
-                                imageUrl = ""
-                            )
-                        )
-                    }
-                }
+                // Favorileri ayrı paginated fetch ile çek (AniHyou gibi)
+                val (favAnimeList, favAnimeHasNext) = fetchAniListFavoritesPaginated(token, id, "anime", 1)
+                val (favMangaList, favMangaHasNext) = fetchAniListFavoritesPaginated(token, id, "manga", 1)
+                val (favCharList, favCharHasNext) = fetchAniListFavoritesPaginated(token, id, "characters", 1)
+                val (favStaffList, favStaffHasNext) = fetchAniListFavoritesPaginated(token, id, "staff", 1)
+                val (favStudioList, favStudioHasNext) = fetchAniListFavoritesPaginated(token, id, "studios", 1)
 
                 _aniListState.update {
                     it.copy(
@@ -540,7 +438,12 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                         favoriteManga = favMangaList,
                         favoriteCharacters = favCharList,
                         favoriteStaff = favStaffList,
-                        favoriteStudios = favStudioList
+                        favoriteStudios = favStudioList,
+                        favAnimePage = 1, favAnimeHasNext = favAnimeHasNext,
+                        favMangaPage = 1, favMangaHasNext = favMangaHasNext,
+                        favCharPage = 1, favCharHasNext = favCharHasNext,
+                        favStaffPage = 1, favStaffHasNext = favStaffHasNext,
+                        favStudioPage = 1, favStudioHasNext = favStudioHasNext
                     )
                 }
 
@@ -706,56 +609,74 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
     private suspend fun fetchAniListSocial(token: String, userId: Int) {
         withContext(Dispatchers.IO) {
             try {
-                val socialQuery = """
-                    query (${'$'}userId: Int) {
-                        User(id: ${'$'}userId) {
-                            followers(page: 1, perPage: 50) {
-                                nodes {
-                                    id
-                                    name
-                                    avatar { large }
-                                }
+                // Doğru AniList GraphQL şeması: User altında followers/following yok.
+                // AniHyou referansına göre Page.followers(userId:) ve Page.following(userId:) kullanılmalı.
+                val followersQuery = """
+                    query (${'$'}userId: Int!) {
+                        Page(page: 1, perPage: 100) {
+                            followers(userId: ${'$'}userId) {
+                                id
+                                name
+                                avatar { large }
                             }
-                            following(page: 1, perPage: 50) {
-                                nodes {
-                                    id
-                                    name
-                                    avatar { large }
-                                }
-                            }
+                            pageInfo { hasNextPage }
                         }
                     }
                 """.trimIndent()
+
+                val followingQuery = """
+                    query (${'$'}userId: Int!) {
+                        Page(page: 1, perPage: 100) {
+                            following(userId: ${'$'}userId) {
+                                id
+                                name
+                                avatar { large }
+                            }
+                            pageInfo { hasNextPage }
+                        }
+                    }
+                """.trimIndent()
+
                 val variables = JSONObject().put("userId", userId)
-                val jsonResponse = postGraphQl(token, socialQuery, variables)
-                val userObj = JSONObject(jsonResponse).getJSONObject("data").getJSONObject("User")
 
                 val followersList = mutableListOf<UserFollowItem>()
-                userObj.optJSONObject("followers")?.optJSONArray("nodes")?.let { arr ->
-                    for (i in 0 until arr.length()) {
-                        val obj = arr.getJSONObject(i)
-                        followersList.add(
-                            UserFollowItem(
-                                id = obj.getInt("id"),
-                                name = obj.optNullableString("name") ?: "Kullanıcı",
-                                avatarUrl = obj.optJSONObject("avatar")?.optNullableString("large")
+                try {
+                    val fResponse = postGraphQl(token, followersQuery, variables)
+                    val fPage = JSONObject(fResponse).getJSONObject("data").getJSONObject("Page")
+                    fPage.optJSONArray("followers")?.let { arr ->
+                        for (i in 0 until arr.length()) {
+                            val obj = arr.getJSONObject(i)
+                            followersList.add(
+                                UserFollowItem(
+                                    id = obj.getInt("id"),
+                                    name = obj.optNullableString("name") ?: "Kullanıcı",
+                                    avatarUrl = obj.optJSONObject("avatar")?.optNullableString("large")
+                                )
                             )
-                        )
+                        }
                     }
+                } catch (e: Exception) {
+                    android.util.Log.e("ProfileViewModel", "followers fetch failed: ${e.message}")
                 }
 
                 val followingList = mutableListOf<UserFollowItem>()
-                userObj.optJSONObject("following")?.optJSONArray("nodes")?.let { arr ->
-                    for (i in 0 until arr.length()) {
-                        val obj = arr.getJSONObject(i)
-                        followingList.add(
-                            UserFollowItem(
-                                id = obj.getInt("id"),
-                                name = obj.optNullableString("name") ?: "Kullanıcı",
-                                avatarUrl = obj.optJSONObject("avatar")?.optNullableString("large")
+                try {
+                    val fgResponse = postGraphQl(token, followingQuery, variables)
+                    val fgPage = JSONObject(fgResponse).getJSONObject("data").getJSONObject("Page")
+                    fgPage.optJSONArray("following")?.let { arr ->
+                        for (i in 0 until arr.length()) {
+                            val obj = arr.getJSONObject(i)
+                            followingList.add(
+                                UserFollowItem(
+                                    id = obj.getInt("id"),
+                                    name = obj.optNullableString("name") ?: "Kullanıcı",
+                                    avatarUrl = obj.optJSONObject("avatar")?.optNullableString("large")
+                                )
                             )
-                        )
+                        }
                     }
+                } catch (e: Exception) {
+                    android.util.Log.e("ProfileViewModel", "following fetch failed: ${e.message}")
                 }
 
                 _aniListState.update {
@@ -767,7 +688,130 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
         }
     }
 
-    private fun parseDetailedOverviewStats(json: JSONObject?, isAnime: Boolean): DetailedUserOverviewStats {
+    // AniHyou gibi favorileri kategoriye göre ayrı ve paginated çek
+    private suspend fun fetchAniListFavoritesPaginated(token: String, userId: Int, category: String, page: Int = 1): Pair<List<ProfileFavoriteItem>, Boolean> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val fieldBlock = when (category) {
+                    "anime" -> """
+                        anime(page: ${'$'}page, perPage: 25) {
+                            nodes { id title { romaji english } coverImage { large } isAdult }
+                            pageInfo { hasNextPage }
+                        }"""
+                    "manga" -> """
+                        manga(page: ${'$'}page, perPage: 25) {
+                            nodes { id title { romaji english } coverImage { large } isAdult }
+                            pageInfo { hasNextPage }
+                        }"""
+                    "characters" -> """
+                        characters(page: ${'$'}page, perPage: 25) {
+                            nodes { id name { full } image { large } }
+                            pageInfo { hasNextPage }
+                        }"""
+                    "staff" -> """
+                        staff(page: ${'$'}page, perPage: 25) {
+                            nodes { id name { full } image { large } }
+                            pageInfo { hasNextPage }
+                        }"""
+                    "studios" -> """
+                        studios(page: ${'$'}page, perPage: 25) {
+                            nodes { id name }
+                            pageInfo { hasNextPage }
+                        }"""
+                    else -> return@withContext Pair(emptyList(), false)
+                }
+
+                val query = """
+                    query (${'$'}userId: Int, ${'$'}page: Int) {
+                        User(id: ${'$'}userId) {
+                            favourites {
+                                $fieldBlock
+                            }
+                        }
+                    }
+                """.trimIndent()
+
+                val variables = JSONObject().put("userId", userId).put("page", page)
+                val response = postGraphQl(token, query, variables)
+                val favObj = JSONObject(response).getJSONObject("data").getJSONObject("User").getJSONObject("favourites")
+                val catObj = favObj.getJSONObject(category)
+                val hasNext = catObj.optJSONObject("pageInfo")?.optBoolean("hasNextPage", false) ?: false
+                val nodes = catObj.optJSONArray("nodes")
+                val list = mutableListOf<ProfileFavoriteItem>()
+                if (nodes != null) {
+                    for (i in 0 until nodes.length()) {
+                        val node = nodes.getJSONObject(i)
+                        val item = when (category) {
+                            "anime", "manga" -> ProfileFavoriteItem(
+                                id = node.getInt("id").toString(),
+                                title = node.optJSONObject("title")?.let {
+                                    it.optNullableString("romaji") ?: it.optNullableString("english")
+                                } ?: "İsimsiz",
+                                imageUrl = node.optJSONObject("coverImage")?.optNullableString("large") ?: "",
+                                isAdult = node.optBoolean("isAdult", false)
+                            )
+                            "characters", "staff" -> ProfileFavoriteItem(
+                                id = node.getInt("id").toString(),
+                                title = node.optJSONObject("name")?.optNullableString("full") ?: "İsimsiz",
+                                imageUrl = node.optJSONObject("image")?.optNullableString("large") ?: ""
+                            )
+                            "studios" -> ProfileFavoriteItem(
+                                id = node.getInt("id").toString(),
+                                title = node.optString("name", "İsimsiz"),
+                                imageUrl = ""
+                            )
+                            else -> null
+                        }
+                        if (item != null) list.add(item)
+                    }
+                }
+                Pair(list, hasNext)
+            } catch (e: Exception) {
+                android.util.Log.e("ProfileViewModel", "favorites ($category) fetch failed: ${e.message}")
+                Pair(emptyList(), false)
+            }
+        }
+    }
+
+    fun loadMoreFavorites(category: String) {
+        val token = ExternalAuthManager.getAniListToken(context) ?: return
+        val state = _aniListState.value
+        val userId = state.userId ?: return
+
+        viewModelScope.launch {
+            val currentPage = when (category) {
+                "anime" -> state.favAnimePage
+                "manga" -> state.favMangaPage
+                "characters" -> state.favCharPage
+                "staff" -> state.favStaffPage
+                "studios" -> state.favStudioPage
+                else -> 1
+            }
+            val hasNext = when (category) {
+                "anime" -> state.favAnimeHasNext
+                "manga" -> state.favMangaHasNext
+                "characters" -> state.favCharHasNext
+                "staff" -> state.favStaffHasNext
+                "studios" -> state.favStudioHasNext
+                else -> false
+            }
+            if (!hasNext) return@launch
+
+            val (newItems, nextHasNext) = fetchAniListFavoritesPaginated(token, userId, category, currentPage + 1)
+            _aniListState.update { s ->
+                when (category) {
+                    "anime" -> s.copy(favoriteAnime = s.favoriteAnime + newItems, favAnimePage = currentPage + 1, favAnimeHasNext = nextHasNext)
+                    "manga" -> s.copy(favoriteManga = s.favoriteManga + newItems, favMangaPage = currentPage + 1, favMangaHasNext = nextHasNext)
+                    "characters" -> s.copy(favoriteCharacters = s.favoriteCharacters + newItems, favCharPage = currentPage + 1, favCharHasNext = nextHasNext)
+                    "staff" -> s.copy(favoriteStaff = s.favoriteStaff + newItems, favStaffPage = currentPage + 1, favStaffHasNext = nextHasNext)
+                    "studios" -> s.copy(favoriteStudios = s.favoriteStudios + newItems, favStudioPage = currentPage + 1, favStudioHasNext = nextHasNext)
+                    else -> s
+                }
+            }
+        }
+    }
+
+    fun parseDetailedOverviewStats(json: JSONObject?, isAnime: Boolean): DetailedUserOverviewStats {
         if (json == null) return DetailedUserOverviewStats()
         val count = json.optInt("count", 0)
         val epOrChap = if (isAnime) json.optInt("episodesWatched", 0) else json.optInt("chaptersRead", 0)
@@ -1108,7 +1152,11 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
     }
 
     // --- MYANIMELIST API FETCHING (via Official API & Jikan Fallback) ---
-    fun fetchMalProfile() {
+    fun fetchMalProfile(forceRefresh: Boolean = false) {
+        if (!forceRefresh && _malState.value.name.isNotBlank()) {
+            return
+        }
+
         viewModelScope.launch {
             val token = ExternalAuthManager.getOrRefreshMalToken(context)
             if (token.isNullOrBlank()) {
@@ -1391,7 +1439,11 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
     }
 
     // --- SIMKL API FETCHING ---
-    fun fetchSimklProfile() {
+    fun fetchSimklProfile(forceRefresh: Boolean = false) {
+        if (!forceRefresh && _simklState.value.name.isNotBlank()) {
+            return
+        }
+
         val token = ExternalAuthManager.getSimklToken(context)
         if (token.isNullOrBlank()) {
             _simklState.update { it.copy(isConnected = false, isLoading = false, error = "Bağlantı bulunamadı") }
@@ -1706,6 +1758,17 @@ data class AniListProfileState(
     val favoriteCharacters: List<ProfileFavoriteItem> = emptyList(),
     val favoriteStaff: List<ProfileFavoriteItem> = emptyList(),
     val favoriteStudios: List<ProfileFavoriteItem> = emptyList(),
+    // Favoriler için pagination state'leri (AniHyou referanslı)
+    val favAnimePage: Int = 1,
+    val favAnimeHasNext: Boolean = false,
+    val favMangaPage: Int = 1,
+    val favMangaHasNext: Boolean = false,
+    val favCharPage: Int = 1,
+    val favCharHasNext: Boolean = false,
+    val favStaffPage: Int = 1,
+    val favStaffHasNext: Boolean = false,
+    val favStudioPage: Int = 1,
+    val favStudioHasNext: Boolean = false,
     val activities: List<ProfileActivityItem> = emptyList(),
     val activitiesHasNext: Boolean = false,
     val activitiesPage: Int = 1,
@@ -1756,3 +1819,234 @@ data class SimklProfileState(
     val recentHistory: List<ProfileFavoriteItem> = emptyList(),
     val socialState: SocialState = SocialState()
 )
+
+fun parseDetailedOverviewStats(json: JSONObject?, isAnime: Boolean): DetailedUserOverviewStats {
+    if (json == null) return DetailedUserOverviewStats()
+    val count = json.optInt("count", 0)
+    val epOrChap = if (isAnime) json.optInt("episodesWatched", 0) else json.optInt("chaptersRead", 0)
+    val minutesOrVol = if (isAnime) json.optInt("minutesWatched", 0) else json.optInt("volumesRead", 0)
+    val daysWatched = if (isAnime) (minutesOrVol / 60.0 / 24.0) else minutesOrVol.toDouble()
+    val meanScore = json.optDouble("meanScore", 0.0)
+    val stdDev = json.optDouble("standardDeviation", 0.0)
+
+    val scoreList = mutableListOf<ScoreStatItem>()
+    json.optJSONArray("scores")?.let { arr ->
+        for (i in 0 until arr.length()) {
+            val item = arr.getJSONObject(i)
+            scoreList.add(
+                ScoreStatItem(
+                    score = item.optInt("score", 0),
+                    count = item.optInt("count", 0),
+                    minutesWatched = item.optInt(if (isAnime) "minutesWatched" else "chaptersRead", 0),
+                    meanScore = item.optDouble("meanScore", 0.0)
+                )
+            )
+        }
+    }
+
+    val lengthList = mutableListOf<LengthStatItem>()
+    json.optJSONArray("lengths")?.let { arr ->
+        for (i in 0 until arr.length()) {
+            val item = arr.getJSONObject(i)
+            lengthList.add(
+                LengthStatItem(
+                    length = item.optString("length", "Bilinmiyor"),
+                    count = item.optInt("count", 0),
+                    minutesWatched = item.optInt(if (isAnime) "minutesWatched" else "chaptersRead", 0),
+                    meanScore = item.optDouble("meanScore", 0.0)
+                )
+            )
+        }
+    }
+
+    val formatList = mutableListOf<FormatStatItem>()
+    json.optJSONArray("formats")?.let { arr ->
+        for (i in 0 until arr.length()) {
+            val item = arr.getJSONObject(i)
+            formatList.add(
+                FormatStatItem(
+                    format = item.optString("format", "Diğer"),
+                    count = item.optInt("count", 0),
+                    minutesWatched = item.optInt(if (isAnime) "minutesWatched" else "chaptersRead", 0),
+                    meanScore = item.optDouble("meanScore", 0.0)
+                )
+            )
+        }
+    }
+
+    val statusList = mutableListOf<StatusStatItem>()
+    json.optJSONArray("statuses")?.let { arr ->
+        for (i in 0 until arr.length()) {
+            val item = arr.getJSONObject(i)
+            statusList.add(
+                StatusStatItem(
+                    status = item.optString("status", "Bilinmeyen"),
+                    count = item.optInt("count", 0),
+                    minutesWatched = item.optInt(if (isAnime) "minutesWatched" else "chaptersRead", 0),
+                    meanScore = item.optDouble("meanScore", 0.0)
+                )
+            )
+        }
+    }
+
+    val countryList = mutableListOf<CountryStatItem>()
+    json.optJSONArray("countries")?.let { arr ->
+        for (i in 0 until arr.length()) {
+            val item = arr.getJSONObject(i)
+            countryList.add(
+                CountryStatItem(
+                    country = item.optString("country", "Diğer"),
+                    count = item.optInt("count", 0),
+                    minutesWatched = item.optInt(if (isAnime) "minutesWatched" else "chaptersRead", 0),
+                    meanScore = item.optDouble("meanScore", 0.0)
+                )
+            )
+        }
+    }
+
+    val releaseYearList = mutableListOf<ReleaseYearStatItem>()
+    json.optJSONArray("releaseYears")?.let { arr ->
+        for (i in 0 until arr.length()) {
+            val item = arr.getJSONObject(i)
+            releaseYearList.add(
+                ReleaseYearStatItem(
+                    releaseYear = item.optInt("releaseYear", 0),
+                    count = item.optInt("count", 0),
+                    minutesWatched = item.optInt(if (isAnime) "minutesWatched" else "chaptersRead", 0),
+                    meanScore = item.optDouble("meanScore", 0.0)
+                )
+            )
+        }
+    }
+
+    val startYearList = mutableListOf<StartYearStatItem>()
+    json.optJSONArray("startYears")?.let { arr ->
+        for (i in 0 until arr.length()) {
+            val item = arr.getJSONObject(i)
+            startYearList.add(
+                StartYearStatItem(
+                    startYear = item.optInt("startYear", 0),
+                    count = item.optInt("count", 0),
+                    minutesWatched = item.optInt(if (isAnime) "minutesWatched" else "chaptersRead", 0),
+                    meanScore = item.optDouble("meanScore", 0.0)
+                )
+            )
+        }
+    }
+
+    val genreList = mutableListOf<RankedStatItem>()
+    json.optJSONArray("genres")?.let { arr ->
+        for (i in 0 until arr.length()) {
+            val item = arr.getJSONObject(i)
+            genreList.add(
+                RankedStatItem(
+                    name = item.optString("genre", "Diğer"),
+                    count = item.optInt("count", 0),
+                    meanScore = item.optDouble("meanScore", 0.0),
+                    timeSpentMinutes = if (isAnime) item.optInt("minutesWatched", 0) else null,
+                    chaptersRead = if (!isAnime) item.optInt("chaptersRead", 0) else null
+                )
+            )
+        }
+    }
+
+    val tagList = mutableListOf<RankedStatItem>()
+    json.optJSONArray("tags")?.let { arr ->
+        for (i in 0 until arr.length()) {
+            val item = arr.getJSONObject(i)
+            val tagObj = item.optJSONObject("tag")
+            tagList.add(
+                RankedStatItem(
+                    id = tagObj?.optInt("id"),
+                    name = tagObj?.optString("name") ?: item.optString("tag", "Diğer"),
+                    count = item.optInt("count", 0),
+                    meanScore = item.optDouble("meanScore", 0.0),
+                    timeSpentMinutes = if (isAnime) item.optInt("minutesWatched", 0) else null,
+                    chaptersRead = if (!isAnime) item.optInt("chaptersRead", 0) else null
+                )
+            )
+        }
+    }
+
+    val staffList = mutableListOf<RankedStatItem>()
+    json.optJSONArray("staff")?.let { arr ->
+        for (i in 0 until arr.length()) {
+            val item = arr.getJSONObject(i)
+            val staffObj = item.optJSONObject("staff")
+            staffList.add(
+                RankedStatItem(
+                    id = staffObj?.optInt("id"),
+                    name = staffObj?.optJSONObject("name")?.optString("full") ?: "Bilinmeyen Ekip Üyesi",
+                    count = item.optInt("count", 0),
+                    meanScore = item.optDouble("meanScore", 0.0),
+                    timeSpentMinutes = if (isAnime) item.optInt("minutesWatched", 0) else null,
+                    chaptersRead = if (!isAnime) item.optInt("chaptersRead", 0) else null,
+                    imageUrl = staffObj?.optJSONObject("image")?.optString("large")
+                )
+            )
+        }
+    }
+
+    val voiceActorList = mutableListOf<RankedStatItem>()
+    json.optJSONArray("voiceActors")?.let { arr ->
+        for (i in 0 until arr.length()) {
+            val item = arr.getJSONObject(i)
+            val vaObj = item.optJSONObject("voiceActor")
+            voiceActorList.add(
+                RankedStatItem(
+                    id = vaObj?.optInt("id"),
+                    name = vaObj?.optJSONObject("name")?.optString("full") ?: "Bilinmeyen Seslendirici",
+                    count = item.optInt("count", 0),
+                    meanScore = item.optDouble("meanScore", 0.0),
+                    timeSpentMinutes = if (isAnime) item.optInt("minutesWatched", 0) else null,
+                    chaptersRead = if (!isAnime) item.optInt("chaptersRead", 0) else null,
+                    imageUrl = vaObj?.optJSONObject("image")?.optString("large")
+                )
+            )
+        }
+    }
+
+    val studioList = mutableListOf<RankedStatItem>()
+    json.optJSONArray("studios")?.let { arr ->
+        for (i in 0 until arr.length()) {
+            val item = arr.getJSONObject(i)
+            val studioObj = item.optJSONObject("studio")
+            studioList.add(
+                RankedStatItem(
+                    id = studioObj?.optInt("id"),
+                    name = studioObj?.optString("name") ?: item.optString("studio", "Bilinmeyen Stüdyo"),
+                    count = item.optInt("count", 0),
+                    meanScore = item.optDouble("meanScore", 0.0),
+                    timeSpentMinutes = if (isAnime) item.optInt("minutesWatched", 0) else null,
+                    chaptersRead = if (!isAnime) item.optInt("chaptersRead", 0) else null
+                )
+            )
+        }
+    }
+
+    var plannedDays = 0.0
+    statusList.find { it.status == "PLANNING" || it.status == "Planlandı" }?.let {
+        plannedDays = if (isAnime) (it.count * 12.0 * 24.0 / 60.0 / 24.0) else it.count.toDouble()
+    }
+
+    return DetailedUserOverviewStats(
+        count = count,
+        episodesWatched = epOrChap,
+        daysWatched = daysWatched,
+        plannedDaysOrCount = plannedDays,
+        meanScore = meanScore,
+        standardDeviation = stdDev,
+        scoreList = scoreList,
+        lengthList = lengthList,
+        formatList = formatList,
+        statusList = statusList,
+        countryList = countryList,
+        releaseYearList = releaseYearList,
+        startYearList = startYearList,
+        genreList = genreList,
+        tagList = tagList,
+        staffList = staffList,
+        voiceActorList = voiceActorList,
+        studioList = studioList
+    )
+}

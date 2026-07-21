@@ -17,6 +17,7 @@ sealed interface DetailScreen {
     data object Stats : DetailScreen
     data object Favourites : DetailScreen
     data object About : DetailScreen
+    data class UserProfile(val userId: Int, val username: String? = null, val avatarUrl: String? = null) : DetailScreen
 }
 
 sealed interface AppStateKey {
@@ -39,6 +40,7 @@ sealed interface AppStateKey {
     data class Stats(override val depth: Int) : AppStateKey
     data class Favourites(override val depth: Int) : AppStateKey
     data class About(override val depth: Int) : AppStateKey
+    data class UserProfile(val userId: Int, override val depth: Int, val username: String? = null, val avatarUrl: String? = null) : AppStateKey
 }
 
 /**

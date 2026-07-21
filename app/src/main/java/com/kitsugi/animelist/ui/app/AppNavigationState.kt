@@ -73,6 +73,7 @@ class AppNavigationState(
                 DetailScreen.Stats -> "stats"
                 DetailScreen.Favourites -> "favourites"
                 DetailScreen.About -> "about"
+                is DetailScreen.UserProfile -> "user_profile_${screen.userId}"
             }
             stateHolder.removeState(key)
         }

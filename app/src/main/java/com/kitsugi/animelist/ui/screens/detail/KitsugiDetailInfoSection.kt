@@ -47,6 +47,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayScore
+import com.kitsugi.animelist.utils.toTurkishGenre
+import com.kitsugi.animelist.utils.toEnglishGenreForSearch
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -699,11 +701,11 @@ internal fun EntryGenresChipRow(
                     modifier = Modifier
                         .clip(RoundedCornerShape(999.dp))
                         .background(accentColor.copy(alpha = 0.15f))
-                        .tvClickable(shape = RoundedCornerShape(999.dp)) { onGenreClick(genre) }
+                        .tvClickable(shape = RoundedCornerShape(999.dp)) { onGenreClick(genre.toEnglishGenreForSearch()) }
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = genre,
+                        text = genre.toTurkishGenre(),
                         color = accentColor,
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.SemiBold

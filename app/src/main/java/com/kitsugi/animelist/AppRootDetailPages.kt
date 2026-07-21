@@ -362,7 +362,47 @@ fun AppRootDetailPages(
             }
         }
 
-
+        is AppStateKey.UserProfile -> {
+            navState.stateHolder.SaveableStateProvider(key = "user_profile_${key.depth}_${key.userId}") {
+                com.kitsugi.animelist.ui.screens.profile.KitsugiUserProfileScreen(
+                    userId = key.userId,
+                    fallbackUsername = key.username,
+                    fallbackAvatar = key.avatarUrl,
+                    appSettings = appSettings,
+                    mediaEntries = mediaEntries,
+                    onBackClick = { navState.popDetailStack() },
+                    onFavoriteMediaClick = { mediaId, mediaType, source ->
+                        val searchResult = com.kitsugi.animelist.data.remote.JikanSearchResult(
+                            malId = mediaId,
+                            title = "Yükleniyor...",
+                            subtitle = "",
+                            type = mediaType,
+                            total = null,
+                            score = null,
+                            isAdult = false,
+                            imageUrl = null,
+                            year = null,
+                            source = source
+                        )
+                        navState.navigateToDetail(DetailScreen.ApiResultDetail(searchResult))
+                    },
+                    onFavoriteCharacterClick = { charId, source, name, imageUrl ->
+                        navState.navigateToDetail(DetailScreen.CharacterDetail(charId, source, name, imageUrl))
+                    },
+                    onFavoriteStaffClick = { staffId, source, name, imageUrl ->
+                        navState.navigateToDetail(DetailScreen.StaffDetail(staffId, source, name, imageUrl))
+                    },
+                    onFavoriteStudioClick = { studioId, source, name, imageUrl ->
+                        navState.navigateToDetail(DetailScreen.StudioDetail(studioId, source, name, imageUrl))
+                    },
+                    onUserProfileClick = { newUserId, newUsername, newAvatar ->
+                        navState.navigateToDetail(DetailScreen.UserProfile(newUserId, newUsername, newAvatar))
+                    },
+                    onGenreClick = { genre -> triggerSearch(genre) },
+                    onTagClick = { tag -> triggerSearch(tag) }
+                )
+            }
+        }
 
         else -> {
             // No-op or throw for unhandled states

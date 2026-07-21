@@ -322,6 +322,19 @@ fun AppRoot(
         searchViewModel.search()
     }
 
+    // Genre / Tag tıklamalarında Search sekmesine git ve filtreyi pre-populate et
+    val triggerSearchByGenre: (String) -> Unit = { genreEnglish ->
+        navState.detailBackStack = emptyList<DetailScreen>()
+        appViewModel.selectTab(MainTab.Search)
+        searchViewModel.setGenreFilter(genreEnglish)
+    }
+
+    val triggerSearchByTag: (String) -> Unit = { tag ->
+        navState.detailBackStack = emptyList<DetailScreen>()
+        appViewModel.selectTab(MainTab.Search)
+        searchViewModel.setTagFilter(tag)
+    }
+
     val activeScreen = navState.detailBackStack.lastOrNull()
 
     val selectedDetailEntry = if (activeScreen is DetailScreen.MediaDetail) {
@@ -817,6 +830,7 @@ fun AppRoot(
                     activeScreen is DetailScreen.Stats -> AppStateKey.Stats(depth = currentDepth)
                     activeScreen is DetailScreen.Favourites -> AppStateKey.Favourites(depth = currentDepth)
                     activeScreen is DetailScreen.About -> AppStateKey.About(depth = currentDepth)
+                    activeScreen is DetailScreen.UserProfile -> AppStateKey.UserProfile(activeScreen.userId, depth = currentDepth, username = activeScreen.username, avatarUrl = activeScreen.avatarUrl)
                     else                         -> AppStateKey.Tab(selectedTab)
                 }
 
@@ -855,6 +869,8 @@ fun AppRoot(
                     onOpenMangaReader = { navState.openMangaBrowse() },
                     exportMangaSourceReportFile = ::exportMangaSourceReportFile,
                     triggerSearch = triggerSearch,
+                    triggerSearchByGenre = triggerSearchByGenre,
+                    triggerSearchByTag = triggerSearchByTag,
                     isAlreadyInList = ::isAlreadyInList
                 )
 
@@ -987,6 +1003,8 @@ private fun AppNavigationContent(
     onOpenMangaReader: () -> Unit,
     exportMangaSourceReportFile: (String) -> Unit,
     triggerSearch: (String) -> Unit,
+    triggerSearchByGenre: (String) -> Unit = {},
+    triggerSearchByTag: (String) -> Unit = {},
     isAlreadyInList: (JikanSearchResult) -> Boolean
 ) {
 
@@ -1012,6 +1030,7 @@ private fun AppNavigationContent(
             is AppStateKey.Stats,
             is AppStateKey.Favourites,
             is AppStateKey.About,
+            is AppStateKey.UserProfile,
             is AppStateKey.MediaDetail -> {
                 AppRootDetailPages(
                     key = key,
@@ -1116,7 +1135,9 @@ private fun AppNavigationContent(
                         onOpenApiDetail = onOpenApiDetail,
                         onAddApiSelectionToList = onAddApiSelectionToList,
                         onSeeAllSection = onSeeAllSection,
-                        onOpenMangaReader = onOpenMangaReader
+                        onOpenMangaReader = onOpenMangaReader,
+                        onSearchByGenre = triggerSearchByGenre,
+                        onSearchByTag = triggerSearchByTag
                     )
                 )
             }

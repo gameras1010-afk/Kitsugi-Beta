@@ -139,6 +139,7 @@ fun StudioDetailPage(
             }
             is StudioDetailState.Success -> {
                 val detail = currentState.detail
+                val context = LocalContext.current
                 val gridState = rememberLazyGridState()
                 val showFloatingHeader = gridState.firstVisibleItemIndex >= 1
                 val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -420,6 +421,25 @@ fun StudioDetailPage(
                                     overflow = TextOverflow.Ellipsis,
                                     modifier = Modifier.weight(1f)
                                 )
+                                IconButton(onClick = {
+                                    val url = com.kitsugi.animelist.utils.ShareUtils.buildStudioUrl(source, studioId)
+                                    com.kitsugi.animelist.utils.ShareUtils.shareText(context, detail.name, url)
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Share,
+                                        contentDescription = "Paylaş",
+                                        tint = KitsugiColors.TextSecondary
+                                    )
+                                }
+                                if (isAniListSource) {
+                                    IconButton(onClick = { viewModel.toggleFavourite() }) {
+                                        Icon(
+                                            imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                                            contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
+                                            tint = if (isFavourite) accentColor else KitsugiColors.TextSecondary
+                                        )
+                                    }
+                                }
                             }
                         }
                     }

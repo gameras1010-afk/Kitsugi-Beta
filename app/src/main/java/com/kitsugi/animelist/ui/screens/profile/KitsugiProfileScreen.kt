@@ -64,6 +64,8 @@ import com.kitsugi.animelist.model.MediaType
 import com.kitsugi.animelist.model.WatchStatus
 import com.kitsugi.animelist.ui.components.KitsugiMediaEntryCard
 import com.kitsugi.animelist.data.settings.AppSettings
+import com.kitsugi.animelist.utils.toEnglishGenreForSearch
+import com.kitsugi.animelist.utils.toTurkishGenre
 import com.kitsugi.animelist.ui.app.KitsugiProfileViewModel
 import com.kitsugi.animelist.ui.app.AniListProfileState
 import com.kitsugi.animelist.utils.rememberScrollConnection
@@ -95,10 +97,14 @@ fun KitsugiProfileScreen(
     onFavoriteMediaClick: (mediaId: Int, mediaType: MediaType, source: String) -> Unit,
     onFavoriteCharacterClick: (charId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
     onFavoriteStaffClick: (staffId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
+    onFavoriteStudioClick: ((studioId: Int, source: String, name: String?, imageUrl: String?) -> Unit)? = null,
     onOpenStatsClick: (() -> Unit)? = null,
+    onGenreClick: (String) -> Unit = {},
+    onTagClick: (String) -> Unit = {},
     onLoginAniList: () -> Unit = {},
     onLoginMal: () -> Unit = {},
     onLoginSimkl: () -> Unit = {},
+    onUserProfileClick: (userId: Int, username: String, avatarUrl: String?) -> Unit = { _, _, _ -> },
     modifier: Modifier = Modifier
 ) {
     val accentColor = LocalKitsugiAccent.current
@@ -284,6 +290,10 @@ fun KitsugiProfileScreen(
                                 },
                                 onDeleteClick = { actId -> showDeleteConfirmDialog = actId.toString() },
                                 isLandscape = isLandscape,
+                                onGenreClick = onGenreClick,
+                                onTagClick = onTagClick,
+                                onFavoriteStudioClick = onFavoriteStudioClick,
+                                onUserProfileClick = onUserProfileClick,
                                 accentColor = accentColor
                             )
                         }
@@ -648,25 +658,48 @@ fun AniListProfileContent(
     onFavoriteMediaClick: (mediaId: Int, mediaType: MediaType, source: String) -> Unit,
     onFavoriteCharacterClick: (charId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
     onFavoriteStaffClick: (staffId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
+    onFavoriteStudioClick: ((studioId: Int, source: String, name: String?, imageUrl: String?) -> Unit)? = null,
     onLoadMoreActivities: () -> Unit,
     onOpenFavoriteSheet: (title: String, items: List<ProfileFavoriteItem>, onClick: (ProfileFavoriteItem) -> Unit) -> Unit,
     onOpenStatsClick: (() -> Unit)? = null,
     onActivityClick: ((Int) -> Unit)? = null,
     onLikeClick: ((Int) -> Unit)? = null,
     onDeleteClick: ((Int) -> Unit)? = null,
+    onGenreClick: (String) -> Unit = {},
+    onTagClick: (String) -> Unit = {},
+    onUserProfileClick: (userId: Int, username: String, avatarUrl: String?) -> Unit = { _, _, _ -> },
     isLandscape: Boolean,
     accentColor: Color
 ) {
-    var activeTab by rememberSaveable { mutableIntStateOf(0) } // 0: Info, 1: Activity, 2: Stats, 3: Favorites, 4: Social
-    var statsMediaType by rememberSaveable { mutableIntStateOf(0) } // 0: Anime, 1: Manga
-    var statsSubTab by rememberSaveable { mutableIntStateOf(0) } // 0: Genel Bakış, 1: Türler, 2: Etiketler, 3: Ekip, 4: Seslendirenler, 5: Stüdyolar
-    var favoritesFilter by rememberSaveable { mutableIntStateOf(0) } // 0: Anime, 1: Manga, 2: Character, 3: Staff, 4: Studio
-    var socialFilter by rememberSaveable { mutableIntStateOf(0) } // 0: Followers, 1: Following
+    var activeTab by rememberSaveable { mutableIntStateOf(viewModel.aniListActiveTab) } // 0: Info, 1: Activity, 2: Stats, 3: Favorites, 4: Social
+    LaunchedEffect(activeTab) { viewModel.aniListActiveTab = activeTab }
 
-    var scoreDistType by rememberSaveable { mutableIntStateOf(0) } // 0: Başlık sayısı, 1: Harcanan süre
-    var lengthDistType by rememberSaveable { mutableIntStateOf(0) } // 0: Başlık sayısı, 1: Harcanan süre, 2: Ortalama Puan
-    var releaseYearDistType by rememberSaveable { mutableIntStateOf(0) } // 0: Başlık sayısı, 1: Harcanan süre, 2: Ortalama Puan
-    var startYearDistType by rememberSaveable { mutableIntStateOf(0) } // 0: Başlık sayısı, 1: Harcanan süre, 2: Ortalama Puan
+    var statsMediaType by rememberSaveable { mutableIntStateOf(viewModel.aniListStatsMediaType) } // 0: Anime, 1: Manga
+    LaunchedEffect(statsMediaType) { viewModel.aniListStatsMediaType = statsMediaType }
+
+    var statsSubTab by rememberSaveable { mutableIntStateOf(viewModel.aniListStatsSubTab) } // 0: Genel Bakış, 1: Türler, 2: Etiketler, 3: Ekip, 4: Seslendirenler, 5: Stüdyolar
+    LaunchedEffect(statsSubTab) { viewModel.aniListStatsSubTab = statsSubTab }
+
+    var favoritesFilter by rememberSaveable { mutableIntStateOf(viewModel.aniListFavoritesFilter) } // 0: Anime, 1: Manga, 2: Character, 3: Staff, 4: Studio
+    LaunchedEffect(favoritesFilter) { viewModel.aniListFavoritesFilter = favoritesFilter }
+
+    var socialFilter by rememberSaveable { mutableIntStateOf(viewModel.aniListSocialFilter) } // 0: Followers, 1: Following
+    LaunchedEffect(socialFilter) { viewModel.aniListSocialFilter = socialFilter }
+
+    var scoreDistType by rememberSaveable { mutableIntStateOf(viewModel.aniListScoreDistType) } // 0: Başlık sayısı, 1: Harcanan süre
+    LaunchedEffect(scoreDistType) { viewModel.aniListScoreDistType = scoreDistType }
+
+    var lengthDistType by rememberSaveable { mutableIntStateOf(viewModel.aniListLengthDistType) } // 0: Başlık sayısı, 1: Harcanan süre, 2: Ortalama Puan
+    LaunchedEffect(lengthDistType) { viewModel.aniListLengthDistType = lengthDistType }
+
+    var releaseYearDistType by rememberSaveable { mutableIntStateOf(viewModel.aniListReleaseYearDistType) } // 0: Başlık sayısı, 1: Harcanan süre, 2: Ortalama Puan
+    LaunchedEffect(releaseYearDistType) { viewModel.aniListReleaseYearDistType = releaseYearDistType }
+
+    var startYearDistType by rememberSaveable { mutableIntStateOf(viewModel.aniListStartYearDistType) } // 0: Başlık sayısı, 1: Harcanan süre, 2: Ortalama Puan
+    LaunchedEffect(startYearDistType) { viewModel.aniListStartYearDistType = startYearDistType }
+
+    var statSortType by rememberSaveable { mutableIntStateOf(viewModel.aniListStatsSortType) } // 0: Başlık sayısı, 1: Harcanan süre, 2: Ortalama Puan
+    LaunchedEffect(statSortType) { viewModel.aniListStatsSortType = statSortType }
 
     val listState = rememberLazyListState(
         initialFirstVisibleItemIndex = viewModel.aniListScrollIndex,
@@ -1296,6 +1329,15 @@ fun AniListProfileContent(
                     }
                 }
             } else {
+                val subTabTitle = when (statsSubTab) {
+                    1 -> "Türler"
+                    2 -> "Etiketler"
+                    3 -> "Ekip"
+                    4 -> "Seslendirenler"
+                    5 -> "Stüdyolar"
+                    else -> ""
+                }
+
                 val currentList: List<RankedStatItem> = when (statsSubTab) {
                     1 -> overview?.genreList.orEmpty()
                     2 -> overview?.tagList.orEmpty()
@@ -1305,7 +1347,90 @@ fun AniListProfileContent(
                     else -> emptyList()
                 }
 
-                if (currentList.isEmpty()) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(KitsugiColors.Surface)
+                            .padding(18.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        // Media Switcher (Anime / Manga)
+                        if (statsSubTab in 1..3) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(KitsugiColors.SurfaceStrong)
+                                    .padding(4.dp)
+                            ) {
+                                listOf("Anime", "Manga").forEachIndexed { idx, label ->
+                                    val isSel = statsMediaType == idx
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(if (isSel) accentColor else Color.Transparent)
+                                            .clickable { statsMediaType = idx }
+                                            .padding(vertical = 8.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = label,
+                                            color = if (isSel) KitsugiColors.Background else KitsugiColors.TextMuted,
+                                            fontWeight = FontWeight.Bold,
+                                            style = MaterialTheme.typography.labelLarge
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // Sub-Tab Title
+                        Text(
+                            text = subTabTitle,
+                            color = KitsugiColors.TextPrimary,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        // Sort Chips Row
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.horizontalScroll(rememberScrollState())
+                        ) {
+                            ProfileFilterChip(
+                                isSelected = statSortType == 0,
+                                text = "Başlık sayısı",
+                                onClick = { statSortType = 0 },
+                                accentColor = accentColor
+                            )
+                            ProfileFilterChip(
+                                isSelected = statSortType == 1,
+                                text = "Harcanan süre",
+                                onClick = { statSortType = 1 },
+                                accentColor = accentColor
+                            )
+                            ProfileFilterChip(
+                                isSelected = statSortType == 2,
+                                text = "Ortalama Puan",
+                                onClick = { statSortType = 2 },
+                                accentColor = accentColor
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                val sortedList = when (statSortType) {
+                    0 -> currentList.sortedByDescending { it.count }
+                    1 -> currentList.sortedByDescending { it.timeSpentMinutes ?: it.chaptersRead ?: 0 }
+                    2 -> currentList.sortedByDescending { it.meanScore }
+                    else -> currentList
+                }
+
+                if (sortedList.isEmpty()) {
                     item {
                         Box(
                             modifier = Modifier
@@ -1317,11 +1442,11 @@ fun AniListProfileContent(
                         }
                     }
                 } else {
-                    itemsIndexed(currentList) { idx, item ->
+                    itemsIndexed(sortedList) { idx, item ->
                         Column {
                             PositionalStatItemCard(
                                 rank = idx + 1,
-                                title = item.name,
+                                title = if (statsSubTab == 1) item.name.toTurkishGenre() else item.name,
                                 count = item.count,
                                 meanScore = item.meanScore,
                                 timeSpentMinutes = item.timeSpentMinutes,
@@ -1329,8 +1454,12 @@ fun AniListProfileContent(
                                 imageUrl = item.imageUrl,
                                 accentColor = accentColor,
                                 onClick = {
-                                    if ((statsSubTab == 3 || statsSubTab == 4) && item.id != null) {
-                                        onFavoriteStaffClick(item.id, "anilist", item.name, item.imageUrl)
+                                    when (statsSubTab) {
+                                        1 -> onGenreClick(item.name.toEnglishGenreForSearch())
+                                        2 -> onTagClick(item.name)
+                                        3, 4 -> if (item.id != null) onFavoriteStaffClick(item.id, "anilist", item.name, item.imageUrl)
+                                        5 -> if (item.id != null) onFavoriteStudioClick?.invoke(item.id, "anilist", item.name, item.imageUrl) else onTagClick(item.name)
+                                        else -> {}
                                     }
                                 }
                             )
@@ -1345,6 +1474,14 @@ fun AniListProfileContent(
 
         // TAB 3: FAVORITES
         if (activeTab == 3) {
+            val currentFavCategory = when (favoritesFilter) {
+                0 -> "anime"
+                1 -> "manga"
+                2 -> "characters"
+                3 -> "staff"
+                4 -> "studios"
+                else -> "anime"
+            }
             val currentFavList = when (favoritesFilter) {
                 0 -> state.favoriteAnime
                 1 -> state.favoriteManga
@@ -1352,6 +1489,14 @@ fun AniListProfileContent(
                 3 -> state.favoriteStaff
                 4 -> state.favoriteStudios
                 else -> emptyList()
+            }
+            val currentHasNext = when (favoritesFilter) {
+                0 -> state.favAnimeHasNext
+                1 -> state.favMangaHasNext
+                2 -> state.favCharHasNext
+                3 -> state.favStaffHasNext
+                4 -> state.favStudioHasNext
+                else -> false
             }
 
             if (currentFavList.isEmpty()) {
@@ -1431,6 +1576,33 @@ fun AniListProfileContent(
                         }
                     }
                 }
+
+                // "Daha Fazla" butonu – AniHyou gibi pagination
+                if (currentHasNext) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(999.dp))
+                                    .background(accentColor.copy(alpha = 0.15f))
+                                    .clickable { viewModel.loadMoreFavorites(currentFavCategory) }
+                                    .padding(horizontal = 24.dp, vertical = 10.dp)
+                            ) {
+                                Text(
+                                    text = "Daha Fazla Yükle",
+                                    color = accentColor,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -1445,7 +1617,13 @@ fun AniListProfileContent(
                             .padding(32.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "Kullanıcı bulunamadı.", color = KitsugiColors.TextMuted)
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = if (socialFilter == 0) "Takipçi bulunamadı." else "Takip edilen kullanıcı bulunamadı.",
+                                color = KitsugiColors.TextMuted,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             } else {
@@ -1462,6 +1640,7 @@ fun AniListProfileContent(
                                     .weight(1f)
                                     .clip(RoundedCornerShape(16.dp))
                                     .background(KitsugiColors.Surface)
+                                    .clickable { onUserProfileClick(u.id, u.name, u.avatarUrl) }
                                     .padding(12.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
@@ -1515,9 +1694,14 @@ fun MalProfileContent(
     isLandscape: Boolean,
     accentColor: Color
 ) {
-    var activeTab by rememberSaveable { mutableIntStateOf(0) }
-    var statsMediaType by rememberSaveable { mutableIntStateOf(0) }
-    var favoritesFilter by rememberSaveable { mutableIntStateOf(0) }
+    var activeTab by rememberSaveable { mutableIntStateOf(viewModel.malActiveTab) }
+    LaunchedEffect(activeTab) { viewModel.malActiveTab = activeTab }
+
+    var statsMediaType by rememberSaveable { mutableIntStateOf(viewModel.malStatsMediaType) }
+    LaunchedEffect(statsMediaType) { viewModel.malStatsMediaType = statsMediaType }
+
+    var favoritesFilter by rememberSaveable { mutableIntStateOf(viewModel.malFavoritesFilter) }
+    LaunchedEffect(favoritesFilter) { viewModel.malFavoritesFilter = favoritesFilter }
 
     val listState = rememberLazyListState(
         initialFirstVisibleItemIndex = viewModel.malScrollIndex,
@@ -2027,7 +2211,8 @@ fun SimklProfileContent(
     isLandscape: Boolean,
     accentColor: Color
 ) {
-    var activeTab by rememberSaveable { mutableIntStateOf(0) }
+    var activeTab by rememberSaveable { mutableIntStateOf(viewModel.simklActiveTab) }
+    LaunchedEffect(activeTab) { viewModel.simklActiveTab = activeTab }
 
     val listState = rememberLazyListState(
         initialFirstVisibleItemIndex = viewModel.simklScrollIndex,
@@ -3002,7 +3187,7 @@ fun PositionalStatItemCard(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Başlık",
+                        text = "Başlık sayısı",
                         color = KitsugiColors.TextMuted,
                         style = MaterialTheme.typography.labelSmall
                     )
@@ -3021,18 +3206,24 @@ fun PositionalStatItemCard(
                     )
                 }
                 if (timeSpentMinutes != null && timeSpentMinutes > 0) {
-                    val days = timeSpentMinutes / (60 * 24)
-                    val hours = (timeSpentMinutes % (60 * 24)) / 60
-                    val text = if (days > 0) "${days}g ${hours}s" else "${hours}s"
+                    val hours = timeSpentMinutes / 60
+                    val days = hours / 24
+                    val timeText = when {
+                        days >= 30 -> "${days / 30} ay"
+                        days >= 7 -> "${days / 7} hafta"
+                        days >= 1 -> "${days} gün"
+                        hours >= 1 -> "${hours} saat"
+                        else -> "${timeSpentMinutes} dak"
+                    }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = text,
+                            text = timeText,
                             color = KitsugiColors.TextPrimary,
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Geçirilen Süre",
+                            text = "Harcanan süre",
                             color = KitsugiColors.TextMuted,
                             style = MaterialTheme.typography.labelSmall
                         )

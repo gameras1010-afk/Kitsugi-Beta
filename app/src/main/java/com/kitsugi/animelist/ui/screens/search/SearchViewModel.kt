@@ -91,6 +91,35 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         search()
     }
 
+    /**
+     * Profil / detay sayfasından bir tür (genre) adına tıklandığında çağrılır.
+     * [genreEnglish] her zaman İngilizce API adı olmalı (Kitsugi translation map zaten dönüştürür).
+     */
+    fun setGenreFilter(genreEnglish: String) {
+        _uiState.update {
+            it.copy(
+                query = "",
+                activeFilters = SearchFilters(genres = listOf(genreEnglish)),
+                hasSearched = false
+            )
+        }
+        search()
+    }
+
+    /**
+     * Profil / detay sayfasından bir etikete (tag) tıklandığında çağrılır.
+     */
+    fun setTagFilter(tag: String) {
+        _uiState.update {
+            it.copy(
+                query = "",
+                activeFilters = SearchFilters(tags = listOf(tag)),
+                hasSearched = false
+            )
+        }
+        search()
+    }
+
     private fun getJikanGenreId(genre: String?): Int? = when (genre?.lowercase()?.trim()) {
         "action", "aksiyon" -> 1
         "adventure", "macera" -> 2

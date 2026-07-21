@@ -43,6 +43,8 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.kitsugi.animelist.data.remote.JikanSearchResult
 import com.kitsugi.animelist.data.remote.MdbListRatings
+import com.kitsugi.animelist.utils.toTurkishGenre
+import com.kitsugi.animelist.utils.toEnglishGenreForSearch
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.size
@@ -490,11 +492,11 @@ internal fun ApiGenresChipRow(
                     modifier = Modifier
                         .clip(RoundedCornerShape(999.dp))
                         .background(accentColor.copy(alpha = 0.15f))
-                        .tvClickable(shape = RoundedCornerShape(999.dp), onClick = { onGenreClick(genre) })
+                        .tvClickable(shape = RoundedCornerShape(999.dp), onClick = { onGenreClick(genre.toEnglishGenreForSearch()) })
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = genre,
+                        text = genre.toTurkishGenre(),
                         color = accentColor,
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.SemiBold

@@ -904,6 +904,15 @@ fun CharacterDetailPage(
                                         tint = KitsugiColors.TextSecondary
                                     )
                                 }
+                                if (isAniListSource) {
+                                    IconButton(onClick = { viewModel.toggleFavourite() }) {
+                                        Icon(
+                                            imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                                            contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
+                                            tint = if (isFavourite) accentColor else KitsugiColors.TextSecondary
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
