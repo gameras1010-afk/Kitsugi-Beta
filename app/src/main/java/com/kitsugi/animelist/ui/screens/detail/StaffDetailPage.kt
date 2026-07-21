@@ -97,6 +97,7 @@ fun StaffDetailPage(
     onMediaClick: (mediaId: Int, mediaType: String, mediaSource: String) -> Unit,
     name: String? = null,
     imageUrl: String? = null,
+    titleLanguage: String = "ROMAJI",
     preferredTranslator: String = "DEFAULT"
 ) {
     val accentColor = LocalKitsugiAccent.current
@@ -400,13 +401,13 @@ fun StaffDetailPage(
                                             1 -> {
                                                 if (detail.characterRoles.isEmpty()) Text("Karakter seslendirme bilgisi bulunmuyor.", color = KitsugiColors.TextSecondary, modifier = Modifier.padding(vertical = 16.dp))
                                                 else Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                                    detail.characterRoles.forEach { role -> StaffCharacterRoleCard(role = role, onCharacterClick = onCharacterClick, onMediaClick = onMediaClick) }
+                                                    detail.characterRoles.forEach { role -> StaffCharacterRoleCard(role = role, titleLanguage = titleLanguage, onCharacterClick = onCharacterClick, onMediaClick = onMediaClick) }
                                                 }
                                             }
                                             2 -> {
                                                 if (detail.mediaWorks.isEmpty()) Text("Yapım katkı bilgisi bulunmuyor.", color = KitsugiColors.TextSecondary, modifier = Modifier.padding(vertical = 16.dp))
                                                 else Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                                    detail.mediaWorks.forEach { work -> StaffMediaWorkRow(work = work, onMediaClick = onMediaClick) }
+                                                    detail.mediaWorks.forEach { work -> StaffMediaWorkRow(work = work, titleLanguage = titleLanguage, onMediaClick = onMediaClick) }
                                                 }
                                             }
                                         }
@@ -743,7 +744,7 @@ fun StaffDetailPage(
                                             } else {
                                                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                                     detail.characterRoles.forEach { role ->
-                                                        StaffCharacterRoleCard(role = role, onCharacterClick = onCharacterClick, onMediaClick = onMediaClick)
+                                                        StaffCharacterRoleCard(role = role, titleLanguage = titleLanguage, onCharacterClick = onCharacterClick, onMediaClick = onMediaClick)
                                                     }
                                                 }
                                             }
@@ -754,7 +755,7 @@ fun StaffDetailPage(
                                             } else {
                                                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                                     detail.mediaWorks.forEach { work ->
-                                                        StaffMediaWorkRow(work = work, onMediaClick = onMediaClick)
+                                                        StaffMediaWorkRow(work = work, titleLanguage = titleLanguage, onMediaClick = onMediaClick)
                                                     }
                                                 }
                                             }

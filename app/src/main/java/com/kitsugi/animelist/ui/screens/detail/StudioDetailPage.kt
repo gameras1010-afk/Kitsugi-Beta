@@ -48,6 +48,7 @@ import androidx.compose.ui.platform.LocalContext
 import com.kitsugi.animelist.ui.components.KitsugiMarkdownText
 import com.kitsugi.animelist.ui.components.KitsugiPageEnter
 import com.kitsugi.animelist.ui.components.KitsugiCinematicLoadingScreen
+import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayTitle
 
 import android.content.res.Configuration
 import androidx.compose.ui.platform.LocalConfiguration
@@ -69,7 +70,8 @@ fun StudioDetailPage(
     onBackClick: () -> Unit,
     onMediaClick: (mediaId: Int, mediaType: String, mediaSource: String) -> Unit,
     name: String? = null,
-    imageUrl: String? = null
+    imageUrl: String? = null,
+    titleLanguage: String = "ROMAJI"
 ) {
     val accentColor = LocalKitsugiAccent.current
 
@@ -302,7 +304,7 @@ fun StudioDetailPage(
                                         verticalArrangement = Arrangement.spacedBy(14.dp)
                                     ) {
                                         items(detail.mediaWorks) { work ->
-                                            StudioMediaGridItem(work = work, onMediaClick = onMediaClick)
+                                            StudioMediaGridItem(work = work, titleLanguage = titleLanguage, onMediaClick = onMediaClick)
                                         }
                                     }
                                 }
@@ -384,6 +386,7 @@ fun StudioDetailPage(
                             items(detail.mediaWorks) { work ->
                                 StudioMediaGridItem(
                                     work = work,
+                                    titleLanguage = titleLanguage,
                                     onMediaClick = onMediaClick
                                 )
                             }
@@ -632,10 +635,10 @@ private fun StudioHeroHeader(
 @Composable
 private fun StudioMediaGridItem(
     work: KitsugiStaffMediaWork,
+    titleLanguage: String = "ROMAJI",
     onMediaClick: (mediaId: Int, mediaType: String, mediaSource: String) -> Unit
 ) {
-    val leftPadding = 16.dp
-    val rightPadding = 16.dp
+    val displayTitle = work.getDisplayTitle(titleLanguage)
 
     Column(
         modifier = Modifier
@@ -654,7 +657,7 @@ private fun StudioMediaGridItem(
             if (!work.mediaImageUrl.isNullOrBlank()) {
                 AsyncImage(
                     model = work.mediaImageUrl,
-                    contentDescription = work.mediaTitle,
+                    contentDescription = displayTitle,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
@@ -664,7 +667,7 @@ private fun StudioMediaGridItem(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = work.mediaTitle.take(2).uppercase(),
+                        text = displayTitle.take(2).uppercase(),
                         color = KitsugiColors.TextMuted,
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.labelMedium
@@ -674,7 +677,7 @@ private fun StudioMediaGridItem(
         }
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = work.mediaTitle,
+            text = displayTitle,
             color = KitsugiColors.TextPrimary,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,

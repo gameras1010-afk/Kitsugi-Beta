@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
@@ -50,6 +51,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -104,11 +106,20 @@ fun KitsugiUserProfileScreen(
     onGenreClick: (genre: String) -> Unit = {},
     onTagClick: (tag: String) -> Unit = {},
     onOpenUserMediaList: (userId: Int, mediaType: MediaType) -> Unit = { _, _ -> },
-    accentColor: Color = LocalKitsugiAccent.current,
-    viewModel: KitsugiUserProfileViewModel = viewModel()
+    accentColor: Color? = null,
+    customViewModel: KitsugiUserProfileViewModel? = null
 ) {
+    val accentColor = accentColor ?: LocalKitsugiAccent.current
+    val viewModel: KitsugiUserProfileViewModel = customViewModel ?: viewModel(key = "user_profile_${userId}")
+
     LaunchedEffect(userId) {
         viewModel.loadUser(userId, fallbackUsername, fallbackAvatar)
+    }
+
+    DisposableEffect(userId) {
+        onDispose {
+            viewModel.resetState()
+        }
     }
 
     val state by viewModel.uiState.collectAsState()
@@ -134,6 +145,18 @@ fun KitsugiUserProfileScreen(
     var activeGalleryImages by remember { mutableStateOf<Triple<List<String>, Int, String>?>(null) }
 
     val pullRefreshState = rememberPullToRefreshState()
+
+    val listState = rememberLazyListState(
+        initialFirstVisibleItemIndex = viewModel.scrollIndex,
+        initialFirstVisibleItemScrollOffset = viewModel.scrollOffset
+    )
+
+    LaunchedEffect(listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset) {
+        viewModel.updateScroll(
+            listState.firstVisibleItemIndex,
+            listState.firstVisibleItemScrollOffset
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -163,7 +186,7 @@ fun KitsugiUserProfileScreen(
                     }
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = state.name.ifBlank { fallbackUsername ?: "Kullanıcı Profili" },
+                        text = state.name.ifBlank { fallbackUsername ?: "KullanÃ„Â±cÃ„Â± Profili" },
                         color = KitsugiColors.TextPrimary,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
@@ -179,7 +202,7 @@ fun KitsugiUserProfileScreen(
                     }) {
                         Icon(
                             imageVector = Icons.Rounded.Share,
-                            contentDescription = "Profili Paylaş",
+                            contentDescription = "Profili PaylaÃ…Å¸",
                             tint = KitsugiColors.TextPrimary
                         )
                     }
@@ -189,7 +212,7 @@ fun KitsugiUserProfileScreen(
 
         PullToRefreshBox(
             isRefreshing = state.isLoading && state.name.isNotBlank(),
-            onRefresh = { viewModel.loadUser(userId, fallbackUsername, fallbackAvatar) },
+            onRefresh = { viewModel.loadUser(userId, fallbackUsername, fallbackAvatar, forceRefresh = true) },
             modifier = Modifier.weight(1f).fillMaxWidth(),
             state = pullRefreshState
         ) {
@@ -202,6 +225,7 @@ fun KitsugiUserProfileScreen(
                 }
             } else {
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = if (isLandscape) 18.dp else 16.dp),
@@ -212,7 +236,7 @@ fun KitsugiUserProfileScreen(
                         val avatarUrl = (state.avatarUrl ?: fallbackAvatar)?.takeIf { it.isNotBlank() }
                         val bannerUrl = state.bannerUrl?.takeIf { it.isNotBlank() }
                         val imageList = listOfNotNull(avatarUrl, bannerUrl)
-                        val username = state.name.ifBlank { fallbackUsername ?: "Kullanıcı" }
+                        val username = state.name.ifBlank { fallbackUsername ?: "KullanÃ„Â±cÃ„Â±" }
 
                         Box(
                             modifier = Modifier
@@ -276,7 +300,7 @@ fun KitsugiUserProfileScreen(
                                 Column(modifier = Modifier.weight(1f)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
-                                            text = state.name.ifBlank { fallbackUsername ?: "AniList Kullanıcısı" },
+                                            text = state.name.ifBlank { fallbackUsername ?: "AniList KullanÃ„Â±cÃ„Â±sÃ„Â±" },
                                             color = KitsugiColors.TextPrimary,
                                             style = MaterialTheme.typography.titleLarge,
                                             fontWeight = FontWeight.Bold,
@@ -422,9 +446,9 @@ fun KitsugiUserProfileScreen(
                                 verticalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
                                 val tabs = listOf(
-                                    Icons.Rounded.Info to "Hakkında",
+                                    Icons.Rounded.Info to "HakkÃ„Â±nda",
                                     Icons.Rounded.ChatBubble to "Aktivite",
-                                    Icons.Rounded.BarChart to "İstatistikler",
+                                    Icons.Rounded.BarChart to "Ã„Â°statistikler",
                                     Icons.Rounded.Star to "Favoriler",
                                     Icons.Rounded.People to "Sosyal"
                                 )
@@ -437,7 +461,7 @@ fun KitsugiUserProfileScreen(
 
                                 // Sub-filter chips per tab
                                 if (activeTab == 2) {
-                                    val subTabs = listOf("Genel", "Türler", "Etiketler", "Ekip", "Seslendirmen", "Stüdyo")
+                                    val subTabs = listOf("Genel", "TÃƒÂ¼rler", "Etiketler", "Ekip", "Seslendirmen", "StÃƒÂ¼dyo")
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -460,7 +484,7 @@ fun KitsugiUserProfileScreen(
                                             .horizontalScroll(rememberScrollState()),
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        listOf("Anime", "Manga", "Karakterler", "Ekip", "Stüdyolar").forEachIndexed { idx, label ->
+                                        listOf("Anime", "Manga", "Karakterler", "Ekip", "StÃƒÂ¼dyolar").forEachIndexed { idx, label ->
                                             ProfileFilterChip(
                                                 text = label,
                                                 isSelected = favoritesFilter == idx,
@@ -475,7 +499,7 @@ fun KitsugiUserProfileScreen(
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         ProfileFilterChip(
-                                            text = "Takipçiler (${state.socialState.followers.size})",
+                                            text = "TakipÃƒÂ§iler (${state.socialState.followers.size})",
                                             isSelected = socialFilter == 0,
                                             accentColor = accentColor,
                                             onClick = { viewModel.socialFilter = 0 }
@@ -504,7 +528,7 @@ fun KitsugiUserProfileScreen(
                                 verticalArrangement = Arrangement.spacedBy(14.dp)
                             ) {
                                 Text(
-                                    text = "Kullanıcı Hakkında",
+                                    text = "KullanÃ„Â±cÃ„Â± HakkÃ„Â±nda",
                                     color = KitsugiColors.TextPrimary,
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
@@ -518,7 +542,7 @@ fun KitsugiUserProfileScreen(
                                     )
                                 } else {
                                     Text(
-                                        text = "Bu kullanıcı henüz bir biyografi eklemedi.",
+                                        text = "Bu kullanÃ„Â±cÃ„Â± henÃƒÂ¼z bir biyografi eklemedi.",
                                         color = KitsugiColors.TextMuted,
                                         style = MaterialTheme.typography.bodyMedium
                                     )
@@ -527,8 +551,8 @@ fun KitsugiUserProfileScreen(
                                 HorizontalDivider(color = KitsugiColors.SurfaceStrong)
 
                                 Row(modifier = Modifier.fillMaxWidth()) {
-                                    StatCard("Anime Kayıt", state.animeStats?.count?.toString() ?: "0")
-                                    StatCard("Manga Kayıt", state.mangaStats?.count?.toString() ?: "0")
+                                    StatCard("Anime KayÃ„Â±t", state.animeStats?.count?.toString() ?: "0")
+                                    StatCard("Manga KayÃ„Â±t", state.mangaStats?.count?.toString() ?: "0")
                                 }
                             }
                         }
@@ -544,7 +568,7 @@ fun KitsugiUserProfileScreen(
                                         .padding(32.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(text = "Son aktivite bulunamadı.", color = KitsugiColors.TextMuted)
+                                    Text(text = "Son aktivite bulunamadÃ„Â±.", color = KitsugiColors.TextMuted)
                                 }
                             }
                         } else {
@@ -566,6 +590,32 @@ fun KitsugiUserProfileScreen(
                                         }
                                     }
                                 )
+                            }
+
+                            if (state.activitiesHasNext) {
+                                item {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(999.dp))
+                                                .background(accentColor.copy(alpha = 0.15f))
+                                                .clickable { viewModel.loadNextActivitiesPage() }
+                                                .padding(horizontal = 24.dp, vertical = 10.dp)
+                                        ) {
+                                            Text(
+                                                text = "Daha Fazla YÃƒÂ¼kle",
+                                                color = accentColor,
+                                                style = MaterialTheme.typography.labelMedium,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -613,41 +663,298 @@ fun KitsugiUserProfileScreen(
                                     }
 
                                     overview?.let { ov ->
-                                        Text(
-                                            text = if (statsMediaType == 0) "Anime Genel İstatistikleri" else "Manga Genel İstatistikleri",
-                                            color = KitsugiColors.TextPrimary,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold
-                                        )
-
-                                        val stats = if (statsMediaType == 0) state.animeStats else state.mangaStats
-                                        val total = stats?.count ?: ov.count
-
-                                        SegmentedDistributionBar(
-                                            watching = stats?.watching ?: 0,
-                                            completed = stats?.completed ?: 0,
-                                            planned = stats?.planned ?: 0,
-                                            paused = stats?.paused ?: 0,
-                                            dropped = stats?.dropped ?: 0,
-                                            total = total,
-                                            accentColor = accentColor
-                                        )
-
-                                        StatItemRow(if (statsMediaType == 0) "İzliyor" else "Okuyor", stats?.watching ?: 0, total, accentColor)
-                                        StatItemRow("Tamamlandı", stats?.completed ?: 0, total, KitsugiColors.AccentGreen)
-                                        StatItemRow("Planlanıyor", stats?.planned ?: 0, total, KitsugiColors.TextMuted)
-                                        StatItemRow("Durduruldu", stats?.paused ?: 0, total, KitsugiColors.AccentOrange)
-                                        StatItemRow("Bırakıldı", stats?.dropped ?: 0, total, KitsugiColors.AccentPink)
+                                        // 1. Key Stats Grid (3x2)
+                                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            Row(modifier = Modifier.fillMaxWidth()) {
+                                                StatCard("Toplam", ov.count.toString())
+                                                StatCard(if (statsMediaType == 0) "Ã„Â°zlenen bÃƒÂ¶lÃƒÂ¼m" else "Okunan bÃƒÂ¶lÃƒÂ¼m", ov.episodesWatched.toString())
+                                                StatCard(if (statsMediaType == 0) "Ã„Â°zlenen gÃƒÂ¼n" else "Okunan cilt", "%.1f".format(ov.daysWatched))
+                                            }
+                                            Row(modifier = Modifier.fillMaxWidth()) {
+                                                StatCard(if (statsMediaType == 0) "Planlanan gÃƒÂ¼n" else "Planlanan bÃƒÂ¶lÃƒÂ¼m", "%.1f".format(ov.plannedDaysOrCount))
+                                                StatCard("Ortalama Puan", "%.2f".format(ov.meanScore))
+                                                StatCard("Standart sapma", "%.1f".format(ov.standardDeviation))
+                                            }
+                                        }
 
                                         HorizontalDivider(color = KitsugiColors.SurfaceStrong)
 
-                                        Row(modifier = Modifier.fillMaxWidth()) {
-                                            StatCard("Ortalama Skor", "%.1f".format(ov.meanScore))
-                                            StatCard("Standart Sapma", "%.1f".format(ov.standardDeviation))
+                                        // 2. Score Distribution
+                                        if (ov.scoreList.isNotEmpty()) {
+                                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                Text(
+                                                    text = "Puan",
+                                                    color = KitsugiColors.TextPrimary,
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                Row(
+                                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                    modifier = Modifier.horizontalScroll(rememberScrollState())
+                                                ) {
+                                                    FilterChipItem(
+                                                        selected = scoreDistType == 0,
+                                                        text = "BaÃ…Å¸lÃ„Â±k sayÃ„Â±sÃ„Â±",
+                                                        onClick = { scoreDistType = 0 },
+                                                        accentColor = accentColor
+                                                    )
+                                                    FilterChipItem(
+                                                        selected = scoreDistType == 1,
+                                                        text = "Harcanan sÃƒÂ¼re",
+                                                        onClick = { scoreDistType = 1 },
+                                                        accentColor = accentColor
+                                                    )
+                                                }
+                                                val mappedStats = ov.scoreList.map { item ->
+                                                    val valFloat = if (scoreDistType == 0) item.count.toFloat() else (item.minutesWatched / 60.0f)
+                                                    item.score.toString() to valFloat
+                                                }
+                                                VerticalStatsBar(
+                                                    stats = mappedStats,
+                                                    accentColor = accentColor,
+                                                    mapColorTo = { scoreStr ->
+                                                        val scoreNum = scoreStr.toIntOrNull() ?: 0
+                                                        when (scoreNum) {
+                                                            in 1..3 -> Color(0xFFE57373)
+                                                            in 4..5 -> Color(0xFFFFB74D)
+                                                            in 6..7 -> Color(0xFFFFD54F)
+                                                            in 8..9 -> Color(0xFF81C784)
+                                                            10 -> Color(0xFF4FC3F7)
+                                                            else -> accentColor
+                                                        }
+                                                    }
+                                                )
+                                            }
                                         }
-                                        Row(modifier = Modifier.fillMaxWidth()) {
-                                            StatCard(if (statsMediaType == 0) "İzlenen Bölüm" else "Okunan Cilt", ov.episodesWatched.toString())
-                                            StatCard(if (statsMediaType == 0) "İzlenen Gün" else "Okunan Gün", "%.1f".format(ov.daysWatched))
+
+                                        // 3. Episode / Chapter Length Distribution
+                                        if (ov.lengthList.isNotEmpty()) {
+                                            HorizontalDivider(color = KitsugiColors.SurfaceStrong)
+                                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                Text(
+                                                    text = if (statsMediaType == 0) "BÃƒÂ¶lÃƒÂ¼m SayÃ„Â±sÃ„Â±" else "Cilt/BÃƒÂ¶lÃƒÂ¼m SayÃ„Â±sÃ„Â±",
+                                                    color = KitsugiColors.TextPrimary,
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                Row(
+                                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                    modifier = Modifier.horizontalScroll(rememberScrollState())
+                                                ) {
+                                                    FilterChipItem(
+                                                        selected = lengthDistType == 0,
+                                                        text = "BaÃ…Å¸lÃ„Â±k sayÃ„Â±sÃ„Â±",
+                                                        onClick = { lengthDistType = 0 },
+                                                        accentColor = accentColor
+                                                    )
+                                                    FilterChipItem(
+                                                        selected = lengthDistType == 1,
+                                                        text = "Harcanan sÃƒÂ¼re",
+                                                        onClick = { lengthDistType = 1 },
+                                                        accentColor = accentColor
+                                                    )
+                                                    FilterChipItem(
+                                                        selected = lengthDistType == 2,
+                                                        text = "Ortalama Puan",
+                                                        onClick = { lengthDistType = 2 },
+                                                        accentColor = accentColor
+                                                    )
+                                                }
+                                                val mappedLength = ov.lengthList.map { item ->
+                                                    val valFloat = when (lengthDistType) {
+                                                        0 -> item.count.toFloat()
+                                                        1 -> (item.minutesWatched / 60.0f)
+                                                        else -> item.meanScore.toFloat()
+                                                    }
+                                                    item.length to valFloat
+                                                }
+                                                VerticalStatsBar(
+                                                    stats = mappedLength,
+                                                    accentColor = accentColor
+                                                )
+                                            }
+                                        }
+
+                                        // 4. Status Distribution
+                                        if (ov.statusList.isNotEmpty()) {
+                                            HorizontalDivider(color = KitsugiColors.SurfaceStrong)
+                                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                Text(
+                                                    text = "Durum DaÃ„Å¸Ã„Â±lÃ„Â±mÃ„Â±",
+                                                    color = KitsugiColors.TextPrimary,
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                val statusItems = ov.statusList.map { item ->
+                                                    val (label, color) = when (item.status.uppercase()) {
+                                                        "CURRENT" -> (if (statsMediaType == 0) "Ã…Âimdiki" else "Okunuyor") to Color(0xFF81C784)
+                                                        "COMPLETED" -> "TamamlandÃ„Â±" to Color(0xFF64B5F6)
+                                                        "PLANNING" -> "Planlanan" to Color(0xFFA1887F)
+                                                        "PAUSED" -> "Durduruldu" to Color(0xFFFFB74D)
+                                                        "DROPPED" -> "BÃ„Â±rakÃ„Â±ldÃ„Â±" to Color(0xFFE57373)
+                                                        "REPEATING" -> (if (statsMediaType == 0) "Tekrar Ã„Â°zleniyor" else "Tekrar Okunuyor") to Color(0xFFBA68C8)
+                                                        else -> item.status to accentColor
+                                                    }
+                                                    Triple(label, item.count, color)
+                                                }
+                                                HorizontalStatsBar(stats = statusItems)
+                                            }
+                                        }
+
+                                        // 5. Format Distribution
+                                        if (ov.formatList.isNotEmpty()) {
+                                            HorizontalDivider(color = KitsugiColors.SurfaceStrong)
+                                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                Text(
+                                                    text = "TÃƒÂ¼r DaÃ„Å¸Ã„Â±lÃ„Â±mÃ„Â±",
+                                                    color = KitsugiColors.TextPrimary,
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                val formatItems = ov.formatList.map { item ->
+                                                    val (label, color) = when (item.format.uppercase()) {
+                                                        "TV" -> "TV" to Color(0xFF5C6BC0)
+                                                        "TV_SHORT" -> "TV KÃ„Â±sa" to Color(0xFF7E57C2)
+                                                        "MOVIE" -> "Film" to Color(0xFF26A69A)
+                                                        "SPECIAL" -> "Ãƒâ€“zel" to Color(0xFFFFA726)
+                                                        "OVA" -> "OVA" to Color(0xFFFF7043)
+                                                        "ONA" -> "ONA" to Color(0xFFEC407A)
+                                                        "MUSIC" -> "MÃƒÂ¼zik Klip" to Color(0xFFAB47BC)
+                                                        "MANGA" -> "Manga" to Color(0xFF42A5F5)
+                                                        "NOVEL" -> "LN" to Color(0xFF8D6E63)
+                                                        "ONE_SHOT" -> "One-Shot" to Color(0xFF78909C)
+                                                        else -> item.format to accentColor
+                                                    }
+                                                    Triple(label, item.count, color)
+                                                }
+                                                HorizontalStatsBar(stats = formatItems)
+                                            }
+                                        }
+
+                                        // 6. Country Distribution
+                                        if (ov.countryList.isNotEmpty()) {
+                                            HorizontalDivider(color = KitsugiColors.SurfaceStrong)
+                                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                Text(
+                                                    text = "ÃƒÅ“lke DaÃ„Å¸Ã„Â±lÃ„Â±mÃ„Â±",
+                                                    color = KitsugiColors.TextPrimary,
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                val countryItems = ov.countryList.map { item ->
+                                                    val (label, color) = when (item.country.uppercase()) {
+                                                        "JP" -> "Japonya" to Color(0xFF5C6BC0)
+                                                        "KR" -> "GÃƒÂ¼ney Kore" to Color(0xFF26A69A)
+                                                        "CN" -> "Ãƒâ€¡in" to Color(0xFFFF7043)
+                                                        "TW" -> "Tayvan" to Color(0xFFAB47BC)
+                                                        else -> item.country to accentColor
+                                                    }
+                                                    Triple(label, item.count, color)
+                                                }
+                                                HorizontalStatsBar(stats = countryItems)
+                                            }
+                                        }
+
+                                        // 7. Release Year Distribution
+                                        if (ov.releaseYearList.isNotEmpty()) {
+                                            HorizontalDivider(color = KitsugiColors.SurfaceStrong)
+                                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                Text(
+                                                    text = "YayÃ„Â±n YÃ„Â±lÃ„Â±",
+                                                    color = KitsugiColors.TextPrimary,
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                Row(
+                                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                    modifier = Modifier.horizontalScroll(rememberScrollState())
+                                                ) {
+                                                    FilterChipItem(
+                                                        selected = releaseYearDistType == 0,
+                                                        text = "BaÃ…Å¸lÃ„Â±k sayÃ„Â±sÃ„Â±",
+                                                        onClick = { releaseYearDistType = 0 },
+                                                        accentColor = accentColor
+                                                    )
+                                                    FilterChipItem(
+                                                        selected = releaseYearDistType == 1,
+                                                        text = "Harcanan sÃƒÂ¼re",
+                                                        onClick = { releaseYearDistType = 1 },
+                                                        accentColor = accentColor
+                                                    )
+                                                    FilterChipItem(
+                                                        selected = releaseYearDistType == 2,
+                                                        text = "Ortalama Puan",
+                                                        onClick = { releaseYearDistType = 2 },
+                                                        accentColor = accentColor
+                                                    )
+                                                }
+                                                val mappedYears = ov.releaseYearList
+                                                    .filter { it.releaseYear > 0 }
+                                                    .sortedBy { it.releaseYear }
+                                                    .map { item ->
+                                                        val valFloat = when (releaseYearDistType) {
+                                                            0 -> item.count.toFloat()
+                                                            1 -> (item.minutesWatched / 60.0f)
+                                                            else -> item.meanScore.toFloat()
+                                                        }
+                                                        item.releaseYear.toString() to valFloat
+                                                    }
+                                                VerticalStatsBar(
+                                                    stats = mappedYears,
+                                                    accentColor = accentColor
+                                                )
+                                            }
+                                        }
+
+                                        // 8. Watch / Read Year Distribution
+                                        if (ov.startYearList.isNotEmpty()) {
+                                            HorizontalDivider(color = KitsugiColors.SurfaceStrong)
+                                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                Text(
+                                                    text = if (statsMediaType == 0) "Ã„Â°zleme YÃ„Â±lÃ„Â±" else "Okuma YÃ„Â±lÃ„Â±",
+                                                    color = KitsugiColors.TextPrimary,
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                Row(
+                                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                    modifier = Modifier.horizontalScroll(rememberScrollState())
+                                                ) {
+                                                    FilterChipItem(
+                                                        selected = startYearDistType == 0,
+                                                        text = "BaÃ…Å¸lÃ„Â±k sayÃ„Â±sÃ„Â±",
+                                                        onClick = { startYearDistType = 0 },
+                                                        accentColor = accentColor
+                                                    )
+                                                    FilterChipItem(
+                                                        selected = startYearDistType == 1,
+                                                        text = "Harcanan sÃƒÂ¼re",
+                                                        onClick = { startYearDistType = 1 },
+                                                        accentColor = accentColor
+                                                    )
+                                                    FilterChipItem(
+                                                        selected = startYearDistType == 2,
+                                                        text = "Ortalama Puan",
+                                                        onClick = { startYearDistType = 2 },
+                                                        accentColor = accentColor
+                                                    )
+                                                }
+                                                val mappedStartYears = ov.startYearList
+                                                    .filter { it.startYear > 0 }
+                                                    .sortedBy { it.startYear }
+                                                    .map { item ->
+                                                        val valFloat = when (startYearDistType) {
+                                                            0 -> item.count.toFloat()
+                                                            1 -> (item.minutesWatched / 60.0f)
+                                                            else -> item.meanScore.toFloat()
+                                                        }
+                                                        item.startYear.toString() to valFloat
+                                                    }
+                                                VerticalStatsBar(
+                                                    stats = mappedStartYears,
+                                                    accentColor = accentColor
+                                                )
+                                            }
                                         }
                                     } ?: Box(
                                         modifier = Modifier
@@ -655,17 +962,17 @@ fun KitsugiUserProfileScreen(
                                             .padding(16.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text(text = "İstatistik yüklenemedi.", color = KitsugiColors.TextMuted)
+                                        Text(text = "Ã„Â°statistik yÃƒÂ¼klenemedi.", color = KitsugiColors.TextMuted)
                                     }
                                 }
                             }
                         } else {
                             val subTabTitle = when (statsSubTab) {
-                                1 -> "Türler"
+                                1 -> "TÃƒÂ¼rler"
                                 2 -> "Etiketler"
                                 3 -> "Ekip"
                                 4 -> "Seslendirenler"
-                                5 -> "Stüdyolar"
+                                5 -> "StÃƒÂ¼dyolar"
                                 else -> ""
                             }
                             val currentList: List<RankedStatItem> = when (statsSubTab) {
@@ -686,17 +993,77 @@ fun KitsugiUserProfileScreen(
                                         .padding(18.dp),
                                     verticalArrangement = Arrangement.spacedBy(14.dp)
                                 ) {
+                                    if (statsSubTab in 1..3) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(16.dp))
+                                                .background(KitsugiColors.SurfaceStrong)
+                                                .padding(4.dp)
+                                        ) {
+                                            listOf("Anime", "Manga").forEachIndexed { idx, label ->
+                                                val isSel = statsMediaType == idx
+                                                Box(
+                                                    modifier = Modifier
+                                                        .weight(1f)
+                                                        .clip(RoundedCornerShape(12.dp))
+                                                        .background(if (isSel) accentColor else Color.Transparent)
+                                                        .clickable { viewModel.statsMediaType = idx }
+                                                        .padding(vertical = 8.dp),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Text(
+                                                        text = label,
+                                                        color = if (isSel) KitsugiColors.Background else KitsugiColors.TextMuted,
+                                                        fontWeight = FontWeight.Bold,
+                                                        style = MaterialTheme.typography.labelLarge
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+
                                     Text(
                                         text = subTabTitle,
                                         color = KitsugiColors.TextPrimary,
                                         style = MaterialTheme.typography.titleLarge,
                                         fontWeight = FontWeight.Bold
                                     )
+
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.horizontalScroll(rememberScrollState())
+                                    ) {
+                                        ProfileFilterChip(
+                                            isSelected = viewModel.statsSortType == 0,
+                                            text = "BaÃ…Å¸lÃ„Â±k sayÃ„Â±sÃ„Â±",
+                                            onClick = { viewModel.statsSortType = 0 },
+                                            accentColor = accentColor
+                                        )
+                                        ProfileFilterChip(
+                                            isSelected = viewModel.statsSortType == 1,
+                                            text = "Harcanan sÃƒÂ¼re",
+                                            onClick = { viewModel.statsSortType = 1 },
+                                            accentColor = accentColor
+                                        )
+                                        ProfileFilterChip(
+                                            isSelected = viewModel.statsSortType == 2,
+                                            text = "Ortalama Puan",
+                                            onClick = { viewModel.statsSortType = 2 },
+                                            accentColor = accentColor
+                                        )
+                                    }
                                 }
                                 Spacer(modifier = Modifier.height(12.dp))
                             }
 
-                            if (currentList.isEmpty()) {
+                            val sortedList = when (viewModel.statsSortType) {
+                                0 -> currentList.sortedByDescending { it.count }
+                                1 -> currentList.sortedByDescending { it.timeSpentMinutes }
+                                else -> currentList.sortedByDescending { it.meanScore }
+                            }
+
+                            if (sortedList.isEmpty()) {
                                 item {
                                     Box(
                                         modifier = Modifier
@@ -704,11 +1071,11 @@ fun KitsugiUserProfileScreen(
                                             .padding(32.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text(text = "İstatistik verisi bulunamadı.", color = KitsugiColors.TextMuted)
+                                        Text(text = "Ã„Â°statistik verisi bulunamadÃ„Â±.", color = KitsugiColors.TextMuted)
                                     }
                                 }
                             } else {
-                                itemsIndexed(currentList) { idx, item ->
+                                itemsIndexed(sortedList) { idx, item ->
                                     PositionalStatItemCard(
                                         rank = idx + 1,
                                         title = if (statsSubTab == 1) item.name.toTurkishGenre() else item.name,
@@ -749,7 +1116,7 @@ fun KitsugiUserProfileScreen(
                             1 -> "Favori Mangalar"
                             2 -> "Favori Karakterler"
                             3 -> "Favori Ekip"
-                            4 -> "Favori Stüdyolar"
+                            4 -> "Favori StÃƒÂ¼dyolar"
                             else -> "Favoriler"
                         }
 
@@ -761,7 +1128,7 @@ fun KitsugiUserProfileScreen(
                                         .padding(32.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(text = "Favori öge bulunamadı.", color = KitsugiColors.TextMuted)
+                                    Text(text = "Favori ÃƒÂ¶ge bulunamadÃ„Â±.", color = KitsugiColors.TextMuted)
                                 }
                             }
                         } else {
@@ -788,7 +1155,7 @@ fun KitsugiUserProfileScreen(
                                             .padding(horizontal = 10.dp, vertical = 4.dp)
                                     ) {
                                         Text(
-                                            text = "Tümünü Gör",
+                                            text = "TÃƒÂ¼mÃƒÂ¼nÃƒÂ¼ GÃƒÂ¶r",
                                             color = accentColor,
                                             style = MaterialTheme.typography.labelSmall,
                                             fontWeight = FontWeight.Bold
@@ -860,6 +1227,49 @@ fun KitsugiUserProfileScreen(
                                     }
                                 }
                             }
+
+                            val currentHasNext = when (favoritesFilter) {
+                                0 -> state.favAnimeHasNext
+                                1 -> state.favMangaHasNext
+                                2 -> state.favCharHasNext
+                                3 -> state.favStaffHasNext
+                                4 -> state.favStudioHasNext
+                                else -> false
+                            }
+                            val currentFavCategory = when (favoritesFilter) {
+                                0 -> "anime"
+                                1 -> "manga"
+                                2 -> "characters"
+                                3 -> "staff"
+                                4 -> "studios"
+                                else -> "anime"
+                            }
+
+                            if (currentHasNext) {
+                                item {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(999.dp))
+                                                .background(accentColor.copy(alpha = 0.15f))
+                                                .clickable { viewModel.loadMoreFavorites(currentFavCategory) }
+                                                .padding(horizontal = 24.dp, vertical = 10.dp)
+                                        ) {
+                                            Text(
+                                                text = "Daha Fazla YÃƒÂ¼kle",
+                                                color = accentColor,
+                                                style = MaterialTheme.typography.labelMedium,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -875,7 +1285,7 @@ fun KitsugiUserProfileScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = if (socialFilter == 0) "Takipçi bulunamadı." else "Takip edilen kullanıcı bulunamadı.",
+                                        text = if (socialFilter == 0) "TakipÃƒÂ§i bulunamadÃ„Â±." else "Takip edilen kullanÃ„Â±cÃ„Â± bulunamadÃ„Â±.",
                                         color = KitsugiColors.TextMuted,
                                         textAlign = TextAlign.Center
                                     )
@@ -928,14 +1338,39 @@ fun KitsugiUserProfileScreen(
                     }
                 }
             }
-        }
-    }
 
     if (activeFavoriteSheet != null) {
+        val currentHasNext = when (favoritesFilter) {
+            0 -> state.favAnimeHasNext
+            1 -> state.favMangaHasNext
+            2 -> state.favCharHasNext
+            3 -> state.favStaffHasNext
+            4 -> state.favStudioHasNext
+            else -> false
+        }
+        val currentCategory = when (favoritesFilter) {
+            0 -> "anime"
+            1 -> "manga"
+            2 -> "characters"
+            3 -> "staff"
+            4 -> "studios"
+            else -> "anime"
+        }
+        val currentFavList = when (favoritesFilter) {
+            0 -> state.favoriteAnime
+            1 -> state.favoriteManga
+            2 -> state.favoriteCharacters
+            3 -> state.favoriteStaff
+            4 -> state.favoriteStudios
+            else -> activeFavoriteSheet!!.second
+        }
+
         FavoritesExpandedBottomSheet(
             title = activeFavoriteSheet!!.first,
-            items = activeFavoriteSheet!!.second,
+            items = currentFavList,
             blurAdultMedia = appSettings.blurAdultMedia,
+            hasNextPage = currentHasNext,
+            onLoadMore = { viewModel.loadMoreFavorites(currentCategory) },
             onItemClick = { item ->
                 item.id.toIntOrNull()?.let { id ->
                     when (favoritesFilter) {
@@ -978,3 +1413,9 @@ fun KitsugiUserProfileScreen(
         )
     }
 }
+}
+
+}
+
+
+

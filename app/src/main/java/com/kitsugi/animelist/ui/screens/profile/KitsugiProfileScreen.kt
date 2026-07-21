@@ -2817,6 +2817,8 @@ fun FavoritesExpandedBottomSheet(
     title: String,
     items: List<ProfileFavoriteItem>,
     blurAdultMedia: Boolean = false,
+    hasNextPage: Boolean = false,
+    onLoadMore: (() -> Unit)? = null,
     onItemClick: (ProfileFavoriteItem) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -2923,6 +2925,32 @@ fun FavoritesExpandedBottomSheet(
                             textAlign = TextAlign.Center,
                             fontSize = 11.sp
                         )
+                    }
+                }
+
+                if (hasNextPage && onLoadMore != null) {
+                    item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(999.dp))
+                                    .background(accentColor.copy(alpha = 0.15f))
+                                    .clickable { onLoadMore() }
+                                    .padding(horizontal = 24.dp, vertical = 10.dp)
+                            ) {
+                                Text(
+                                    text = "Daha Fazla Yükle",
+                                    color = accentColor,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
                     }
                 }
             }

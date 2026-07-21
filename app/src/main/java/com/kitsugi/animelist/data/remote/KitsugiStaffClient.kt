@@ -275,7 +275,7 @@ class KitsugiStaffClient {
                                         node {
                                             id
                                             idMal
-                                            title { userPreferred }
+                                            title { userPreferred english romaji native }
                                             coverImage { large }
                                             type
                                         }
@@ -292,7 +292,7 @@ class KitsugiStaffClient {
                                         node {
                                             id
                                             idMal
-                                            title { userPreferred }
+                                            title { userPreferred english romaji native }
                                             coverImage { large }
                                             type
                                         }
@@ -355,7 +355,11 @@ class KitsugiStaffClient {
                                 val charRole = (edge.optNullableString("characterRole") ?: "Bilinmeyen").toTurkishCharacterRole()
                                 val mediaNode = edge.optJSONObject("node") ?: continue
                                 val mediaId = mediaNode.optInt("idMal").takeIf { it > 0 } ?: (100_000_000 + mediaNode.optInt("id"))
-                                val mediaTitle = mediaNode.optJSONObject("title")?.optNullableString("userPreferred") ?: "Bilinmeyen"
+                                val mediaTitleObj = mediaNode.optJSONObject("title")
+                                val mediaTitle = mediaTitleObj?.optNullableString("userPreferred") ?: "Bilinmeyen"
+                                val mediaTitleEnglish = mediaTitleObj?.optNullableString("english")
+                                val mediaTitleNative = mediaTitleObj?.optNullableString("native")
+                                val mediaTitleRomaji = mediaTitleObj?.optNullableString("romaji")
                                 val mediaImg = mediaNode.optJSONObject("coverImage")?.optNullableString("large")
                                 val mediaType = mediaNode.optNullableString("type").orEmpty().toTurkishMediaTypeString()
 
@@ -390,7 +394,11 @@ class KitsugiStaffClient {
                                 val staffRole = (edge.optNullableString("staffRole") ?: "Ekip Üyesi").toTurkishStaffRole()
                                 val mediaNode = edge.optJSONObject("node") ?: continue
                                 val mediaId = mediaNode.optInt("idMal").takeIf { it > 0 } ?: (100_000_000 + mediaNode.optInt("id"))
-                                val mediaTitle = mediaNode.optJSONObject("title")?.optNullableString("userPreferred") ?: "Bilinmeyen"
+                                val staffTitleObj = mediaNode.optJSONObject("title")
+                                val mediaTitle = staffTitleObj?.optNullableString("userPreferred") ?: "Bilinmeyen"
+                                val mediaTitleEnglish = staffTitleObj?.optNullableString("english")
+                                val mediaTitleNative = staffTitleObj?.optNullableString("native")
+                                val mediaTitleRomaji = staffTitleObj?.optNullableString("romaji")
                                 val mediaImg = mediaNode.optJSONObject("coverImage")?.optNullableString("large")
                                 val mediaType = mediaNode.optNullableString("type").orEmpty().toTurkishMediaTypeString()
 
@@ -400,7 +408,10 @@ class KitsugiStaffClient {
                                     mediaImageUrl = mediaImg,
                                     mediaType = mediaType,
                                     staffRole = staffRole,
-                                    source = "anilist"
+                                    source = "anilist",
+                                    titleEnglish = mediaTitleEnglish,
+                                    titleJapanese = mediaTitleNative,
+                                    titleRomaji = mediaTitleRomaji
                                 ))
                             }
                         }
@@ -454,7 +465,7 @@ class KitsugiStaffClient {
                                 node {
                                     id
                                     idMal
-                                    title { userPreferred }
+                                    title { userPreferred english romaji native }
                                     coverImage { large }
                                     type
                                 }
@@ -471,7 +482,7 @@ class KitsugiStaffClient {
                                 node {
                                     id
                                     idMal
-                                    title { userPreferred }
+                                    title { userPreferred english romaji native }
                                     coverImage { large }
                                     type
                                 }
@@ -580,7 +591,11 @@ class KitsugiStaffClient {
                     val staffRole = (edge.optNullableString("staffRole") ?: "Staff").toTurkishStaffRole()
                     val mediaId = node.optInt("id")
                     val idMal = node.optionalPositiveInt("idMal")
-                    val mediaTitle = node.optJSONObject("title")?.optNullableString("userPreferred") ?: "Bilinmeyen"
+                    val staffTitleObj = node.optJSONObject("title")
+                    val mediaTitle = staffTitleObj?.optNullableString("userPreferred") ?: "Bilinmeyen"
+                    val mediaTitleEnglish = staffTitleObj?.optNullableString("english")
+                    val mediaTitleNative = staffTitleObj?.optNullableString("native")
+                    val mediaTitleRomaji = staffTitleObj?.optNullableString("romaji")
                     val mediaImg = node.optJSONObject("coverImage")?.optNullableString("large")
                     val type = node.optNullableString("type").orEmpty().lowercase()
 
@@ -593,7 +608,10 @@ class KitsugiStaffClient {
                             mediaImageUrl = mediaImg,
                             mediaType = type.toTurkishMediaTypeString(),
                             staffRole = staffRole,
-                            source = if (idMal != null) "jikan" else "anilist"
+                            source = if (idMal != null) "jikan" else "anilist",
+                            titleEnglish = mediaTitleEnglish,
+                            titleJapanese = mediaTitleNative,
+                            titleRomaji = mediaTitleRomaji
                         )
                     )
                 }

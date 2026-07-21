@@ -1,4 +1,4 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 
 package com.kitsugi.animelist.ui.screens.profile
 
@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.LazyColumn
@@ -39,6 +40,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -106,9 +108,17 @@ class KitsugiUserMediaListViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(UserMediaListUiState())
     val uiState: StateFlow<UserMediaListUiState> = _uiState.asStateFlow()
 
-    fun loadUserMediaList(userId: Int, mediaType: MediaType) {
+    private var loadedUserId: Int? = null
+    private var loadedMediaType: MediaType? = null
+
+    fun loadUserMediaList(userId: Int, mediaType: MediaType, forceRefresh: Boolean = false) {
+        if (!forceRefresh && loadedUserId == userId && loadedMediaType == mediaType && _uiState.value.items.isNotEmpty() && !_uiState.value.isLoading) {
+            return
+        }
+        loadedUserId = userId
+        loadedMediaType = mediaType
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            _uiState.value = UserMediaListUiState(isLoading = true, items = emptyList(), error = null)
             val fetched = fetchUserMediaListFromAniList(userId, mediaType)
             if (fetched != null) {
                 _uiState.value = UserMediaListUiState(isLoading = false, items = fetched, error = null)
@@ -116,6 +126,12 @@ class KitsugiUserMediaListViewModel : ViewModel() {
                 _uiState.value = UserMediaListUiState(isLoading = false, items = emptyList(), error = "Liste yüklenemedi")
             }
         }
+    }
+
+    fun resetState() {
+        loadedUserId = null
+        loadedMediaType = null
+        _uiState.value = UserMediaListUiState()
     }
 
     private suspend fun fetchUserMediaListFromAniList(userId: Int, mediaType: MediaType): List<UserMediaListItem>? {
@@ -227,12 +243,20 @@ fun KitsugiUserMediaListScreen(
     onMediaClick: (JikanSearchResult) -> Unit,
     onLocalEntryClick: (MediaEntry) -> Unit,
     accentColor: Color = LocalKitsugiAccent.current,
-    viewModel: KitsugiUserMediaListViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    customViewModel: KitsugiUserMediaListViewModel? = null
 ) {
+    val viewModel: KitsugiUserMediaListViewModel = customViewModel ?: androidx.lifecycle.viewmodel.compose.viewModel(key = "user_media_list_${userId}_${initialMediaType.name}")
+
     var selectedType by remember { mutableStateOf(initialMediaType) }
 
     LaunchedEffect(userId, selectedType) {
         viewModel.loadUserMediaList(userId, selectedType)
+    }
+
+    DisposableEffect(userId, initialMediaType) {
+        onDispose {
+            viewModel.resetState()
+        }
     }
 
     val state by viewModel.uiState.collectAsState()
@@ -242,8 +266,13 @@ fun KitsugiUserMediaListScreen(
     var searchQuery by remember { mutableStateOf("") }
     var selectedStatusFilter by remember { mutableStateOf<WatchStatus?>(null) }
     var isGridView by remember { mutableStateOf(true) }
+    // Sort: 0=Varsayılan, 1=A-Z, 2=Puan, 3=İlerleme
+    var sortId by remember { mutableStateOf(0) }
+    var showSortMenu by remember { mutableStateOf(false) }
 
-    val filteredItems = remember(state.items, searchQuery, selectedStatusFilter) {
+    val sortLabels = listOf("Varsayılan", "A-Z", "Puana Göre ↓", "İlerleyeye Göre ↓")
+
+    val filteredItems = remember(state.items, searchQuery, selectedStatusFilter, sortId) {
         state.items
             .filter { item ->
                 if (selectedStatusFilter == null) true else item.status == selectedStatusFilter
@@ -252,7 +281,23 @@ fun KitsugiUserMediaListScreen(
                 if (searchQuery.isBlank()) true
                 else item.title.lowercase().contains(searchQuery.trim().lowercase())
             }
+            .let { list ->
+                when (sortId) {
+                    1 -> list.sortedBy { it.title.lowercase() }
+                    2 -> list.sortedByDescending { it.score ?: -1.0 }
+                    3 -> list.sortedByDescending { it.progress }
+                    else -> list
+                }
+            }
     }
+
+    val statusOrder = listOf(
+        WatchStatus.Watching,
+        WatchStatus.Paused,
+        WatchStatus.Planned,
+        WatchStatus.Dropped,
+        WatchStatus.Completed
+    )
 
     val pullRefreshState = rememberPullToRefreshState()
     val coroutineScope = rememberCoroutineScope()
@@ -301,6 +346,34 @@ fun KitsugiUserMediaListScreen(
                     }
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Sort chip
+                        Box {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(KitsugiColors.SurfaceStrong)
+                                    .tvClickable(shape = RoundedCornerShape(12.dp)) { showSortMenu = true }
+                                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    text = "↕ ${sortLabels[sortId]}",
+                                    color = if (sortId != 0) accentColor else KitsugiColors.TextMuted,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            androidx.compose.material3.DropdownMenu(
+                                expanded = showSortMenu,
+                                onDismissRequest = { showSortMenu = false }
+                            ) {
+                                sortLabels.forEachIndexed { idx, label ->
+                                    androidx.compose.material3.DropdownMenuItem(
+                                        text = { Text(text = label, color = if (sortId == idx) accentColor else KitsugiColors.TextPrimary) },
+                                        onClick = { sortId = idx; showSortMenu = false }
+                                    )
+                                }
+                            }
+                        }
                         IconButton(onClick = { isGridView = !isGridView }) {
                             Icon(
                                 imageVector = if (isGridView) Icons.Rounded.List else Icons.Rounded.GridView,
@@ -410,7 +483,7 @@ fun KitsugiUserMediaListScreen(
         PullToRefreshBox(
             isRefreshing = state.isLoading,
             onRefresh = {
-                viewModel.loadUserMediaList(userId, selectedType)
+                viewModel.loadUserMediaList(userId, selectedType, forceRefresh = true)
             },
             modifier = Modifier.weight(1f).fillMaxWidth(),
             state = pullRefreshState
@@ -465,13 +538,60 @@ fun KitsugiUserMediaListScreen(
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(filteredItems, key = { it.mediaId }) { item ->
-                            UserMediaGridCard(
-                                item = item,
-                                blurAdultMedia = appSettings.blurAdultMedia,
-                                accentColor = accentColor,
-                                onClick = { handleItemClick(item) }
+                        items(listOf("__header__"), span = { GridItemSpan(maxLineSpan) }) {
+                            Text(
+                                text = "${filteredItems.size} sonuç",
+                                color = KitsugiColors.TextMuted,
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
                             )
+                        }
+                        if (selectedStatusFilter == null) {
+                            // Grouped by status
+                            statusOrder.forEach { status ->
+                                val groupItems = filteredItems.filter { it.status == status }
+                                if (groupItems.isNotEmpty()) {
+                                    items(
+                                        listOf("gh_${status.name}"),
+                                        key = { it },
+                                        span = { GridItemSpan(maxLineSpan) }
+                                    ) {
+                                        val headerLabel = when (status) {
+                                            WatchStatus.Watching -> if (selectedType == MediaType.Anime) "İzleniyor" else "Okunuyor"
+                                            WatchStatus.Completed -> "Tamamlandı"
+                                            WatchStatus.Planned -> "Planlandı"
+                                            WatchStatus.Paused -> "Durduruldu"
+                                            WatchStatus.Dropped -> "Bırakıldı"
+                                            else -> status.name
+                                        }
+                                        Text(
+                                            text = "$headerLabel (${groupItems.size})",
+                                            color = KitsugiColors.TextPrimary,
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.Black,
+                                            modifier = Modifier.padding(start = 4.dp, top = 16.dp, bottom = 6.dp)
+                                        )
+                                    }
+                                    items(groupItems, key = { "g_${it.mediaId}" }) { item ->
+                                        UserMediaGridCard(
+                                            item = item,
+                                            blurAdultMedia = appSettings.blurAdultMedia,
+                                            accentColor = accentColor,
+                                            onClick = { handleItemClick(item) }
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            items(filteredItems, key = { it.mediaId }) { item ->
+                                UserMediaGridCard(
+                                    item = item,
+                                    blurAdultMedia = appSettings.blurAdultMedia,
+                                    accentColor = accentColor,
+                                    onClick = { handleItemClick(item) }
+                                )
+                            }
                         }
                     }
                 } else {
@@ -481,15 +601,106 @@ fun KitsugiUserMediaListScreen(
                             .padding(horizontal = 12.dp, vertical = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(filteredItems, key = { it.mediaId }) { item ->
-                            UserMediaRowCard(
-                                item = item,
-                                blurAdultMedia = appSettings.blurAdultMedia,
-                                accentColor = accentColor,
-                                onClick = { handleItemClick(item) }
+                        item {
+                            Text(
+                                text = "${filteredItems.size} sonuç",
+                                color = KitsugiColors.TextMuted,
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
                             )
                         }
+                        if (selectedStatusFilter == null) {
+                            // Grouped by status
+                            statusOrder.forEach { status ->
+                                val groupItems = filteredItems.filter { it.status == status }
+                                if (groupItems.isNotEmpty()) {
+                                    item(key = "rh_${status.name}") {
+                                        val headerLabel = when (status) {
+                                            WatchStatus.Watching -> if (selectedType == MediaType.Anime) "İzleniyor" else "Okunuyor"
+                                            WatchStatus.Completed -> "Tamamlandı"
+                                            WatchStatus.Planned -> "Planlandı"
+                                            WatchStatus.Paused -> "Durduruldu"
+                                            WatchStatus.Dropped -> "Bırakıldı"
+                                            else -> status.name
+                                        }
+                                        Text(
+                                            text = "$headerLabel (${groupItems.size})",
+                                            color = KitsugiColors.TextPrimary,
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.Black,
+                                            modifier = Modifier.padding(start = 4.dp, top = 16.dp, bottom = 6.dp)
+                                        )
+                                    }
+                                    items(groupItems, key = { "r_${it.mediaId}" }) { item ->
+                                        UserMediaRowCard(
+                                            item = item,
+                                            blurAdultMedia = appSettings.blurAdultMedia,
+                                            accentColor = accentColor,
+                                            onClick = { handleItemClick(item) }
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            items(filteredItems, key = { it.mediaId }) { item ->
+                                UserMediaRowCard(
+                                    item = item,
+                                    blurAdultMedia = appSettings.blurAdultMedia,
+                                    accentColor = accentColor,
+                                    onClick = { handleItemClick(item) }
+                                )
+                            }
+                        }
+                        item { Spacer(modifier = Modifier.height(80.dp)) }
                     }
+                }
+            }
+        }
+    }
+
+    // ── Floating Status FAB (sağ alt köşe) ──
+    if (!state.isLoading && state.items.isNotEmpty()) {
+        Box(
+            modifier = androidx.compose.ui.Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomEnd
+        ) {
+            val fabLabel = when (selectedStatusFilter) {
+                WatchStatus.Watching -> if (selectedType == MediaType.Anime) "İzleniyor" else "Okunuyor"
+                WatchStatus.Completed -> "Tamamlandı"
+                WatchStatus.Planned -> "Planlandı"
+                WatchStatus.Paused -> "Durduruldu"
+                WatchStatus.Dropped -> "Bırakıldı"
+                else -> "Tümü"
+            }
+            Box(
+                modifier = Modifier
+                    .padding(bottom = 20.dp, end = 20.dp)
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(accentColor)
+                    .tvClickable(shape = RoundedCornerShape(999.dp)) {
+                        // Döngüsel status seçimi
+                        val statusCycle = listOf(null, WatchStatus.Watching, WatchStatus.Completed, WatchStatus.Planned, WatchStatus.Paused, WatchStatus.Dropped)
+                        val currentIdx = statusCycle.indexOf(selectedStatusFilter)
+                        selectedStatusFilter = statusCycle[(currentIdx + 1) % statusCycle.size]
+                    }
+                    .padding(horizontal = 20.dp, vertical = 14.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Rounded.List,
+                        contentDescription = "Kategori",
+                        tint = KitsugiColors.Background,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = fabLabel,
+                        color = KitsugiColors.Background,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Black
+                    )
                 }
             }
         }

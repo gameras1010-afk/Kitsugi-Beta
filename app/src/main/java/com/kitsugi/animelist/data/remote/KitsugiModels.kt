@@ -189,7 +189,10 @@ data class KitsugiStaffMediaWork(
     val mediaImageUrl: String?,
     val mediaType: String,
     val staffRole: String,
-    val source: String = "jikan"
+    val source: String = "jikan",
+    val titleEnglish: String? = null,
+    val titleJapanese: String? = null,
+    val titleRomaji: String? = null
 )
 
 data class KitsugiStaffDetail(

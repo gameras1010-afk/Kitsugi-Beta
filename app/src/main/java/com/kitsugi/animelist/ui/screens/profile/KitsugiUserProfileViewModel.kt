@@ -85,24 +85,46 @@ class KitsugiUserProfileViewModel(application: Application) : AndroidViewModel(a
     var releaseYearDistType by mutableIntStateOf(0)
     var startYearDistType by mutableIntStateOf(0)
     var statsSortType by mutableIntStateOf(0)
+    var scrollIndex by mutableIntStateOf(0)
+    var scrollOffset by mutableIntStateOf(0)
+
+    fun updateScroll(index: Int, offset: Int) {
+        scrollIndex = index
+        scrollOffset = offset
+    }
 
     private var targetUserId: Int? = null
 
-    fun loadUser(userId: Int, fallbackName: String? = null, fallbackAvatar: String? = null) {
-        if (targetUserId == userId && _uiState.value.userId == userId && !_uiState.value.isLoading) {
+    fun loadUser(userId: Int, fallbackName: String? = null, fallbackAvatar: String? = null, forceRefresh: Boolean = false) {
+        if (!forceRefresh && targetUserId == userId && _uiState.value.userId == userId && !_uiState.value.isLoading) {
             return
         }
         targetUserId = userId
-        _uiState.update {
-            it.copy(
-                isLoading = true,
-                error = null,
-                userId = userId,
-                name = fallbackName ?: it.name,
-                avatarUrl = fallbackAvatar ?: it.avatarUrl
-            )
-        }
+        _uiState.value = OtherUserProfileState(
+            isLoading = true,
+            error = null,
+            userId = userId,
+            name = fallbackName ?: "",
+            avatarUrl = fallbackAvatar
+        )
         fetchUserProfile(userId)
+    }
+
+    fun resetState() {
+        targetUserId = null
+        _uiState.value = OtherUserProfileState()
+        activeTab = 0
+        statsMediaType = 0
+        statsSubTab = 0
+        favoritesFilter = 0
+        socialFilter = 0
+        scoreDistType = 0
+        lengthDistType = 0
+        releaseYearDistType = 0
+        startYearDistType = 0
+        statsSortType = 0
+        scrollIndex = 0
+        scrollOffset = 0
     }
 
     fun fetchUserProfile(userId: Int) {

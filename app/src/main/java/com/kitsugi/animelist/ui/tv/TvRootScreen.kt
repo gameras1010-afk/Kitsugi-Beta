@@ -575,7 +575,8 @@ fun TvRootScreen(
                                     source = mediaSource
                                 )
                                 navigationState.navigateToDetail(targetResult)
-                            }
+                            },
+                            titleLanguage = settingsState.titleLanguage
                         )
                     }
                     is TvDetailTarget.Studio -> {
@@ -599,7 +600,8 @@ fun TvRootScreen(
                                     source = mediaSource
                                 )
                                 navigationState.navigateToDetail(targetResult)
-                            }
+                            },
+                            titleLanguage = settingsState.titleLanguage
                         )
                     }
                 }

@@ -27,14 +27,17 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
+import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayTitle
 
 @Composable
 internal fun StaffCharacterRoleCard(
     role: com.kitsugi.animelist.data.remote.KitsugiStaffCharacterRole,
+    titleLanguage: String = "ROMAJI",
     onCharacterClick: (characterId: Int, characterSource: String, name: String?, imageUrl: String?) -> Unit,
     onMediaClick: (mediaId: Int, mediaType: String, mediaSource: String) -> Unit
 ) {
     val accentColor = LocalKitsugiAccent.current
+    val displayMediaTitle = role.mediaTitle
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -114,14 +117,14 @@ internal fun StaffCharacterRoleCard(
                 if (!role.mediaImageUrl.isNullOrBlank()) {
                     AsyncImage(
                         model = role.mediaImageUrl,
-                        contentDescription = role.mediaTitle,
+                        contentDescription = displayMediaTitle,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
                 } else {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
-                            text = role.mediaTitle.take(2).uppercase(),
+                            text = displayMediaTitle.take(2).uppercase(),
                             color = KitsugiColors.TextMuted,
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.labelSmall
@@ -132,7 +135,7 @@ internal fun StaffCharacterRoleCard(
             Spacer(modifier = Modifier.width(12.dp))
             Column {
                 Text(
-                    text = role.mediaTitle,
+                    text = displayMediaTitle,
                     color = KitsugiColors.TextPrimary,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
@@ -153,8 +156,10 @@ internal fun StaffCharacterRoleCard(
 @Composable
 internal fun StaffMediaWorkRow(
     work: com.kitsugi.animelist.data.remote.KitsugiStaffMediaWork,
+    titleLanguage: String = "ROMAJI",
     onMediaClick: (mediaId: Int, mediaType: String, mediaSource: String) -> Unit
 ) {
+    val displayTitle = work.getDisplayTitle(titleLanguage)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -173,14 +178,14 @@ internal fun StaffMediaWorkRow(
             if (!work.mediaImageUrl.isNullOrBlank()) {
                 AsyncImage(
                     model = work.mediaImageUrl,
-                    contentDescription = work.mediaTitle,
+                    contentDescription = displayTitle,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
             } else {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = work.mediaTitle.take(2).uppercase(),
+                        text = displayTitle.take(2).uppercase(),
                         color = KitsugiColors.TextMuted,
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.labelSmall
@@ -191,7 +196,7 @@ internal fun StaffMediaWorkRow(
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = work.mediaTitle,
+                text = displayTitle,
                 color = KitsugiColors.TextPrimary,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,

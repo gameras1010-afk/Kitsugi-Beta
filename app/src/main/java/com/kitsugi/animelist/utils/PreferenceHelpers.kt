@@ -4,6 +4,7 @@ import com.kitsugi.animelist.model.MediaEntry
 import com.kitsugi.animelist.data.remote.JikanSearchResult
 import com.kitsugi.animelist.data.remote.KitsugiRelation
 import com.kitsugi.animelist.data.remote.KitsugiCharacterMediaAppearance
+import com.kitsugi.animelist.data.remote.KitsugiStaffMediaWork
 
 object PreferenceHelpers {
     fun getDisplayTitle(
@@ -33,6 +34,10 @@ object PreferenceHelpers {
 
     fun KitsugiCharacterMediaAppearance.getDisplayTitle(titleLanguage: String): String {
         return PreferenceHelpers.getDisplayTitle(title, titleEnglish, titleJapanese, titleLanguage)
+    }
+
+    fun KitsugiStaffMediaWork.getDisplayTitle(titleLanguage: String): String {
+        return PreferenceHelpers.getDisplayTitle(mediaTitle, titleEnglish, titleJapanese, titleLanguage)
     }
 
     fun formatScore(score: Int?, scoreFormat: String, hideScores: Boolean): String {

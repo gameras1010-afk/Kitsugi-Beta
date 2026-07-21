@@ -78,7 +78,8 @@ fun AppRootDetailPages(
                         }
                     },
                     name = key.name,
-                    imageUrl = key.imageUrl
+                    imageUrl = key.imageUrl,
+                    titleLanguage = appSettings.titleLanguage
                 )
             }
         }
@@ -117,6 +118,7 @@ fun AppRootDetailPages(
                     },
                     name = key.name,
                     imageUrl = key.imageUrl,
+                    titleLanguage = appSettings.titleLanguage,
                     preferredTranslator = appSettings.preferredTranslator
                 )
             }

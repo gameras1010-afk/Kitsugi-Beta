@@ -223,7 +223,7 @@ class KitsugiStudioClient {
                         nodes {
                             id
                             idMal
-                            title { userPreferred }
+                            title { userPreferred english romaji native }
                             coverImage { large }
                             type
                         }
@@ -251,7 +251,11 @@ class KitsugiStudioClient {
                     val node = nodes.optJSONObject(i) ?: continue
                     val id = node.optInt("id")
                     val idMal = node.optionalPositiveInt("idMal")
-                    val title = node.optJSONObject("title")?.optNullableString("userPreferred") ?: "Başlıksız"
+                    val titleObj = node.optJSONObject("title")
+                    val title = titleObj?.optNullableString("userPreferred") ?: "Başlıksız"
+                    val titleEnglish = titleObj?.optNullableString("english")
+                    val titleNative = titleObj?.optNullableString("native")
+                    val titleRomaji = titleObj?.optNullableString("romaji")
                     val imgUrl = node.optJSONObject("coverImage")?.optNullableString("large")
                     val type = node.optNullableString("type").orEmpty().lowercase()
 
@@ -264,7 +268,10 @@ class KitsugiStudioClient {
                             mediaImageUrl = imgUrl,
                             mediaType = type.toTurkishMediaTypeString(),
                             staffRole = "Ana Stüdyo",
-                            source = if (idMal != null) "jikan" else "anilist"
+                            source = if (idMal != null) "jikan" else "anilist",
+                            titleEnglish = titleEnglish,
+                            titleJapanese = titleNative,
+                            titleRomaji = titleRomaji
                         )
                     )
                 }
@@ -296,7 +303,7 @@ class KitsugiStudioClient {
                             nodes {
                                 id
                                 idMal
-                                title { userPreferred }
+                                title { userPreferred english romaji native }
                                 coverImage { large }
                                 type
                             }
@@ -328,7 +335,11 @@ class KitsugiStudioClient {
                     val node = nodes.optJSONObject(i) ?: continue
                     val id = node.optInt("id")
                     val idMal = node.optionalPositiveInt("idMal")
-                    val title = node.optJSONObject("title")?.optNullableString("userPreferred") ?: "Başlıksız"
+                    val titleObj = node.optJSONObject("title")
+                    val title = titleObj?.optNullableString("userPreferred") ?: "Başlıksız"
+                    val titleEnglish = titleObj?.optNullableString("english")
+                    val titleNative = titleObj?.optNullableString("native")
+                    val titleRomaji = titleObj?.optNullableString("romaji")
                     val imgUrl = node.optJSONObject("coverImage")?.optNullableString("large")
                     val type = node.optNullableString("type").orEmpty().lowercase()
 
@@ -341,7 +352,10 @@ class KitsugiStudioClient {
                             mediaImageUrl = imgUrl,
                             mediaType = type.toTurkishMediaTypeString(),
                             staffRole = "Ana Stüdyo",
-                            source = if (idMal != null) "jikan" else "anilist"
+                            source = if (idMal != null) "jikan" else "anilist",
+                            titleEnglish = titleEnglish,
+                            titleJapanese = titleNative,
+                            titleRomaji = titleRomaji
                         )
                     )
                 }
