@@ -95,6 +95,9 @@ fun KitsugiSheetOrDialog(
         }
     } else {
         // Mobil: içerik en üstte olmadığında sürüklemeyle kapatmayı engelle
+        val isLandscape = LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+        val effectiveHeightFraction = if (isLandscape) 0.95f else heightFraction
+
         val sheetState = rememberModalBottomSheetState(
             skipPartiallyExpanded = true,
             confirmValueChange = { targetValue ->
@@ -126,14 +129,15 @@ fun KitsugiSheetOrDialog(
         ) {
             Column(
                 modifier = Modifier
+                    .widthIn(max = 640.dp)
                     .fillMaxWidth()
                     .then(
                         if (fillMaxHeight) {
-                            Modifier.fillMaxHeight(heightFraction)
+                            Modifier.fillMaxHeight(effectiveHeightFraction)
                         } else {
                             Modifier
                                 .wrapContentHeight()
-                                .heightIn(max = screenHeight * heightFraction)
+                                .heightIn(max = screenHeight * effectiveHeightFraction)
                         }
                     )
                     .navigationBarsPadding(),

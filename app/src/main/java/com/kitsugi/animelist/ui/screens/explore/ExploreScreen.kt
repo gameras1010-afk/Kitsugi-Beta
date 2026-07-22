@@ -262,6 +262,14 @@ fun ExploreScreen(
     var activeRankingSheetData by remember { mutableStateOf<Triple<String, MediaType, List<JikanSearchResult>>?>(null) }
     var isCategoriesExpanded by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(true) }
 
+    var activeAnimeFilter by remember { mutableStateOf("top") }
+    var activeMangaFilter by remember { mutableStateOf("top") }
+
+    LaunchedEffect(viewModel.selectedPlatform) {
+        activeAnimeFilter = "top"
+        activeMangaFilter = "top"
+    }
+
     val isHeroGone by remember {
         androidx.compose.runtime.derivedStateOf {
             lazyListState.firstVisibleItemIndex > 0 || lazyListState.firstVisibleItemScrollOffset > 300
@@ -354,98 +362,96 @@ fun ExploreScreen(
 
                         // Header / Title and Toggle as STICKY HEADER
                         stickyHeader(key = "explore_platform_toggle") {
-                            if (!isLandscape || isTvDevice) {
-                                androidx.compose.material3.Surface(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    color = KitsugiColors.Background.copy(alpha = 0.95f)
+                            androidx.compose.material3.Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                color = KitsugiColors.Background.copy(alpha = 0.95f)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp, vertical = 8.dp)
                                 ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 20.dp, vertical = 8.dp)
-                                    ) {
-                                        if (isTvDevice) {
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.SpaceBetween,
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Text(
-                                                    text = "Keşfet",
-                                                    style = MaterialTheme.typography.titleLarge,
-                                                    fontWeight = FontWeight.Black,
-                                                    color = KitsugiColors.TextPrimary
-                                                )
-                                                ExplorePlatformToggle(
-                                                    selectedPlatform = viewModel.selectedPlatform,
-                                                    onPlatformSelected = { platform -> viewModel.selectPlatform(platform) },
-                                                    modifier = Modifier.width(300.dp)
-                                                )
-                                            }
-                                        } else {
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                            ) {
-                                                ExplorePlatformToggle(
-                                                    selectedPlatform = viewModel.selectedPlatform,
-                                                    onPlatformSelected = { platform -> viewModel.selectPlatform(platform) },
-                                                    modifier = Modifier.weight(1f)
-                                                )
+                                    if (isTvDevice) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = "Keşfet",
+                                                style = MaterialTheme.typography.titleLarge,
+                                                fontWeight = FontWeight.Black,
+                                                color = KitsugiColors.TextPrimary
+                                            )
+                                            ExplorePlatformToggle(
+                                                selectedPlatform = viewModel.selectedPlatform,
+                                                onPlatformSelected = { platform -> viewModel.selectPlatform(platform) },
+                                                modifier = Modifier.width(300.dp)
+                                            )
+                                        }
+                                    } else {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            ExplorePlatformToggle(
+                                                selectedPlatform = viewModel.selectedPlatform,
+                                                onPlatformSelected = { platform -> viewModel.selectPlatform(platform) },
+                                                modifier = Modifier.weight(1f)
+                                            )
 
-                                                if (isNotificationsVisible) {
-                                                    // 🔔 Bildirim butonu
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .size(36.dp)
-                                                            .clip(RoundedCornerShape(12.dp))
-                                                            .background(KitsugiColors.Surface)
-                                                            .tvClickable(shape = RoundedCornerShape(12.dp)) {
-                                                                onOpenNotifications()
-                                                            },
-                                                        contentAlignment = Alignment.Center
-                                                    ) {
-                                                        Icon(
-                                                            imageVector = Icons.Rounded.Notifications,
-                                                            contentDescription = "Bildirimler",
-                                                            tint = KitsugiColors.TextPrimary,
-                                                            modifier = Modifier.size(20.dp)
-                                                        )
-                                                    }
-                                                } else {
-                                                    // 🎲 Rastgele keşfet butonu
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .size(36.dp)
-                                                            .clip(RoundedCornerShape(12.dp))
-                                                            .background(KitsugiColors.Surface)
-                                                            .tvClickable(shape = RoundedCornerShape(12.dp)) {
-                                                                val randomPool = mutableListOf<JikanSearchResult>()
-                                                                randomPool.addAll(filteredTopAnime)
-                                                                randomPool.addAll(filteredAiringAnime)
-                                                                randomPool.addAll(filteredUpcomingAnime)
-                                                                randomPool.addAll(filteredTopManga)
-                                                                randomPool.addAll(filteredPublishingManga)
-                                                                randomPool.addAll(filteredTrendingAnime)
-                                                                randomPool.addAll(filteredMovieAnime)
-                                                                randomPool.addAll(filteredSeasonalAnime)
-                                                                randomPool.addAll(viewModel.simklContinueMovies)
-                                                                randomPool.addAll(viewModel.simklPlannedMovies)
-                                                                randomPool.addAll(viewModel.simklContinueSeries)
-                                                                randomPool.addAll(viewModel.simklPlannedSeries)
-                                                                if (randomPool.isNotEmpty()) {
-                                                                    val randomResult = randomPool.random()
-                                                                    onOpenApiDetail(randomResult)
-                                                                }
-                                                            },
-                                                        contentAlignment = Alignment.Center
-                                                    ) {
-                                                        Text(
-                                                            text = "🎲",
-                                                            style = MaterialTheme.typography.bodyMedium
-                                                        )
-                                                    }
+                                            if (isNotificationsVisible) {
+                                                // 🔔 Bildirim butonu
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(36.dp)
+                                                        .clip(RoundedCornerShape(12.dp))
+                                                        .background(KitsugiColors.Surface)
+                                                        .tvClickable(shape = RoundedCornerShape(12.dp)) {
+                                                            onOpenNotifications()
+                                                        },
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Rounded.Notifications,
+                                                        contentDescription = "Bildirimler",
+                                                        tint = KitsugiColors.TextPrimary,
+                                                        modifier = Modifier.size(20.dp)
+                                                    )
+                                                }
+                                            } else {
+                                                // 🎲 Rastgele keşfet butonu
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(36.dp)
+                                                        .clip(RoundedCornerShape(12.dp))
+                                                        .background(KitsugiColors.Surface)
+                                                        .tvClickable(shape = RoundedCornerShape(12.dp)) {
+                                                            val randomPool = mutableListOf<JikanSearchResult>()
+                                                            randomPool.addAll(filteredTopAnime)
+                                                            randomPool.addAll(filteredAiringAnime)
+                                                            randomPool.addAll(filteredUpcomingAnime)
+                                                            randomPool.addAll(filteredTopManga)
+                                                            randomPool.addAll(filteredPublishingManga)
+                                                            randomPool.addAll(filteredTrendingAnime)
+                                                            randomPool.addAll(filteredMovieAnime)
+                                                            randomPool.addAll(filteredSeasonalAnime)
+                                                            randomPool.addAll(viewModel.simklContinueMovies)
+                                                            randomPool.addAll(viewModel.simklPlannedMovies)
+                                                            randomPool.addAll(viewModel.simklContinueSeries)
+                                                            randomPool.addAll(viewModel.simklPlannedSeries)
+                                                            if (randomPool.isNotEmpty()) {
+                                                                val randomResult = randomPool.random()
+                                                                onOpenApiDetail(randomResult)
+                                                            }
+                                                        },
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Text(
+                                                        text = "🎲",
+                                                        style = MaterialTheme.typography.bodyMedium
+                                                    )
                                                 }
                                             }
                                         }
@@ -862,88 +868,199 @@ fun ExploreScreen(
                                 }
                             }
 
-                            // ─── YATAY MEDYA LİSTELERİ ───
+                            // ─── ANİME FİLTRELENMİŞ SEKSİYON ───
                             item {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text(
+                                            text = "Anime",
+                                            color = KitsugiColors.TextPrimary,
+                                            style = MaterialTheme.typography.titleLarge,
+                                            fontWeight = FontWeight.Bold
+                                        )
+
+                                        val activeAnimeList = when (activeAnimeFilter) {
+                                            "airing" -> filteredAiringAnime
+                                            "upcoming" -> filteredUpcomingAnime
+                                            else -> filteredTopAnime
+                                        }
+                                        val activeAnimeTitle = when (activeAnimeFilter) {
+                                            "airing" -> "Yayındaki Anime"
+                                            "upcoming" -> "Yaklaşan Anime"
+                                            else -> "Popüler Anime"
+                                        }
+                                        val activeAnimeCategory = when (activeAnimeFilter) {
+                                            "airing" -> ExploreCategoryType.AIRING_ANIME
+                                            "upcoming" -> ExploreCategoryType.UPCOMING_ANIME
+                                            else -> ExploreCategoryType.TOP_ANIME
+                                        }
+
+                                        TextButton(
+                                            onClick = {
+                                                onSeeAllSection(activeAnimeTitle, activeAnimeCategory, activeAnimeList)
+                                            }
+                                        ) {
+                                            Text(
+                                                text = "Tümünü Gör",
+                                                color = accentColor,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(6.dp))
+
+                                    LazyRow(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        item {
+                                            ExploreFilterChip(
+                                                label = "En Popüler",
+                                                selected = activeAnimeFilter == "top",
+                                                onClick = { activeAnimeFilter = "top" }
+                                            )
+                                        }
+                                        item {
+                                            ExploreFilterChip(
+                                                label = "Yayınlanıyor",
+                                                selected = activeAnimeFilter == "airing",
+                                                onClick = { activeAnimeFilter = "airing" }
+                                            )
+                                        }
+                                        item {
+                                            ExploreFilterChip(
+                                                label = "Yakında",
+                                                selected = activeAnimeFilter == "upcoming",
+                                                onClick = { activeAnimeFilter = "upcoming" }
+                                            )
+                                        }
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(14.dp))
+                            }
+
+                            item {
+                                val activeAnimeList = when (activeAnimeFilter) {
+                                    "airing" -> filteredAiringAnime
+                                    "upcoming" -> filteredUpcomingAnime
+                                    else -> filteredTopAnime
+                                }
+
                                 KitsugiHorizontalMediaSection(
-                                    title = "Popüler Anime",
-                                    results = filteredTopAnime,
+                                    title = "anime_$activeAnimeFilter",
+                                    results = activeAnimeList,
                                     isLoading = viewModel.isLoading,
                                     alreadyInList = isAlreadyInList,
                                     getMediaEntry = getMediaEntry,
                                     onItemClick = onOpenApiDetail,
-                                    onSeeAllClick = { onSeeAllSection("Popüler Anime", ExploreCategoryType.TOP_ANIME, filteredTopAnime) },
+                                    onSeeAllClick = null,
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
                                     hideScores = hideScores,
-                                    blurAdultMedia = blurAdultMedia
+                                    blurAdultMedia = blurAdultMedia,
+                                    showTitle = false
                                 )
                                 Spacer(modifier = Modifier.height(26.dp))
                             }
 
+                            // ─── MANGA FİLTRELENMİŞ SEKSİYON ───
                             item {
-                                KitsugiHorizontalMediaSection(
-                                    title = "Yayındaki Anime",
-                                    results = filteredAiringAnime,
-                                    isLoading = viewModel.isLoading,
-                                    alreadyInList = isAlreadyInList,
-                                    getMediaEntry = getMediaEntry,
-                                    onItemClick = onOpenApiDetail,
-                                    onSeeAllClick = { onSeeAllSection("Yayındaki Anime", ExploreCategoryType.AIRING_ANIME, filteredAiringAnime) },
-                                    titleLanguage = titleLanguage,
-                                    scoreFormat = scoreFormat,
-                                    hideScores = hideScores,
-                                    blurAdultMedia = blurAdultMedia
-                                )
-                                Spacer(modifier = Modifier.height(26.dp))
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text(
+                                            text = "Manga",
+                                            color = KitsugiColors.TextPrimary,
+                                            style = MaterialTheme.typography.titleLarge,
+                                            fontWeight = FontWeight.Bold
+                                        )
+
+                                        val activeMangaList = when (activeMangaFilter) {
+                                            "publishing" -> filteredPublishingManga
+                                            else -> filteredTopManga
+                                        }
+                                        val activeMangaTitle = when (activeMangaFilter) {
+                                            "publishing" -> "Yayındaki Manga"
+                                            else -> "Popüler Manga"
+                                        }
+                                        val activeMangaCategory = when (activeMangaFilter) {
+                                            "publishing" -> ExploreCategoryType.PUBLISHING_MANGA
+                                            else -> ExploreCategoryType.TOP_MANGA
+                                        }
+
+                                        TextButton(
+                                            onClick = {
+                                                onSeeAllSection(activeMangaTitle, activeMangaCategory, activeMangaList)
+                                            }
+                                        ) {
+                                            Text(
+                                                text = "Tümünü Gör",
+                                                color = accentColor,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(6.dp))
+
+                                    LazyRow(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        item {
+                                            ExploreFilterChip(
+                                                label = "En İyi 100",
+                                                selected = activeMangaFilter == "top",
+                                                onClick = { activeMangaFilter = "top" }
+                                            )
+                                        }
+                                        item {
+                                            ExploreFilterChip(
+                                                label = "Yakında",
+                                                selected = activeMangaFilter == "publishing",
+                                                onClick = { activeMangaFilter = "publishing" }
+                                            )
+                                        }
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(14.dp))
                             }
 
                             item {
-                                KitsugiHorizontalMediaSection(
-                                    title = "Yaklaşan Anime",
-                                    results = filteredUpcomingAnime,
-                                    isLoading = viewModel.isLoading,
-                                    alreadyInList = isAlreadyInList,
-                                    getMediaEntry = getMediaEntry,
-                                    onItemClick = onOpenApiDetail,
-                                    onSeeAllClick = { onSeeAllSection("Yaklaşan Anime", ExploreCategoryType.UPCOMING_ANIME, filteredUpcomingAnime) },
-                                    titleLanguage = titleLanguage,
-                                    scoreFormat = scoreFormat,
-                                    hideScores = hideScores,
-                                    blurAdultMedia = blurAdultMedia
-                                )
-                                Spacer(modifier = Modifier.height(26.dp))
-                            }
+                                val activeMangaList = when (activeMangaFilter) {
+                                    "publishing" -> filteredPublishingManga
+                                    else -> filteredTopManga
+                                }
 
-                            item {
                                 KitsugiHorizontalMediaSection(
-                                    title = "Popüler Manga",
-                                    results = filteredTopManga,
+                                    title = "manga_$activeMangaFilter",
+                                    results = activeMangaList,
                                     isLoading = viewModel.isLoading,
                                     alreadyInList = isAlreadyInList,
                                     getMediaEntry = getMediaEntry,
                                     onItemClick = onOpenApiDetail,
-                                    onSeeAllClick = { onSeeAllSection("Popüler Manga", ExploreCategoryType.TOP_MANGA, filteredTopManga) },
+                                    onSeeAllClick = null,
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
                                     hideScores = hideScores,
-                                    blurAdultMedia = blurAdultMedia
-                                )
-                                Spacer(modifier = Modifier.height(26.dp))
-                            }
-
-                            item {
-                                KitsugiHorizontalMediaSection(
-                                    title = "Yayındaki Manga",
-                                    results = filteredPublishingManga,
-                                    isLoading = viewModel.isLoading,
-                                    alreadyInList = isAlreadyInList,
-                                    getMediaEntry = getMediaEntry,
-                                    onItemClick = onOpenApiDetail,
-                                    onSeeAllClick = { onSeeAllSection("Yayındaki Manga", ExploreCategoryType.PUBLISHING_MANGA, filteredPublishingManga) },
-                                    titleLanguage = titleLanguage,
-                                    scoreFormat = scoreFormat,
-                                    hideScores = hideScores,
-                                    blurAdultMedia = blurAdultMedia
+                                    blurAdultMedia = blurAdultMedia,
+                                    showTitle = false
                                 )
                             }
                         }
@@ -953,23 +1070,7 @@ fun ExploreScreen(
             }
         }
 
-        if (isLandscape && !isTvDevice) {
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(72.dp)
-                    .background(KitsugiColors.Background)
-                    .padding(vertical = 24.dp, horizontal = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                ExplorePlatformToggle(
-                    selectedPlatform = viewModel.selectedPlatform,
-                    onPlatformSelected = { platform -> viewModel.selectPlatform(platform) },
-                    isVertical = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
+
     }
 
     val rankingSheet = activeRankingSheetData
@@ -1016,6 +1117,36 @@ fun ExploreCategoryChip(
 }
 
 @Composable
+fun ExploreFilterChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val accentColor = LocalKitsugiAccent.current
+    val backgroundColor = if (selected) accentColor else KitsugiColors.Surface
+    val contentColor = if (selected) KitsugiColors.Background else KitsugiColors.TextSecondary
+    val borderColor = if (selected) accentColor else KitsugiColors.SurfaceSoft
+
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(backgroundColor)
+            .border(1.dp, borderColor, RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label,
+            color = contentColor,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
 fun AiringSoonCountdownText(
     nextAiringEpisode: String?,
     modifier: Modifier = Modifier
@@ -1036,16 +1167,16 @@ fun AiringSoonCountdownText(
                 remaining <= 0L -> "Bölüm $episode yayınlandı"
                 remaining < 3600L -> {
                     val mins = (remaining / 60).toInt()
-                    "${mins} dk sonra"
+                    "${mins} dk sonra yayında"
                 }
                 remaining < 86400L -> {
                     val hours = (remaining / 3600).toInt()
                     val mins = ((remaining % 3600) / 60).toInt()
-                    "%02d:%02d sonra".format(hours, mins)
+                    "%02d:%02d sonra yayında".format(hours, mins)
                 }
                 else -> {
                     val days = (remaining / 86400).toInt()
-                    "$days gün sonra"
+                    "$days gün sonra yayında"
                 }
             }
             if (remaining <= 0L) break

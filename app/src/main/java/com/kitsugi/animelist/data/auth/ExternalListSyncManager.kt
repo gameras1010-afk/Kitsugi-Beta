@@ -36,21 +36,24 @@ object ExternalListSyncManager {
                 }.onSuccess { remoteId ->
                     if (remoteId != null) resolvedAniListEntryId = remoteId
                     syncedSources.add("AniList")
-
-                    // isFavorite değişikliğini de senkronize et (ToggleFavourite mutation)
-                    // Not: AniList toggle semantiği kullanır; isFavorite=true ise toggle çağrısı yapılır.
-                    // İki kez çağrılmaması için yalnızca isFavorite=true durumunda favori set edilir;
-                    // isFavorite=false ise kullanıcı zaten unfavourite etmek için tekrar toggle yapar.
-                    if (entry.isFavorite) {
-                        runCatching {
-                            AniListSyncManager.toggleAniListFavourite(
-                                token = aniListToken!!,
-                                entry = entry
-                            )
-                        }
-                    }
                 }.onFailure { error ->
                     errors.add("AniList: ${error.message}")
+                }
+            }
+
+            // AniList bağlıysa favori durumunu senkronize et (Toggle-flip'i önlemek için güncel durumu kontrol ederiz)
+            if (!aniListToken.isNullOrBlank()) {
+                val malIdVal = entry.malId
+                if (entry.source == "anilist" || (malIdVal != null && malIdVal.isRealMalId())) {
+                    runCatching {
+                        val remoteFav = AniListSyncManager.getAniListMediaFavoriteStatus(aniListToken, entry)
+                        if (remoteFav != null && remoteFav != entry.isFavorite) {
+                            AniListSyncManager.toggleAniListFavourite(aniListToken, entry)
+                            if (entry.source != "anilist" && !syncedSources.contains("AniList")) {
+                                syncedSources.add("AniList")
+                            }
+                        }
+                    }
                 }
             }
 

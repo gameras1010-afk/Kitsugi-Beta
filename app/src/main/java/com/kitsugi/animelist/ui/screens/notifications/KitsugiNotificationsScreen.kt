@@ -7,7 +7,6 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -25,23 +24,28 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.content.res.Configuration
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.ui.res.stringResource
+import com.kitsugi.animelist.R
+import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
-import com.kitsugi.animelist.data.auth.ExternalAuthManager
-import com.kitsugi.animelist.data.remote.KitsugiAiringCalendarClient
 import com.kitsugi.animelist.data.remote.KitsugiAniListNotificationClient
-import com.kitsugi.animelist.data.remote.SimklApiClient
 import com.kitsugi.animelist.model.MediaEntry
-import com.kitsugi.animelist.model.WatchStatus
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.utils.tvClickable
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 // ─── Platform seçimi ──────────────────────────────────────────────────────────
 
@@ -54,33 +58,20 @@ private enum class NotifPlatform(val label: String) {
 // ─── AniList alt filtre ───────────────────────────────────────────────────────
 
 private enum class AniListFilter(
-    val label: String,
+    val labelResId: Int,
     val group: KitsugiAniListNotificationClient.NotificationGroup
 ) {
-    ALL("Tümü", KitsugiAniListNotificationClient.NotificationGroup.ALL),
-    AIRING("Yayın", KitsugiAniListNotificationClient.NotificationGroup.AIRING),
-    ACTIVITY("Aktivite", KitsugiAniListNotificationClient.NotificationGroup.ACTIVITY),
-    FORUM("Forum", KitsugiAniListNotificationClient.NotificationGroup.FORUM),
-    FOLLOWS("Takip", KitsugiAniListNotificationClient.NotificationGroup.FOLLOWS),
-    MEDIA("Medya", KitsugiAniListNotificationClient.NotificationGroup.MEDIA)
+    ALL(R.string.notif_filter_all, KitsugiAniListNotificationClient.NotificationGroup.ALL),
+    AIRING(R.string.notif_filter_airing, KitsugiAniListNotificationClient.NotificationGroup.AIRING),
+    ACTIVITY(R.string.notif_filter_activity, KitsugiAniListNotificationClient.NotificationGroup.ACTIVITY),
+    FORUM(R.string.notif_filter_forum, KitsugiAniListNotificationClient.NotificationGroup.FORUM),
+    FOLLOWS(R.string.notif_filter_follows, KitsugiAniListNotificationClient.NotificationGroup.FOLLOWS),
+    MEDIA(R.string.notif_filter_media, KitsugiAniListNotificationClient.NotificationGroup.MEDIA)
 }
-
-// ─── Basit bildirim veri modeli (tüm platformlar ortak) ───────────────────────
-
-private data class SimpleNotif(
-    val id: String,
-    val imageUrl: String?,
-    val title: String,
-    val body: String,
-    val dateText: String?,
-    val isUnread: Boolean = false,
-    val mediaId: Int? = null,
-    val activityId: Int? = null
-)
 
 // ─── Ana Ekran ────────────────────────────────────────────────────────────────
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun KitsugiNotificationsScreen(
     mediaEntries: List<MediaEntry>,
@@ -88,205 +79,76 @@ fun KitsugiNotificationsScreen(
     isMalConnected: Boolean,
     isSimklConnected: Boolean,
     onBack: () -> Unit,
-    onOpenApiDetail: ((mediaId: Int, source: String) -> Unit)? = null
+    onOpenApiDetail: ((mediaId: Int, source: String) -> Unit)? = null,
+    viewModel: KitsugiNotificationsViewModel = viewModel()
 ) {
-    val context = LocalContext.current
     val accentColor = LocalKitsugiAccent.current
     val scope = rememberCoroutineScope()
 
-    // Platform seçimi — varsayılan: bağlı olan ilk platform
-    var selectedPlatform by remember {
-        mutableStateOf(
-            when {
-                isAniListConnected -> NotifPlatform.ANILIST
-                isMalConnected     -> NotifPlatform.MAL
-                isSimklConnected   -> NotifPlatform.TMDB_SIMKL
-                else               -> NotifPlatform.ANILIST
-            }
-        )
-    }
+    // ── ViewModel state'lerini topla ──
+    val aniListState by viewModel.aniList.collectAsState()
+    val malState    by viewModel.mal.collectAsState()
+    val simklState  by viewModel.tmdbSimkl.collectAsState()
 
-    // ── AniList state ──
+    // ── Sayfa + filtre state ──
+    val pagerState = rememberPagerState(
+        initialPage = when {
+            isAniListConnected -> 0
+            isMalConnected     -> 1
+            isSimklConnected   -> 2
+            else               -> 0
+        },
+        pageCount = { 3 }
+    )
     var aniListFilter by remember { mutableStateOf(AniListFilter.ALL) }
-    var aniListNotifs by remember { mutableStateOf<List<SimpleNotif>>(emptyList()) }
-    var aniListLoading by remember { mutableStateOf(false) }
-    var aniListError by remember { mutableStateOf<String?>(null) }
-    var aniListPage by remember { mutableStateOf(1) }
-    var aniListHasMore by remember { mutableStateOf(true) }
 
-    // ── MAL state ──
-    var malNotifs by remember { mutableStateOf<List<SimpleNotif>>(emptyList()) }
-    var malLoading by remember { mutableStateOf(false) }
-
-    // ── TMDB+Simkl state ──
-    var tmdbSimklNotifs by remember { mutableStateOf<List<SimpleNotif>>(emptyList()) }
-    var tmdbSimklLoading by remember { mutableStateOf(false) }
-
-    // ── AniList yükleyici ──
-    suspend fun loadAniList(resetPage: Boolean = false) {
-        val token = ExternalAuthManager.getAniListToken(context) ?: return
-        if (resetPage) { aniListPage = 1; aniListHasMore = true }
-        if (!aniListHasMore) return
-        aniListLoading = true
-        aniListError = null
-        try {
-            val client = KitsugiAniListNotificationClient()
-            val result = client.fetchNotifications(
-                accessToken = token,
-                page = aniListPage,
-                perPage = 25,
+    // ── İlk yükleme — sayfa veya filtre değiştiğinde ──
+    LaunchedEffect(pagerState.currentPage, aniListFilter) {
+        when (pagerState.currentPage) {
+            0 -> if (isAniListConnected) viewModel.loadAniList(
                 group = aniListFilter.group,
-                resetCount = aniListPage == 1
+                resetPage = true,
+                mediaEntries = mediaEntries
             )
-            val mapped = result.notifications.map { n ->
-                val body = when (n.type) {
-                    "AIRING" -> buildString {
-                        n.airingContexts?.getOrNull(0)?.let { append(it) }
-                        append(" ")
-                        n.airingContexts?.getOrNull(1)?.let { append(it) }
-                        append(" ${n.episode}")
-                        n.airingContexts?.getOrNull(2)?.let { append(it) }
-                    }.trim().ifBlank { "Bölüm ${n.episode} yayında" }
-                    "FOLLOWING"                  -> "${n.userName} sizi takip etti"
-                    "ACTIVITY_MESSAGE"           -> "${n.userName} size mesaj gönderdi"
-                    "ACTIVITY_REPLY"             -> "${n.userName} ${n.context ?: "aktivitenize yanıt verdi"}"
-                    "ACTIVITY_REPLY_SUBSCRIBED"  -> "${n.userName} ${n.context ?: "abone olduğunuz aktiviteye yanıt verdi"}"
-                    "ACTIVITY_MENTION"           -> "${n.userName} ${n.context ?: "sizi bir aktivitede bahsetti"}"
-                    "ACTIVITY_LIKE"              -> "${n.userName} ${n.context ?: "aktivitenizi beğendi"}"
-                    "ACTIVITY_REPLY_LIKE"        -> "${n.userName} ${n.context ?: "yanıtınızı beğendi"}"
-                    "THREAD_COMMENT_MENTION"     -> "${n.userName} sizi bir forum yorumunda etiketledi"
-                    "THREAD_COMMENT_REPLY"       -> "${n.userName} forum yorumunuza yanıt verdi"
-                    "THREAD_COMMENT_SUBSCRIBED"  -> "${n.userName} abone olduğunuz konuya yorum yaptı"
-                    "THREAD_COMMENT_LIKE"        -> "${n.userName} forum yorumunuzu beğendi"
-                    "THREAD_LIKE"                -> "${n.userName} ${n.threadTitle ?: "forumunuzu"} beğendi"
-                    "RELATED_MEDIA_ADDITION"     -> "${n.mediaTitle} ${n.context ?: "ilgili medya olarak eklendi"}"
-                    "MEDIA_DATA_CHANGE"          -> "${n.mediaTitle} ${n.context ?: "verisi güncellendi"}"
-                    "MEDIA_MERGE"                -> "${n.mediaTitle} ${n.context ?: "başka bir medyayla birleştirildi"}"
-                    "MEDIA_DELETION"             -> "${n.deletedMediaTitle ?: "Bir medya"} silindi"
-                    else -> n.context ?: "Yeni bildirim"
-                }
-                val imageUrl = n.mediaCoverUrl ?: n.userAvatarUrl
-                SimpleNotif(
-                    id = "al_${n.id}",
-                    imageUrl = imageUrl,
-                    title = n.mediaTitle ?: n.userName ?: n.threadTitle ?: "AniList",
-                    body = body,
-                    dateText = n.dateText,
-                    mediaId = n.mediaId,
-                    activityId = n.activityId
-                )
-            }
-            aniListNotifs = if (resetPage) mapped else (aniListNotifs + mapped)
-            aniListHasMore = result.hasNextPage
-            if (result.hasNextPage) aniListPage++
-        } catch (e: Exception) {
-            aniListError = "Bildirimler yüklenemedi: ${e.message}"
-        } finally {
-            aniListLoading = false
+            1 -> if (isMalConnected) viewModel.loadMal(mediaEntries)
+            2 -> if (isSimklConnected) viewModel.loadTmdbSimkl(mediaEntries)
         }
     }
 
-    // ── MAL yükleyici (Airing Calendar + watchlist eşleşme) ──
-    suspend fun loadMal() {
-        malLoading = true
-        try {
-            val calendarClient = KitsugiAiringCalendarClient()
-            val schedule = calendarClient.fetchWeeklySchedule()
-            val allEntries = schedule.values.flatten()
-            val now = System.currentTimeMillis()
-            val malEntries = mediaEntries.filter {
-                (it.source.equals("jikan", ignoreCase = true) || it.source.equals("mal", ignoreCase = true)) &&
-                (it.status == WatchStatus.Watching || it.status == WatchStatus.Repeating)
-            }
-            val matched = allEntries.filter { entry ->
-                malEntries.any { me -> me.malId == entry.malId }
-            }.filter { entry ->
-                val triggerMs = entry.airingAt * 1000L
-                triggerMs <= now && triggerMs > now - 7 * 24 * 60 * 60 * 1000L
-            }
-            malNotifs = matched.map { entry ->
-                val dateText = SimpleDateFormat("dd MMM HH:mm", Locale.getDefault())
-                    .format(Date(entry.airingAt * 1000L))
-                SimpleNotif(
-                    id = "mal_${entry.malId}_${entry.episode}",
-                    imageUrl = null,
-                    title = entry.title,
-                    body = "Bölüm ${entry.episode} yayınlandı 🎬",
-                    dateText = dateText,
-                    mediaId = entry.malId
-                )
-            }.sortedByDescending { it.id }
-        } catch (e: Exception) {
-            android.util.Log.e("KitsugiNotif", "MAL load failed: ${e.message}")
-        } finally {
-            malLoading = false
-        }
-    }
+    val aniListListState  = rememberLazyListState()
+    val malListState      = rememberLazyListState()
+    val tmdbSimklListState = rememberLazyListState()
 
-    // ── TMDB+Simkl yükleyici ──
-    suspend fun loadTmdbSimkl() {
-        tmdbSimklLoading = true
-        try {
-            val simklClient = SimklApiClient()
-            val tvCal = simklClient.getCalendar("tv")
-            val animeCal = simklClient.getCalendar("anime")
-            val movieCal = simklClient.getCalendar("movies")
-            val allCal = (tvCal + animeCal + movieCal).distinctBy { it.malId }
-
-            val tmdbSimklEntries = mediaEntries.filter { me ->
-                (me.source.equals("tmdb", ignoreCase = true) || me.source.equals("simkl", ignoreCase = true)) &&
-                (me.status == WatchStatus.Watching || me.status == WatchStatus.Repeating)
-            }
-
-            val matched = allCal.filter { calItem ->
-                tmdbSimklEntries.any { me ->
-                    (me.simklId != null && me.simklId == calItem.malId) ||
-                    (me.tmdbId != null && calItem.tmdbId != null && me.tmdbId == calItem.tmdbId)
-                }
-            }
-
-            val now = System.currentTimeMillis()
-            tmdbSimklNotifs = matched.map { item ->
-                SimpleNotif(
-                    id = "simkl_${item.malId}",
-                    imageUrl = item.imageUrl,
-                    title = item.title,
-                    body = "Yeni içerik mevcut 🎬",
-                    dateText = null,
-                    mediaId = item.malId
-                )
-            }
-        } catch (e: Exception) {
-            android.util.Log.e("KitsugiNotif", "TMDB/Simkl load failed: ${e.message}")
-        } finally {
-            tmdbSimklLoading = false
-        }
-    }
-
-    // İlk yükleme
-    LaunchedEffect(selectedPlatform, aniListFilter) {
-        when (selectedPlatform) {
-            NotifPlatform.ANILIST    -> if (isAniListConnected) loadAniList(resetPage = true)
-            NotifPlatform.MAL        -> loadMal()
-            NotifPlatform.TMDB_SIMKL -> loadTmdbSimkl()
-        }
-    }
-
-    val listState = rememberLazyListState()
-
-    // Infinite scroll (AniList)
+    // ── Infinite scroll (AniList) — sadece scroll sonunda tetikle ──
     val shouldLoadMore by remember {
         derivedStateOf {
-            val total = listState.layoutInfo.totalItemsCount
-            val last  = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val total = aniListListState.layoutInfo.totalItemsCount
+            val last  = aniListListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
             last >= total - 5 && total > 0
         }
     }
     LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore && selectedPlatform == NotifPlatform.ANILIST && !aniListLoading && aniListHasMore) {
-            loadAniList()
+        if (shouldLoadMore && pagerState.currentPage == 0 && !aniListState.isLoading && aniListState.hasMore) {
+            viewModel.loadAniList(
+                group = aniListFilter.group,
+                resetPage = false,
+                mediaEntries = mediaEntries
+            )
         }
     }
+
+    // ── Filtre değişince liste başa dönsün ──
+    LaunchedEffect(aniListFilter) {
+        aniListListState.scrollToItem(0)
+    }
+
+    val configuration = LocalConfiguration.current
+    val isLandscape   = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val isWideScreen  = isLandscape || configuration.screenWidthDp > 600
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  UI
+    // ─────────────────────────────────────────────────────────────────────────
 
     Column(
         modifier = Modifier
@@ -304,105 +166,91 @@ fun KitsugiNotificationsScreen(
             IconButton(onClick = onBack) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = "Geri",
+                    contentDescription = stringResource(R.string.notif_action_back),
                     tint = KitsugiColors.TextPrimary
                 )
             }
             Text(
-                text = "Bildirimler",
+                text = stringResource(R.string.notif_title),
                 color = KitsugiColors.TextPrimary,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f).padding(start = 4.dp)
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 4.dp)
             )
             IconButton(onClick = {
-                scope.launch {
-                    when (selectedPlatform) {
-                        NotifPlatform.ANILIST    -> loadAniList(resetPage = true)
-                        NotifPlatform.MAL        -> loadMal()
-                        NotifPlatform.TMDB_SIMKL -> loadTmdbSimkl()
-                    }
+                when (pagerState.currentPage) {
+                    0 -> viewModel.loadAniList(aniListFilter.group, resetPage = true, mediaEntries)
+                    1 -> viewModel.loadMal(mediaEntries)
+                    2 -> viewModel.loadTmdbSimkl(mediaEntries)
                 }
             }) {
                 Icon(
                     imageVector = Icons.Rounded.Refresh,
-                    contentDescription = "Yenile",
+                    contentDescription = stringResource(R.string.notif_action_refresh),
                     tint = accentColor
                 )
             }
         }
 
-        // ── Platform Filtreleri ──
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+        // ── Platform Sekmeleri ──
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = if (isLandscape) 18.dp else 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            items(NotifPlatform.entries) { platform ->
-                val active = selectedPlatform == platform
-                val enabled = when (platform) {
-                    NotifPlatform.ANILIST    -> isAniListConnected
-                    NotifPlatform.MAL        -> isMalConnected
-                    NotifPlatform.TMDB_SIMKL -> isSimklConnected || true // TMDB her zaman açık
-                }
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(
-                            when {
-                                active  -> accentColor
-                                !enabled -> KitsugiColors.SurfaceSoft.copy(alpha = 0.4f)
-                                else    -> KitsugiColors.SurfaceStrong
-                            }
-                        )
-                        .tvClickable(shape = RoundedCornerShape(20.dp), enabled = enabled) {
-                            selectedPlatform = platform
-                        }
-                        .padding(horizontal = 18.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = platform.label,
-                        color = when {
-                            active   -> KitsugiColors.Background
-                            !enabled -> KitsugiColors.TextMuted
-                            else     -> KitsugiColors.TextPrimary
-                        },
-                        fontSize = 13.sp,
-                        fontWeight = if (active) FontWeight.Bold else FontWeight.Normal
-                    )
-                }
-            }
-        }
-
-        // ── AniList Alt Filtreleri ──
-        if (selectedPlatform == NotifPlatform.ANILIST && isAniListConnected) {
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(22.dp))
+                    .background(KitsugiColors.Surface),
+                horizontalArrangement = Arrangement.spacedBy(0.dp)
             ) {
-                items(AniListFilter.entries) { filter ->
-                    val active = aniListFilter == filter
+                NotifPlatform.entries.forEachIndexed { index, platform ->
+                    val active  = pagerState.currentPage == index
+                    val enabled = when (platform) {
+                        NotifPlatform.ANILIST    -> isAniListConnected
+                        NotifPlatform.MAL        -> isMalConnected
+                        NotifPlatform.TMDB_SIMKL -> isSimklConnected || true
+                    }
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(
-                                if (active) accentColor.copy(alpha = 0.18f)
-                                else KitsugiColors.Surface
-                            )
-                            .tvClickable(shape = RoundedCornerShape(14.dp)) {
-                                aniListFilter = filter
+                            .weight(1f)
+                            .clip(RoundedCornerShape(22.dp))
+                            .background(if (active) accentColor else KitsugiColors.Surface)
+                            .tvClickable(shape = RoundedCornerShape(22.dp), enabled = enabled) {
+                                scope.launch { pagerState.animateScrollToPage(index) }
                             }
-                            .padding(horizontal = 14.dp, vertical = 6.dp),
+                            .padding(vertical = 10.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = filter.label,
-                            color = if (active) accentColor else KitsugiColors.TextSecondary,
-                            fontSize = 12.sp,
-                            fontWeight = if (active) FontWeight.Bold else FontWeight.Normal
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = platform.label,
+                                color = if (active) KitsugiColors.Background
+                                        else if (enabled) KitsugiColors.TextPrimary
+                                        else KitsugiColors.TextMuted,
+                                fontSize = 13.sp,
+                                fontWeight = if (active) FontWeight.Black else FontWeight.Medium
+                            )
+                            if (enabled) {
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            if (active) KitsugiColors.Background
+                                            else KitsugiColors.AccentGreen
+                                        )
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -413,85 +261,140 @@ fun KitsugiNotificationsScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // ── İçerik ──
-        AnimatedContent(
-            targetState = selectedPlatform,
-            transitionSpec = { fadeIn() togetherWith fadeOut() },
-            label = "notif_content"
-        ) { platform ->
+        // ── Pager ──
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) { page ->
+            when (page) {
+                // ──────────────── Page 0: AniList ────────────────
+                0 -> {
+                    if (!isAniListConnected) {
+                        CenteredEmptyState(stringResource(R.string.notif_login_required_anilist))
+                    } else {
+                        LazyColumn(
+                            state = aniListListState,
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(bottom = 80.dp)
+                        ) {
+                            // Sticky header: AniList alt filtreleri
+                            stickyHeader(key = "al_filters") {
+                                AniListFilterHeader(
+                                    activeFilter = aniListFilter,
+                                    onFilterSelected = { aniListFilter = it },
+                                    isWideScreen = isWideScreen,
+                                    accentColor = accentColor
+                                )
+                            }
 
-            val (notifs, isLoading, errorMsg) = when (platform) {
-                NotifPlatform.ANILIST    -> Triple(aniListNotifs, aniListLoading, aniListError)
-                NotifPlatform.MAL        -> Triple(malNotifs, malLoading, null)
-                NotifPlatform.TMDB_SIMKL -> Triple(tmdbSimklNotifs, tmdbSimklLoading, null)
-            }
-
-            when {
-                isLoading && notifs.isEmpty() -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = accentColor)
-                            Spacer(Modifier.height(12.dp))
-                            Text("Yükleniyor...", color = KitsugiColors.TextMuted, fontSize = 14.sp)
+                            when {
+                                aniListState.isLoading && aniListState.items.isEmpty() -> {
+                                    item { LoadingState(accentColor) }
+                                }
+                                aniListState.error != null && aniListState.items.isEmpty() -> {
+                                    item { CenteredEmptyState(aniListState.error!!) }
+                                }
+                                aniListState.items.isEmpty() -> {
+                                    item { CenteredEmptyState(stringResource(R.string.notif_empty_no_notifications)) }
+                                }
+                                else -> {
+                                    items(aniListState.items, key = { it.id }) { notif ->
+                                        NotifItemRow(
+                                            notif = notif,
+                                            accentColor = accentColor,
+                                            onClick = {
+                                                notif.mediaId?.let { id -> onOpenApiDetail?.invoke(id, "anilist") }
+                                            }
+                                        )
+                                    }
+                                    // Sayfa sonu yükleyici
+                                    if (aniListState.isLoading) {
+                                        item {
+                                            Box(
+                                                Modifier.fillMaxWidth().padding(16.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                CircularProgressIndicator(
+                                                    color = accentColor,
+                                                    modifier = Modifier.size(24.dp)
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
 
-                platform == NotifPlatform.ANILIST && !isAniListConnected -> {
-                    NotifEmptyState("AniList'e giriş yapmanız gerekiyor")
-                }
-
-                platform == NotifPlatform.MAL && !isMalConnected -> {
-                    NotifEmptyState("MAL'a giriş yapmanız gerekiyor")
-                }
-
-                errorMsg != null -> {
-                    NotifEmptyState(errorMsg)
-                }
-
-                notifs.isEmpty() -> {
-                    NotifEmptyState(
-                        when (platform) {
-                            NotifPlatform.ANILIST    -> "Yeni bildirim yok"
-                            NotifPlatform.MAL        -> "İzleme listenizdeki animeler için yeni bölüm bulunamadı"
-                            NotifPlatform.TMDB_SIMKL -> "İzleme listenizdeki içerikler için yeni bildirim yok"
-                        }
-                    )
-                }
-
-                else -> {
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(top = 4.dp, bottom = 80.dp)
-                    ) {
-                        items(notifs, key = { it.id }) { notif ->
-                            NotifItem(
-                                notif = notif,
-                                accentColor = accentColor,
-                                onClick = {
-                                    notif.mediaId?.let { id ->
-                                        val source = when (platform) {
-                                            NotifPlatform.ANILIST    -> "anilist"
-                                            NotifPlatform.MAL        -> "jikan"
-                                            NotifPlatform.TMDB_SIMKL -> "simkl"
-                                        }
-                                        onOpenApiDetail?.invoke(id, source)
+                // ──────────────── Page 1: MAL ────────────────
+                1 -> {
+                    if (!isMalConnected) {
+                        CenteredEmptyState(stringResource(R.string.notif_login_required_mal))
+                    } else {
+                        LazyColumn(
+                            state = malListState,
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(bottom = 80.dp)
+                        ) {
+                            when {
+                                malState.isLoading && malState.items.isEmpty() -> {
+                                    item { LoadingState(accentColor) }
+                                }
+                                malState.error != null && malState.items.isEmpty() -> {
+                                    item { CenteredEmptyState(malState.error!!) }
+                                }
+                                malState.items.isEmpty() -> {
+                                    item { CenteredEmptyState(stringResource(R.string.notif_empty_list_mal)) }
+                                }
+                                else -> {
+                                    items(malState.items, key = { it.id }) { notif ->
+                                        NotifItemRow(
+                                            notif = notif,
+                                            accentColor = accentColor,
+                                            onClick = {
+                                                notif.mediaId?.let { id -> onOpenApiDetail?.invoke(id, "jikan") }
+                                            }
+                                        )
                                     }
                                 }
-                            )
+                            }
                         }
+                    }
+                }
 
-                        if (isLoading) {
-                            item {
-                                Box(
-                                    Modifier.fillMaxWidth().padding(16.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator(
-                                        color = accentColor,
-                                        modifier = Modifier.size(24.dp)
-                                    )
+                // ──────────────── Page 2: TMDB & Simkl ────────────────
+                2 -> {
+                    if (!isSimklConnected) {
+                        CenteredEmptyState(stringResource(R.string.notif_login_required_simkl))
+                    } else {
+                        LazyColumn(
+                            state = tmdbSimklListState,
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(bottom = 80.dp)
+                        ) {
+                            when {
+                                simklState.isLoading && simklState.items.isEmpty() -> {
+                                    item { LoadingState(accentColor) }
+                                }
+                                simklState.error != null && simklState.items.isEmpty() -> {
+                                    item { CenteredEmptyState(simklState.error!!) }
+                                }
+                                simklState.items.isEmpty() -> {
+                                    item { CenteredEmptyState(stringResource(R.string.notif_empty_list_simkl)) }
+                                }
+                                else -> {
+                                    items(simklState.items, key = { it.id }) { notif ->
+                                        NotifItemRow(
+                                            notif = notif,
+                                            accentColor = accentColor,
+                                            onClick = {
+                                                notif.mediaId?.let { id -> onOpenApiDetail?.invoke(id, "simkl") }
+                                            }
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -502,12 +405,80 @@ fun KitsugiNotificationsScreen(
     }
 }
 
+// ─── AniList Alt Filtre Header ────────────────────────────────────────────────
+
+@Composable
+private fun AniListFilterHeader(
+    activeFilter: AniListFilter,
+    onFilterSelected: (AniListFilter) -> Unit,
+    isWideScreen: Boolean,
+    accentColor: Color
+) {
+    val scrollState = rememberScrollState()
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(KitsugiColors.Background)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val rowMod = if (isWideScreen) {
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(22.dp))
+                    .background(KitsugiColors.Surface)
+                    .padding(4.dp)
+            } else {
+                Modifier
+                    .clip(RoundedCornerShape(22.dp))
+                    .background(KitsugiColors.Surface)
+                    .horizontalScroll(scrollState)
+                    .padding(4.dp)
+            }
+            Row(
+                modifier = rowMod,
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = if (isWideScreen) Arrangement.spacedBy(0.dp) else Arrangement.spacedBy(4.dp)
+            ) {
+                AniListFilter.entries.forEach { filter ->
+                    val active    = activeFilter == filter
+                    val itemMod   = if (isWideScreen) Modifier.weight(1f) else Modifier
+                    Box(
+                        modifier = itemMod
+                            .clip(RoundedCornerShape(22.dp))
+                            .background(if (active) accentColor else Color.Transparent)
+                            .tvClickable(shape = RoundedCornerShape(22.dp)) { onFilterSelected(filter) }
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = stringResource(filter.labelResId),
+                            color = if (active) KitsugiColors.Background else KitsugiColors.TextSecondary,
+                            fontSize = 12.sp,
+                            fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
+                            maxLines = 1
+                        )
+                    }
+                }
+            }
+        }
+        HorizontalDivider(
+            color = KitsugiColors.SurfaceStrong.copy(alpha = 0.5f),
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
 // ─── Bildirim Satır Kartı ─────────────────────────────────────────────────────
 
 @Composable
-private fun NotifItem(
-    notif: SimpleNotif,
-    accentColor: androidx.compose.ui.graphics.Color,
+private fun NotifItemRow(
+    notif: NotifItem,
+    accentColor: Color,
     onClick: () -> Unit
 ) {
     Row(
@@ -518,7 +489,6 @@ private fun NotifItem(
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Görsel / ikon
         Box(
             modifier = Modifier
                 .size(52.dp)
@@ -542,8 +512,6 @@ private fun NotifItem(
                 )
             }
         }
-
-        // Metin
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = notif.title,
@@ -564,25 +532,36 @@ private fun NotifItem(
             )
             if (!notif.dateText.isNullOrBlank()) {
                 Spacer(Modifier.height(4.dp))
-                Text(
-                    text = notif.dateText,
-                    color = KitsugiColors.TextMuted,
-                    fontSize = 11.sp
-                )
+                Text(text = notif.dateText, color = KitsugiColors.TextMuted, fontSize = 11.sp)
             }
         }
     }
-
     HorizontalDivider(
         color = KitsugiColors.SurfaceStrong.copy(alpha = 0.35f),
         modifier = Modifier.padding(start = 80.dp, end = 16.dp)
     )
 }
 
-// ─── Boş durum ────────────────────────────────────────────────────────────────
+// ─── Yardımcı Composable'lar ──────────────────────────────────────────────────
 
 @Composable
-private fun NotifEmptyState(message: String) {
+private fun LoadingState(accentColor: Color) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.8f),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            CircularProgressIndicator(color = accentColor)
+            Spacer(Modifier.height(12.dp))
+            Text(stringResource(R.string.loading), color = KitsugiColors.TextMuted, fontSize = 14.sp)
+        }
+    }
+}
+
+@Composable
+private fun CenteredEmptyState(message: String) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
@@ -596,7 +575,7 @@ private fun NotifEmptyState(message: String) {
                 text = message,
                 color = KitsugiColors.TextMuted,
                 fontSize = 14.sp,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 32.dp)
             )
         }

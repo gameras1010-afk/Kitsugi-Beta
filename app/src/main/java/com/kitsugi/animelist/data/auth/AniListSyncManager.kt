@@ -109,6 +109,34 @@ object AniListSyncManager {
     }
 
     /**
+     * AniList'teki güncel favori durumunu sorgular.
+     */
+    fun getAniListMediaFavoriteStatus(
+        token: String,
+        entry: MediaEntry
+    ): Boolean? {
+        val aniListMediaId: Int = resolveAniListMediaId(token = token, entry = entry) ?: return null
+
+        val query = """
+            query (${'$'}id: Int) {
+                Media(id: ${'$'}id) {
+                    isFavourite
+                }
+            }
+        """.trimIndent()
+
+        val variables = JSONObject().put("id", aniListMediaId)
+
+        return runCatching {
+            val response = postAniList(token = token, query = query, variables = variables)
+            JSONObject(response)
+                .optJSONObject("data")
+                ?.optJSONObject("Media")
+                ?.optBoolean("isFavourite", false)
+        }.getOrNull()
+    }
+
+    /**
      * AniList'te favori toggle yapar.
      * ToggleFavourite mutasyonu ile anime/manga ID'sine göre toggle eder.
      * Bu fonksiyon sadece isFavorite değeri değiştiğinde çağrılmalı.

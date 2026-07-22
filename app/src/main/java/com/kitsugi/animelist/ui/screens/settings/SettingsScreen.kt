@@ -25,7 +25,7 @@ import com.kitsugi.animelist.ui.components.BackupImportMode
 import com.kitsugi.animelist.ui.components.KitsugiChoiceOption
 import com.kitsugi.animelist.ui.components.KitsugiConfirmDialog
 import com.kitsugi.animelist.ui.components.KitsugiPage
-import com.kitsugi.animelist.ui.components.KitsugiProfileEditDialog
+import com.kitsugi.animelist.ui.components.KitsugiAccountConnectionsDialog
 import com.kitsugi.animelist.ui.components.KitsugiSettingsDivider
 import com.kitsugi.animelist.ui.components.KitsugiSettingsItem
 import com.kitsugi.animelist.ui.components.KitsugiSettingsSection
@@ -99,14 +99,14 @@ fun SettingsScreen(
         Spacer(modifier = Modifier.height(22.dp))
 
         KitsugiSettingsSection(
-            title = "Hesap & Profil"
+            title = "Hesap Ayarları"
         ) {
             KitsugiSettingsItem(
-                title = "Hesap ve Eşitleme Ayarları",
-                description = "Profil bilgileri, görsel seçimi ve AniList / MAL / Simkl hesap eşitlemeleri",
+                title = "Hesap Bağlantıları",
+                description = "AniList, MyAnimeList ve Simkl hesap eşitlemeleri",
                 icon = Icons.Rounded.Person,
                 iconColor = KitsugiColors.AccentBlue,
-                onClick = { activeDialog = SettingsDialog.Account }
+                onClick = { activeDialog = SettingsDialog.AccountConnections }
             )
         }
 
@@ -193,22 +193,8 @@ fun SettingsScreen(
     }
 
     when (activeDialog) {
-        SettingsDialog.Account -> {
-            KitsugiProfileEditDialog(
-                initialProfileName = profile.profileName,
-                initialListTitle = profile.listTitle,
-                hasProfileImage = profile.profileImageUri.isNotBlank(),
-                hasBannerImage = profile.bannerImageUri.isNotBlank(),
-                onPickProfileImageClick = profile.onPickProfileImageClick,
-                onPickBannerImageClick = profile.onPickBannerImageClick,
-                onClearProfileImageClick = profile.onClearProfileImageClick,
-                onClearBannerImageClick = profile.onClearBannerImageClick,
-                onSave = { newProfileName, newListTitle ->
-                    profile.onProfileInfoSave(
-                        newProfileName,
-                        newListTitle
-                    )
-                },
+        SettingsDialog.AccountConnections -> {
+            KitsugiAccountConnectionsDialog(
                 isAniListConnected = profile.isAniListConnected,
                 anilistUsername = profile.anilistUsername,
                 isAniListImportRunning = profile.isAniListImportRunning,
@@ -347,7 +333,7 @@ fun SettingsScreen(
 }
 
 private enum class SettingsDialog {
-    Account,
+    AccountConnections,
     Preferences,
     Addons,
     PlayerSettings,

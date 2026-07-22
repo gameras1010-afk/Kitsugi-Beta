@@ -31,6 +31,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.RecordVoiceOver
 import com.kitsugi.animelist.ui.components.KitsugiSheetOrDialog
+import androidx.compose.ui.res.stringResource
+import com.kitsugi.animelist.R
+import com.kitsugi.animelist.utils.toTurkishCharacterRole
+import com.kitsugi.animelist.utils.toTurkishStaffRole
+import com.kitsugi.animelist.utils.toTurkishLanguage
 
 @Composable
 fun CharactersTabContent(
@@ -40,7 +45,6 @@ fun CharactersTabContent(
     onMediaClick: (Int, String, String) -> Unit
 ) {
     var selectedCharacterForVoiceActors by remember { mutableStateOf<KitsugiCharacter?>(null) }
-    var selectedVoiceActorForRoles by remember { mutableStateOf<com.kitsugi.animelist.data.remote.KitsugiVoiceActor?>(null) }
 
     when (state) {
         is DetailTabState.Loading -> {
@@ -48,7 +52,7 @@ fun CharactersTabContent(
         }
         is DetailTabState.Error -> {
             Text(
-                text = "Karakterler yüklenirken hata oluştu.",
+                text = stringResource(R.string.detail_characters_load_error),
                 color = KitsugiColors.AccentRed,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(vertical = 16.dp)
@@ -58,7 +62,7 @@ fun CharactersTabContent(
             val list = state.data
             if (list.isEmpty()) {
                 Text(
-                    text = "Karakter bulunamadı.",
+                    text = stringResource(R.string.detail_characters_empty),
                     color = KitsugiColors.TextSecondary,
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(vertical = 16.dp)
@@ -82,7 +86,7 @@ fun CharactersTabContent(
                                         CharacterVoiceActorCard(
                                             char = char,
                                             onCharacterClick = onCharacterClick,
-                                            onVoiceActorClick = { selectedVoiceActorForRoles = it },
+                                            onVoiceActorClick = { va -> onStaffClick(va.id, va.source, va.name, va.imageUrl) },
                                             onShowVoiceActors = { selectedCharacterForVoiceActors = it }
                                         )
                                     }
@@ -103,7 +107,7 @@ fun CharactersTabContent(
                             CharacterVoiceActorCard(
                                 char = char,
                                 onCharacterClick = onCharacterClick,
-                                onVoiceActorClick = { selectedVoiceActorForRoles = it },
+                                onVoiceActorClick = { va -> onStaffClick(va.id, va.source, va.name, va.imageUrl) },
                                 onShowVoiceActors = { selectedCharacterForVoiceActors = it }
                             )
                         }
@@ -119,7 +123,7 @@ fun CharactersTabContent(
             onDismiss = { selectedCharacterForVoiceActors = null }
         ) {
             Text(
-                text = "${character.name} - Seslendirmenler",
+                text = "${character.name} - ${stringResource(R.string.detail_voice_actors)}",
                 color = KitsugiColors.TextPrimary,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
@@ -141,7 +145,7 @@ fun CharactersTabContent(
                             .background(KitsugiColors.Surface)
                             .tvClickable(shape = RoundedCornerShape(16.dp), onClick = {
                                 selectedCharacterForVoiceActors = null
-                                selectedVoiceActorForRoles = va
+                                onStaffClick(va.id, va.source, va.name, va.imageUrl)
                             })
                             .padding(8.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -174,7 +178,7 @@ fun CharactersTabContent(
                                 fontWeight = FontWeight.Bold
                             )
                             val labelText = if (va.language.equals("oyuncu", ignoreCase = true)) {
-                                "Oyuncu"
+                                stringResource(R.string.detail_role_actor)
                             } else {
                                 va.language
                             }
@@ -191,31 +195,7 @@ fun CharactersTabContent(
         }
     }
 
-    if (selectedVoiceActorForRoles != null) {
-        val actor = selectedVoiceActorForRoles!!
-        CharacterVoiceActorsSheet(
-            actorId = actor.id,
-            source = actor.source,
-            actorName = actor.name,
-            actorImageUrl = actor.imageUrl,
-            language = actor.language,
-            onDismiss = { selectedVoiceActorForRoles = null },
-            onCharacterClick = { charId, charSource, charName, charImageUrl ->
-                onCharacterClick(
-                    KitsugiCharacter(
-                        id = charId,
-                        name = charName ?: "",
-                        role = "",
-                        imageUrl = charImageUrl,
-                        voiceActors = emptyList(),
-                        source = charSource
-                    )
-                )
-            },
-            onMediaClick = onMediaClick,
-            onStaffClick = onStaffClick
-        )
-    }
+
 }
 
 @Composable
@@ -297,7 +277,7 @@ fun CharacterVoiceActorCard(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.RecordVoiceOver,
-                        contentDescription = "Seslendirmenler",
+                        contentDescription = stringResource(R.string.detail_voice_actors),
                         tint = KitsugiColors.TextPrimary,
                         modifier = Modifier.size(20.dp)
                     )
@@ -353,9 +333,9 @@ fun CharacterVoiceActorCard(
                     )
                     // Dil zaten Türkçe geliyor: "Japonca", "Korece", "oyuncu" vb.
                     val labelText = if (va.language.equals("oyuncu", ignoreCase = true)) {
-                        "Oyuncu"
+                        stringResource(R.string.detail_role_actor)
                     } else {
-                        "Seslendirici (${va.language})"
+                        stringResource(R.string.detail_role_voice_actor, va.language)
                     }
                     Text(
                         text = labelText,
@@ -380,7 +360,7 @@ fun StaffTabContent(
         }
         is DetailTabState.Error -> {
             Text(
-                text = "Ekip bilgisi yüklenirken hata oluştu.",
+                text = stringResource(R.string.detail_staff_load_error),
                 color = KitsugiColors.AccentRed,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(vertical = 16.dp)
@@ -390,7 +370,7 @@ fun StaffTabContent(
             val list = state.data
             if (list.isEmpty()) {
                 Text(
-                    text = "Ekip bilgisi bulunamadı.",
+                    text = stringResource(R.string.detail_staff_empty),
                     color = KitsugiColors.TextSecondary,
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(vertical = 16.dp)
@@ -477,7 +457,7 @@ fun StaffRow(
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = staff.role,
+                text = staff.role.toTurkishStaffRole(),
                 color = KitsugiColors.TextMuted,
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Medium

@@ -302,4 +302,91 @@
     <string name="action_cancel">İptal</string>
     <string name="action_close">Kapat</string>
     <string name="action_ok">Tamam</string>
+
+    <!-- Detail Modules / Tabs -->
+    <string name="detail_characters_load_error">Karakterler yüklenirken hata oluştu.</string>
+    <string name="detail_characters_empty">Karakter bulunamadı.</string>
+    <string name="detail_voice_actors">Seslendirmenler</string>
+    <string name="detail_role_actor">Oyuncu</string>
+    <string name="detail_role_voice_actor">Seslendirici (%1$s)</string>
+    <string name="detail_staff_load_error">Ekip bilgisi yüklenirken hata oluştu.</string>
+    <string name="detail_staff_empty">Ekip bilgisi bulunamadı.</string>
+    
+    <!-- TV Detail Screen / Trailer / Sections -->
+    <string name="tv_detail_trailer_info_not_found">Fragman bilgisi bulunamadı.</string>
+    <string name="tv_detail_trailer_not_found">Fragman bulunamadı.</string>
+    <string name="tv_detail_trailer_load_error">Fragman yüklenirken hata oluştu: %1$s</string>
+    <string name="tv_detail_type_movie">FİLM</string>
+    <string name="tv_detail_type_tv">DİZİ</string>
+    <string name="tv_detail_type_anime">ANIME</string>
+    <string name="tv_detail_type_manga">MANGA</string>
+    <string name="tv_detail_play">Oynat</string>
+    <string name="tv_detail_select_episode">Bölüm Seçin</string>
+    <string name="tv_detail_remove_library">Kütüphaneden Çıkar</string>
+    <string name="tv_detail_add_library">Kütüphaneye Ekle</string>
+    <string name="tv_detail_trailer">Fragman</string>
+    <string name="tv_detail_seasons">Sezonlar</string>
+    <string name="tv_detail_season_label">%1$d. Sezon</string>
+    <string name="tv_detail_episodes">Bölümler</string>
+    <string name="tv_detail_episodes_empty">Bölüm bulunamadı.</string>
+    <string name="tv_detail_characters">Karakterler</string>
+    <string name="tv_detail_characters_empty">Karakter bilgisi yok.</string>
+    <string name="tv_detail_staff">Yapım Ekibi</string>
+    <string name="tv_detail_staff_empty">Yapım ekibi bilgisi yok.</string>
+    <string name="tv_detail_relations">İlişkili İçerikler</string>
+    <string name="tv_detail_relations_empty">İlişkili içerik bulunamadı.</string>
+    <string name="tv_detail_episode_watched">İzlendi</string>
+    <string name="tv_detail_episode_label">Bölüm %1$d</string>
+
+    <!-- Notifications Screen -->
+    <string name="notif_filter_all">Tümü</string>
+    <string name="notif_filter_airing">Yayın</string>
+    <string name="notif_filter_activity">Aktivite</string>
+    <string name="notif_filter_forum">Forum</string>
+    <string name="notif_filter_follows">Takip</string>
+    <string name="notif_filter_media">Medya</string>
+
+    <string name="notif_title">Bildirimler</string>
+    <string name="notif_action_back">Geri</string>
+    <string name="notif_action_refresh">Yenile</string>
+
+    <string name="notif_body_airing">Bölüm %1$d yayında</string>
+    <string name="notif_body_following">%1$s sizi takip etti</string>
+    <string name="notif_body_activity_message">%1$s size mesaj gönderdi</string>
+    <string name="notif_body_activity_reply">%1$s %2$s</string>
+    <string name="notif_body_activity_reply_fallback">aktivitenize yanıt verdi</string>
+    <string name="notif_body_activity_reply_subscribed">%1$s %2$s</string>
+    <string name="notif_body_activity_reply_subscribed_fallback">abone olduğunuz aktiviteye yanıt verdi</string>
+    <string name="notif_body_activity_mention">%1$s %2$s</string>
+    <string name="notif_body_activity_mention_fallback">sizi bir aktivitede bahsetti</string>
+    <string name="notif_body_activity_like">%1$s %2$s</string>
+    <string name="notif_body_activity_like_fallback">aktivitenizi beğendi</string>
+    <string name="notif_body_activity_reply_like">%1$s %2$s</string>
+    <string name="notif_body_activity_reply_like_fallback">yanıtınızı beğendi</string>
+    <string name="notif_body_thread_comment_mention">%1$s sizi bir forum yorumunda etiketledi</string>
+    <string name="notif_body_thread_comment_reply">%1$s forum yorumunuza yanıt verdi</string>
+    <string name="notif_body_thread_comment_subscribed">%1$s abone olduğunuz konuya yorum yaptı</string>
+    <string name="notif_body_thread_comment_like">%1$s forum yorumunuzu beğendi</string>
+    <string name="notif_body_thread_like">%1$s %2$s beğendi</string>
+    <string name="notif_body_thread_like_fallback">forumunuzu</string>
+    <string name="notif_body_related_media_addition">%1$s %2$s</string>
+    <string name="notif_body_related_media_addition_fallback">ilgili medya olarak eklendi</string>
+    <string name="notif_body_media_data_change">%1$s %2$s</string>
+    <string name="notif_body_media_data_change_fallback">verisi güncellendi</string>
+    <string name="notif_body_media_merge">%1$s %2$s</string>
+    <string name="notif_body_media_merge_fallback">başka bir medyayla birleştirildi</string>
+    <string name="notif_body_media_deletion">%1$s silindi</string>
+    <string name="notif_body_media_deletion_fallback">Bir medya</string>
+    <string name="notif_body_new">Yeni bildirim</string>
+
+    <string name="notif_error_load">Bildirimler yüklenemedi: %1$s</string>
+    <string name="notif_mal_episode_released">Bölüm %1$d yayınlandı 🎬</string>
+    <string name="notif_simkl_new_content">Yeni içerik mevcut 🎬</string>
+    
+    <string name="notif_login_required_anilist">AniList\'e giriş yapmanız gerekiyor</string>
+    <string name="notif_login_required_mal">MAL\'a giriş yapmanız gerekiyor</string>
+    <string name="notif_login_required_simkl">Simkl\'e giriş yapmanız gerekiyor</string>
+    <string name="notif_empty_list_mal">İzleme listenizdeki animeler için yeni bölüm bulunamadı</string>
+    <string name="notif_empty_list_simkl">İzleme listenizdeki içerikler için yeni bildirim yok</string>
+    <string name="notif_empty_no_notifications">Yeni bildirim yok</string>
 </resources>

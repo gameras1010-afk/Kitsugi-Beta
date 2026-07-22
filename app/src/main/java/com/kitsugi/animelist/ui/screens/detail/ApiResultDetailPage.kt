@@ -171,7 +171,8 @@ fun ApiResultDetailPage(
     mdbListShowLetterboxd: Boolean = false,
     mdbListShowTmdb: Boolean = false,
     mdbListShowTrakt: Boolean = false,
-    settingsDataStore: SettingsDataStore? = null
+    settingsDataStore: SettingsDataStore? = null,
+    onToggleFavoriteClick: (() -> Unit)? = null
 ) {
     val accentColor = LocalKitsugiAccent.current
     val isTv = LocalIsTv.current
@@ -236,6 +237,8 @@ fun ApiResultDetailPage(
         displayResult.source.equals("anilist", ignoreCase = true)
     }
     val isConnected = if (isSourceAniList) isAniListConnected else isMalConnected
+
+    val showFavouriteButton = existingEntry != null && (isSourceAniList || isAniListConnected)
 
     // State for tabs
     val isAnime = result.type == MediaType.Anime
@@ -350,6 +353,14 @@ fun ApiResultDetailPage(
             ) {
                 val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
                 if (isLandscape) {
+                    val configuration = LocalConfiguration.current
+                    val screenWidth = configuration.screenWidthDp
+                    val leftPanelWeight = when {
+                        screenWidth >= 1200 -> 0.28f
+                        screenWidth >= 840  -> 0.32f
+                        else                -> 0.38f
+                    }
+                    val rightPanelWeight = 1f - leftPanelWeight
                 // ── LANDSCAPE: Sol panel (Hero + Actions + Stats), Sağ panel (Tablar + İçerik) ──
                 Box(modifier = Modifier.fillMaxSize()) {
                     Row(modifier = Modifier.fillMaxSize()) {
@@ -361,7 +372,7 @@ fun ApiResultDetailPage(
                         ) {
                             Column(
                                 modifier = Modifier
-                                    .weight(0.38f)
+                                    .weight(leftPanelWeight)
                                     .fillMaxSize()
                                     .then(if (isTvDevice) Modifier.dpadVerticalFastScroll(leftScrollState) else Modifier)
                                     .verticalScroll(leftScrollState)
@@ -390,6 +401,9 @@ fun ApiResultDetailPage(
                                 },
                                 scoreLabel = if (!hideScores) displayResult.getDisplayScore(scoreFormat, hideScores) else null,
                                 alreadyInList = existingEntry != null,
+                                isFavorite = existingEntry?.isFavorite ?: false,
+                                showFavoriteButton = showFavouriteButton,
+                                onToggleFavoriteClick = onToggleFavoriteClick,
                                 totalEpisodes = displayResult.total,
                                 nextAiring = detailState?.nextAiringEpisode
                             )
@@ -548,7 +562,7 @@ fun ApiResultDetailPage(
                         // Sağ Panel
                         Column(
                             modifier = Modifier
-                                .weight(0.62f)
+                                .weight(rightPanelWeight)
                                 .fillMaxSize()
                         ) {
                             // Tablar
@@ -783,7 +797,10 @@ fun ApiResultDetailPage(
                             scoreLabel = if (!hideScores) displayResult.getDisplayScore(scoreFormat, hideScores) else null,
                             alreadyInList = existingEntry != null,
                             totalEpisodes = displayResult.total,
-                            nextAiring = detailState?.nextAiringEpisode
+                            nextAiring = detailState?.nextAiringEpisode,
+                            isFavorite = existingEntry?.isFavorite ?: false,
+                            showFavoriteButton = showFavouriteButton,
+                            onToggleFavoriteClick = onToggleFavoriteClick
                         )
                     }
 

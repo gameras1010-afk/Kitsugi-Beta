@@ -271,11 +271,6 @@ private fun AppearanceTab(
         KitsugiChoiceOption(id = "Search", title = stringResource(R.string.tab_search), description = "")
     )
 
-    val homeLayoutOptions = listOf(
-        KitsugiChoiceOption(id = "classic", title = stringResource(R.string.option_home_layout_classic), description = ""),
-        KitsugiChoiceOption(id = "modern", title = stringResource(R.string.option_home_layout_modern), description = ""),
-        KitsugiChoiceOption(id = "grid", title = stringResource(R.string.option_home_layout_grid), description = "")
-    )
 
     val themeOptions = listOf(
         KitsugiChoiceOption(id = "mint", title = stringResource(R.string.color_mint), description = "", color = Color(0xFFC8F4EF)),
@@ -303,7 +298,6 @@ private fun AppearanceTab(
     var showThemeModeMenu by remember { mutableStateOf(false) }
     var showLanguageMenu by remember { mutableStateOf(false) }
     var showDefaultTabMenu by remember { mutableStateOf(false) }
-    var showHomeLayoutMenu by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -484,31 +478,6 @@ private fun AppearanceTab(
                             onClick = {
                                 onDefaultTabSelected(opt.id)
                                 showDefaultTabMenu = false
-                            }
-                        )
-                    }
-                }
-            }
-
-            KitsugiSettingsDivider()
-
-            Box {
-                KitsugiSettingsListItem(
-                    title = stringResource(R.string.settings_list_layout),
-                    description = "Ana sayfanızın şablon düzenini seçin",
-                    value = homeLayoutOptions.find { it.id == selectedHomeLayoutId }?.title ?: "",
-                    icon = Icons.Rounded.Tablet,
-                    iconColor = accentColor,
-                    onClick = { showHomeLayoutMenu = true }
-                )
-                KitsugiDropdownMenu(expanded = showHomeLayoutMenu, onDismissRequest = { showHomeLayoutMenu = false }) {
-                    homeLayoutOptions.forEach { opt ->
-                        KitsugiDropdownItem(
-                            text = opt.title,
-                            selected = opt.id == selectedHomeLayoutId,
-                            onClick = {
-                                onHomeLayoutSelected(opt.id)
-                                showHomeLayoutMenu = false
                             }
                         )
                     }

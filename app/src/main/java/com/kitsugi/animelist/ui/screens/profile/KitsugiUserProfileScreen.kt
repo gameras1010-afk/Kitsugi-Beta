@@ -641,13 +641,8 @@ fun KitsugiUserProfileScreen(
                                                     }
                                                 }
                                                 if (displayAbout.isNotBlank()) {
-                                                    KitsugiMarkdownText(
-                                                        text = displayAbout,
-                                                        fontSize = 14.sp,
-                                                        lineHeight = 20.sp,
-                                                        onImageGalleryRequest = { urls, idx ->
-                                                            activeGalleryImages = Triple(urls, idx, "${state.name} Hakkında")
-                                                        }
+                                                    com.kitsugi.animelist.ui.components.KitsugiHtmlWebView(
+                                                        html = displayAbout
                                                     )
                                                 } else {
                                                     Text(

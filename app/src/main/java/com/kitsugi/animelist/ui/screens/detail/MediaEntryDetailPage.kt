@@ -160,6 +160,10 @@ fun MediaEntryDetailPage(
     val externalUrl = buildExternalUrl(entry)
     val apiClient = remember { JikanApiClient() }
 
+    val isSourceAniList = entry.source.lowercase() == "anilist"
+    val isAniListConnected = remember { com.kitsugi.animelist.data.auth.ExternalAuthManager.getAniListToken(context) != null }
+    val showFavouriteButton = isSourceAniList || isAniListConnected
+
     // Obtain ViewModel
     val viewModel: MediaEntryDetailViewModel = viewModel(key = "entry_${entry.source}_${entry.id}")
 
@@ -284,6 +288,14 @@ fun MediaEntryDetailPage(
             ) {
                 val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
                 if (isLandscape) {
+                    val configuration = LocalConfiguration.current
+                    val screenWidth = configuration.screenWidthDp
+                    val leftPanelWeight = when {
+                        screenWidth >= 1200 -> 0.28f
+                        screenWidth >= 840  -> 0.32f
+                        else                -> 0.38f
+                    }
+                    val rightPanelWeight = 1f - leftPanelWeight
                 // ── LANDSCAPE: Sol panel (Hero + Actions + Stats), Sağ panel (Tablar + İçerik) ──
                 Box(modifier = Modifier.fillMaxSize()) {
                     Row(modifier = Modifier.fillMaxSize()) {
@@ -295,7 +307,7 @@ fun MediaEntryDetailPage(
                         ) {
                             Column(
                                 modifier = Modifier
-                                    .weight(0.38f)
+                                    .weight(leftPanelWeight)
                                     .fillMaxSize()
                                     .then(if (isTvDevice) Modifier.dpadVerticalFastScroll(leftScrollState) else Modifier)
                                     .verticalScroll(leftScrollState)
@@ -311,7 +323,9 @@ fun MediaEntryDetailPage(
                                     activeGalleryImages = allImages
                                     activeGalleryIndex = index
                                 },
-                                nextAiring = detailState?.nextAiringEpisode
+                                nextAiring = detailState?.nextAiringEpisode,
+                                showFavoriteButton = showFavouriteButton,
+                                onToggleFavoriteClick = onToggleFavoriteClick
                             )
                             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                                 Spacer(modifier = Modifier.height(12.dp))
@@ -384,7 +398,7 @@ fun MediaEntryDetailPage(
                         // Sağ Panel
                         Column(
                             modifier = Modifier
-                                .weight(0.62f)
+                                .weight(rightPanelWeight)
                                 .fillMaxSize()
                         ) {
                             // Tablar
@@ -579,7 +593,9 @@ fun MediaEntryDetailPage(
                                 activeGalleryImages = allImages
                                 activeGalleryIndex = index
                             },
-                            nextAiring = detailState?.nextAiringEpisode
+                            nextAiring = detailState?.nextAiringEpisode,
+                            showFavoriteButton = showFavouriteButton,
+                            onToggleFavoriteClick = onToggleFavoriteClick
                         )
                     }
 

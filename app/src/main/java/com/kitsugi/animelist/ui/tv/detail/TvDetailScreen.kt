@@ -25,6 +25,8 @@ import com.kitsugi.animelist.ui.components.KitsugiShimmerSearchResultList
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import com.kitsugi.animelist.R
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.*
 import androidx.compose.runtime.withFrameNanos
@@ -78,6 +80,9 @@ import com.kitsugi.animelist.ui.utils.tvClickable
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayTitle
 import com.kitsugi.animelist.ui.tv.focus.TvFocusRestoration.safeRequestFocus
 import com.kitsugi.animelist.ui.tv.components.TvLoadingScreen
+import com.kitsugi.animelist.utils.toTurkishStaffRole
+import com.kitsugi.animelist.utils.toTurkishRelationType
+import com.kitsugi.animelist.utils.toTurkishCharacterRole
 
 @OptIn(ExperimentalTvMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -127,7 +132,7 @@ fun TvDetailScreen(
         val detail = detailState
         if (detail != null) {
             result.copy(
-                title = if (result.title == "Yükleniyor...") (detail.title ?: result.title) else result.title,
+                title = if (result.title == "Yükleniyor..." || result.title == "Loading...") (detail.title ?: result.title) else result.title,
                 imageUrl = result.imageUrl ?: detail.imageUrl,
                 score = result.score ?: detail.score,
                 year = result.year ?: detail.year,
@@ -157,7 +162,7 @@ fun TvDetailScreen(
     val loadAndShowTrailer = {
         val tmdbIdStr = displayResult.tmdbId?.toString() ?: detailState?.tmdbId?.toString()
         if (tmdbIdStr == null && displayResult.title.isBlank()) {
-            trailerError = "Fragman bilgisi bulunamadı."
+            trailerError = context.getString(R.string.tv_detail_trailer_info_not_found)
             showTrailerOverlay = true
         } else {
             showTrailerOverlay = true
@@ -175,10 +180,10 @@ fun TvDetailScreen(
                     if (source != null && !source.videoUrl.isBlank()) {
                         trailerPlaybackSource = source
                     } else {
-                        trailerError = "Fragman bulunamadı."
+                        trailerError = context.getString(R.string.tv_detail_trailer_not_found)
                     }
                 } catch (e: Exception) {
-                    trailerError = "Fragman yüklenirken hata oluştu: ${e.message}"
+                    trailerError = context.getString(R.string.tv_detail_trailer_load_error, e.message ?: "")
                 } finally {
                     trailerLoading = false
                 }
@@ -335,10 +340,10 @@ fun TvDetailScreen(
                             ) {
                                 BadgeText(
                                     text = when (displayResult.type) {
-                                        MediaType.Anime -> "ANIME"
-                                        MediaType.Movie -> "FİLM"
-                                        MediaType.TvShow -> "DİZİ"
-                                        else -> "MANGA"
+                                        MediaType.Anime -> stringResource(R.string.tv_detail_type_anime)
+                                        MediaType.Movie -> stringResource(R.string.tv_detail_type_movie)
+                                        MediaType.TvShow -> stringResource(R.string.tv_detail_type_tv)
+                                        else -> stringResource(R.string.tv_detail_type_manga)
                                     }
                                 )
                                 if (displayResult.year != null) {
@@ -408,7 +413,7 @@ fun TvDetailScreen(
                                         }
                                     },
                                     focusRequester = playButtonFocusRequester,
-                                    text = if (isMovie) "Oynat" else "Bölüm Seçin",
+                                    text = if (isMovie) stringResource(R.string.tv_detail_play) else stringResource(R.string.tv_detail_select_episode),
                                     icon = Icons.Rounded.PlayArrow,
                                     backgroundColor = accentColor,
                                     textColor = Color.White,
@@ -429,7 +434,7 @@ fun TvDetailScreen(
                                 TvActionButton(
                                     onClick = onToggleLibrary,
                                     focusRequester = libraryButtonFocusRequester,
-                                    text = if (existingEntry != null) "Kütüphaneden Çıkar" else "Kütüphaneye Ekle",
+                                    text = if (existingEntry != null) stringResource(R.string.tv_detail_remove_library) else stringResource(R.string.tv_detail_add_library),
                                     icon = Icons.Rounded.Bookmarks,
                                     backgroundColor = KitsugiColors.SurfaceStrong,
                                     textColor = KitsugiColors.TextPrimary,
@@ -448,7 +453,7 @@ fun TvDetailScreen(
                                 TvActionButton(
                                     onClick = { loadAndShowTrailer() },
                                     focusRequester = trailerButtonFocusRequester,
-                                    text = "Fragman",
+                                    text = stringResource(R.string.tv_detail_trailer),
                                     icon = Icons.Rounded.Movie,
                                     backgroundColor = KitsugiColors.SurfaceStrong,
                                     textColor = KitsugiColors.TextPrimary,
@@ -472,7 +477,7 @@ fun TvDetailScreen(
                         item {
                             Column(verticalArrangement = Arrangement.spacedBy(KitsugiTvTokens.Spacing.sm)) {
                                 Text(
-                                    text = "Sezonlar",
+                                    text = stringResource(R.string.tv_detail_seasons),
                                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                                     color = KitsugiColors.TextPrimary
                                 )
@@ -513,7 +518,7 @@ fun TvDetailScreen(
                                                 .padding(horizontal = 20.dp, vertical = 10.dp)
                                         ) {
                                             Text(
-                                                text = "${season}. Sezon",
+                                                text = stringResource(R.string.tv_detail_season_label, season),
                                                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                                                 color = if (isSelected || isFocused) Color.White else KitsugiColors.TextSecondary
                                             )
@@ -529,7 +534,7 @@ fun TvDetailScreen(
                         item {
                             Column(verticalArrangement = Arrangement.spacedBy(KitsugiTvTokens.Spacing.sm)) {
                                 Text(
-                                    text = "Bölümler",
+                                    text = stringResource(R.string.tv_detail_episodes),
                                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                                     color = KitsugiColors.TextPrimary
                                 )
@@ -542,7 +547,7 @@ fun TvDetailScreen(
                                         val episodes = epState.data
                                         if (episodes.isEmpty()) {
                                             Text(
-                                                text = "Bölüm bulunamadı.",
+                                                text = stringResource(R.string.tv_detail_episodes_empty),
                                                 color = KitsugiColors.TextMuted,
                                                 style = MaterialTheme.typography.bodyMedium
                                             )
@@ -604,7 +609,7 @@ fun TvDetailScreen(
                                     val characters = charsState.data
                                     if (characters.isEmpty()) {
                                         Text(
-                                            text = "Karakter bilgisi yok.",
+                                            text = stringResource(R.string.tv_detail_characters_empty),
                                             color = KitsugiColors.TextMuted,
                                             style = MaterialTheme.typography.bodyMedium
                                         )
@@ -659,7 +664,7 @@ fun TvDetailScreen(
                                     val staffList = stfState.data
                                     if (staffList.isEmpty()) {
                                         Text(
-                                            text = "Yapım ekibi bilgisi yok.",
+                                            text = stringResource(R.string.tv_detail_staff_empty),
                                             color = KitsugiColors.TextMuted,
                                             style = MaterialTheme.typography.bodyMedium
                                         )
@@ -710,7 +715,7 @@ fun TvDetailScreen(
                                     val relations = relsState.data
                                     if (relations.isEmpty()) {
                                         Text(
-                                            text = "İlişkili içerik bulunamadı.",
+                                            text = stringResource(R.string.tv_detail_relations_empty),
                                             color = KitsugiColors.TextMuted,
                                             style = MaterialTheme.typography.bodyMedium
                                         )
@@ -990,7 +995,7 @@ private fun TvEpisodeCard(
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = "İzlendi",
+                            text = stringResource(R.string.tv_detail_episode_watched),
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                             color = Color.White
                         )
@@ -1021,7 +1026,7 @@ private fun TvEpisodeCard(
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
-                text = "Bölüm ${index + 1}",
+                text = stringResource(R.string.tv_detail_episode_label, index + 1),
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                 color = accentColor
             )
@@ -1128,7 +1133,7 @@ private fun TvStaffCard(
                 textAlign = TextAlign.Center
             )
             Text(
-                text = staff.role,
+                text = staff.role.toTurkishStaffRole(),
                 style = MaterialTheme.typography.labelSmall,
                 color = KitsugiColors.TextMuted,
                 maxLines = 1,

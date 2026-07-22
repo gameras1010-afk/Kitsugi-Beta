@@ -195,6 +195,14 @@ fun StaffDetailPage(
                 val tabBarFocusRequester = remember { FocusRequester() }
 
                 if (isLandscape) {
+                    val configuration = LocalConfiguration.current
+                    val screenWidth = configuration.screenWidthDp
+                    val leftPanelWeight = when {
+                        screenWidth >= 1200 -> 0.28f
+                        screenWidth >= 840  -> 0.32f
+                        else                -> 0.38f
+                    }
+                    val rightPanelWeight = 1f - leftPanelWeight
                     // ── LANDSCAPE: Sol hero/bio paneli + Sağ tab paneli ──
                     KitsugiPageEnter {
                         Box(modifier = Modifier.fillMaxSize()) {
@@ -202,7 +210,7 @@ fun StaffDetailPage(
                                 // Sol panel
                                 Column(
                                     modifier = Modifier
-                                        .weight(0.38f)
+                                        .weight(leftPanelWeight)
                                         .fillMaxSize()
                                         .verticalScroll(rememberScrollState())
                                 ) {
@@ -325,7 +333,7 @@ fun StaffDetailPage(
                                 }
                                 // Sağ panel
                                 Column(
-                                    modifier = Modifier.weight(0.62f).fillMaxSize()
+                                    modifier = Modifier.weight(rightPanelWeight).fillMaxSize()
                                 ) {
                                     LaunchedEffect(selectedTab) {
                                         tabListState.animateScrollToItem(selectedTab)

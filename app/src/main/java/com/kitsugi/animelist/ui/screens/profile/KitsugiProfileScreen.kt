@@ -1134,12 +1134,9 @@ fun AniListProfileContent(
                                             }
                                         }
                                         Spacer(modifier = Modifier.height(8.dp))
-                                        com.kitsugi.animelist.ui.components.KitsugiMarkdownText(
-                                            text = displayAbout,
-                                            onImageGalleryRequest = { urls, idx ->
-                                                onImageClick?.invoke(urls, idx, "${state.name} Hakkında")
-                                            }
-                                        )
+                                        com.kitsugi.animelist.ui.components.KitsugiHtmlWebView(
+                                             html = displayAbout
+                                         )
                                     }
                                 }
 

@@ -19,6 +19,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Tv
 import androidx.compose.material.icons.rounded.Book
 import androidx.compose.material.icons.rounded.Schedule
@@ -65,7 +67,9 @@ internal fun DetailHero(
     blurAdultMedia: Boolean = false,
     onPosterClick: (String) -> Unit = {},
     onShareClick: (() -> Unit)? = null,
-    nextAiring: String? = null
+    nextAiring: String? = null,
+    showFavoriteButton: Boolean = false,
+    onToggleFavoriteClick: (() -> Unit)? = null
 ) {
     val accentColor = LocalKitsugiAccent.current
     val statusColor = statusColor(entry.status)
@@ -120,7 +124,7 @@ internal fun DetailHero(
                 )
         )
 
-        // ── Top action bar: Back (left) + Share (right) ───────────────────────
+        // ── Top action bar: Back (left) + Action buttons (right) ───────────────
         Row(
             modifier = Modifier
                 .align(Alignment.TopStart)
@@ -146,25 +150,48 @@ internal fun DetailHero(
                 }
             }
 
-            // Paylaş butonu
-            val shareAction: () -> Unit = onShareClick ?: {
-                val mediaId = entry.malId ?: entry.id
-                val url = ShareUtils.buildMediaUrl(entry.source, mediaId, entry.type)
-                ShareUtils.shareText(context, entry.title, url)
-            }
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(KitsugiColors.Background.copy(alpha = 0.45f)),
-                contentAlignment = Alignment.Center
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = shareAction) {
-                    Icon(
-                        imageVector = Icons.Rounded.Share,
-                        contentDescription = "Paylaş",
-                        tint = KitsugiColors.TextPrimary
-                    )
+                // Paylaş butonu
+                val shareAction: () -> Unit = onShareClick ?: {
+                    val mediaId = entry.malId ?: entry.id
+                    val url = ShareUtils.buildMediaUrl(entry.source, mediaId, entry.type)
+                    ShareUtils.shareText(context, entry.title, url)
+                }
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(KitsugiColors.Background.copy(alpha = 0.45f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    IconButton(onClick = shareAction) {
+                        Icon(
+                            imageVector = Icons.Rounded.Share,
+                            contentDescription = "Paylaş",
+                            tint = KitsugiColors.TextPrimary
+                        )
+                    }
+                }
+
+                if (showFavoriteButton && onToggleFavoriteClick != null) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(KitsugiColors.Background.copy(alpha = 0.45f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        IconButton(onClick = onToggleFavoriteClick) {
+                            Icon(
+                                imageVector = if (entry.isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                                contentDescription = if (entry.isFavorite) "Favoriden Çıkar" else "Favori Yap",
+                                tint = if (entry.isFavorite) accentColor else KitsugiColors.TextPrimary
+                            )
+                        }
+                    }
                 }
             }
         }

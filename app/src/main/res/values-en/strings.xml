@@ -301,4 +301,91 @@
     <string name="action_cancel">Cancel</string>
     <string name="action_close">Close</string>
     <string name="action_ok">OK</string>
+
+    <!-- Detail Modules / Tabs -->
+    <string name="detail_characters_load_error">Error loading characters.</string>
+    <string name="detail_characters_empty">No characters found.</string>
+    <string name="detail_voice_actors">Voice Actors</string>
+    <string name="detail_role_actor">Actor</string>
+    <string name="detail_role_voice_actor">Voice Actor (%1$s)</string>
+    <string name="detail_staff_load_error">Error loading staff details.</string>
+    <string name="detail_staff_empty">No staff details found.</string>
+    
+    <!-- TV Detail Screen / Trailer / Sections -->
+    <string name="tv_detail_trailer_info_not_found">Trailer info not found.</string>
+    <string name="tv_detail_trailer_not_found">Trailer not found.</string>
+    <string name="tv_detail_trailer_load_error">Error loading trailer: %1$s</string>
+    <string name="tv_detail_type_movie">MOVIE</string>
+    <string name="tv_detail_type_tv">SHOW</string>
+    <string name="tv_detail_type_anime">ANIME</string>
+    <string name="tv_detail_type_manga">MANGA</string>
+    <string name="tv_detail_play">Play</string>
+    <string name="tv_detail_select_episode">Select Episode</string>
+    <string name="tv_detail_remove_library">Remove from Library</string>
+    <string name="tv_detail_add_library">Add to Library</string>
+    <string name="tv_detail_trailer">Trailer</string>
+    <string name="tv_detail_seasons">Seasons</string>
+    <string name="tv_detail_season_label">Season %1$d</string>
+    <string name="tv_detail_episodes">Episodes</string>
+    <string name="tv_detail_episodes_empty">No episodes found.</string>
+    <string name="tv_detail_characters">Characters</string>
+    <string name="tv_detail_characters_empty">No characters info.</string>
+    <string name="tv_detail_staff">Production Staff</string>
+    <string name="tv_detail_staff_empty">No staff info.</string>
+    <string name="tv_detail_relations">Related Content</string>
+    <string name="tv_detail_relations_empty">No related content found.</string>
+    <string name="tv_detail_episode_watched">Watched</string>
+    <string name="tv_detail_episode_label">Episode %1$d</string>
+
+    <!-- Notifications Screen -->
+    <string name="notif_filter_all">All</string>
+    <string name="notif_filter_airing">Airing</string>
+    <string name="notif_filter_activity">Activity</string>
+    <string name="notif_filter_forum">Forum</string>
+    <string name="notif_filter_follows">Follows</string>
+    <string name="notif_filter_media">Media</string>
+
+    <string name="notif_title">Notifications</string>
+    <string name="notif_action_back">Back</string>
+    <string name="notif_action_refresh">Refresh</string>
+
+    <string name="notif_body_airing">Episode %1$d is airing</string>
+    <string name="notif_body_following">%1$s followed you</string>
+    <string name="notif_body_activity_message">%1$s sent you a message</string>
+    <string name="notif_body_activity_reply">%1$s %2$s</string>
+    <string name="notif_body_activity_reply_fallback">replied to your activity</string>
+    <string name="notif_body_activity_reply_subscribed">%1$s %2$s</string>
+    <string name="notif_body_activity_reply_subscribed_fallback">replied to an activity you subscribed to</string>
+    <string name="notif_body_activity_mention">%1$s %2$s</string>
+    <string name="notif_body_activity_mention_fallback">mentioned you in an activity</string>
+    <string name="notif_body_activity_like">%1$s %2$s</string>
+    <string name="notif_body_activity_like_fallback">liked your activity</string>
+    <string name="notif_body_activity_reply_like">%1$s %2$s</string>
+    <string name="notif_body_activity_reply_like_fallback">liked your reply</string>
+    <string name="notif_body_thread_comment_mention">%1$s mentioned you in a forum comment</string>
+    <string name="notif_body_thread_comment_reply">%1$s replied to your forum comment</string>
+    <string name="notif_body_thread_comment_subscribed">%1$s commented on a thread you subscribed to</string>
+    <string name="notif_body_thread_comment_like">%1$s liked your forum comment</string>
+    <string name="notif_body_thread_like">%1$s liked %2$s</string>
+    <string name="notif_body_thread_like_fallback">your forum thread</string>
+    <string name="notif_body_related_media_addition">%1$s %2$s</string>
+    <string name="notif_body_related_media_addition_fallback">was added as related media</string>
+    <string name="notif_body_media_data_change">%1$s %2$s</string>
+    <string name="notif_body_media_data_change_fallback">data was updated</string>
+    <string name="notif_body_media_merge">%1$s %2$s</string>
+    <string name="notif_body_media_merge_fallback">was merged with another media</string>
+    <string name="notif_body_media_deletion">%1$s was deleted</string>
+    <string name="notif_body_media_deletion_fallback">A media</string>
+    <string name="notif_body_new">New notification</string>
+
+    <string name="notif_error_load">Failed to load notifications: %1$s</string>
+    <string name="notif_mal_episode_released">Episode %1$d released 🎬</string>
+    <string name="notif_simkl_new_content">New content available 🎬</string>
+    
+    <string name="notif_login_required_anilist">You need to log in to AniList</string>
+    <string name="notif_login_required_mal">You need to log in to MAL</string>
+    <string name="notif_login_required_simkl">You need to log in to Simkl</string>
+    <string name="notif_empty_list_mal">No new episodes found for anime in your watch list</string>
+    <string name="notif_empty_list_simkl">No new notifications for content in your watch list</string>
+    <string name="notif_empty_no_notifications">No new notifications</string>
 </resources>

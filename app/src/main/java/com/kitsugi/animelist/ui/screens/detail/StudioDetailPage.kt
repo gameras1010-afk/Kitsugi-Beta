@@ -152,13 +152,21 @@ fun StudioDetailPage(
                 var activeGalleryIndex  by remember { mutableStateOf(0) }
 
                 if (isLandscape) {
+                    val configuration = LocalConfiguration.current
+                    val screenWidth = configuration.screenWidthDp
+                    val leftPanelWeight = when {
+                        screenWidth >= 1200 -> 0.28f
+                        screenWidth >= 840  -> 0.32f
+                        else                -> 0.38f
+                    }
+                    val rightPanelWeight = 1f - leftPanelWeight
                     // ── LANDSCAPE: Sol meta paneli + Sağ media grid ──
                     KitsugiPageEnter {
                         Row(modifier = Modifier.fillMaxSize()) {
                             // Sol panel: Banner + stüdyo bilgileri
                             Column(
                                 modifier = Modifier
-                                    .weight(0.38f)
+                                    .weight(leftPanelWeight)
                                     .fillMaxSize()
                                     .verticalScroll(rememberScrollState())
                                     .background(KitsugiColors.Background)
@@ -292,7 +300,7 @@ fun StudioDetailPage(
                             // Sağ panel: Media grid
                             Column(
                                 modifier = Modifier
-                                    .weight(0.62f)
+                                    .weight(rightPanelWeight)
                                     .fillMaxSize()
                                     .background(KitsugiColors.Background)
                             ) {

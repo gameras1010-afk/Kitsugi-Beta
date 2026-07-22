@@ -16,8 +16,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Pause
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Repeat
+import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -120,8 +128,8 @@ fun KitsugiExploreMediaCard(
 
                     if (mediaEntry != null) {
                         StatusBadge(
-                            text = mediaEntry.status.label,
-                            color = statusColor(mediaEntry.status),
+                            status = mediaEntry.status,
+                            showIconOnly = true,
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
                         )
@@ -232,8 +240,8 @@ fun KitsugiExploreMediaCard(
 
                     if (mediaEntry != null) {
                         StatusBadge(
-                            text = mediaEntry.status.label,
-                            color = statusColor(mediaEntry.status),
+                            status = mediaEntry.status,
+                            showIconOnly = true,
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
                         )
@@ -355,8 +363,8 @@ fun KitsugiExploreMediaCard(
 
                     if (mediaEntry != null) {
                         StatusBadge(
-                            text = mediaEntry.status.label,
-                            color = statusColor(mediaEntry.status),
+                            status = mediaEntry.status,
+                            showIconOnly = false,
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
                         )
@@ -436,26 +444,48 @@ fun KitsugiExploreMediaCard(
 
 @Composable
 private fun StatusBadge(
-    text: String,
-    color: Color,
+    status: com.kitsugi.animelist.model.WatchStatus,
+    showIconOnly: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val color = statusColor(status)
+    val icon = when (status) {
+        com.kitsugi.animelist.model.WatchStatus.Watching   -> Icons.Rounded.PlayArrow
+        com.kitsugi.animelist.model.WatchStatus.Completed  -> Icons.Rounded.Check
+        com.kitsugi.animelist.model.WatchStatus.Planned    -> Icons.Rounded.Schedule
+        com.kitsugi.animelist.model.WatchStatus.Dropped    -> Icons.Rounded.Close
+        com.kitsugi.animelist.model.WatchStatus.Paused     -> Icons.Rounded.Pause
+        com.kitsugi.animelist.model.WatchStatus.Repeating  -> Icons.Rounded.Repeat
+    }
+
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(topStart = 10.dp, bottomEnd = 6.dp))
+            .clip(RoundedCornerShape(topStart = 10.dp))
             .background(color.copy(alpha = 0.92f))
-            .padding(horizontal = 6.dp, vertical = 3.dp),
+            .padding(
+                horizontal = if (showIconOnly) 5.dp else 6.dp,
+                vertical = if (showIconOnly) 5.dp else 3.dp
+            ),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = text,
-            color = Color.White,
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.ExtraBold,
-            maxLines = 1,
-            fontSize = 9.sp,
-            letterSpacing = 0.5.sp
-        )
+        if (showIconOnly) {
+            Icon(
+                imageVector = icon,
+                contentDescription = status.label,
+                tint = Color.White,
+                modifier = Modifier.size(10.dp)
+            )
+        } else {
+            Text(
+                text = status.label,
+                color = Color.White,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.ExtraBold,
+                maxLines = 1,
+                fontSize = 9.sp,
+                letterSpacing = 0.5.sp
+            )
+        }
     }
 }
 

@@ -816,7 +816,9 @@ fun AppRoot(
                 if (isLandscape && !isInFullScreenMode) {
                     AppNavigationRail(
                         selectedTab = selectedTab,
-                        onTabSelected = { tab -> appViewModel.selectTab(tab) }
+                        onTabSelected = { tab -> appViewModel.selectTab(tab) },
+                        onNotificationsClick = { navState.navigateToDetail(DetailScreen.Notifications) },
+                        isNotificationsSelected = activeScreen is DetailScreen.Notifications
                     )
                 }
             Box(

@@ -22,6 +22,28 @@ class KitsugiAiringCalendarClient {
         }
     }
 
+    suspend fun fetchUpcomingSchedule(limit: Int = 30, accessToken: String? = null): List<AiringEntry> {
+        return withContext(Dispatchers.IO) {
+            val nowSeconds = System.currentTimeMillis() / 1000L
+            val fourteenDaysLater = nowSeconds + 14 * 24 * 3600L
+            val variables = JSONObject()
+                .put("page", 1)
+                .put("perPage", 50)
+                .put("airingAt_greater", nowSeconds)
+                .put("airingAt_lesser", fourteenDaysLater)
+            val responseText = KitsugiApiBase.executeAniListQuery(
+                query = QUERY,
+                variables = variables,
+                accessToken = accessToken
+            ) ?: return@withContext emptyList<AiringEntry>()
+            val (entries, _) = parseResponse(responseText)
+            entries
+                .filter { it.airingAt > nowSeconds }
+                .sortedBy { it.airingAt }
+                .take(limit)
+        }
+    }
+
     private suspend fun fetchAiringSchedule(
         airingAtGreater: Long,
         airingAtLesser: Long,

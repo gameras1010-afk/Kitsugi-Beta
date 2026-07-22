@@ -53,7 +53,8 @@ fun KitsugiHorizontalMediaSection(
     scoreFormat: String = "POINT_10",
     hideScores: Boolean = false,
     blurAdultMedia: Boolean = false,
-    getMediaEntry: (JikanSearchResult) -> com.kitsugi.animelist.model.MediaEntry? = { null }
+    getMediaEntry: (JikanSearchResult) -> com.kitsugi.animelist.model.MediaEntry? = { null },
+    showTitle: Boolean = true
 ) {
     val accentColor = LocalKitsugiAccent.current
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -61,32 +62,34 @@ fun KitsugiHorizontalMediaSection(
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-        ) {
-            Text(
-                text = title,
-                color = KitsugiColors.TextPrimary,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f)
-            )
+        if (showTitle) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            ) {
+                Text(
+                    text = title,
+                    color = KitsugiColors.TextPrimary,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
+                )
 
-            if (onSeeAllClick != null) {
-                TextButton(
-                    onClick = onSeeAllClick
-                ) {
-                    Text(
-                        text = "Tümünü Gör",
-                        color = accentColor,
-                        fontWeight = FontWeight.Bold
-                    )
+                if (onSeeAllClick != null) {
+                    TextButton(
+                        onClick = onSeeAllClick
+                    ) {
+                        Text(
+                            text = "Tümünü Gör",
+                            color = accentColor,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(10.dp))
+        }
 
         when {
             isLoading && results.isEmpty() -> {

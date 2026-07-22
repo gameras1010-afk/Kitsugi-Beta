@@ -194,13 +194,21 @@ fun CharacterDetailPage(
                 val tabListState = rememberLazyListState()
                 var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
                 var activeGalleryIndex by remember { mutableStateOf(0) }
-                var selectedVoiceActorForRoles by remember { mutableStateOf<com.kitsugi.animelist.data.remote.KitsugiVoiceActor?>(null) }
+
                 val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
                 // TV odak highway
                 val leftPanelFocusRequester = remember { FocusRequester() }
                 val tabBarFocusRequester = remember { FocusRequester() }
 
                 if (isLandscape) {
+                    val configuration = LocalConfiguration.current
+                    val screenWidth = configuration.screenWidthDp
+                    val leftPanelWeight = when {
+                        screenWidth >= 1200 -> 0.28f
+                        screenWidth >= 840  -> 0.32f
+                        else                -> 0.38f
+                    }
+                    val rightPanelWeight = 1f - leftPanelWeight
                     // ── LANDSCAPE: Sol hero paneli + Sağ tab paneli ──
                     KitsugiPageEnter {
                         Box(modifier = Modifier.fillMaxSize()) {
@@ -208,7 +216,7 @@ fun CharacterDetailPage(
                                 // Sol panel: Hero image + karakter bilgileri
                                 Column(
                                     modifier = Modifier
-                                        .weight(0.38f)
+                                        .weight(leftPanelWeight)
                                         .fillMaxSize()
                                         .verticalScroll(rememberScrollState())
                                 ) {
@@ -354,7 +362,7 @@ fun CharacterDetailPage(
                                 // Sağ panel: Tab seçici + içerik
                                 Column(
                                     modifier = Modifier
-                                        .weight(0.62f)
+                                        .weight(rightPanelWeight)
                                         .fillMaxSize()
                                 ) {
                                     // Tab row
@@ -499,7 +507,7 @@ fun CharacterDetailPage(
                                                 } else {
                                                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                                         detail.voiceActors.forEach { actor ->
-                                                            VoiceActorRow(actor = actor, onClick = { selectedVoiceActorForRoles = actor })
+                                                            VoiceActorRow(actor = actor, onClick = { onStaffClick(actor.id, actor.source, actor.name, actor.imageUrl) })
                                                         }
                                                     }
                                                 }
@@ -976,7 +984,7 @@ fun CharacterDetailPage(
                                                     } else {
                                                         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                                             detail.voiceActors.forEach { actor ->
-                                                                VoiceActorRow(actor = actor, onClick = { selectedVoiceActorForRoles = actor })
+                                                                VoiceActorRow(actor = actor, onClick = { onStaffClick(actor.id, actor.source, actor.name, actor.imageUrl) })
                                                             }
                                                         }
                                                     }
@@ -998,20 +1006,7 @@ fun CharacterDetailPage(
                             )
                         }
 
-                        if (selectedVoiceActorForRoles != null) {
-                            val actor = selectedVoiceActorForRoles!!
-                            CharacterVoiceActorsSheet(
-                                actorId = actor.id,
-                                source = actor.source,
-                                actorName = actor.name,
-                                actorImageUrl = actor.imageUrl,
-                                language = actor.language,
-                                onDismiss = { selectedVoiceActorForRoles = null },
-                                onCharacterClick = onCharacterClick,
-                                onMediaClick = onMediaClick,
-                                onStaffClick = onStaffClick
-                            )
-                        }
+
 
 
                     }

@@ -61,11 +61,11 @@ fun NextAiringChip(
                 remaining < 86400L -> {
                     val hours = (remaining / 3600).toInt()
                     val mins = ((remaining % 3600) / 60).toInt()
-                    "Bölüm $episode · %02d:%02d sonra".format(hours, mins)
+                    "Bölüm $episode · %02d:%02d sonra yayında".format(hours, mins)
                 }
                 else -> {
                     val days = (remaining / 86400).toInt()
-                    "Bölüm $episode · $days gün sonra"
+                    "Bölüm $episode · $days gün sonra yayında"
                 }
             }
             if (remaining <= 0L) break
@@ -134,7 +134,7 @@ fun NextAiringChip(
             modifier = Modifier.size(11.dp)
         )
         Text(
-            text = "Bölüm $episodeNumber · $timeText sonra",
+            text = "Bölüm $episodeNumber · $timeText sonra yayında",
             color = accentColor,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold

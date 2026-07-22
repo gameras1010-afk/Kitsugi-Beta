@@ -224,7 +224,17 @@ fun AppRootDetailPages(
                     mdbListShowLetterboxd = appSettings.mdbListShowLetterboxd,
                     mdbListShowTmdb = appSettings.mdbListShowTmdb,
                     mdbListShowTrakt = appSettings.mdbListShowTrakt,
-                    settingsDataStore = settingsDataStore
+                    settingsDataStore = settingsDataStore,
+                    onToggleFavoriteClick = {
+                        existingApiEntry?.let { entry ->
+                            val updatedEntry = entry.copy(
+                                isFavorite = !entry.isFavorite
+                            )
+                            coroutineScope.launch {
+                                mediaRepository.update(updatedEntry)
+                            }
+                        }
+                    }
                 )
             }
         }

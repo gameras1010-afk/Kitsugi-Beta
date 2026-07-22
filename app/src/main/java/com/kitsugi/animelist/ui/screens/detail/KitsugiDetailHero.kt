@@ -19,6 +19,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Tv
 import androidx.compose.material.icons.rounded.Book
 import androidx.compose.material.icons.rounded.Schedule
@@ -72,7 +74,9 @@ fun KitsugiDetailHero(
     blurAdultMedia: Boolean = false,
     onShareClick: (() -> Unit)? = null,
     totalEpisodes: Int? = null,
-    nextAiring: String? = null
+    nextAiring: String? = null,
+    showFavoriteButton: Boolean = false,
+    onToggleFavoriteClick: (() -> Unit)? = null
 ) {
     val accentColor = LocalKitsugiAccent.current
     val fallbackPlaceholderColor = statusColor ?: accentColor
@@ -130,7 +134,7 @@ fun KitsugiDetailHero(
                 )
         )
 
-        // ── Top Action Bar: Back (left) + Share (right) ──
+        // ── Top Action Bar: Back (left) + Action buttons (right) ──
         Row(
             modifier = Modifier
                 .align(Alignment.TopStart)
@@ -155,27 +159,50 @@ fun KitsugiDetailHero(
                 }
             }
 
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(KitsugiColors.Background.copy(alpha = 0.45f)),
-                contentAlignment = Alignment.Center
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = {
-                    if (onShareClick != null) {
-                        onShareClick()
-                    } else {
-                        val mediaType = if (typeLabel.contains("MANGA", ignoreCase = true)) com.kitsugi.animelist.model.MediaType.Manga else com.kitsugi.animelist.model.MediaType.Anime
-                        val url = com.kitsugi.animelist.utils.ShareUtils.buildMediaUrl(source, 0, mediaType)
-                        com.kitsugi.animelist.utils.ShareUtils.shareText(context, title, url)
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(KitsugiColors.Background.copy(alpha = 0.45f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    IconButton(onClick = {
+                        if (onShareClick != null) {
+                            onShareClick()
+                        } else {
+                            val mediaType = if (typeLabel.contains("MANGA", ignoreCase = true)) com.kitsugi.animelist.model.MediaType.Manga else com.kitsugi.animelist.model.MediaType.Anime
+                            val url = com.kitsugi.animelist.utils.ShareUtils.buildMediaUrl(source, 0, mediaType)
+                            com.kitsugi.animelist.utils.ShareUtils.shareText(context, title, url)
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Share,
+                            contentDescription = "Paylaş",
+                            tint = KitsugiColors.TextPrimary
+                        )
                     }
-                }) {
-                    Icon(
-                        imageVector = Icons.Rounded.Share,
-                        contentDescription = "Paylaş",
-                        tint = KitsugiColors.TextPrimary
-                    )
+                }
+
+                if (showFavoriteButton && onToggleFavoriteClick != null) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(KitsugiColors.Background.copy(alpha = 0.45f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        IconButton(onClick = onToggleFavoriteClick) {
+                            Icon(
+                                imageVector = if (isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                                contentDescription = if (isFavorite) "Favoriden Çıkar" else "Favori Yap",
+                                tint = if (isFavorite) accentColor else KitsugiColors.TextPrimary
+                            )
+                        }
+                    }
                 }
             }
         }

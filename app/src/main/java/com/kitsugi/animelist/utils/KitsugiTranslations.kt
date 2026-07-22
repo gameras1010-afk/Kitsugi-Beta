@@ -2,6 +2,12 @@ package com.kitsugi.animelist.utils
 
 import com.kitsugi.animelist.model.MediaType
 
+// ─── Dil Yardımcısı ────────────────────────────────────────────────────────────
+
+/**
+ * Cihazın aktif dili Türkçe mi? Değilse tüm çeviri fonksiyonları orijinal metni döner.
+ */
+fun isTurkish(): Boolean = java.util.Locale.getDefault().language.startsWith("tr")
 
 /**
  * Kitsugi Türkçe Çeviri Eşleme Yardımcıları
@@ -100,7 +106,7 @@ private val genreMap = mapOf(
 )
 
 /** API'dan gelen tür adını Türkçeye çevirir. Eşleme yoksa orijinali döner. */
-fun String.toTurkishGenre(): String = genreMap[this] ?: this
+fun String.toTurkishGenre(): String = if (!isTurkish()) this else genreMap[this] ?: this
 
 /** Tür listesini Türkçeye çevirir. */
 fun List<String>.toTurkishGenres(): List<String> = map { it.toTurkishGenre() }
@@ -143,7 +149,7 @@ private val statusMap = mapOf(
     "Released" to "Yayınlandı",
 )
 
-fun String.toTurkishStatus(): String = statusMap[this] ?: this
+fun String.toTurkishStatus(): String = if (!isTurkish()) this else statusMap[this] ?: this
 
 // ─── Mevsim / Season ──────────────────────────────────────────────────────────
 
@@ -163,6 +169,7 @@ private val seasonNameMap = mapOf(
  * Yıl varsa korunur: "Kış 2024"
  */
 fun String.toTurkishSeason(): String {
+    if (!isTurkish()) return this
     val parts = this.trim().split(" ")
     val seasonPart = parts.getOrNull(0) ?: return this
     val yearPart = parts.getOrNull(1)
@@ -211,7 +218,7 @@ private val sourceMaterialMap = mapOf(
     "MUSIC" to "Müzik",
 )
 
-fun String.toTurkishSourceMaterial(): String = sourceMaterialMap[this] ?: this
+fun String.toTurkishSourceMaterial(): String = if (!isTurkish()) this else sourceMaterialMap[this] ?: this
 
 // ─── Yaş Sınırı / Rating ──────────────────────────────────────────────────────
 
@@ -224,7 +231,7 @@ private val ratingMap = mapOf(
     "Rx - Hentai" to "Rx - Hentai",
 )
 
-fun String.toTurkishRating(): String = ratingMap[this] ?: this
+fun String.toTurkishRating(): String = if (!isTurkish()) this else ratingMap[this] ?: this
 
 // ─── Karakter Rolü / Character Role ───────────────────────────────────────────
 
@@ -243,7 +250,7 @@ private val characterRoleMap = mapOf(
     "background" to "Arka Plan",
 )
 
-fun String.toTurkishCharacterRole(): String = characterRoleMap[this] ?: this
+fun String.toTurkishCharacterRole(): String = if (!isTurkish()) this else characterRoleMap[this] ?: this
 
 // ─── Dil Adı / Voice Actor Language ──────────────────────────────────────────
 
@@ -314,7 +321,7 @@ private val languageMap = mapOf(
     "CROATIAN" to "Hırvatça",
 )
 
-fun String.toTurkishLanguage(): String = languageMap[this] ?: this
+fun String.toTurkishLanguage(): String = if (!isTurkish()) this else languageMap[this] ?: this
 
 // ─── İlişki Tipi / Relation Type ──────────────────────────────────────────────
 
@@ -349,7 +356,7 @@ private val relationTypeMap = mapOf(
     "OTHER" to "Diğer",
 )
 
-fun String.toTurkishRelationType(): String = relationTypeMap[this] ?: this
+fun String.toTurkishRelationType(): String = if (!isTurkish()) this else relationTypeMap[this] ?: this
 
 // ─── Medya Tipi / Media Type (API string'den) ─────────────────────────────────
 
@@ -386,7 +393,7 @@ private val mediaTypeStringMap = mapOf(
     "manga" to "Manga",
 )
 
-fun String.toTurkishMediaTypeString(): String = mediaTypeStringMap[this] ?: this
+fun String.toTurkishMediaTypeString(): String = if (!isTurkish()) this else mediaTypeStringMap[this] ?: this
 
 // ─── Yayın Günü / Broadcast Day ───────────────────────────────────────────────
 
@@ -412,6 +419,7 @@ private val broadcastDayMap = mapOf(
  * Örnek: "Saturdays at 17:00" → "Cumartesi 17:00"
  */
 fun String.toTurkishBroadcast(): String {
+    if (!isTurkish()) return this
     var result = this
     broadcastDayMap.forEach { (en, tr) ->
         result = result.replace(en, tr)
@@ -430,7 +438,7 @@ private val genderMap = mapOf(
     "Unknown" to "Bilinmiyor",
 )
 
-fun String.toTurkishGender(): String = genderMap[this] ?: this
+fun String.toTurkishGender(): String = if (!isTurkish()) this else genderMap[this] ?: this
 
 // ─── Kan Grubu / Blood Type ───────────────────────────────────────────────────
 // (Zaten kısaltmalar: A, B, AB, O — Türkçe için değişmez)
@@ -440,11 +448,13 @@ fun String.toTurkishGender(): String = genderMap[this] ?: this
 /**
  * "24 min" → "24 dk" gibi kısaltmaları Türkçeleştirir.
  */
-fun String.toTurkishDuration(): String =
-    this.replace(" min per ep", " dk/bölüm")
+fun String.toTurkishDuration(): String {
+    if (!isTurkish()) return this
+    return this.replace(" min per ep", " dk/bölüm")
         .replace(" min", " dk")
         .replace("hr", "sa")
         .replace("Unknown", "Bilinmiyor")
+}
 
 // ─── Staff Rolü / Staff Role (kısmi Türkçeleştirme) ─────────────────────────
 
@@ -489,7 +499,7 @@ private val staffRoleMap = mapOf(
     "Action Animation Director" to "Aksiyon Animasyon Yönetmeni",
 )
 
-fun String.toTurkishStaffRole(): String = staffRoleMap[this] ?: this
+fun String.toTurkishStaffRole(): String = if (!isTurkish()) this else staffRoleMap[this] ?: this
 
 fun String.parseToMediaType(): MediaType {
     val lower = this.trim().lowercase()

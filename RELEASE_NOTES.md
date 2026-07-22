@@ -2,6 +2,44 @@
 
 ---
 
+## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI — Son Güncelleme
+
+### ❤️ Standartlaştırılmış Favori Sistemi ve AniList Senkronizasyonu
+- **Detay Sayfalarında Favori Butonu**: `MediaEntryDetailPage` ve `ApiResultDetailPage` ekranları, NuvioTV standartlarına uygun şekilde üst aksiyon çubuğunda premium bir kalp butonu ile güncellendi.
+- **Güvenli Senkronizasyon (Toggle-Flip Düzeltmesi)**: `AniListSyncManager` ve `ExternalListSyncManager` modülleri "önce kontrol et, sonra değiştir" (check-then-toggle) mimarisiyle yeniden tasarlandı. AniList üzerindeki mevcut favori durumu sorgulanarak senkronizasyon sırasındaki durum tersine dönme hataları tamamen giderildi.
+
+### 🐛 Bildirim Ekranı Kritik Hata Düzeltmesi
+- **"Coroutine scope left the composition" Hatası Giderildi**: AniList Bildirimler ekranında "Tümü" sekmesi açıkken liste kaydırıldığında bildirimler yok oluyordu ve "Bildirimler yüklenemedi: The coroutine scope left the composition" hatası çıkıyordu. Sorunun kök nedeni, veri yükleme fonksiyonlarının (`loadAniList`, `loadMal`, `loadTmdbSimkl`) doğrudan composable scope içinde `suspend fun` olarak tanımlanmasıydı — scroll/recompose sırasında composable yeniden oluştuğunda bu coroutine'ler iptal ediliyordu.
+- **ViewModel Mimarisine Geçiş (AniHyou Paterni)**: Yeni `KitsugiNotificationsViewModel` (`AndroidViewModel`) oluşturuldu. Tüm veri yükleme `viewModelScope` içine taşındı — bu scope scroll veya recompose'dan etkilenmez, Activity ömrüne bağlı olarak yaşar.
+- **StateFlow Tabanlı UI**: Ekran artık `collectAsState()` ile reaktif olarak ViewModel state'ini okur; veri kaybolmaz, sonsuz scroll güvenli çalışır, filtre değişimi atomik olarak sıfırlanır.
+
+### ⏱️ Yayın Geri Sayımı Metin Düzeltmesi
+- **"X gün sonra" → "X gün sonra yayında"**: Keşfet ve Yaklaşan ekranlarındaki `NextAiringChip` bileşeninde geri sayım metni "Bölüm 1 · 2 gün sonra" yerine artık "Bölüm 1 · 2 gün sonra yayında" şeklinde görünür. Saat bazlı sayaçlar da güncellendi.
+
+### 🧹 Ayarlar Temizliği — Liste Görünümü Kaldırıldı
+- **"Liste Görünümü" Ayarı Silindi**: Görünüm & Tercihler → Arayüz & Tema sekmesindeki "Liste Görünümü" (Klasik/Modern/Izgara) açılır menüsü tamamen kaldırıldı.
+
+---
+
+## 🇬🇧 ENGLISH RELEASE NOTES — Latest Update
+
+### ❤️ Standardized Favoriting System & AniList Sync
+- **Detail Page Favorite Button**: Integrated a premium heart button into the top action bar of `MediaEntryDetailPage` and `ApiResultDetailPage`, matching NuvioTV standards.
+- **Safe Synchronization (Toggle-Flip Fix)**: Refactored `AniListSyncManager` and `ExternalListSyncManager` to implement a "check-then-toggle" synchronization pattern. Remote favorite states are verified before invoking mutations, successfully preventing toggle-flip state desyncs.
+
+### 🐛 Notification Screen Critical Bug Fix
+- **Fixed "Coroutine scope left the composition" Crash**: When scrolling through notifications in the AniList tab ("Tümü" / All filter), notifications would disappear and the error "Bildirimler yüklenemedi: The coroutine scope left the composition" appeared. The root cause was that data loading functions (`loadAniList`, `loadMal`, `loadTmdbSimkl`) were defined as `suspend fun` directly inside the composable — when a scroll-triggered recomposition occurred, these coroutines were cancelled.
+- **Migrated to ViewModel Architecture (AniHyou Pattern)**: Created a new `KitsugiNotificationsViewModel` (`AndroidViewModel`). All data fetching is now inside `viewModelScope`, which survives scroll events and recomposition, bound to the Activity lifecycle instead of the composable scope.
+- **StateFlow-Driven UI**: The screen now reactively collects ViewModel state via `collectAsState()`. Data is never lost on scroll, infinite scroll works reliably, and filter changes reset pagination atomically.
+
+### ⏱️ Airing Countdown Text Fix
+- **"X gün sonra" → "X gün sonra yayında"**: The `NextAiringChip` component on Explore and Upcoming screens now reads "Bölüm 1 · 2 gün sonra yayında" instead of ending with bare "sonra". Hour-based countdown labels updated too.
+
+### 🧹 Settings Cleanup — List Layout Removed
+- **Removed "Liste Görünümü" Setting**: The "List Layout" (Klasik/Modern/Izgara) dropdown in Appearance & Preferences → Interface & Theme tab has been fully removed.
+
+---
+
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
 ### 🔔 Bildirim Merkezi

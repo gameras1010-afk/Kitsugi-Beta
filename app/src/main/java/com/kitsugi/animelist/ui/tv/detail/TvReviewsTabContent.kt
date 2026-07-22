@@ -934,24 +934,9 @@ private fun TvReviewDetailDialog(
                         }
                     } else {
                         val displayText = if (selectedLanguage == "turkish") (translatedText ?: review.fullText) else review.fullText
-                        var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
-                        var activeGalleryIndex by remember { mutableStateOf(0) }
-                        KitsugiMarkdownText(
-                            text = displayText,
-                            modifier = Modifier.fillMaxWidth(),
-                            onImageGalleryRequest = { urls, index ->
-                                activeGalleryImages = urls
-                                activeGalleryIndex = index
-                            }
+                        com.kitsugi.animelist.ui.components.KitsugiHtmlWebView(
+                            html = displayText
                         )
-                        if (activeGalleryImages.isNotEmpty()) {
-                            KitsugiImageGalleryDialog(
-                                imageUrls = activeGalleryImages,
-                                initialIndex = activeGalleryIndex,
-                                title = review.username,
-                                onDismiss = { activeGalleryImages = emptyList() }
-                            )
-                        }
                     }
                 }
             }

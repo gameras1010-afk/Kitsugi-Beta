@@ -433,9 +433,9 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
 
         val airingSoonDeferred = async {
             val calendarClient = com.kitsugi.animelist.data.remote.KitsugiAiringCalendarClient()
-            val weekly = runCatching { calendarClient.fetchWeeklySchedule() }.getOrNull() ?: emptyMap()
+            val upcoming = runCatching { calendarClient.fetchUpcomingSchedule(limit = 40) }.getOrNull() ?: emptyList()
             val nowSeconds = System.currentTimeMillis() / 1000L
-            weekly.values.flatten()
+            upcoming
                 .filter { it.airingAt > nowSeconds && it.malId != null }
                 .sortedBy { it.airingAt }
                 .take(15)
@@ -482,9 +482,9 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
 
         val airingSoonDeferred = async {
             val calendarClient = com.kitsugi.animelist.data.remote.KitsugiAiringCalendarClient()
-            val weekly = runCatching { calendarClient.fetchWeeklySchedule() }.getOrNull() ?: emptyMap()
+            val upcoming = runCatching { calendarClient.fetchUpcomingSchedule(limit = 15) }.getOrNull() ?: emptyList()
             val nowSeconds = System.currentTimeMillis() / 1000L
-            weekly.values.flatten()
+            upcoming
                 .filter { it.airingAt > nowSeconds }
                 .sortedBy { it.airingAt }
                 .take(15)
