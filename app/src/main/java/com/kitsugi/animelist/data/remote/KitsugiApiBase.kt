@@ -70,7 +70,11 @@ object KitsugiApiBase {
                 if (response.isSuccessful) {
                     response.body?.string()
                 } else {
-                    android.util.Log.w("KitsugiApiBase", "HTTP Error: ${response.code} ${response.message} for URL: $url")
+                    if (response.code == 429) {
+                        android.util.Log.w("KitsugiApiBase", "HTTP 429 Too Many Requests: Rate limit hit for URL: $url")
+                    } else {
+                        android.util.Log.w("KitsugiApiBase", "HTTP Error: ${response.code} ${response.message} for URL: $url")
+                    }
                     null
                 }
             }

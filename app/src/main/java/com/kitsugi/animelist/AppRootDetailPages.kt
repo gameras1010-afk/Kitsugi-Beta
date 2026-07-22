@@ -381,17 +381,17 @@ fun AppRootDetailPages(
                     appSettings = appSettings,
                     mediaEntries = mediaEntries,
                     onBackClick = { navState.popDetailStack() },
-                    onFavoriteMediaClick = { mediaId, mediaType, source ->
+                    onFavoriteMediaClick = { mediaId, mediaType, source, title, imageUrl ->
                         val stableId = if (source == "anilist") mediaId + 100_000_000 else mediaId
                         val searchResult = com.kitsugi.animelist.data.remote.JikanSearchResult(
                             malId = stableId,
-                            title = "Yükleniyor...",
+                            title = title.ifBlank { "Yükleniyor..." },
                             subtitle = "",
                             type = mediaType,
                             total = null,
                             score = null,
                             isAdult = false,
-                            imageUrl = null,
+                            imageUrl = imageUrl,
                             year = null,
                             source = source
                         )

@@ -18,6 +18,12 @@ import com.kitsugi.animelist.ui.theme.LocalIsTv
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.Alignment
+
 @Composable
 fun AppBottomBar(
     selectedTab: MainTab,
@@ -79,36 +85,43 @@ fun AppNavigationRail(
             Spacer(modifier = androidx.compose.ui.Modifier.height(16.dp))
         }
     ) {
-        Spacer(modifier = androidx.compose.ui.Modifier.weight(1f))
-        MainTab.entries.forEach { tab ->
-            androidx.compose.material3.NavigationRailItem(
-                selected = selectedTab == tab,
-                onClick = {
-                    onTabSelected(tab)
-                },
-                modifier = androidx.compose.ui.Modifier.onFocusChanged { state ->
-                    if (isTv && state.isFocused) {
+        Column(
+            modifier = androidx.compose.ui.Modifier
+                .fillMaxHeight()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            MainTab.entries.forEach { tab ->
+                androidx.compose.material3.NavigationRailItem(
+                    selected = selectedTab == tab,
+                    onClick = {
                         onTabSelected(tab)
-                    }
-                },
-                icon = {
-                    Icon(
-                        imageVector = tab.icon,
-                        contentDescription = stringResource(tab.labelRes)
+                    },
+                    modifier = androidx.compose.ui.Modifier.onFocusChanged { state ->
+                        if (isTv && state.isFocused) {
+                            onTabSelected(tab)
+                        }
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = tab.icon,
+                            contentDescription = stringResource(tab.labelRes)
+                        )
+                    },
+                    label = {
+                        Text(text = stringResource(tab.labelRes))
+                    },
+                    colors = androidx.compose.material3.NavigationRailItemDefaults.colors(
+                        selectedIconColor = KitsugiColors.Background,
+                        selectedTextColor = accentColor,
+                        indicatorColor = accentColor,
+                        unselectedIconColor = KitsugiColors.TextSecondary,
+                        unselectedTextColor = KitsugiColors.TextSecondary
                     )
-                },
-                label = {
-                    Text(text = stringResource(tab.labelRes))
-                },
-                colors = androidx.compose.material3.NavigationRailItemDefaults.colors(
-                    selectedIconColor = KitsugiColors.Background,
-                    selectedTextColor = accentColor,
-                    indicatorColor = accentColor,
-                    unselectedIconColor = KitsugiColors.TextSecondary,
-                    unselectedTextColor = KitsugiColors.TextSecondary
                 )
-            )
-            Spacer(modifier = androidx.compose.ui.Modifier.weight(1f))
+                Spacer(modifier = androidx.compose.ui.Modifier.height(12.dp))
+            }
         }
     }
 }

@@ -20,13 +20,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ListAlt
 import androidx.compose.material.icons.rounded.FilterList
+import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.SearchOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -42,6 +48,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +61,7 @@ import com.kitsugi.animelist.data.remote.JikanSearchResult
 import com.kitsugi.animelist.data.remote.TmdbApiClient
 import com.kitsugi.animelist.ui.components.KitsugiEmptyState
 import com.kitsugi.animelist.ui.components.KitsugiExploreMediaCard
+import com.kitsugi.animelist.ui.components.KitsugiRankingMediaCard
 import com.kitsugi.animelist.ui.components.KitsugiSeasonalFilterBottomSheet
 import com.kitsugi.animelist.ui.screens.explore.ExploreCategoryType
 import com.kitsugi.animelist.ui.screens.explore.ExplorePlatform
@@ -79,9 +87,13 @@ fun FullScreenMediaGridPage(
     blurAdultMedia: Boolean = false
 ) {
     val accentColor = LocalKitsugiAccent.current
+    val isTv = LocalIsTv.current
     val scope = rememberCoroutineScope()
     val apiClient = remember { JikanApiClient() }
     val tmdbApiClient = remember { TmdbApiClient() }
+
+    // false = Liste görünümü (varsayılan), true = Grid görünümü
+    var isGridView by rememberSaveable { mutableStateOf(false) }
 
     val currentCalendar = remember { Calendar.getInstance() }
     val currentYear = remember { currentCalendar.get(Calendar.YEAR) }
@@ -102,363 +114,356 @@ fun FullScreenMediaGridPage(
 
     val dynamicTitle = remember(categoryType, title, seasonalSeason, seasonalYear) {
         if (categoryType == ExploreCategoryType.SEASONAL_ANIME) {
-            val seasonName = when (seasonalSeason.uppercase()) {
-                "WINTER" -> "Kış"
-                "SPRING" -> "İlkbahar"
-                "SUMMER" -> "Yaz"
-                else -> "Sonbahar"
+            val sn = when (seasonalSeason.uppercase()) {
+                "WINTER" -> "Kış"; "SPRING" -> "İlkbahar"; "SUMMER" -> "Yaz"; else -> "Sonbahar"
             }
-            "$seasonName $seasonalYear"
-        } else {
-            title
-        }
+            "$sn $seasonalYear"
+        } else title
     }
 
-    var loadedResults by remember {
-        mutableStateOf(initialResults)
-    }
-
-    var currentPage by remember {
-        mutableStateOf(1)
-    }
-
-    var isLoadingMore by remember {
-        mutableStateOf(false)
-    }
-
-    var hasMorePages by remember {
-        mutableStateOf(true)
-    }
-
-    var loadError by remember {
-        mutableStateOf<String?>(null)
-    }
+    var loadedResults by remember { mutableStateOf(initialResults) }
+    var currentPage by remember { mutableStateOf(1) }
+    var isLoadingMore by remember { mutableStateOf(false) }
+    var hasMorePages by remember { mutableStateOf(true) }
+    var loadError by remember { mutableStateOf<String?>(null) }
 
     fun applySeasonalFilter(season: String, year: Int, sort: String) {
-        seasonalSeason = season
-        seasonalYear = year
-        seasonalSort = sort
-        currentPage = 1
-        hasMorePages = true
-        loadedResults = emptyList()
-        isLoadingMore = true
-        loadError = null
+        seasonalSeason = season; seasonalYear = year; seasonalSort = sort
+        currentPage = 1; hasMorePages = true; loadedResults = emptyList()
+        isLoadingMore = true; loadError = null
         scope.launch {
             try {
-                val newItems = if (platform == ExplorePlatform.AniList) {
-                    apiClient.aniListSeasonalAnime(
-                        page = 1,
-                        showAdultContent = showAdultContent,
-                        year = year,
-                        season = season,
-                        sort = sort
-                    )
-                } else {
-                    apiClient.seasonalAnime(
-                        page = 1,
-                        showAdultContent = showAdultContent,
-                        year = year,
-                        season = season,
-                        sort = sort
-                    )
-                }
-                loadedResults = newItems
+                loadedResults = if (platform == ExplorePlatform.AniList)
+                    apiClient.aniListSeasonalAnime(1, showAdultContent, year, season, sort)
+                else apiClient.seasonalAnime(1, showAdultContent, year, season, sort)
             } catch (e: Exception) {
-                loadError = e.message ?: "Mevsimlik veriler yüklenirken hata oluştu"
-            } finally {
-                isLoadingMore = false
-            }
+                loadError = e.message ?: "Hata"
+            } finally { isLoadingMore = false }
         }
     }
 
     fun loadNextPage() {
         if (isLoadingMore || !hasMorePages) return
-        isLoadingMore = true
-        loadError = null
+        isLoadingMore = true; loadError = null
         scope.launch {
             try {
-                val nextPage = currentPage + 1
+                val np = currentPage + 1
                 val newItems = when (platform) {
-                    ExplorePlatform.MAL -> {
-                        when (categoryType) {
-                            ExploreCategoryType.TOP_ANIME -> apiClient.topAnime(nextPage)
-                            ExploreCategoryType.TRENDING_ANIME -> apiClient.trendingAnime(nextPage)
-                            ExploreCategoryType.AIRING_ANIME -> apiClient.airingAnime(nextPage)
-                            ExploreCategoryType.UPCOMING_ANIME -> apiClient.upcomingAnime(nextPage)
-                            ExploreCategoryType.MOVIE_ANIME -> apiClient.movieAnime(nextPage)
-                            ExploreCategoryType.SEASONAL_ANIME -> apiClient.seasonalAnime(
-                                page = nextPage,
-                                showAdultContent = showAdultContent,
-                                year = seasonalYear,
-                                season = seasonalSeason,
-                                sort = seasonalSort
-                            )
-                            ExploreCategoryType.TOP_MANGA -> apiClient.topManga(nextPage)
-                            ExploreCategoryType.PUBLISHING_MANGA -> apiClient.publishingManga(nextPage)
-                        }
+                    ExplorePlatform.MAL -> when (categoryType) {
+                        ExploreCategoryType.TOP_ANIME -> apiClient.topAnime(np)
+                        ExploreCategoryType.TRENDING_ANIME -> apiClient.trendingAnime(np)
+                        ExploreCategoryType.AIRING_ANIME -> apiClient.airingAnime(np)
+                        ExploreCategoryType.UPCOMING_ANIME -> apiClient.upcomingAnime(np)
+                        ExploreCategoryType.MOVIE_ANIME -> apiClient.movieAnime(np)
+                        ExploreCategoryType.SEASONAL_ANIME -> apiClient.seasonalAnime(np, showAdultContent, seasonalYear, seasonalSeason, seasonalSort)
+                        ExploreCategoryType.TOP_MANGA -> apiClient.topManga(np)
+                        ExploreCategoryType.PUBLISHING_MANGA -> apiClient.publishingManga(np)
                     }
-                    ExplorePlatform.AniList -> {
-                        when (categoryType) {
-                            ExploreCategoryType.TOP_ANIME -> apiClient.aniListTopAnime(nextPage)
-                            ExploreCategoryType.TRENDING_ANIME -> apiClient.aniListTrendingAnime(nextPage)
-                            ExploreCategoryType.AIRING_ANIME -> apiClient.aniListAiringAnime(nextPage)
-                            ExploreCategoryType.UPCOMING_ANIME -> apiClient.aniListUpcomingAnime(nextPage)
-                            ExploreCategoryType.MOVIE_ANIME -> apiClient.aniListMovieAnime(nextPage)
-                            ExploreCategoryType.SEASONAL_ANIME -> apiClient.aniListSeasonalAnime(
-                                page = nextPage,
-                                showAdultContent = showAdultContent,
-                                year = seasonalYear,
-                                season = seasonalSeason,
-                                sort = seasonalSort
-                            )
-                            ExploreCategoryType.TOP_MANGA -> apiClient.aniListTopManga(nextPage)
-                            ExploreCategoryType.PUBLISHING_MANGA -> apiClient.aniListPublishingManga(nextPage)
-                        }
+                    ExplorePlatform.AniList -> when (categoryType) {
+                        ExploreCategoryType.TOP_ANIME -> apiClient.aniListTopAnime(np)
+                        ExploreCategoryType.TRENDING_ANIME -> apiClient.aniListTrendingAnime(np)
+                        ExploreCategoryType.AIRING_ANIME -> apiClient.aniListAiringAnime(np)
+                        ExploreCategoryType.UPCOMING_ANIME -> apiClient.aniListUpcomingAnime(np)
+                        ExploreCategoryType.MOVIE_ANIME -> apiClient.aniListMovieAnime(np)
+                        ExploreCategoryType.SEASONAL_ANIME -> apiClient.aniListSeasonalAnime(np, showAdultContent, seasonalYear, seasonalSeason, seasonalSort)
+                        ExploreCategoryType.TOP_MANGA -> apiClient.aniListTopManga(np)
+                        ExploreCategoryType.PUBLISHING_MANGA -> apiClient.aniListPublishingManga(np)
                     }
                     ExplorePlatform.TMDB -> {
-                        if (title.startsWith("İzlemeye Devam") || title.startsWith("Planladıklarım")) {
-                            emptyList()
-                        } else {
-                            when (categoryType) {
-                                ExploreCategoryType.TOP_ANIME -> tmdbApiClient.getTrendingAll(nextPage)
-                                ExploreCategoryType.TRENDING_ANIME -> tmdbApiClient.getTrendingAll(nextPage)
-                                ExploreCategoryType.AIRING_ANIME -> tmdbApiClient.getTrendingShows(nextPage)
-                                ExploreCategoryType.MOVIE_ANIME -> tmdbApiClient.getTrendingMovies(nextPage)
-                                ExploreCategoryType.UPCOMING_ANIME -> tmdbApiClient.getPopularMovies(nextPage)
-                                ExploreCategoryType.TOP_MANGA -> tmdbApiClient.getTopRatedMovies(nextPage)
-                                ExploreCategoryType.PUBLISHING_MANGA -> tmdbApiClient.getTopRatedMovies(nextPage)
-                                ExploreCategoryType.SEASONAL_ANIME -> tmdbApiClient.getTopRatedShows(nextPage)
+                        if (title.startsWith("İzlemeye Devam") || title.startsWith("Planladıklarım")) emptyList()
+                        else when (categoryType) {
+                            ExploreCategoryType.TOP_ANIME -> tmdbApiClient.getTrendingAll(np)
+                            ExploreCategoryType.TRENDING_ANIME -> tmdbApiClient.getTrendingAll(np)
+                            ExploreCategoryType.AIRING_ANIME -> tmdbApiClient.getTrendingShows(np)
+                            ExploreCategoryType.MOVIE_ANIME -> tmdbApiClient.getTrendingMovies(np)
+                            ExploreCategoryType.UPCOMING_ANIME -> tmdbApiClient.getPopularMovies(np)
+                            ExploreCategoryType.TOP_MANGA -> tmdbApiClient.getTopRatedMovies(np)
+                            ExploreCategoryType.PUBLISHING_MANGA -> tmdbApiClient.getTopRatedMovies(np)
+                            ExploreCategoryType.SEASONAL_ANIME -> tmdbApiClient.getTopRatedShows(np)
+                        }
+                    }
+                }
+                if (newItems.isNotEmpty()) { loadedResults = loadedResults + newItems; currentPage = np }
+                else hasMorePages = false
+            } catch (e: Exception) {
+                loadError = e.message ?: "Yükleme hatası"
+            } finally { isLoadingMore = false }
+        }
+    }
+
+    val displayedResults = remember(loadedResults, showAdultContent) {
+        loadedResults.filter { showAdultContent || !it.isAdult }
+    }
+
+    // Liste scroll state + auto-load trigger
+    val listState = rememberLazyListState()
+    val shouldLoadMoreList by remember {
+        derivedStateOf {
+            val last = listState.layoutInfo.visibleItemsInfo.lastOrNull() ?: return@derivedStateOf false
+            last.index >= listState.layoutInfo.totalItemsCount - 4
+        }
+    }
+    LaunchedEffect(shouldLoadMoreList) { if (shouldLoadMoreList) loadNextPage() }
+
+    // Grid scroll state + auto-load trigger
+    val gridState = rememberLazyGridState()
+    val shouldLoadMoreGrid by remember {
+        derivedStateOf {
+            val last = gridState.layoutInfo.visibleItemsInfo.lastOrNull() ?: return@derivedStateOf false
+            last.index >= gridState.layoutInfo.totalItemsCount - 6
+        }
+    }
+    LaunchedEffect(shouldLoadMoreGrid) { if (shouldLoadMoreGrid) loadNextPage() }
+
+    val showFloatingHeader = if (isGridView) gridState.firstVisibleItemIndex >= 1
+    else listState.firstVisibleItemIndex >= 1
+
+    Box(
+        modifier = Modifier.fillMaxSize().background(KitsugiColors.Background),
+        contentAlignment = Alignment.TopCenter
+    ) {
+
+        if (isGridView) {
+            // ── GRID MODU ────────────────────────────────────────────────────
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                state = gridState,
+                modifier = if (isTv) Modifier.width(960.dp) else Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(start = 12.dp, end = 12.dp, bottom = 90.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // Başlık - tam genişlik span
+                item(key = "grid_header", span = { GridItemSpan(maxLineSpan) }) {
+                    Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 16.dp)) {
+                        // Geri butonu
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            TextButton(onClick = onBackClick) {
+                                Text("Geri", color = accentColor, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        // Başlık + toggle + filtre
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = dynamicTitle,
+                                color = KitsugiColors.TextPrimary,
+                                style = MaterialTheme.typography.headlineLarge,
+                                fontWeight = FontWeight.Black,
+                                modifier = Modifier.weight(1f)
+                            )
+                            // Grid→Liste toggle
+                            IconButton(
+                                onClick = {
+                                    scope.launch {
+                                        val gridIndex = gridState.firstVisibleItemIndex
+                                        val gridOffset = gridState.firstVisibleItemScrollOffset
+                                        val listIndex = if (gridIndex == 0) 0 else gridIndex + 1
+                                        isGridView = false
+                                        kotlinx.coroutines.delay(10)
+                                        listState.scrollToItem(listIndex, gridOffset)
+                                    }
+                                },
+                                modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(KitsugiColors.Surface)
+                            ) {
+                                Icon(Icons.AutoMirrored.Rounded.ListAlt, contentDescription = "Liste Görünümü", tint = accentColor)
+                            }
+                            if (categoryType == ExploreCategoryType.SEASONAL_ANIME) {
+                                IconButton(
+                                    onClick = { showFilterBottomSheet = true },
+                                    modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(KitsugiColors.Surface)
+                                ) {
+                                    Icon(Icons.Rounded.FilterList, contentDescription = "Filtre", tint = accentColor)
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "${displayedResults.size} içerik",
+                            color = KitsugiColors.TextMuted,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                if (displayedResults.isEmpty() && !isLoadingMore) {
+                    item(key = "grid_empty", span = { GridItemSpan(maxLineSpan) }) {
+                        KitsugiEmptyState(
+                            title = "Henüz içerik yok",
+                            subtitle = "Bu kategoride gösterilecek içerik bulunamadı.",
+                            icon = Icons.Rounded.SearchOff
+                        )
+                    }
+                } else {
+                    itemsIndexed(
+                        displayedResults,
+                        key = { idx, item -> "${item.source}_${item.malId}_g$idx" }
+                    ) { _, result ->
+                        KitsugiExploreMediaCard(
+                            result = result,
+                            alreadyInList = alreadyInList(result),
+                            onClick = { onItemClick(result) },
+                            titleLanguage = titleLanguage,
+                            scoreFormat = scoreFormat,
+                            hideScores = hideScores,
+                            blurAdultMedia = blurAdultMedia,
+                            forceVertical = true
+                        )
+                    }
+                }
+
+                if (isLoadingMore) {
+                    item(key = "grid_loading", span = { GridItemSpan(maxLineSpan) }) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) { CircularProgressIndicator(color = accentColor) }
+                    }
+                }
+
+                if (loadError != null) {
+                    item(key = "grid_error", span = { GridItemSpan(maxLineSpan) }) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(loadError ?: "Bir hata oluştu.", color = KitsugiColors.TextMuted, style = MaterialTheme.typography.bodyMedium)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            TextButton(onClick = { loadNextPage() }) {
+                                Text("Tekrar Dene", color = accentColor, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
+
+        } else {
+            // ── LİSTE MODU ───────────────────────────────────────────────────
+            LazyColumn(
+                state = listState,
+                modifier = if (isTv) Modifier.width(960.dp) else Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 90.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                item(key = "list_header") {
+                    Column {
+                        Spacer(modifier = Modifier.height(28.dp))
+                        // Geri butonu
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            TextButton(onClick = onBackClick) {
+                                Text("Geri", color = accentColor, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        // Başlık + toggle + filtre
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = dynamicTitle,
+                                color = KitsugiColors.TextPrimary,
+                                style = MaterialTheme.typography.headlineLarge,
+                                fontWeight = FontWeight.Black,
+                                modifier = Modifier.weight(1f)
+                            )
+                            // Liste→Grid toggle
+                            IconButton(
+                                onClick = {
+                                    scope.launch {
+                                        val listIndex = listState.firstVisibleItemIndex
+                                        val listOffset = listState.firstVisibleItemScrollOffset
+                                        val gridIndex = if (listIndex <= 1) 0 else listIndex - 1
+                                        isGridView = true
+                                        kotlinx.coroutines.delay(10)
+                                        gridState.scrollToItem(gridIndex, listOffset)
+                                    }
+                                },
+                                modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(KitsugiColors.Surface)
+                            ) {
+                                Icon(Icons.Rounded.GridView, contentDescription = "Grid Görünümü", tint = accentColor)
+                            }
+                            if (categoryType == ExploreCategoryType.SEASONAL_ANIME) {
+                                IconButton(
+                                    onClick = { showFilterBottomSheet = true },
+                                    modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(KitsugiColors.Surface)
+                                ) {
+                                    Icon(Icons.Rounded.FilterList, contentDescription = "Mevsim Filtresi", tint = accentColor)
+                                }
                             }
                         }
                     }
                 }
 
-                if (newItems.isNotEmpty()) {
-                    loadedResults = loadedResults + newItems
-                    currentPage = nextPage
+                item(key = "list_count") {
+                    Column {
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Text(
+                            text = "${displayedResults.size} içerik",
+                            color = KitsugiColors.TextMuted,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                }
+
+                if (displayedResults.isEmpty() && !isLoadingMore) {
+                    item(key = "list_empty") {
+                        KitsugiEmptyState(
+                            title = "Henüz içerik yok",
+                            subtitle = "Bu kategoride gösterilecek içerik bulunamadı.",
+                            icon = Icons.Rounded.SearchOff
+                        )
+                    }
                 } else {
-                    hasMorePages = false
-                }
-            } catch (e: Exception) {
-                loadError = e.message ?: "Daha fazla yüklenirken hata oluştu"
-            } finally {
-                isLoadingMore = false
-            }
-        }
-    }
-
-    val displayedResults = remember(loadedResults, showAdultContent) {
-        loadedResults.filter { result ->
-            showAdultContent || !result.isAdult
-        }
-    }
-
-    val chunkedResults = remember(displayedResults) {
-        displayedResults.chunked(2)
-    }
-
-    val listState = rememberLazyListState()
-
-    val shouldLoadMore = remember {
-        derivedStateOf {
-            val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull() ?: return@derivedStateOf false
-            lastVisibleItem.index >= listState.layoutInfo.totalItemsCount - 4
-        }
-    }
-
-    LaunchedEffect(shouldLoadMore.value) {
-        if (shouldLoadMore.value) {
-            loadNextPage()
-        }
-    }
-
-    val showFloatingHeader = listState.firstVisibleItemIndex >= 1
-    val isTv = LocalIsTv.current
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(KitsugiColors.Background),
-        contentAlignment = Alignment.TopCenter
-    ) {
-        // SCROLLABLE LIST SECTION
-        LazyColumn(
-            state = listState,
-            modifier = if (isTv) {
-                Modifier.width(960.dp)
-            } else {
-                Modifier.fillMaxSize()
-            },
-            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 90.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // 1. Geri Butonu
-            item(key = "back_button") {
-                Column {
-                    Spacer(modifier = Modifier.height(28.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        TextButton(
-                            onClick = onBackClick
-                        ) {
-                            Text(
-                                text = "Geri",
-                                color = accentColor,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
-            }
-
-            // 2. Başlık + Filtre Butonu
-            item(key = "title") {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = dynamicTitle,
-                        color = KitsugiColors.TextPrimary,
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.Black,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    if (categoryType == ExploreCategoryType.SEASONAL_ANIME) {
-                        IconButton(
-                            onClick = { showFilterBottomSheet = true },
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(KitsugiColors.Surface)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.FilterList,
-                                contentDescription = "Mevsim Filtresi",
-                                tint = accentColor
-                            )
-                        }
-                    }
-                }
-            }
-
-            // 3. İçerik Sayısı
-            item(key = "count") {
-                Column {
-                    Spacer(modifier = Modifier.height(14.dp))
-                    Text(
-                        text = "${displayedResults.size} içerik",
-                        color = KitsugiColors.TextMuted,
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-            }
-
-            // 4. Medya Listesi (Sıralama sayfalarında dikey sıralama kartları, diğerlerinde 2'li grid)
-            if (displayedResults.isEmpty() && !isLoadingMore) {
-                item(key = "empty_state") {
-                    KitsugiEmptyState(
-                        title = "Henüz içerik yok",
-                        subtitle = "Bu kategoride gösterilecek içerik bulunamadı.",
-                        icon = Icons.Rounded.SearchOff
-                    )
-                }
-            } else if (categoryType == ExploreCategoryType.TOP_ANIME ||
-                       categoryType == ExploreCategoryType.TOP_MANGA ||
-                       categoryType == ExploreCategoryType.TRENDING_ANIME ||
-                       categoryType == ExploreCategoryType.AIRING_ANIME ||
-                       categoryType == ExploreCategoryType.UPCOMING_ANIME ||
-                       categoryType == ExploreCategoryType.PUBLISHING_MANGA) {
-                itemsIndexed(displayedResults, key = { index, item -> item.source + "_" + item.malId + "_" + index }) { index, result ->
-                    com.kitsugi.animelist.ui.components.KitsugiRankingMediaCard(
-                        result = result,
-                        rankIndex = index + 1,
-                        alreadyInList = alreadyInList(result),
-                        onClick = { onItemClick(result) },
-                        titleLanguage = titleLanguage,
-                        hideScores = hideScores,
-                        blurAdultMedia = blurAdultMedia,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-                }
-            } else {
-                items(chunkedResults, key = { pair -> "${pair[0].source}_${pair[0].malId}_${pair.getOrNull(1)?.malId ?: 0}" }) { pair ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        KitsugiExploreMediaCard(
-                            result = pair[0],
-                            alreadyInList = alreadyInList(pair[0]),
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                onItemClick(pair[0])
-                            },
+                    itemsIndexed(
+                        displayedResults,
+                        key = { idx, item -> "${item.source}_${item.malId}_l$idx" }
+                    ) { index, result ->
+                        KitsugiRankingMediaCard(
+                            result = result,
+                            rankIndex = index + 1,
+                            alreadyInList = alreadyInList(result),
+                            onClick = { onItemClick(result) },
                             titleLanguage = titleLanguage,
-                            scoreFormat = scoreFormat,
                             hideScores = hideScores,
                             blurAdultMedia = blurAdultMedia
                         )
-                        if (pair.size > 1) {
-                            KitsugiExploreMediaCard(
-                                result = pair[1],
-                                alreadyInList = alreadyInList(pair[1]),
-                                modifier = Modifier.weight(1f),
-                                onClick = {
-                                    onItemClick(pair[1])
-                                },
-                                titleLanguage = titleLanguage,
-                                scoreFormat = scoreFormat,
-                                hideScores = hideScores,
-                                blurAdultMedia = blurAdultMedia
-                            )
-                        } else {
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
                     }
                 }
-            }
 
-            if (isLoadingMore) {
-                item(key = "loading_more") {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(color = accentColor)
+                if (isLoadingMore) {
+                    item(key = "list_loading") {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) { CircularProgressIndicator(color = accentColor) }
                     }
                 }
-            }
 
-            if (loadError != null) {
-                item(key = "error") {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = loadError ?: "Bir hata oluştu.",
-                            color = KitsugiColors.TextMuted,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        TextButton(onClick = { loadNextPage() }) {
-                            Text("Tekrar Dene", color = accentColor, fontWeight = FontWeight.Bold)
+                if (loadError != null) {
+                    item(key = "list_error") {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(loadError ?: "Bir hata oluştu.", color = KitsugiColors.TextMuted, style = MaterialTheme.typography.bodyMedium)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            TextButton(onClick = { loadNextPage() }) {
+                                Text("Tekrar Dene", color = accentColor, fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
                 }
             }
         }
 
-        // Floating overlay header
+        // ── Floating Overlay Header ───────────────────────────────────────────
         AnimatedVisibility(
             visible = showFloatingHeader,
             enter = expandVertically() + fadeIn(),
@@ -467,26 +472,13 @@ fun FullScreenMediaGridPage(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = if (isTv) {
-                    Modifier
-                        .width(960.dp)
-                        .height(64.dp)
-                        .background(KitsugiColors.Surface.copy(alpha = 0.92f))
-                        .padding(horizontal = 8.dp)
-                } else {
-                    Modifier
-                        .fillMaxWidth()
-                        .height(64.dp)
-                        .background(KitsugiColors.Surface.copy(alpha = 0.92f))
-                        .padding(horizontal = 8.dp)
-                }
+                modifier = (if (isTv) Modifier.width(960.dp) else Modifier.fillMaxWidth())
+                    .height(64.dp)
+                    .background(KitsugiColors.Surface.copy(alpha = 0.92f))
+                    .padding(horizontal = 8.dp)
             ) {
                 IconButton(onClick = onBackClick) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                        contentDescription = "Geri",
-                        tint = KitsugiColors.TextPrimary
-                    )
+                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Geri", tint = KitsugiColors.TextPrimary)
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
@@ -498,14 +490,35 @@ fun FullScreenMediaGridPage(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
                 )
-
+                // Toggle – floating header'da da göster
+                IconButton(onClick = {
+                    scope.launch {
+                        if (isGridView) {
+                            val gridIndex = gridState.firstVisibleItemIndex
+                            val gridOffset = gridState.firstVisibleItemScrollOffset
+                            val listIndex = if (gridIndex == 0) 0 else gridIndex + 1
+                            isGridView = false
+                            kotlinx.coroutines.delay(10)
+                            listState.scrollToItem(listIndex, gridOffset)
+                        } else {
+                            val listIndex = listState.firstVisibleItemIndex
+                            val listOffset = listState.firstVisibleItemScrollOffset
+                            val gridIndex = if (listIndex <= 1) 0 else listIndex - 1
+                            isGridView = true
+                            kotlinx.coroutines.delay(10)
+                            gridState.scrollToItem(gridIndex, listOffset)
+                        }
+                    }
+                }) {
+                    Icon(
+                        imageVector = if (isGridView) Icons.AutoMirrored.Rounded.ListAlt else Icons.Rounded.GridView,
+                        contentDescription = if (isGridView) "Liste" else "Grid",
+                        tint = accentColor
+                    )
+                }
                 if (categoryType == ExploreCategoryType.SEASONAL_ANIME) {
                     IconButton(onClick = { showFilterBottomSheet = true }) {
-                        Icon(
-                            imageVector = Icons.Rounded.FilterList,
-                            contentDescription = "Mevsim Filtresi",
-                            tint = accentColor
-                        )
+                        Icon(Icons.Rounded.FilterList, contentDescription = "Filtre", tint = accentColor)
                     }
                 }
             }
@@ -517,9 +530,7 @@ fun FullScreenMediaGridPage(
                 initialYear = seasonalYear,
                 initialSort = seasonalSort,
                 onDismissRequest = { showFilterBottomSheet = false },
-                onApply = { newSeason, newYear, newSort ->
-                    applySeasonalFilter(newSeason, newYear, newSort)
-                }
+                onApply = { s, y, sort -> applySeasonalFilter(s, y, sort) }
             )
         }
     }

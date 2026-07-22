@@ -112,7 +112,7 @@ fun KitsugiUserProfileScreen(
     appSettings: AppSettings,
     mediaEntries: List<MediaEntry>,
     onBackClick: () -> Unit,
-    onFavoriteMediaClick: (mediaId: Int, mediaType: MediaType, source: String) -> Unit,
+    onFavoriteMediaClick: (mediaId: Int, mediaType: MediaType, source: String, title: String, imageUrl: String?) -> Unit,
     onFavoriteCharacterClick: (charId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
     onFavoriteStaffClick: (staffId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
     onFavoriteStudioClick: ((studioId: Int, source: String, name: String?, imageUrl: String?) -> Unit)? = null,
@@ -680,7 +680,7 @@ fun KitsugiUserProfileScreen(
                                                             accentColor = accentColor,
                                                             blurAdultMedia = appSettings.blurAdultMedia,
                                                             onMediaClick = { mediaId, mType ->
-                                                                onFavoriteMediaClick(mediaId, mType, "anilist")
+                                                                onFavoriteMediaClick(mediaId, mType, "anilist", "", null)
                                                             },
                                                             onActivityClick = { actId ->
                                                                 activeActivityIdForDetail = actId
@@ -1315,8 +1315,8 @@ fun KitsugiUserProfileScreen(
                                                                         .clickable {
                                                                             item.id.toIntOrNull()?.let { id ->
                                                                                 when (favoritesFilter) {
-                                                                                    0 -> onFavoriteMediaClick(id, MediaType.Anime, "anilist")
-                                                                                    1 -> onFavoriteMediaClick(id, MediaType.Manga, "anilist")
+                                                                                    0 -> onFavoriteMediaClick(id, MediaType.Anime, "anilist", item.title, item.imageUrl)
+                                                                                    1 -> onFavoriteMediaClick(id, MediaType.Manga, "anilist", item.title, item.imageUrl)
                                                                                     2 -> onFavoriteCharacterClick(id, "anilist", item.title, item.imageUrl)
                                                                                     3 -> onFavoriteStaffClick(id, "anilist", item.title, item.imageUrl)
                                                                                     4 -> onFavoriteStudioClick?.invoke(id, "anilist", item.title, item.imageUrl)
@@ -1383,26 +1383,20 @@ fun KitsugiUserProfileScreen(
                                                     }
 
                                                     if (currentHasNext) {
+                                                        LaunchedEffect(currentFavList.size) {
+                                                            viewModel.loadMoreFavorites(currentFavCategory)
+                                                        }
                                                         Box(
                                                             modifier = Modifier
                                                                 .fillMaxWidth()
                                                                 .padding(vertical = 8.dp),
                                                             contentAlignment = Alignment.Center
                                                         ) {
-                                                            Box(
-                                                                modifier = Modifier
-                                                                    .clip(RoundedCornerShape(999.dp))
-                                                                    .background(accentColor.copy(alpha = 0.15f))
-                                                                    .clickable { viewModel.loadMoreFavorites(currentFavCategory) }
-                                                                    .padding(horizontal = 24.dp, vertical = 10.dp)
-                                                            ) {
-                                                                Text(
-                                                                    text = "Daha Fazla Yükle",
-                                                                    color = accentColor,
-                                                                    style = MaterialTheme.typography.labelMedium,
-                                                                    fontWeight = FontWeight.Bold
-                                                                )
-                                                            }
+                                                            CircularProgressIndicator(
+                                                                color = accentColor,
+                                                                modifier = Modifier.size(24.dp),
+                                                                strokeWidth = 2.dp
+                                                            )
                                                         }
                                                     }
                                                 }
@@ -1514,8 +1508,8 @@ fun KitsugiUserProfileScreen(
             onItemClick = { item ->
                 item.id.toIntOrNull()?.let { id ->
                     when (favoritesFilter) {
-                        0 -> onFavoriteMediaClick(id, MediaType.Anime, "anilist")
-                        1 -> onFavoriteMediaClick(id, MediaType.Manga, "anilist")
+                        0 -> onFavoriteMediaClick(id, MediaType.Anime, "anilist", item.title, item.imageUrl)
+                        1 -> onFavoriteMediaClick(id, MediaType.Manga, "anilist", item.title, item.imageUrl)
                         2 -> onFavoriteCharacterClick(id, "anilist", item.title, item.imageUrl)
                         3 -> onFavoriteStaffClick(id, "anilist", item.title, item.imageUrl)
                         4 -> onFavoriteStudioClick?.invoke(id, "anilist", item.title, item.imageUrl)
@@ -1534,7 +1528,7 @@ fun KitsugiUserProfileScreen(
             titleLanguage = appSettings.titleLanguage.toString(),
             blurAdultMedia = appSettings.blurAdultMedia,
             onMediaClick = { mediaId, mType, source ->
-                onFavoriteMediaClick(mediaId, mType, source)
+                onFavoriteMediaClick(mediaId, mType, source, "", null)
             },
             onDismiss = {
                 activeActivityIdForDetail = null

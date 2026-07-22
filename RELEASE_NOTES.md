@@ -4,6 +4,10 @@
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
+### 🔍 Keşfet Ekranı Kategorileri & Görünüm Senkronizasyonu
+- **Açılır-Kapanır Kategoriler**: Keşfet ekranında ayrı olan Anime ve Manga kategori satırları tek bir açılır-kapanır **"Kategoriler"** kartı altında birleştirildi. Manga kategorileri, Anime kategorilerinin altına konumlandırılarak görsel düzen sadeleştirildi.
+- **Scroll Senkronizasyonu**: Grid ve Liste görünümleri arasında geçiş yapıldığında kullanıcının kaydırma pozisyonu (scroll) kaybolmadan birebir senkronize edilerek geçiş yapılması sağlandı.
+
 ### 👤 Kullanıcı Profili Navigasyonu & Sayfa Düzeni Güncellemesi
 - **Gelişmiş Pager Altyapısı**: Kullanıcı profili ekranı, premium detay sayfası standartlarına uyumlu hale getirilerek ana sekmeler için kaydırılabilir `HorizontalPager` ve dinamik sayfa yüksekliği ölçümü (`onGloballyPositioned` ile height enterpolasyonu) ile baştan aşağı yenilendi.
 - **Snap Destekli LazyRow Filtreleri**: İstatistik alt sekmeleri ve sosyal/favori filtre çipleri, kaydırma bittiğinde en yakın öğeye yumuşakça yaslanan (`rememberSnapFlingBehavior` ve `SnapPosition.Start`) modern `LazyRow` bileşenlerine dönüştürüldü.
@@ -22,6 +26,10 @@
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
+
+### 🔍 Explore Screen Categories & View Synchronization
+- **Collapsible Categories**: Merged separate Anime and Manga category rows on the Explore Screen into a single collapsible **"Kategoriler"** container. Manga categories are nested directly below Anime categories to reduce screen clutter.
+- **Scroll Position Synchronization**: Implemented precise scroll state synchronization when toggling between list and grid views in the Full Screen Media Grid. This prevents layout resetting and preserves the user's scroll index and offset.
 
 ### 👤 User Profile Navigation & Layout Modernization
 - **Horizontal Pager Integration**: The user profile screen has been modernized with scrollable tab views (`HorizontalPager`) and dynamic height tracking (`onGloballyPositioned`) to ensure visual alignment with the premium detail page architecture.

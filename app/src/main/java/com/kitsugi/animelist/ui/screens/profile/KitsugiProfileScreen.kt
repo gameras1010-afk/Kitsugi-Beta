@@ -101,7 +101,7 @@ fun KitsugiProfileScreen(
     appSettings: AppSettings,
     onEntryClick: (MediaEntry) -> Unit,
     onOpenSettingsClick: () -> Unit,
-    onFavoriteMediaClick: (mediaId: Int, mediaType: MediaType, source: String) -> Unit,
+    onFavoriteMediaClick: (mediaId: Int, mediaType: MediaType, source: String, title: String, imageUrl: String?) -> Unit,
     onFavoriteCharacterClick: (charId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
     onFavoriteStaffClick: (staffId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
     onFavoriteStudioClick: ((studioId: Int, source: String, name: String?, imageUrl: String?) -> Unit)? = null,
@@ -414,7 +414,7 @@ fun KitsugiProfileScreen(
             titleLanguage = appSettings.titleLanguage.toString(),
             blurAdultMedia = appSettings.blurAdultMedia,
             onMediaClick = { mediaId, mType, source ->
-                onFavoriteMediaClick(mediaId, mType, source)
+                onFavoriteMediaClick(mediaId, mType, source, "", null)
             },
             onDismiss = {
                 activeActivityIdForDetail = null
@@ -733,7 +733,7 @@ fun AniListProfileContent(
     mediaEntries: List<MediaEntry>,
     appSettings: AppSettings,
     onEntryClick: (MediaEntry) -> Unit,
-    onFavoriteMediaClick: (mediaId: Int, mediaType: MediaType, source: String) -> Unit,
+    onFavoriteMediaClick: (mediaId: Int, mediaType: MediaType, source: String, title: String, imageUrl: String?) -> Unit,
     onFavoriteCharacterClick: (charId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
     onFavoriteStaffClick: (staffId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
     onFavoriteStudioClick: ((studioId: Int, source: String, name: String?, imageUrl: String?) -> Unit)? = null,
@@ -1193,7 +1193,7 @@ fun AniListProfileContent(
                                                 accentColor = accentColor,
                                                 blurAdultMedia = appSettings.blurAdultMedia,
                                                 onMediaClick = { mediaId, mType ->
-                                                    onFavoriteMediaClick(mediaId, mType, "anilist")
+                                                    onFavoriteMediaClick(mediaId, mType, "anilist", "", null)
                                                 },
                                                 onActivityClick = { actId -> onActivityClick?.invoke(actId) },
                                                 onLikeClick = { actId -> onLikeClick?.invoke(actId) },
@@ -1737,8 +1737,8 @@ fun AniListProfileContent(
                                                         onOpenFavoriteSheet(filterTitle, currentFavList) { item ->
                                                             item.id.toIntOrNull()?.let { id ->
                                                                 when (favoritesFilter) {
-                                                                    0 -> onFavoriteMediaClick(id, MediaType.Anime, "anilist")
-                                                                    1 -> onFavoriteMediaClick(id, MediaType.Manga, "anilist")
+                                                                    0 -> onFavoriteMediaClick(id, MediaType.Anime, "anilist", item.title, item.imageUrl)
+                                                                    1 -> onFavoriteMediaClick(id, MediaType.Manga, "anilist", item.title, item.imageUrl)
                                                                     2 -> onFavoriteCharacterClick(id, "anilist", item.title, item.imageUrl)
                                                                     3 -> onFavoriteStaffClick(id, "anilist", item.title, item.imageUrl)
                                                                     4 -> onFavoriteStudioClick?.invoke(id, "anilist", item.title, item.imageUrl)
@@ -1771,8 +1771,8 @@ fun AniListProfileContent(
                                                             .clickable {
                                                                 item.id.toIntOrNull()?.let { id ->
                                                                     when (favoritesFilter) {
-                                                                        0 -> onFavoriteMediaClick(id, MediaType.Anime, "anilist")
-                                                                        1 -> onFavoriteMediaClick(id, MediaType.Manga, "anilist")
+                                                                        0 -> onFavoriteMediaClick(id, MediaType.Anime, "anilist", item.title, item.imageUrl)
+                                                                        1 -> onFavoriteMediaClick(id, MediaType.Manga, "anilist", item.title, item.imageUrl)
                                                                         2 -> onFavoriteCharacterClick(id, "anilist", item.title, item.imageUrl)
                                                                         3 -> onFavoriteStaffClick(id, "anilist", item.title, item.imageUrl)
                                                                     }
@@ -1933,7 +1933,7 @@ fun MalProfileContent(
     mediaEntries: List<MediaEntry>,
     appSettings: AppSettings,
     onEntryClick: (MediaEntry) -> Unit,
-    onFavoriteMediaClick: (mediaId: Int, mediaType: MediaType, source: String) -> Unit,
+    onFavoriteMediaClick: (mediaId: Int, mediaType: MediaType, source: String, title: String, imageUrl: String?) -> Unit,
     onFavoriteCharacterClick: (charId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
     onFavoriteStaffClick: (staffId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
     onOpenFavoriteSheet: (title: String, items: List<ProfileFavoriteItem>, onClick: (ProfileFavoriteItem) -> Unit) -> Unit,
@@ -2373,8 +2373,8 @@ fun MalProfileContent(
                                                         onOpenFavoriteSheet(filterTitle, currentFavList) { item ->
                                                             item.id.toIntOrNull()?.let { id ->
                                                                 when (favoritesFilter) {
-                                                                    0 -> onFavoriteMediaClick(id, MediaType.Anime, "jikan")
-                                                                    1 -> onFavoriteMediaClick(id, MediaType.Manga, "jikan")
+                                                                    0 -> onFavoriteMediaClick(id, MediaType.Anime, "jikan", item.title, item.imageUrl)
+                                                                    1 -> onFavoriteMediaClick(id, MediaType.Manga, "jikan", item.title, item.imageUrl)
                                                                     2 -> onFavoriteCharacterClick(id, "jikan", item.title, item.imageUrl)
                                                                     3 -> onFavoriteStaffClick(id, "jikan", item.title, item.imageUrl)
                                                                 }
@@ -2406,8 +2406,8 @@ fun MalProfileContent(
                                                             .clickable {
                                                                 item.id.toIntOrNull()?.let { id ->
                                                                     when (favoritesFilter) {
-                                                                        0 -> onFavoriteMediaClick(id, MediaType.Anime, "jikan")
-                                                                        1 -> onFavoriteMediaClick(id, MediaType.Manga, "jikan")
+                                                                        0 -> onFavoriteMediaClick(id, MediaType.Anime, "jikan", item.title, item.imageUrl)
+                                                                        1 -> onFavoriteMediaClick(id, MediaType.Manga, "jikan", item.title, item.imageUrl)
                                                                         2 -> onFavoriteCharacterClick(id, "jikan", item.title, item.imageUrl)
                                                                         3 -> onFavoriteStaffClick(id, "jikan", item.title, item.imageUrl)
                                                                     }
@@ -2589,7 +2589,7 @@ fun SimklProfileContent(
     mediaEntries: List<MediaEntry>,
     appSettings: AppSettings,
     onEntryClick: (MediaEntry) -> Unit,
-    onFavoriteMediaClick: (mediaId: Int, mediaType: MediaType, source: String) -> Unit,
+    onFavoriteMediaClick: (mediaId: Int, mediaType: MediaType, source: String, title: String, imageUrl: String?) -> Unit,
     onOpenFavoriteSheet: (title: String, items: List<ProfileFavoriteItem>, onClick: (ProfileFavoriteItem) -> Unit) -> Unit,
     onOpenStatsClick: (() -> Unit)? = null,
     isLandscape: Boolean,
@@ -2864,7 +2864,7 @@ fun SimklProfileContent(
                                                 progressStr = null,
                                                 onClick = {
                                                     item.id.toIntOrNull()?.let { id ->
-                                                        onFavoriteMediaClick(id, MediaType.Anime, "simkl")
+                                                        onFavoriteMediaClick(id, MediaType.Anime, "simkl", item.title, item.imageUrl)
                                                     }
                                                 }
                                             )
@@ -3308,26 +3308,20 @@ fun FavoritesExpandedBottomSheet(
 
                 if (hasNextPage && onLoadMore != null) {
                     item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                        LaunchedEffect(items.size) {
+                            onLoadMore()
+                        }
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 12.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(999.dp))
-                                    .background(accentColor.copy(alpha = 0.15f))
-                                    .clickable { onLoadMore() }
-                                    .padding(horizontal = 24.dp, vertical = 10.dp)
-                            ) {
-                                Text(
-                                    text = "Daha Fazla Yükle",
-                                    color = accentColor,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                            CircularProgressIndicator(
+                                color = accentColor,
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp
+                            )
                         }
                     }
                 }

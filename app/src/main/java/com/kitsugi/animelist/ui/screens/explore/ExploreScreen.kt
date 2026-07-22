@@ -39,6 +39,9 @@ import androidx.compose.material.icons.automirrored.rounded.TrendingUp
 import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.CalendarMonth
+import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -221,6 +224,7 @@ fun ExploreScreen(
     )
 
     var activeRankingSheetData by remember { mutableStateOf<Triple<String, MediaType, List<JikanSearchResult>>?>(null) }
+    var isCategoriesExpanded by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(true) }
 
     val isHeroGone by remember {
         androidx.compose.runtime.derivedStateOf {
@@ -563,54 +567,132 @@ fun ExploreScreen(
                                 }
                             }
                         } else {
-                            // ─── ANİME KATEGORİLERİ (Chips) ───
+                            // ─── KATEGORİLER (Collapsible Section) ───
                             item {
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(horizontal = 20.dp)
                                 ) {
-                                    Text(
-                                        text = "Anime",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = KitsugiColors.TextPrimary
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    
-                                    LazyRow(
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        modifier = Modifier.fillMaxWidth()
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(KitsugiColors.Surface.copy(alpha = 0.4f))
+                                            .clickable { isCategoriesExpanded = !isCategoriesExpanded }
+                                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        item {
-                                            ExploreCategoryChip(
-                                                label = "Sezon",
-                                                onClick = { onSeeAllSection("Mevsimlik Anime", ExploreCategoryType.SEASONAL_ANIME, filteredSeasonalAnime) }
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                imageVector = androidx.compose.material.icons.Icons.Rounded.GridView,
+                                                contentDescription = null,
+                                                tint = accentColor,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = "Kategoriler",
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                color = KitsugiColors.TextPrimary
                                             )
                                         }
-                                        item {
-                                            ExploreCategoryChip(
-                                                label = "Yayın Takvimi",
-                                                onClick = onOpenAiringCalendar
+                                        Icon(
+                                            imageVector = if (isCategoriesExpanded) androidx.compose.material.icons.Icons.Rounded.KeyboardArrowUp else androidx.compose.material.icons.Icons.Rounded.KeyboardArrowDown,
+                                            contentDescription = "Genişlet/Daralt",
+                                            tint = KitsugiColors.TextSecondary
+                                        )
+                                    }
+                                    
+                                    AnimatedVisibility(
+                                        visible = isCategoriesExpanded,
+                                        enter = expandVertically() + fadeIn(),
+                                        exit = shrinkVertically() + fadeOut()
+                                    ) {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(top = 16.dp, start = 4.dp, end = 4.dp)
+                                        ) {
+                                            // ── Anime Alt Kategorisi ──
+                                            Text(
+                                                text = "Anime",
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = KitsugiColors.TextSecondary
                                             )
-                                        }
-                                        item {
-                                            ExploreCategoryChip(
-                                                label = "En İyi 100",
-                                                onClick = { onSeeAllSection("En İyi Anime", ExploreCategoryType.TOP_ANIME, filteredTopAnime) }
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            LazyRow(
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = "Sezon",
+                                                        onClick = { onSeeAllSection("Mevsimlik Anime", ExploreCategoryType.SEASONAL_ANIME, filteredSeasonalAnime) }
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = "Yayın Takvimi",
+                                                        onClick = onOpenAiringCalendar
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = "En İyi 100",
+                                                        onClick = { onSeeAllSection("En İyi Anime", ExploreCategoryType.TOP_ANIME, filteredTopAnime) }
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = "Trend",
+                                                        onClick = { onSeeAllSection("Trend Anime", ExploreCategoryType.TRENDING_ANIME, filteredTrendingAnime) }
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = "Filmler",
+                                                        onClick = { onSeeAllSection("Anime Filmleri", ExploreCategoryType.MOVIE_ANIME, filteredMovieAnime) }
+                                                    )
+                                                }
+                                            }
+                                            
+                                            Spacer(modifier = Modifier.height(20.dp))
+                                            
+                                            // ── Manga Alt Kategorisi ──
+                                            Text(
+                                                text = "Manga",
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = KitsugiColors.TextSecondary
                                             )
-                                        }
-                                        item {
-                                            ExploreCategoryChip(
-                                                label = "Trend",
-                                                onClick = { onSeeAllSection("Trend Anime", ExploreCategoryType.TRENDING_ANIME, filteredTrendingAnime) }
-                                            )
-                                        }
-                                        item {
-                                            ExploreCategoryChip(
-                                                label = "Filmler",
-                                                onClick = { onSeeAllSection("Anime Filmleri", ExploreCategoryType.MOVIE_ANIME, filteredMovieAnime) }
-                                            )
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            LazyRow(
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = "En İyi 100",
+                                                        onClick = { onSeeAllSection("En Popüler Manga", ExploreCategoryType.TOP_MANGA, filteredTopManga) }
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = "Yakında",
+                                                        onClick = { onSeeAllSection("Yayındaki Manga", ExploreCategoryType.PUBLISHING_MANGA, filteredPublishingManga) }
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = "Manga Oku",
+                                                        onClick = onOpenMangaReader
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
                                     Spacer(modifier = Modifier.height(26.dp))
@@ -632,48 +714,6 @@ fun ExploreScreen(
                                         hideScores = hideScores,
                                         blurAdultMedia = blurAdultMedia
                                     )
-                                    Spacer(modifier = Modifier.height(26.dp))
-                                }
-                            }
-
-                            // ─── MANGA KATEGORİLERİ (Chips) ───
-                            item {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 20.dp)
-                                ) {
-                                    Text(
-                                        text = "Manga",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = KitsugiColors.TextPrimary
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    
-                                    LazyRow(
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        item {
-                                            ExploreCategoryChip(
-                                                label = "En İyi 100",
-                                                onClick = { onSeeAllSection("En Popüler Manga", ExploreCategoryType.TOP_MANGA, filteredTopManga) }
-                                            )
-                                        }
-                                        item {
-                                            ExploreCategoryChip(
-                                                label = "Yakında",
-                                                onClick = { onSeeAllSection("Yayındaki Manga", ExploreCategoryType.PUBLISHING_MANGA, filteredPublishingManga) }
-                                            )
-                                        }
-                                        item {
-                                            ExploreCategoryChip(
-                                                label = "Manga Oku",
-                                                onClick = onOpenMangaReader
-                                            )
-                                        }
-                                    }
                                     Spacer(modifier = Modifier.height(26.dp))
                                 }
                             }
