@@ -186,6 +186,7 @@ class KitsugiMediaRelationsClient {
                                 title { romaji english native }
                                 type
                                 coverImage { large }
+                                isAdult
                             }
                         }
                     }
@@ -220,6 +221,7 @@ class KitsugiMediaRelationsClient {
                 val nodeTypeStr = node.optNullableString("type").orEmpty()
                 val nodeType = if (nodeTypeStr.equals("manga", ignoreCase = true)) MediaType.Manga else MediaType.Anime
                 val imageUrl = node.optJSONObject("coverImage")?.optNullableString("large")
+                val isAdult = node.optBoolean("isAdult", false)
                 list.add(KitsugiRelation(
                     malId = stableId,
                     title = title,
@@ -229,7 +231,8 @@ class KitsugiMediaRelationsClient {
                     source = "anilist",
                     titleEnglish = titleEnglish,
                     titleJapanese = titleNative,
-                    titleRomaji = titleRomaji
+                    titleRomaji = titleRomaji,
+                    isAdult = isAdult
                 ))
             }
             list
@@ -354,6 +357,7 @@ class KitsugiMediaRelationsClient {
                                     title { romaji english native }
                                     type
                                     coverImage { large }
+                                    isAdult
                                 }
                             }
                         }
@@ -389,6 +393,7 @@ class KitsugiMediaRelationsClient {
                 val nodeTypeStr = mediaRec.optNullableString("type").orEmpty()
                 val nodeType = if (nodeTypeStr.equals("manga", ignoreCase = true)) MediaType.Manga else MediaType.Anime
                 val imageUrl = mediaRec.optJSONObject("coverImage")?.optNullableString("large")
+                val isAdult = mediaRec.optBoolean("isAdult", false)
                 list.add(KitsugiRelation(
                     malId = stableId,
                     title = title,
@@ -398,7 +403,8 @@ class KitsugiMediaRelationsClient {
                     source = "anilist",
                     titleEnglish = titleEnglish,
                     titleJapanese = titleNative,
-                    titleRomaji = titleRomaji
+                    titleRomaji = titleRomaji,
+                    isAdult = isAdult
                 ))
             }
             list

@@ -1,5 +1,6 @@
 package com.kitsugi.animelist.ui.components
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
 import com.kitsugi.animelist.ui.utils.tvClickable
@@ -31,6 +32,7 @@ import com.kitsugi.animelist.data.remote.KitsugiForumReply
 import com.kitsugi.animelist.data.remote.KitsugiForumTopic
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
+import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -201,45 +203,81 @@ fun KitsugiTopicDetailBottomSheet(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Language Switcher Pills
+            // Language Switcher Pills + Translate / Copy Actions
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                val isOrigSelected = selectedLanguage == "original"
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(if (isOrigSelected) accentColor else KitsugiColors.SurfaceStrong)
-                        .tvClickable(shape = RoundedCornerShape(12.dp)) { selectedLanguage = "original" }
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "Orijinal",
-                        color = if (isOrigSelected) KitsugiColors.Background else KitsugiColors.TextPrimary,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    val isOrigSelected = selectedLanguage == "original"
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (isOrigSelected) accentColor else KitsugiColors.SurfaceStrong)
+                            .tvClickable(shape = RoundedCornerShape(12.dp)) { selectedLanguage = "original" }
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Orijinal",
+                            color = if (isOrigSelected) KitsugiColors.Background else KitsugiColors.TextPrimary,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    val isTrSelected = selectedLanguage == "turkish"
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (isTrSelected) accentColor else KitsugiColors.SurfaceStrong)
+                            .tvClickable(shape = RoundedCornerShape(12.dp)) { selectedLanguage = "turkish" }
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Türkçe",
+                            color = if (isTrSelected) KitsugiColors.Background else KitsugiColors.TextPrimary,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
 
-                val isTrSelected = selectedLanguage == "turkish"
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(if (isTrSelected) accentColor else KitsugiColors.SurfaceStrong)
-                        .tvClickable(shape = RoundedCornerShape(12.dp)) { selectedLanguage = "turkish" }
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "Türkçe",
-                        color = if (isTrSelected) KitsugiColors.Background else KitsugiColors.TextPrimary,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    IconButton(
+                        onClick = { context.openTranslator(topic.title) },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Translate,
+                            contentDescription = "Çevir",
+                            tint = accentColor
+                        )
+                    }
+                    IconButton(
+                        onClick = {
+                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("topic_title", topic.title))
+                            Toast.makeText(context, "Panoya kopyalandı", Toast.LENGTH_SHORT).show()
+                        },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.ContentCopy,
+                            contentDescription = "Kopyala",
+                            tint = KitsugiColors.TextSecondary
+                        )
+                    }
                 }
             }
 

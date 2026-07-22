@@ -1,5 +1,6 @@
 package com.kitsugi.animelist.ui.components
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
 import com.kitsugi.animelist.ui.utils.tvClickable
@@ -31,6 +32,7 @@ import com.kitsugi.animelist.model.MediaType
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.utils.PreferenceHelpers
+import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -339,9 +341,41 @@ fun KitsugiAllActivitiesBottomSheet(
 
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End,
+                                horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    IconButton(
+                                        onClick = { context.openTranslator(act.text) },
+                                        modifier = Modifier.size(28.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Translate,
+                                            contentDescription = "Çevir",
+                                            tint = accentColor,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
+                                    IconButton(
+                                        onClick = {
+                                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("activity_text", act.text))
+                                            Toast.makeText(context, "Panoya kopyalandı", Toast.LENGTH_SHORT).show()
+                                        },
+                                        modifier = Modifier.size(28.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.ContentCopy,
+                                            contentDescription = "Kopyala",
+                                            tint = KitsugiColors.TextSecondary,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
+                                }
+
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.tvClickable(shape = RoundedCornerShape(8.dp)) {

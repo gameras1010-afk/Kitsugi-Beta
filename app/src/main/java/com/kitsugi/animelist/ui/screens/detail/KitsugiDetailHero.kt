@@ -19,6 +19,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Tv
+import androidx.compose.material.icons.rounded.Book
+import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.MenuBook
+import androidx.compose.material.icons.rounded.RssFeed
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -64,7 +70,8 @@ fun KitsugiDetailHero(
     isFavorite: Boolean = false,
     alreadyInList: Boolean = false,
     blurAdultMedia: Boolean = false,
-    onShareClick: (() -> Unit)? = null
+    onShareClick: (() -> Unit)? = null,
+    totalEpisodes: Int? = null
 ) {
     val accentColor = LocalKitsugiAccent.current
     val fallbackPlaceholderColor = statusColor ?: accentColor
@@ -217,24 +224,44 @@ fun KitsugiDetailHero(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // 1. Format
+                val isMangaType = typeLabel.contains("MANGA", ignoreCase = true)
+                val formatIcon = if (isMangaType) Icons.Rounded.Book else Icons.Rounded.Tv
+                val formatText = when {
+                    typeLabel.contains("FİLM", ignoreCase = true) || typeLabel.contains("MOVIE", ignoreCase = true) -> "Film"
+                    typeLabel.contains("DİZİ", ignoreCase = true) || typeLabel.contains("TVSHOW", ignoreCase = true) -> "Dizi"
+                    isMangaType -> "Manga"
+                    else -> "TV"
+                }
+                MetadataIconText(icon = formatIcon, text = formatText, tint = accentColor)
+
+                // 2. Episodes / Chapters count
+                val countIcon = if (isMangaType) Icons.Rounded.MenuBook else Icons.Rounded.Schedule
+                val countText = if (totalEpisodes != null && totalEpisodes > 0) {
+                    if (isMangaType) "$totalEpisodes Cilt/Bölüm" else "$totalEpisodes Bölüm"
+                } else {
+                    if (isMangaType) "- Cilt" else "- Bölüm"
+                }
+                MetadataIconText(icon = countIcon, text = countText, tint = accentColor)
+
+                // 3. Status
+                if (statusLabel != null) {
+                    val statusIcon = Icons.Rounded.RssFeed
+                    MetadataIconText(icon = statusIcon, text = statusLabel, tint = statusColor ?: accentColor)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
 
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                HeroDetailPill(
-                    text = typeLabel,
-                    color = accentColor
-                )
-
-                if (statusLabel != null) {
-                    HeroDetailPill(
-                        text = statusLabel,
-                        color = statusColor ?: accentColor
-                    )
-                }
-
                 HeroDetailPill(
                     text = source.uppercase(),
                     color = accentColor
@@ -310,6 +337,31 @@ private fun HeroDetailPill(
             color = color,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun MetadataIconText(
+    icon: ImageVector,
+    text: String,
+    tint: Color
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = tint,
+            modifier = Modifier.size(16.dp)
+        )
+        Text(
+            text = text,
+            color = KitsugiColors.TextPrimary,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold
         )
     }
 }

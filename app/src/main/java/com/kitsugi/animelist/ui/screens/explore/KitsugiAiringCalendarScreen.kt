@@ -36,6 +36,8 @@ import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.PlaylistAddCheck
+import androidx.compose.material.icons.rounded.PlaylistPlay
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,6 +45,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -105,6 +112,22 @@ fun KitsugiAiringCalendarScreen(
     viewModel: KitsugiAiringCalendarViewModel = viewModel()
 ) {
     val accentColor = KitsugiColors.Accent
+    var showOnlyMyList by rememberSaveable { mutableStateOf(false) }
+
+    val filteredScheduleMap = remember(viewModel.weekSchedule, showOnlyMyList, currentEntries) {
+        if (showOnlyMyList) {
+            viewModel.weekSchedule.mapValues { (_, entries) ->
+                entries.filter { entry ->
+                    currentEntries.any { me ->
+                        (entry.malId != null && me.malId == entry.malId) ||
+                                me.malId == entry.aniListId
+                    }
+                }
+            }
+        } else {
+            viewModel.weekSchedule
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -114,8 +137,10 @@ fun KitsugiAiringCalendarScreen(
     ) {
         // ── Başlık çubuğu ──────────────────────────────────────────────────
         AiringCalendarHeader(
-            totalCount = viewModel.totalAiringCount(),
+            totalCount = filteredScheduleMap.values.sumOf { it.size },
             isLoading = viewModel.isLoading,
+            showOnlyMyList = showOnlyMyList,
+            onShowOnlyMyListChange = { showOnlyMyList = it },
             onRefresh = { viewModel.loadSchedule() },
             onBackClick = onBackClick
         )
@@ -124,7 +149,7 @@ fun KitsugiAiringCalendarScreen(
         AiringDayTabRow(
             days = DAYS_ORDERED,
             selectedDay = viewModel.selectedDay,
-            scheduleMap = viewModel.weekSchedule,
+            scheduleMap = filteredScheduleMap,
             accentColor = accentColor,
             onDaySelected = { viewModel.selectDay(it) }
         )
@@ -154,7 +179,7 @@ fun KitsugiAiringCalendarScreen(
                     },
                     label = "day_anim"
                 ) { day ->
-                    val entries = viewModel.weekSchedule[day] ?: emptyList()
+                    val entries = filteredScheduleMap[day] ?: emptyList()
                     AiringEntryList(
                         entries = entries,
                         currentEntries = currentEntries,
@@ -173,6 +198,8 @@ fun KitsugiAiringCalendarScreen(
 private fun AiringCalendarHeader(
     totalCount: Int,
     isLoading: Boolean,
+    showOnlyMyList: Boolean,
+    onShowOnlyMyListChange: (Boolean) -> Unit,
     onRefresh: () -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -212,6 +239,41 @@ private fun AiringCalendarHeader(
                 )
             }
         }
+
+        // Listemde Toggle Button
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(10.dp))
+                .background(if (showOnlyMyList) KitsugiColors.AccentGreen.copy(0.18f) else Color.Transparent)
+                .border(
+                    width = 1.dp,
+                    color = if (showOnlyMyList) KitsugiColors.AccentGreen else KitsugiColors.TextSecondary.copy(0.3f),
+                    shape = RoundedCornerShape(10.dp)
+                )
+                .clickable { onShowOnlyMyListChange(!showOnlyMyList) }
+                .padding(horizontal = 12.dp, vertical = 6.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Icon(
+                    imageVector = if (showOnlyMyList) Icons.Rounded.PlaylistAddCheck else Icons.Rounded.PlaylistPlay,
+                    contentDescription = null,
+                    tint = if (showOnlyMyList) KitsugiColors.AccentGreen else KitsugiColors.TextSecondary,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    text = "Listemde",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = if (showOnlyMyList) KitsugiColors.AccentGreen else KitsugiColors.TextSecondary
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
         IconButton(onClick = onRefresh, enabled = !isLoading) {
             if (isLoading) {
                 CircularProgressIndicator(
@@ -479,11 +541,7 @@ fun AiringEntryCard(
                         tint = KitsugiColors.TextSecondary,
                         modifier = Modifier.size(12.dp)
                     )
-                    Text(
-                        text = entry.formattedTime(),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = KitsugiColors.TextSecondary
-                    )
+                    AiringTimeText(entry = entry)
                 }
             }
         }
@@ -499,6 +557,41 @@ fun AiringEntryCard(
             )
         }
     }
+}
+
+@Composable
+private fun AiringTimeText(entry: AiringEntry) {
+    var text by remember(entry) { mutableStateOf(entry.formattedTime()) }
+
+    if (!entry.hasAired()) {
+        LaunchedEffect(entry) {
+            while (true) {
+                val remaining = entry.airingAt - System.currentTimeMillis() / 1000L
+                if (remaining <= 0) {
+                    text = "${entry.formattedTime()} • Yayınlandı"
+                    break
+                }
+                val days = remaining / 86400
+                text = if (days >= 1) {
+                    "${entry.formattedTime()} • $days gün sonra yayında"
+                } else {
+                    val hours = remaining / 3600
+                    val minutes = (remaining % 3600) / 60
+                    String.format("%s • %02d:%02d sonra", entry.formattedTime(), hours, minutes)
+                }
+                val delayTime = if (days >= 1) 60000L else 10000L
+                kotlinx.coroutines.delay(delayTime)
+            }
+        }
+    } else {
+        text = "${entry.formattedTime()} • Yayınlandı"
+    }
+
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelSmall,
+        color = KitsugiColors.TextSecondary
+    )
 }
 
 // ─── Hata ekranı ───────────────────────────────────────────────────────────

@@ -9,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -23,10 +24,15 @@ import com.kitsugi.animelist.ui.utils.tvClickable
 import com.kitsugi.animelist.ui.components.KitsugiShimmerSearchResultList
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayTitle
 
+import androidx.compose.runtime.remember
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+
 @Composable
 fun RecommendationsTabContent(
     state: DetailTabState<List<KitsugiRelation>>,
     titleLanguage: String = "ROMAJI",
+    blurAdultMedia: Boolean = false,
     onRecommendationClick: (KitsugiRelation) -> Unit
 ) {
     when (state) {
@@ -77,7 +83,7 @@ fun RecommendationsTabContent(
                         modifier = Modifier.padding(bottom = 4.dp)
                     )
                     list.forEach { rel ->
-                        RecommendationCard(rel, titleLanguage, onRecommendationClick)
+                        RecommendationCard(rel, titleLanguage, blurAdultMedia, onRecommendationClick)
                     }
                 }
             }
@@ -89,10 +95,12 @@ fun RecommendationsTabContent(
 fun RecommendationCard(
     rel: KitsugiRelation,
     titleLanguage: String = "ROMAJI",
+    blurAdultMedia: Boolean = false,
     onClick: (KitsugiRelation) -> Unit
 ) {
     val accentColor = LocalKitsugiAccent.current
     val displayTitle = rel.getDisplayTitle(titleLanguage)
+    val context = androidx.compose.ui.platform.LocalContext.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -110,10 +118,18 @@ fun RecommendationCard(
                 .background(KitsugiColors.SurfaceSoft)
         ) {
             if (!rel.imageUrl.isNullOrBlank()) {
+                val imageRequest = remember(rel.imageUrl as Any?, blurAdultMedia as Any?, rel.isAdult as Any?) {
+                    ImageRequest.Builder(context)
+                        .data(rel.imageUrl)
+                        .crossfade(!(blurAdultMedia && rel.isAdult))
+                        .build()
+                }
                 AsyncImage(
-                    model = rel.imageUrl,
+                    model = imageRequest,
                     contentDescription = displayTitle,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(if (blurAdultMedia && rel.isAdult) Modifier.blur(24.dp) else Modifier),
                     contentScale = ContentScale.Crop
                 )
             } else {

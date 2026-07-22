@@ -19,6 +19,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Tv
+import androidx.compose.material.icons.rounded.Book
+import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.MenuBook
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.material.icons.rounded.RssFeed
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -210,22 +216,42 @@ internal fun DetailHero(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // 1. Format
+                val formatIcon = if (entry.type == MediaType.Manga) Icons.Rounded.Book else Icons.Rounded.Tv
+                val formatText = when (entry.type) {
+                    MediaType.Anime -> "TV"
+                    MediaType.Movie -> "Film"
+                    MediaType.TvShow -> "Dizi"
+                    MediaType.Manga -> "Manga"
+                }
+                MetadataIconText(icon = formatIcon, text = formatText, tint = accentColor)
+
+                // 2. Episodes / Chapters count
+                val countIcon = if (entry.type == MediaType.Manga) Icons.Rounded.MenuBook else Icons.Rounded.Schedule
+                val totalVal = entry.total
+                val countText = if (totalVal != null && totalVal > 0) {
+                    if (entry.type == MediaType.Manga) "$totalVal Cilt/Bölüm" else "$totalVal Bölüm"
+                } else {
+                    if (entry.type == MediaType.Manga) "- Cilt" else "- Bölüm"
+                }
+                MetadataIconText(icon = countIcon, text = countText, tint = accentColor)
+
+                // 3. Status
+                val statusIcon = Icons.Rounded.RssFeed
+                MetadataIconText(icon = statusIcon, text = entry.status.label, tint = statusColor)
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
 
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                DetailPill(
-                    text = mediaTypeLabel(entry),
-                    color = accentColor
-                )
-
-                DetailPill(
-                    text = entry.status.label,
-                    color = statusColor
-                )
-
                 DetailPill(
                     text = entry.source.uppercase(),
                     color = accentColor
@@ -290,5 +316,30 @@ private fun mediaTypeLabel(entry: MediaEntry): String {
         MediaType.Manga -> "MANGA"
         MediaType.Movie -> "FİLM"
         MediaType.TvShow -> "DİZİ"
+    }
+}
+
+@Composable
+private fun MetadataIconText(
+    icon: ImageVector,
+    text: String,
+    tint: Color
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = tint,
+            modifier = Modifier.size(16.dp)
+        )
+        Text(
+            text = text,
+            color = KitsugiColors.TextPrimary,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }

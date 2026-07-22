@@ -448,7 +448,7 @@ fun MediaEntryDetailPage(
                                             }
                                             1 -> CharactersTabContent(state = charactersState, onCharacterClick = onCharacterClick, onStaffClick = onStaffClick)
                                             2 -> StaffTabContent(state = staffState, onStaffClick = onStaffClick)
-                                            3 -> RecommendationsTabContent(state = recommendationsState, titleLanguage = titleLanguage, onRecommendationClick = { rel ->
+                                            3 -> RecommendationsTabContent(state = recommendationsState, titleLanguage = titleLanguage, blurAdultMedia = blurAdultMedia, onRecommendationClick = { rel ->
                                                 val typeLabel = when (rel.mediaType) {
                                                     MediaType.Anime -> "Anime"
                                                     MediaType.Movie -> "Film"
@@ -462,7 +462,7 @@ fun MediaEntryDetailPage(
                                                     type = rel.mediaType,
                                                     total = null,
                                                     score = null,
-                                                    isAdult = false,
+                                                    isAdult = rel.isAdult,
                                                     imageUrl = rel.imageUrl,
                                                     year = null,
                                                     realMalId = rel.malId,
@@ -472,7 +472,7 @@ fun MediaEntryDetailPage(
                                                 )
                                                 onRelationClick(result)
                                             })
-                                            4 -> RelationsTabContent(state = relationsState, titleLanguage = titleLanguage, onRelationClick = { rel ->
+                                            4 -> RelationsTabContent(state = relationsState, titleLanguage = titleLanguage, blurAdultMedia = blurAdultMedia, onRelationClick = { rel ->
                                                 val typeLabel = when (rel.mediaType) {
                                                     MediaType.Anime -> "Anime"
                                                     MediaType.Movie -> "Film"
@@ -486,7 +486,7 @@ fun MediaEntryDetailPage(
                                                     type = rel.mediaType,
                                                     total = null,
                                                     score = null,
-                                                    isAdult = false,
+                                                    isAdult = rel.isAdult,
                                                     imageUrl = rel.imageUrl,
                                                     year = null,
                                                     realMalId = rel.malId,
@@ -822,7 +822,7 @@ fun MediaEntryDetailPage(
                                     }
                                     1 -> CharactersTabContent(state = charactersState, onCharacterClick = onCharacterClick, onStaffClick = onStaffClick)
                                     2 -> StaffTabContent(state = staffState, onStaffClick = onStaffClick)
-                                    3 -> RecommendationsTabContent(state = recommendationsState, titleLanguage = titleLanguage, onRecommendationClick = { rel ->
+                                    3 -> RecommendationsTabContent(state = recommendationsState, titleLanguage = titleLanguage, blurAdultMedia = blurAdultMedia, onRecommendationClick = { rel ->
                                         val typeLabel = when (rel.mediaType) {
                                             MediaType.Anime -> "Anime"
                                             MediaType.Movie -> "Film"
@@ -836,7 +836,7 @@ fun MediaEntryDetailPage(
                                             type = rel.mediaType,
                                             total = null,
                                             score = null,
-                                            isAdult = false,
+                                            isAdult = rel.isAdult,
                                             imageUrl = rel.imageUrl,
                                             year = null,
                                             realMalId = rel.malId,
@@ -846,7 +846,7 @@ fun MediaEntryDetailPage(
                                         )
                                         onRelationClick(result)
                                     })
-                                    4 -> RelationsTabContent(state = relationsState, titleLanguage = titleLanguage, onRelationClick = { rel ->
+                                    4 -> RelationsTabContent(state = relationsState, titleLanguage = titleLanguage, blurAdultMedia = blurAdultMedia, onRelationClick = { rel ->
                                         val typeLabel = when (rel.mediaType) {
                                             MediaType.Anime -> "Anime"
                                             MediaType.Movie -> "Film"
@@ -860,7 +860,7 @@ fun MediaEntryDetailPage(
                                             type = rel.mediaType,
                                             total = null,
                                             score = null,
-                                            isAdult = false,
+                                            isAdult = rel.isAdult,
                                             imageUrl = rel.imageUrl,
                                             year = null,
                                             realMalId = rel.malId,

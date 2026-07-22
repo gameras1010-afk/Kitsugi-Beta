@@ -1,19 +1,29 @@
-# Kitsugi v2.4.62 Release Notes 🚀
+# Kitsugi Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### 🎨 Detay Sayfası Kenarlık & Tasarım Standardizasyonu
-- **Görsel Kenar Kaymaları Çözüldü:** Tüm detay sayfalarındaki `HorizontalPager` kaydırma alanları standartlaştırıldı. İçeriklerin ekran kenarlarından taşması (edge-bleeding) engellendi ve hızlı kaydırma sırasındaki titremeler/donmalar giderildi.
-- **Kutulu Kart Tasarımı (Surface):** Detay sayfalarında yer alan "Durum Dağılımı", "Puan Dağılımı", "Tartışma Konuları", "Aktiviteler" ve "İncelemeler" gibi tüm sekmeler, uygulamanın genel premium estetiğine uygun olarak yuvarlak köşeli (`18.dp`) ve arka plan rengi olan kart yapılarına (`Surface`) yerleştirildi.
-- **Renk Karşıtlığı Kontrastı:** İçi içe geçen yorum kartlarında karmaşayı önlemek amacıyla iç kartların arka plan renkleri `SurfaceSoft` olarak uyarlanarak görsellik ve okunabilirlik en üst düzeye çıkarıldı.
+### 📝 Detay Sayfası Açıklama (Synopsis) Alanı Kısaltma & Buton Desteği
+- **Otomatik Kısaltma Mantığı:** Detay sayfalarındaki açıklama metinleri (hem yerel hem de API sonuçları için) satır atlama sayısı (`>= 4`) veya karakter uzunluğuna (`> 200`) bağlı olarak otomatik olarak kısaltılacak şekilde güncellendi.
+- **Akıcı Geçiş Animasyonu:** "Daha fazla" ve "Daha az" butonlarına basıldığında metin alanı boyutu `animateContentSize()` ile yumuşak geçişli bir şekilde değişecek şekilde optimize edildi.
+
+### 🛡️ +18 Blur Yüklenme Performansı
+- **Öneriler & İlişkiler Sekmesi İyileştirmesi:** Önerilen ve ilişkili yapımlar sekmelerinde +18 içerikli kartlar yüklenirken oluşan anlık görsel sızıntıları engellemek amacıyla Coil resim yükleyicisinin geçiş (crossfade) animasyonu blurlanmış resimler için devre dışı bırakıldı. Böylece blur efekti resim yüklenir yüklenmez anında görünür hale getirildi.
+
+### 🎨 Modern Simge Tabanlı Bilgi Satırları
+- **Metadata Standardizasyonu:** Detay sayfalarındaki eski tip chip tabanlı yerleşimler kaldırılarak, modern ve simge tabanlı dinamik bilgi satırlarına (Format, Bölüm/Bölümler, Yayın Tarihi vb.) geçiş yapıldı.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### 🎨 Detail Page Spacing & Layout Standardization
-- **Edge Bleeding Resolved:** Standardized layout spacing constraints for the `HorizontalPager` component across all detail pages to prevent content from touching screen edges and eliminate scrolling jitters during rapid swipe navigation.
-- **Encapsulated Card Containers:** Grouped the "Status Distribution", "Score Distribution", "Forum Topics", "Activities", and "Reviews" sections into stylized, rounded-corner (`18.dp`) container cards (`Surface`) to achieve a unified, premium visual signature.
-- **Nested Card Contrast:** Updated background colors for nested topic, activity, and review cards to `SurfaceSoft` inside primary containers, offering clean contrast and high aesthetic refinement.
+### 📝 Detail Page Description (Synopsis) Truncation & Toggle
+- **Dynamic Truncation:** Descriptions on media detail pages (both local entries and API results) are now automatically truncated based on character length (`> 200`) and newline count (`>= 4`).
+- **Smooth Height Transitions:** Integrated `animateContentSize()` to provide a buttery-smooth animation when toggling between "Daha fazla" (Read more) and "Daha az" (Read less).
+
+### 🛡️ +18 Adult Content Blur Fix
+- **Recommendations & Relations Tabs:** Fixed a minor visual race condition where +18 adult content cover images briefly flashed without the blur filter during initial load. Coil's crossfade transition is now disabled for blurred media, applying the blur modifier instantly.
+
+### 🎨 Icon-Based Metadata Layout
+- **Visual Standardization:** Replaced rigid chip layouts with premium, icon-supported horizontal metadata rows showing format, episode counts, and airing schedules.

@@ -49,7 +49,7 @@ internal object KitsugiAniListDetailClient {
                     isAdult
                     tags { name rank isMediaSpoiler }
                     externalLinks { url site language type }
-                    nextAiringEpisode { episode timeUntilAiring }
+                    nextAiringEpisode { episode timeUntilAiring airingAt }
                     rankings { id rank type format year season allTime context }
                     stats {
                         statusDistribution { amount }
@@ -217,15 +217,8 @@ internal object KitsugiAniListDetailClient {
             val nextAiringObj = media.optJSONObject("nextAiringEpisode")
             val nextAiringEpisode = if (nextAiringObj != null) {
                 val ep = nextAiringObj.optInt("episode")
-                val timeSec = nextAiringObj.optLong("timeUntilAiring")
-                val days = timeSec / 86400
-                val hours = (timeSec % 86400) / 3600
-                val timeText = when {
-                    days > 0 -> "$days gün"
-                    hours > 0 -> "$hours saat"
-                    else -> "yakında"
-                }
-                "Bölüm $ep, $timeText sonra yayında"
+                val airingAt = nextAiringObj.optLong("airingAt")
+                "$ep|$airingAt"
             } else null
 
             var parsedRank: Int? = null
@@ -400,6 +393,26 @@ internal object KitsugiAniListDetailClient {
                 scoredBy = totalScoredBy,
                 members = totalMembers ?: popularity
             )
+        }.getOrNull()
+    }
+
+    suspend fun fetchNextAiringEpisodeOnly(aniListId: Int): String? {
+        val query = """
+            query (${'$'}id: Int) {
+                Media(id: ${'$'}id, type: ANIME) {
+                    nextAiringEpisode { episode timeUntilAiring airingAt }
+                }
+            }
+        """.trimIndent()
+        val variables = JSONObject().put("id", aniListId)
+        val response = KitsugiApiBase.executeAniListQuery(query, variables) ?: return null
+        return runCatching {
+            val root = JSONObject(response)
+            val media = root.optJSONObject("data")?.optJSONObject("Media") ?: return@runCatching null
+            val nextAiringObj = media.optJSONObject("nextAiringEpisode") ?: return@runCatching null
+            val ep = nextAiringObj.optInt("episode")
+            val airingAt = nextAiringObj.optLong("airingAt")
+            "$ep|$airingAt"
         }.getOrNull()
     }
 }

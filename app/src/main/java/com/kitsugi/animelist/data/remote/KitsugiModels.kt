@@ -221,7 +221,8 @@ data class KitsugiRelation(
     val source: String,
     val titleEnglish: String? = null,
     val titleJapanese: String? = null,
-    val titleRomaji: String? = null
+    val titleRomaji: String? = null,
+    val isAdult: Boolean = false
 )
 
 data class KitsugiScoreStat(

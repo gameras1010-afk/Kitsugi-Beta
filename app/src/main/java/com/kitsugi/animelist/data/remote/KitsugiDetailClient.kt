@@ -135,50 +135,70 @@ class KitsugiDetailClient {
                 else -> null
             }
 
-            if (detail != null && mediaType != MediaType.Manga) {
+            var finalDetail = detail
+            if (finalDetail != null && mediaType != MediaType.Manga) {
                 // TMDB zenginleştirmesi için en iyi MAL ID'yi bul
                 // AniList source'da realMalId, detail.realMalId veya stableId < 100M ise stableId kendisi
                 val effectiveRealMalId = realMalId
-                    ?: detail.realMalId
+                    ?: finalDetail.realMalId
                     ?: if (source.lowercase() == "anilist" && externalId < 100_000_000) externalId else null
-                val trMeta = getTurkishMetadataFromTmdb(source, externalId, mediaType, tmdbId ?: detail.tmdbId, effectiveRealMalId)
+                val trMeta = getTurkishMetadataFromTmdb(source, externalId, mediaType, tmdbId ?: finalDetail.tmdbId, effectiveRealMalId)
                 if (trMeta != null) {
-                    val updatedSynopsis = if (!trMeta.synopsis.isNullOrBlank()) trMeta.synopsis else detail.synopsis
-                    val updatedTitle = if (!trMeta.title.isNullOrBlank()) trMeta.title else detail.title
-                    val updatedTitleEnglish = if (!trMeta.titleEnglish.isNullOrBlank()) trMeta.titleEnglish else detail.titleEnglish
-                    val updatedGenres = if (trMeta.genres.isNotEmpty()) trMeta.genres else detail.genres
-                    val combinedPictures = (detail.pictures.orEmpty() + trMeta.pictures.orEmpty()).distinct()
-                    val mergedStudios = if (detail.studios.isNotEmpty()) detail.studios else trMeta.studios
-                    val mergedProducers = if (detail.producers.isNotEmpty()) detail.producers else trMeta.producers
-                    val mergedRating = if (!detail.rating.isNullOrBlank()) detail.rating else trMeta.rating
-                    return@withContext detail.copy(
+                    val updatedSynopsis = if (!trMeta.synopsis.isNullOrBlank()) trMeta.synopsis else finalDetail.synopsis
+                    val updatedTitle = if (!trMeta.title.isNullOrBlank()) trMeta.title else finalDetail.title
+                    val updatedTitleEnglish = if (!trMeta.titleEnglish.isNullOrBlank()) trMeta.titleEnglish else finalDetail.titleEnglish
+                    val updatedGenres = if (trMeta.genres.isNotEmpty()) trMeta.genres else finalDetail.genres
+                    val combinedPictures = (finalDetail.pictures.orEmpty() + trMeta.pictures.orEmpty()).distinct()
+                    val mergedStudios = if (finalDetail.studios.isNotEmpty()) finalDetail.studios else trMeta.studios
+                    val mergedProducers = if (finalDetail.producers.isNotEmpty()) finalDetail.producers else trMeta.producers
+                    val mergedRating = if (!finalDetail.rating.isNullOrBlank()) finalDetail.rating else trMeta.rating
+                    finalDetail = finalDetail.copy(
                         synopsis = updatedSynopsis,
                         title = updatedTitle,
                         titleEnglish = updatedTitleEnglish,
                         genres = updatedGenres,
-                        tmdbId = tmdbId ?: detail.tmdbId,
+                        tmdbId = tmdbId ?: finalDetail.tmdbId,
                         pictures = combinedPictures,
                         studios = mergedStudios,
                         producers = mergedProducers,
                         rating = mergedRating,
                         totalSeasons = if (source.lowercase() == "tmdb" || source.lowercase() == "simkl") {
-                            trMeta.totalSeasons ?: detail.totalSeasons
+                            trMeta.totalSeasons ?: finalDetail.totalSeasons
                         } else {
-                            detail.totalSeasons ?: 1
+                            finalDetail.totalSeasons ?: 1
                         },
-                        meanScore = detail.meanScore ?: trMeta.meanScore,
-                        averageScore = detail.averageScore ?: trMeta.averageScore,
-                        popularity = detail.popularity ?: trMeta.popularity,
-                        favorites = detail.favorites ?: trMeta.favorites,
-                        rank = detail.rank ?: trMeta.rank,
-                        popularityRank = detail.popularityRank ?: trMeta.popularityRank,
-                        scoredBy = detail.scoredBy ?: trMeta.scoredBy,
-                        members = detail.members ?: trMeta.members,
-                        nextAiringEpisode = detail.nextAiringEpisode ?: trMeta.nextAiringEpisode
+                        meanScore = finalDetail.meanScore ?: trMeta.meanScore,
+                        averageScore = finalDetail.averageScore ?: trMeta.averageScore,
+                        popularity = finalDetail.popularity ?: trMeta.popularity,
+                        favorites = finalDetail.favorites ?: trMeta.favorites,
+                        rank = finalDetail.rank ?: trMeta.rank,
+                        popularityRank = finalDetail.popularityRank ?: trMeta.popularityRank,
+                        scoredBy = finalDetail.scoredBy ?: trMeta.scoredBy,
+                        members = finalDetail.members ?: trMeta.members,
+                        nextAiringEpisode = finalDetail.nextAiringEpisode ?: trMeta.nextAiringEpisode
                     )
                 }
+
+                // Eğer nextAiringEpisode hâlâ null ise AniList üzerinden çöz ve çek
+                if (finalDetail.nextAiringEpisode == null) {
+                    val malIdForResolve = when (source.lowercase()) {
+                        "simkl" -> realMalId ?: finalDetail.realMalId
+                        "jikan", "mal" -> externalId
+                        "anilist" -> if (externalId < 100_000_000) externalId else realMalId ?: finalDetail.realMalId
+                        else -> null
+                    }
+                    val resolvedAniListId = runCatching {
+                        KitsugiIdResolver.resolveIds(malId = malIdForResolve, aniListId = null).aniListId
+                    }.getOrNull()
+                    if (resolvedAniListId != null && resolvedAniListId > 0) {
+                        val nextAiring = KitsugiAniListDetailClient.fetchNextAiringEpisodeOnly(resolvedAniListId)
+                        if (nextAiring != null) {
+                            finalDetail = finalDetail.copy(nextAiringEpisode = nextAiring)
+                        }
+                    }
+                }
             }
-            detail
+            finalDetail
         }
     }
 }

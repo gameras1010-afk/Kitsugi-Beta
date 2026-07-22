@@ -15,6 +15,7 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.ThumbUp
+import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,6 +34,7 @@ import com.kitsugi.animelist.data.remote.KitsugiReview
 import com.kitsugi.animelist.data.remote.JikanApiClient
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
+import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -172,6 +174,32 @@ fun KitsugiReviewDetailBottomSheet(
                                 fontWeight = FontWeight.Black
                             )
                         }
+                    }
+
+                    IconButton(
+                        onClick = { context.openTranslator(review.fullText) },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Translate,
+                            contentDescription = "Çevir",
+                            tint = accentColor
+                        )
+                    }
+
+                    IconButton(
+                        onClick = {
+                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("review_text", review.fullText))
+                            Toast.makeText(context, "Panoya kopyalandı", Toast.LENGTH_SHORT).show()
+                        },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.ContentCopy,
+                            contentDescription = "Kopyala",
+                            tint = KitsugiColors.TextSecondary
+                        )
                     }
 
                     IconButton(

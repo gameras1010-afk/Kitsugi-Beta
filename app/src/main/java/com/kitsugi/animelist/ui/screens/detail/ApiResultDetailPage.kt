@@ -355,7 +355,8 @@ fun ApiResultDetailPage(
                                     activeGalleryIndex = idx
                                 },
                                 scoreLabel = if (!hideScores) displayResult.getDisplayScore(scoreFormat, hideScores) else null,
-                                alreadyInList = existingEntry != null
+                                alreadyInList = existingEntry != null,
+                                totalEpisodes = displayResult.total
                             )
                             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                                 Spacer(modifier = Modifier.height(12.dp))
@@ -618,7 +619,7 @@ fun ApiResultDetailPage(
                                             }
                                             1 -> CharactersTabContent(state = charactersState, onCharacterClick = onCharacterClick, onStaffClick = onStaffClick)
                                             2 -> StaffTabContent(state = staffState, onStaffClick = onStaffClick)
-                                            3 -> RecommendationsTabContent(state = recommendationsState, titleLanguage = titleLanguage, onRecommendationClick = { rel ->
+                                            3 -> RecommendationsTabContent(state = recommendationsState, titleLanguage = titleLanguage, blurAdultMedia = blurAdultMedia, onRecommendationClick = { rel ->
                                                 val typeLabel = when (rel.mediaType) {
                                                     MediaType.Anime -> "Anime"
                                                     MediaType.Movie -> "Film"
@@ -632,7 +633,7 @@ fun ApiResultDetailPage(
                                                     type = rel.mediaType,
                                                     total = null,
                                                     score = null,
-                                                    isAdult = false,
+                                                    isAdult = rel.isAdult,
                                                     imageUrl = rel.imageUrl,
                                                     year = null,
                                                     source = rel.source,
@@ -641,7 +642,7 @@ fun ApiResultDetailPage(
                                                 )
                                                 onRelationClick(relResult)
                                             })
-                                            4 -> RelationsTabContent(state = relationsState, titleLanguage = titleLanguage, onRelationClick = { rel ->
+                                            4 -> RelationsTabContent(state = relationsState, titleLanguage = titleLanguage, blurAdultMedia = blurAdultMedia, onRelationClick = { rel ->
                                                 val typeLabel = when (rel.mediaType) {
                                                     MediaType.Anime -> "Anime"
                                                     MediaType.Movie -> "Film"
@@ -655,7 +656,7 @@ fun ApiResultDetailPage(
                                                     type = rel.mediaType,
                                                     total = null,
                                                     score = null,
-                                                    isAdult = false,
+                                                    isAdult = rel.isAdult,
                                                     imageUrl = rel.imageUrl,
                                                     year = null,
                                                     source = rel.source,
@@ -741,7 +742,8 @@ fun ApiResultDetailPage(
                                 activeGalleryIndex = idx
                             },
                             scoreLabel = if (!hideScores) displayResult.getDisplayScore(scoreFormat, hideScores) else null,
-                            alreadyInList = existingEntry != null
+                            alreadyInList = existingEntry != null,
+                            totalEpisodes = displayResult.total
                         )
                     }
 
@@ -1102,7 +1104,7 @@ fun ApiResultDetailPage(
                                     }
                                     1 -> CharactersTabContent(state = charactersState, onCharacterClick = onCharacterClick, onStaffClick = onStaffClick)
                                     2 -> StaffTabContent(state = staffState, onStaffClick = onStaffClick)
-                                    3 -> RecommendationsTabContent(state = recommendationsState, titleLanguage = titleLanguage, onRecommendationClick = { rel ->
+                                    3 -> RecommendationsTabContent(state = recommendationsState, titleLanguage = titleLanguage, blurAdultMedia = blurAdultMedia, onRecommendationClick = { rel ->
                                         val typeLabel = when (rel.mediaType) {
                                             MediaType.Anime -> "Anime"
                                             MediaType.Movie -> "Film"
@@ -1116,7 +1118,7 @@ fun ApiResultDetailPage(
                                             type = rel.mediaType,
                                             total = null,
                                             score = null,
-                                            isAdult = false,
+                                            isAdult = rel.isAdult,
                                             imageUrl = rel.imageUrl,
                                             year = null,
                                             source = rel.source,
@@ -1125,7 +1127,7 @@ fun ApiResultDetailPage(
                                         )
                                         onRelationClick(relResult)
                                     })
-                                    4 -> RelationsTabContent(state = relationsState, titleLanguage = titleLanguage, onRelationClick = { rel ->
+                                    4 -> RelationsTabContent(state = relationsState, titleLanguage = titleLanguage, blurAdultMedia = blurAdultMedia, onRelationClick = { rel ->
                                         val typeLabel = when (rel.mediaType) {
                                             MediaType.Anime -> "Anime"
                                             MediaType.Movie -> "Film"
@@ -1139,7 +1141,7 @@ fun ApiResultDetailPage(
                                             type = rel.mediaType,
                                             total = null,
                                             score = null,
-                                            isAdult = false,
+                                            isAdult = rel.isAdult,
                                             imageUrl = rel.imageUrl,
                                             year = null,
                                             source = rel.source,

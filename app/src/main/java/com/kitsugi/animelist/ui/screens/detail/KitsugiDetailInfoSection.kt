@@ -1,5 +1,6 @@
 package com.kitsugi.animelist.ui.screens.detail
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import com.kitsugi.animelist.ui.utils.tvClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,6 +24,14 @@ import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.VisibilityOff
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -627,7 +637,63 @@ internal fun DetailSynopsisCard(
         }
 
         if (synopsisState is SynopsisState.Success) {
-            KitsugiMarkdownText(text = synopsisState.text)
+            val text = synopsisState.text
+            val isLongText = text.length > 200 || text.count { it == '\n' } >= 4
+            var isExpanded by remember { mutableStateOf(false) }
+            val surfaceColor = KitsugiColors.Surface
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .animateContentSize()
+                    .then(if (isLongText && !isExpanded) Modifier.heightIn(max = 110.dp) else Modifier)
+            ) {
+                KitsugiMarkdownText(
+                    text = text,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                if (isLongText && !isExpanded) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(40.dp)
+                            .align(Alignment.BottomCenter)
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(Color.Transparent, surfaceColor)
+                                )
+                            )
+                    )
+                }
+            }
+
+            if (isLongText) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .tvClickable(shape = RoundedCornerShape(8.dp)) { isExpanded = !isExpanded }
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = if (isExpanded) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
+                        contentDescription = null,
+                        tint = LocalKitsugiAccent.current,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = if (isExpanded) "Daha az" else "Daha fazla",
+                        color = LocalKitsugiAccent.current,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         } else {
             val text = when (synopsisState) {
                 SynopsisState.Loading -> "Açıklama yükleniyor..."

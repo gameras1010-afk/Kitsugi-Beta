@@ -75,11 +75,14 @@ import com.kitsugi.animelist.ui.app.MalProfileState
 import com.kitsugi.animelist.ui.app.SimklProfileState
 import com.kitsugi.animelist.ui.app.ProfileFavoriteItem
 import com.kitsugi.animelist.ui.app.ProfileActivityItem
+import android.content.Context
+import android.widget.Toast
 import com.kitsugi.animelist.ui.components.KitsugiProfileHeaderCard
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.theme.LocalKitsugiColors
 import com.kitsugi.animelist.ui.utils.tvClickable
+import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
 
 @Composable
 fun KitsugiProfileScreen(
@@ -721,6 +724,7 @@ fun AniListProfileContent(
     accentColor: Color,
     onImageClick: ((urls: List<String>, initialIndex: Int, title: String) -> Unit)? = null
 ) {
+    val context = LocalContext.current
     var activeTab by rememberSaveable { mutableIntStateOf(viewModel.aniListActiveTab) } // 0: Info, 1: Activity, 2: Stats, 3: Favorites, 4: Social
     LaunchedEffect(activeTab) { viewModel.aniListActiveTab = activeTab }
 
@@ -972,12 +976,49 @@ fun AniListProfileContent(
                             .background(KitsugiColors.Surface)
                             .padding(16.dp)
                     ) {
-                        Text(
-                            text = "Hakkında",
-                            color = KitsugiColors.TextPrimary,
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Hakkında",
+                                color = KitsugiColors.TextPrimary,
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                IconButton(
+                                    onClick = { context.openTranslator(state.about) },
+                                    modifier = Modifier.size(28.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Translate,
+                                        contentDescription = "Çevir",
+                                        tint = accentColor,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                                IconButton(
+                                    onClick = {
+                                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("about", state.about))
+                                        Toast.makeText(context, "Panoya kopyalandı", Toast.LENGTH_SHORT).show()
+                                    },
+                                    modifier = Modifier.size(28.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.ContentCopy,
+                                        contentDescription = "Kopyala",
+                                        tint = KitsugiColors.TextSecondary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+                        }
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = state.about,

@@ -430,6 +430,9 @@ private fun TopicCard(
     onLikeClick: (() -> Unit)? = null,
     backgroundColor: androidx.compose.ui.graphics.Color = KitsugiColors.Surface
 ) {
+    val context = LocalContext.current
+    val accentColor = LocalKitsugiAccent.current
+
     Column(
         modifier = Modifier
             .width(240.dp)
@@ -495,7 +498,6 @@ private fun TopicCard(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             if (onLikeClick != null) {
-                val accentColor = LocalKitsugiAccent.current
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(3.dp),
@@ -551,6 +553,38 @@ private fun TopicCard(
                 }
             }
 
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                IconButton(
+                    onClick = { context.openTranslator(topic.title) },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Translate,
+                        contentDescription = "Çevir",
+                        tint = accentColor,
+                        modifier = Modifier.size(12.dp)
+                    )
+                }
+                IconButton(
+                    onClick = {
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("topic_title", topic.title))
+                        Toast.makeText(context, "Panoya kopyalandı", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.ContentCopy,
+                        contentDescription = "Kopyala",
+                        tint = KitsugiColors.TextMuted,
+                        modifier = Modifier.size(12.dp)
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.weight(1f))
 
             if (!topic.dateText.isNullOrBlank()) {
@@ -572,6 +606,7 @@ private fun ActivityCard(
     onLikeClick: () -> Unit,
     backgroundColor: androidx.compose.ui.graphics.Color = KitsugiColors.Surface
 ) {
+    val context = LocalContext.current
     val accentColor = LocalKitsugiAccent.current
     Column(
         modifier = Modifier
@@ -678,20 +713,57 @@ private fun ActivityCard(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(3.dp),
-                modifier = Modifier.tvClickable(shape = RoundedCornerShape(8.dp), onClick = onLikeClick)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(
-                    imageVector = if (activity.isLiked) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                    contentDescription = null,
-                    tint = if (activity.isLiked) accentColor else KitsugiColors.TextMuted,
-                    modifier = Modifier.size(12.dp)
-                )
-                Text(
-                    text = activity.likeCount.toString(),
-                    color = if (activity.isLiked) accentColor else KitsugiColors.TextMuted,
-                    fontSize = 11.sp
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(3.dp),
+                    modifier = Modifier.tvClickable(shape = RoundedCornerShape(8.dp), onClick = onLikeClick)
+                ) {
+                    Icon(
+                        imageVector = if (activity.isLiked) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                        contentDescription = null,
+                        tint = if (activity.isLiked) accentColor else KitsugiColors.TextMuted,
+                        modifier = Modifier.size(12.dp)
+                    )
+                    Text(
+                        text = activity.likeCount.toString(),
+                        color = if (activity.isLiked) accentColor else KitsugiColors.TextMuted,
+                        fontSize = 11.sp
+                    )
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(3.dp)
+                ) {
+                    IconButton(
+                        onClick = { context.openTranslator(activity.text) },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Translate,
+                            contentDescription = "Çevir",
+                            tint = accentColor,
+                            modifier = Modifier.size(12.dp)
+                        )
+                    }
+                    IconButton(
+                        onClick = {
+                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("activity_text", activity.text))
+                            Toast.makeText(context, "Panoya kopyalandı", Toast.LENGTH_SHORT).show()
+                        },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.ContentCopy,
+                            contentDescription = "Kopyala",
+                            tint = KitsugiColors.TextMuted,
+                            modifier = Modifier.size(12.dp)
+                        )
+                    }
+                }
             }
 
             if (!activity.dateText.isNullOrBlank()) {
