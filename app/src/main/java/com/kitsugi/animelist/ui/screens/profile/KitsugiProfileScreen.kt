@@ -910,7 +910,7 @@ fun AniListProfileContent(
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
-                        if (!state.donatorBadge.isNullOrBlank()) {
+                        if (!state.donatorBadge.isNullOrBlank() && state.donatorTier > 0) {
                             Text(
                                 text = "Donator Tier ${state.donatorTier}",
                                 color = KitsugiColors.AccentOrange,

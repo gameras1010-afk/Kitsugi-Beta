@@ -23,6 +23,9 @@
 - **Otomatik Kısaltma Mantığı:** Detay sayfalarındaki açıklama metinleri (hem yerel hem de API sonuçları için) satır atlama sayısı (`>= 4`) veya karakter uzunluğuna (`> 200`) bağlı olarak otomatik olarak kısaltılacak şekilde güncellendi.
 - **Akıcı Geçiş Animasyonu:** "Daha fazla" ve "Daha az" butonlarına basıldığında metin alanı boyutu `animateContentSize()` ile yumuşak geçişli bir şekilde değişecek şekilde optimize edildi.
 
+### 👤 AniList Donatör Rozeti Gösterim Düzeltmesi
+- **Gereksiz Sıfır Gösterimi Engellendi:** AniList profil sekmesinde kullanıcının donatör seviyesi (donatorTier) 0 olduğunda veya aktif bir bağışı bulunmadığında gösterilen "Donator Tier 0" rozeti gizlendi. Rozet artık yalnızca donatör seviyesi 1 veya üzerinde olan kullanıcılar için gösterilmektedir.
+
 ### 🛡️ +18 Blur Yüklenme Performansı
 - **Öneriler & İlişkiler Sekmesi İyileştirmesi:** Önerilen ve ilişkili yapımlar sekmelerinde +18 içerikli kartlar yüklenirken oluşan anlık görsel sızıntıları engellemek amacıyla Coil resim yükleyicisinin geçiş (crossfade) animasyonu blurlanmış resimler için devre dışı bırakıldı. Böylece blur efekti resim yüklenir yüklenmez anında görünür hale getirildi.
 
@@ -51,6 +54,9 @@
 ### 📝 Detail Page Description (Synopsis) Truncation & Toggle
 - **Dynamic Truncation:** Descriptions on media detail pages (both local entries and API results) are now automatically truncated based on character length (`> 200`) and newline count (`>= 4`).
 - **Smooth Height Transitions:** Integrated `animateContentSize()` to provide a buttery-smooth animation when toggling between "Daha fazla" (Read more) and "Daha az" (Read less).
+
+### 👤 AniList Donator Badge Display Correction
+- **Redundant Zero Hidden:** Hided the "Donator Tier 0" badge on the AniList profile tab when the user's donation level (donatorTier) is 0 or they do not have an active donation. The badge is now exclusively displayed for users with a donator tier of 1 or higher.
 
 ### 🛡️ +18 Adult Content Blur Fix
 - **Recommendations & Relations Tabs:** Fixed a minor visual race condition where +18 adult content cover images briefly flashed without the blur filter during initial load. Coil's crossfade transition is now disabled for blurred media, applying the blur modifier instantly.

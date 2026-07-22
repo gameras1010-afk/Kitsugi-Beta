@@ -321,7 +321,7 @@ fun KitsugiUserProfileScreen(
                                             overflow = TextOverflow.Ellipsis
                                         )
                                         val badge = state.donatorBadge
-                                        if (!badge.isNullOrBlank()) {
+                                        if (!badge.isNullOrBlank() && state.donatorTier > 0) {
                                             Spacer(modifier = Modifier.width(6.dp))
                                             Text(
                                                 text = badge,
