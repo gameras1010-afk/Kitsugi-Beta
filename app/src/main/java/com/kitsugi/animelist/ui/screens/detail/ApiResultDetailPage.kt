@@ -73,6 +73,7 @@ import com.kitsugi.animelist.utils.rememberScrollConnection
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material3.CircularProgressIndicator
@@ -1032,13 +1033,18 @@ fun ApiResultDetailPage(
                             verticalAlignment = Alignment.Top,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .then(
-                                    if (interpolatedHeightDp != null) {
-                                        Modifier.height(interpolatedHeightDp)
-                                    } else {
-                                        Modifier.wrapContentHeight()
+                                .layout { measurable, constraints ->
+                                    val placeable = measurable.measure(
+                                        constraints.copy(
+                                            minHeight = 0,
+                                            maxHeight = androidx.compose.ui.unit.Constraints.Infinity
+                                        )
+                                    )
+                                    val height = interpolatedHeightDp?.roundToPx() ?: placeable.height
+                                    layout(placeable.width, height) {
+                                        placeable.placeRelative(0, 0)
                                     }
-                                )
+                                }
                                 .clipToBounds()
                         ) { page ->
                             Box(

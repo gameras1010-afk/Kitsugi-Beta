@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.layout
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.text.font.FontWeight
@@ -657,13 +658,18 @@ fun StaffDetailPage(
                                     verticalAlignment = Alignment.Top,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .then(
-                                            if (interpolatedHeightDp != null) {
-                                                Modifier.height(interpolatedHeightDp)
-                                            } else {
-                                                Modifier.wrapContentHeight()
+                                        .layout { measurable, constraints ->
+                                            val placeable = measurable.measure(
+                                                constraints.copy(
+                                                    minHeight = 0,
+                                                    maxHeight = androidx.compose.ui.unit.Constraints.Infinity
+                                                )
+                                            )
+                                            val height = interpolatedHeightDp?.roundToPx() ?: placeable.height
+                                            layout(placeable.width, height) {
+                                                placeable.placeRelative(0, 0)
                                             }
-                                        )
+                                        }
                                         .clipToBounds()
                                 ) { page ->
                                     Box(
