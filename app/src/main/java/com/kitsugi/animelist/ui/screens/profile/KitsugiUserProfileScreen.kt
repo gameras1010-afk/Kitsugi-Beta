@@ -1301,7 +1301,8 @@ fun KitsugiUserProfileScreen(
                                                         }
                                                     }
 
-                                                    currentFavList.chunked(3).forEach { rowItems ->
+                                                    val gridColumns = if (isLandscape) 3 else 2
+                                                    currentFavList.chunked(gridColumns).forEach { rowItems ->
                                                         Row(
                                                             modifier = Modifier
                                                                 .fillMaxWidth()
@@ -1359,8 +1360,8 @@ fun KitsugiUserProfileScreen(
                                                                     )
                                                                 }
                                                             }
-                                                            if (rowItems.size < 3) {
-                                                                repeat(3 - rowItems.size) { Spacer(modifier = Modifier.weight(1f)) }
+                                                            if (rowItems.size < gridColumns) {
+                                                                repeat(gridColumns - rowItems.size) { Spacer(modifier = Modifier.weight(1f)) }
                                                             }
                                                         }
                                                     }
@@ -1419,7 +1420,8 @@ fun KitsugiUserProfileScreen(
                                                 }
                                             } else {
                                                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                                    userList.chunked(3).forEach { rowItems ->
+                                                    val gridColumns = if (isLandscape) 3 else 2
+                                                    userList.chunked(gridColumns).forEach { rowItems ->
                                                         Row(
                                                             modifier = Modifier
                                                                 .fillMaxWidth()
@@ -1456,8 +1458,8 @@ fun KitsugiUserProfileScreen(
                                                                     )
                                                                 }
                                                             }
-                                                            if (rowItems.size < 3) {
-                                                                repeat(3 - rowItems.size) { Spacer(modifier = Modifier.weight(1f)) }
+                                                            if (rowItems.size < gridColumns) {
+                                                                repeat(gridColumns - rowItems.size) { Spacer(modifier = Modifier.weight(1f)) }
                                                             }
                                                         }
                                                     }

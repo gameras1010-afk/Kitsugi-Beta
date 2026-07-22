@@ -1757,7 +1757,8 @@ fun AniListProfileContent(
                                             }
                                         }
 
-                                        currentFavList.chunked(3).forEach { rowItems ->
+                                        val gridColumns = if (isLandscape) 3 else 2
+                                        currentFavList.chunked(gridColumns).forEach { rowItems ->
                                             Row(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
@@ -1814,9 +1815,9 @@ fun AniListProfileContent(
                                                         )
                                                     }
                                                 }
-                                                // Fill empty slots if last row has fewer than 3 items
-                                                if (rowItems.size < 3) {
-                                                    repeat(3 - rowItems.size) {
+                                                // Fill empty slots if last row has fewer than gridColumns items
+                                                if (rowItems.size < gridColumns) {
+                                                    repeat(gridColumns - rowItems.size) {
                                                         Spacer(modifier = Modifier.weight(1f))
                                                     }
                                                 }
@@ -1870,7 +1871,8 @@ fun AniListProfileContent(
                                     }
                                 } else {
                                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                        userList.chunked(3).forEach { rowItems ->
+                                        val gridColumns = if (isLandscape) 3 else 2
+                                        userList.chunked(gridColumns).forEach { rowItems ->
                                             Row(
                                                 modifier = Modifier.fillMaxWidth(),
                                                 horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -1904,8 +1906,8 @@ fun AniListProfileContent(
                                                         )
                                                     }
                                                 }
-                                                if (rowItems.size < 3) {
-                                                    repeat(3 - rowItems.size) {
+                                                if (rowItems.size < gridColumns) {
+                                                    repeat(gridColumns - rowItems.size) {
                                                         Spacer(modifier = Modifier.weight(1f))
                                                     }
                                                 }
@@ -2392,7 +2394,8 @@ fun MalProfileContent(
                                             }
                                         }
 
-                                        currentFavList.chunked(3).forEach { rowItems ->
+                                        val gridColumns = if (isLandscape) 3 else 2
+                                        currentFavList.chunked(gridColumns).forEach { rowItems ->
                                             Row(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
@@ -2449,8 +2452,8 @@ fun MalProfileContent(
                                                         )
                                                     }
                                                 }
-                                                if (rowItems.size < 3) {
-                                                    repeat(3 - rowItems.size) {
+                                                if (rowItems.size < gridColumns) {
+                                                    repeat(gridColumns - rowItems.size) {
                                                         Spacer(modifier = Modifier.weight(1f))
                                                     }
                                                 }
@@ -2472,7 +2475,8 @@ fun MalProfileContent(
                                     }
                                 } else {
                                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                        userList.chunked(3).forEach { rowItems ->
+                                        val gridColumns = if (isLandscape) 3 else 2
+                                        userList.chunked(gridColumns).forEach { rowItems ->
                                             Row(
                                                 modifier = Modifier.fillMaxWidth(),
                                                 horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -2505,7 +2509,7 @@ fun MalProfileContent(
                                                         )
                                                     }
                                                 }
-                                                repeat(3 - rowItems.size) {
+                                                repeat(gridColumns - rowItems.size) {
                                                     Spacer(modifier = Modifier.weight(1f))
                                                 }
                                             }
