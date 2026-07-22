@@ -358,12 +358,6 @@ fun MediaEntryDetailPage(
                                     primaryFocusRequester = leftPanelFocusRequester,
                                     tabBarFocusRequester = tabBarFocusRequester
                                 )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                MainStatsGrid(
-                                    entry = entry,
-                                    scoreFormat = scoreFormat,
-                                    hideScores = hideScores
-                                )
                                 Spacer(modifier = Modifier.height(32.dp))
                             }
                         }
@@ -630,14 +624,6 @@ fun MediaEntryDetailPage(
                                 onUnlinkMangaClick = {
                                     viewModel.deleteMangaMapping(entry.id)
                                 }
-                            )
-
-                            Spacer(modifier = Modifier.height(18.dp))
-
-                            MainStatsGrid(
-                                entry = entry,
-                                scoreFormat = scoreFormat,
-                                hideScores = hideScores
                             )
 
                             Spacer(modifier = Modifier.height(8.dp))

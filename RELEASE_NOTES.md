@@ -4,6 +4,13 @@
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
+### 🎬 Video Oynatıcı Kontrol Paneli Jest Koruması
+- **Jest Çakışması Engellendi**: Tam ekran video oynatıcıda üst (`PlayerTopBar`) ve alt kontrol paneli görünür durumdayken, bu paneller üzerindeki dokunmalar (örn. sarma çubuğu sürüklemesi veya alt buton satırının kaydırılması) artık arka plandaki ses, parlaklık veya sarma jestlerini tetiklemez.
+- **Dinamik Yükseklik Ölçümü**: Kontrol panellerinin yükseklikleri `onGloballyPositioned` kullanılarak anlık olarak ölçülür ve jestlerin engelleneceği koordinatlar dinamik olarak tespit edilir.
+
+### 📊 Detay Sayfası Sadeleştirmesi
+- **Gereksiz Bilgilerin Kaldırılması**: Medya detay sayfasında dikey ve yatay ekran yerleşimlerinde bulunan, gereksiz bilgi yoğunluğu yaratan "Puan", "İlerleme" ve "ID" statik kartları (`MainStatsGrid`) tamamen kaldırılarak arayüz sadeleştirildi.
+
 ### 📱 Yatay Modda Sol Navigasyon Barı Hizalaması
 - **Üste Hizalama**: Yatay modda ekranın sol tarafında bulunan navigasyon barı (NavigationRail), butonları dikeyde ortalamak yerine artık üste hizalı olarak başlar. 
 - **Boş Alan Kazanımı**: Sol barın üst tarafında oluşan gereksiz boşluk kaldırıldı, butonlar daha erişilebilir ve şık bir yerleşime kavuşturuldu.
@@ -30,6 +37,13 @@
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
+
+### 🎬 Video Player Overlay Gesture Isolation
+- **Prevent Gesture Conflicts**: When the top (`PlayerTopBar`) or bottom overlay control panels are visible in the fullscreen video player, touch interactions inside their boundaries (e.g., scrubbing the progress bar or scrolling action buttons) will no longer trigger background volume, brightness, or seek gestures.
+- **Dynamic Boundary Measurement**: The dimensions of the control overlays are dynamically measured using `onGloballyPositioned` to accurately isolate control gestures from background interactions.
+
+### 📊 Media Detail Page Streamlining
+- **Cleaned Up Statistics Grid**: Removed redundant static stats cards ("Score", "Progress", "ID" - `MainStatsGrid`) from both portrait and landscape detail layouts, reducing visual clutter and streamlining content delivery.
 
 ### 📱 Landscape Left Navigation Rail Alignment
 - **Top-Aligned Items**: The navigation rail on the left side of the screen in landscape mode is now top-aligned rather than vertically centered.

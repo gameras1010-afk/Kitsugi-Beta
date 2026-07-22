@@ -112,20 +112,20 @@ fun KitsugiRankingMediaCard(
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopStart)
-                        .padding(6.dp)
-                        .clip(RoundedCornerShape(8.dp))
+                        .clip(RoundedCornerShape(bottomEnd = 10.dp, topStart = 16.dp))
                         .background(
-                            if (isTopRank) Color(0xFFFFD700).copy(alpha = 0.9f)
-                            else Color.Black.copy(alpha = 0.65f)
+                            if (isTopRank) Color(0xFFFFD700).copy(alpha = 0.92f)
+                            else Color.Black.copy(alpha = 0.72f)
                         )
-                        .padding(horizontal = 7.dp, vertical = 3.dp)
+                        .padding(horizontal = 6.dp, vertical = 3.dp)
                 ) {
                     Text(
                         text = "#$rankNumber",
                         color = if (isTopRank) Color.Black else Color.White,
                         style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 11.sp
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 9.sp,
+                        letterSpacing = 0.5.sp
                     )
                 }
 
@@ -134,8 +134,7 @@ fun KitsugiRankingMediaCard(
                         text = mediaEntry.status.label,
                         color = statusColor(mediaEntry.status),
                         modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(6.dp)
+                            .align(Alignment.BottomEnd)
                     )
                 }
 
@@ -271,17 +270,19 @@ private fun StatusBadge(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(6.dp))
-            .background(color.copy(alpha = 0.85f))
-            .padding(horizontal = 6.dp, vertical = 3.dp)
+            .clip(RoundedCornerShape(topStart = 10.dp, bottomEnd = 6.dp))
+            .background(color.copy(alpha = 0.92f))
+            .padding(horizontal = 6.dp, vertical = 3.dp),
+        contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
             color = Color.White,
             style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.ExtraBold,
             maxLines = 1,
-            fontSize = 8.sp
+            fontSize = 9.sp,
+            letterSpacing = 0.5.sp
         )
     }
 }

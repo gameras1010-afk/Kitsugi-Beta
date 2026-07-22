@@ -123,8 +123,7 @@ fun KitsugiExploreMediaCard(
                             text = mediaEntry.status.label,
                             color = statusColor(mediaEntry.status),
                             modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(8.dp)
+                                .align(Alignment.BottomEnd)
                         )
                     }
                 }
@@ -236,8 +235,7 @@ fun KitsugiExploreMediaCard(
                             text = mediaEntry.status.label,
                             color = statusColor(mediaEntry.status),
                             modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(6.dp)
+                                .align(Alignment.BottomEnd)
                         )
                     }
                 }
@@ -360,8 +358,7 @@ fun KitsugiExploreMediaCard(
                             text = mediaEntry.status.label,
                             color = statusColor(mediaEntry.status),
                             modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(8.dp)
+                                .align(Alignment.BottomEnd)
                         )
                     }
                 }
@@ -445,17 +442,19 @@ private fun StatusBadge(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(color.copy(alpha = 0.85f))
-            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .clip(RoundedCornerShape(topStart = 10.dp, bottomEnd = 6.dp))
+            .background(color.copy(alpha = 0.92f))
+            .padding(horizontal = 6.dp, vertical = 3.dp),
+        contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
             color = Color.White,
             style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.ExtraBold,
             maxLines = 1,
-            fontSize = 9.sp
+            fontSize = 9.sp,
+            letterSpacing = 0.5.sp
         )
     }
 }

@@ -258,6 +258,9 @@ fun KitsugiFullscreenPlayerScreen(
     var audioDelayMs by remember { mutableStateOf(0L) }
     var audioBoostLevel by remember { mutableStateOf(0f) }
 
+    var topBarHeightState by remember { mutableStateOf(0f) }
+    var bottomControlsHeightState by remember { mutableStateOf(0f) }
+
     var currentAspectMode by remember { mutableStateOf(com.kitsugi.animelist.core.player.PlayerAspectMode.ORIGINAL) }
     var screenOrientationState by remember { mutableStateOf(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR) }
 
@@ -840,13 +843,18 @@ fun KitsugiFullscreenPlayerScreen(
                                 else -> false
                             }
                         }
-                        .pointerInput(playerEngine, gestureConfig, isInPipMode, activePanel) {
+                        .pointerInput(playerEngine, gestureConfig, isInPipMode, activePanel, showTopBar, topBarHeightState, bottomControlsHeightState) {
                             if (isInPipMode || activePanel != PlayerPanel.NONE) return@pointerInput
                             if (isInPipMode) return@pointerInput
                             awaitEachGesture {
                                 val down = awaitFirstDown(requireUnconsumed = false)
                                 val startX: Float = down.position.x
                                 val startY: Float = down.position.y
+                                val isInsideTopBar = showTopBar && startY < topBarHeightState
+                                val isInsideBottomControls = showTopBar && startY > (size.height - bottomControlsHeightState)
+                                if (isInsideTopBar || isInsideBottomControls) {
+                                    return@awaitEachGesture
+                                }
                                 val isLeftSide = startX < size.width / 2f
                                 var totalDy = 0f
                                 var isDragging = false
@@ -927,10 +935,15 @@ fun KitsugiFullscreenPlayerScreen(
                             }
                         }
                         // Tap and double-tap gestures
-                        .pointerInput(playerEngine, gestureConfig, isInPipMode, activePanel) {
+                        .pointerInput(playerEngine, gestureConfig, isInPipMode, activePanel, showTopBar, topBarHeightState, bottomControlsHeightState) {
                             if (isInPipMode || activePanel != PlayerPanel.NONE) return@pointerInput
                             detectTapGestures(
                                 onDoubleTap = { offset ->
+                                    val startY = offset.y
+                                    val isInsideTopBar = showTopBar && startY < topBarHeightState
+                                    val isInsideBottomControls = showTopBar && startY > (size.height - bottomControlsHeightState)
+                                    if (isInsideTopBar || isInsideBottomControls) return@detectTapGestures
+
                                     val isRight = offset.x > size.width / 2f
                                     val pos = playerEngine.currentPosition
                                     val dur = playerEngine.duration
@@ -945,8 +958,13 @@ fun KitsugiFullscreenPlayerScreen(
                                         seekFeedbackOnRightSide = false // sola tıklandı → gösterge sağda (TopEnd)
                                     }
                                 },
-                                onTap = {
-                                    showTopBar = !showTopBar
+                                onTap = { offset ->
+                                    val startY = offset.y
+                                    val isInsideTopBar = showTopBar && startY < topBarHeightState
+                                    val isInsideBottomControls = showTopBar && startY > (size.height - bottomControlsHeightState)
+                                    if (!isInsideTopBar && !isInsideBottomControls) {
+                                        showTopBar = !showTopBar
+                                    }
                                 }
                             )
                         }
@@ -1053,7 +1071,11 @@ fun KitsugiFullscreenPlayerScreen(
                                         onBack()
                                     }
                                 } else null,
-                                modifier = Modifier.align(Alignment.TopCenter)
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .onGloballyPositioned { coords ->
+                                        topBarHeightState = coords.size.height.toFloat()
+                                    }
                             )
 
                             // Center Play/Pause button
@@ -1081,6 +1103,9 @@ fun KitsugiFullscreenPlayerScreen(
                                             colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.45f))
                                         )
                                     )
+                                    .onGloballyPositioned { coords ->
+                                        bottomControlsHeightState = coords.size.height.toFloat()
+                                    }
                                     .padding(horizontal = 16.dp, vertical = 20.dp)
                             ) {
                                 // ─── T2.2 – Preview Seekbar Generator Lifecycle ────────────────────────
