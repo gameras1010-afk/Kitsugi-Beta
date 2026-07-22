@@ -101,6 +101,7 @@ fun CharacterDetailPage(
     onBackClick: () -> Unit,
     onMediaClick: (mediaId: Int, mediaType: String, mediaSource: String) -> Unit,
     onStaffClick: (staffId: Int, source: String, name: String?, imageUrl: String?) -> Unit,
+    onCharacterClick: (characterId: Int, characterSource: String, name: String?, imageUrl: String?) -> Unit,
     name: String? = null,
     imageUrl: String? = null,
     titleLanguage: String = "ROMAJI",
@@ -122,6 +123,8 @@ fun CharacterDetailPage(
     val translatedBio by viewModel.translatedBio.collectAsState()
     val isFavourite by viewModel.isFavourite.collectAsState()
     val isAniListSource = source.lowercase() == "anilist"
+    val isAniListConnected = remember { com.kitsugi.animelist.data.auth.ExternalAuthManager.getAniListToken(context) != null }
+    val showFavouriteButton = isAniListSource || isAniListConnected
 
     Box(
         modifier = Modifier
@@ -191,6 +194,7 @@ fun CharacterDetailPage(
                 val tabListState = rememberLazyListState()
                 var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
                 var activeGalleryIndex by remember { mutableStateOf(0) }
+                var selectedVoiceActorForRoles by remember { mutableStateOf<com.kitsugi.animelist.data.remote.KitsugiVoiceActor?>(null) }
                 val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
                 // TV odak highway
                 val leftPanelFocusRequester = remember { FocusRequester() }
@@ -304,7 +308,7 @@ fun CharacterDetailPage(
                                                     }
                                                 }
 
-                                                if (isAniListSource) {
+                                                if (showFavouriteButton) {
                                                     Box(
                                                         modifier = Modifier
                                                             .size(40.dp)
@@ -466,7 +470,13 @@ fun CharacterDetailPage(
                                                         if (displayBio.isNullOrBlank()) {
                                                             Text("Biyografi bulunmuyor.", color = KitsugiColors.TextMuted, style = MaterialTheme.typography.bodyMedium)
                                                         } else {
-                                                            KitsugiMarkdownText(text = displayBio)
+                                                            KitsugiMarkdownText(
+                                                                text = displayBio,
+                                                                onImageGalleryRequest = { urls, idx ->
+                                                                    activeGalleryImages = urls
+                                                                    activeGalleryIndex = idx
+                                                                }
+                                                            )
                                                         }
                                                     }
                                                 }
@@ -489,7 +499,7 @@ fun CharacterDetailPage(
                                                 } else {
                                                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                                         detail.voiceActors.forEach { actor ->
-                                                            VoiceActorRow(actor = actor, onStaffClick = onStaffClick)
+                                                            VoiceActorRow(actor = actor, onClick = { selectedVoiceActorForRoles = actor })
                                                         }
                                                     }
                                                 }
@@ -937,7 +947,13 @@ fun CharacterDetailPage(
                                                             if (displayBio.isNullOrBlank()) {
                                                                 Text("Biyografi bulunmuyor.", color = KitsugiColors.TextMuted, style = MaterialTheme.typography.bodyMedium)
                                                             } else {
-                                                                KitsugiMarkdownText(text = displayBio)
+                                                                KitsugiMarkdownText(
+                                                                    text = displayBio,
+                                                                    onImageGalleryRequest = { urls, idx ->
+                                                                        activeGalleryImages = urls
+                                                                        activeGalleryIndex = idx
+                                                                    }
+                                                                )
                                                             }
                                                         }
                                                     }
@@ -960,7 +976,7 @@ fun CharacterDetailPage(
                                                     } else {
                                                         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                                             detail.voiceActors.forEach { actor ->
-                                                                VoiceActorRow(actor = actor, onStaffClick = onStaffClick)
+                                                                VoiceActorRow(actor = actor, onClick = { selectedVoiceActorForRoles = actor })
                                                             }
                                                         }
                                                     }
@@ -979,6 +995,21 @@ fun CharacterDetailPage(
                                 initialIndex = activeGalleryIndex,
                                 title = detail.name,
                                 onDismiss = { activeGalleryImages = emptyList() }
+                            )
+                        }
+
+                        if (selectedVoiceActorForRoles != null) {
+                            val actor = selectedVoiceActorForRoles!!
+                            CharacterVoiceActorsSheet(
+                                actorId = actor.id,
+                                source = actor.source,
+                                actorName = actor.name,
+                                actorImageUrl = actor.imageUrl,
+                                language = actor.language,
+                                onDismiss = { selectedVoiceActorForRoles = null },
+                                onCharacterClick = onCharacterClick,
+                                onMediaClick = onMediaClick,
+                                onStaffClick = onStaffClick
                             )
                         }
 

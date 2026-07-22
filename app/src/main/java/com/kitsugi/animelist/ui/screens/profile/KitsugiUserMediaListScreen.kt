@@ -46,6 +46,16 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.zIndex
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -81,6 +91,7 @@ import com.kitsugi.animelist.model.WatchStatus
 import com.kitsugi.animelist.ui.components.KitsugiSearchField
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
+import com.kitsugi.animelist.ui.theme.LocalIsTvDevice
 import com.kitsugi.animelist.ui.utils.tvClickable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -267,6 +278,50 @@ fun KitsugiUserMediaListScreen(
     var searchQuery by remember { mutableStateOf("") }
     var selectedStatusFilter by remember { mutableStateOf<WatchStatus?>(null) }
     var isGridView by remember { mutableStateOf(true) }
+
+    var isFabVisible by remember { mutableStateOf(true) }
+    var prevIndex by remember { mutableStateOf(0) }
+    var prevOffset by remember { mutableStateOf(0) }
+
+    val lazyGridState = rememberLazyGridState()
+    val lazyListState = rememberLazyListState()
+
+    LaunchedEffect(isGridView) {
+        isFabVisible = true
+        prevIndex = 0
+        prevOffset = 0
+    }
+
+    LaunchedEffect(isGridView, lazyGridState, lazyListState) {
+        if (isGridView) {
+            snapshotFlow { lazyGridState.firstVisibleItemIndex to lazyGridState.firstVisibleItemScrollOffset }
+                .collect { (index, offset) ->
+                    if (index == 0 && offset < 40) {
+                        isFabVisible = true
+                    } else if (index > prevIndex || (index == prevIndex && offset > prevOffset + 15)) {
+                        isFabVisible = false
+                    } else if (index < prevIndex || (index == prevIndex && offset < prevOffset - 15)) {
+                        isFabVisible = true
+                    }
+                    prevIndex = index
+                    prevOffset = offset
+                }
+        } else {
+            snapshotFlow { lazyListState.firstVisibleItemIndex to lazyListState.firstVisibleItemScrollOffset }
+                .collect { (index, offset) ->
+                    if (index == 0 && offset < 40) {
+                        isFabVisible = true
+                    } else if (index > prevIndex || (index == prevIndex && offset > prevOffset + 15)) {
+                        isFabVisible = false
+                    } else if (index < prevIndex || (index == prevIndex && offset < prevOffset - 15)) {
+                        isFabVisible = true
+                    }
+                    prevIndex = index
+                    prevOffset = offset
+                }
+        }
+    }
+
     // Sort: 0=Varsayılan, 1=A-Z, 2=Puan, 3=İlerleme
     var sortId by remember { mutableStateOf(0) }
     var showSortMenu by remember { mutableStateOf(false) }
@@ -497,6 +552,7 @@ fun KitsugiUserMediaListScreen(
                 if (isGridView) {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(if (isLandscape) 5 else 3),
+                        state = lazyGridState,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(horizontal = 12.dp, vertical = 8.dp),
@@ -561,6 +617,7 @@ fun KitsugiUserMediaListScreen(
                     }
                 } else {
                     LazyColumn(
+                        state = lazyListState,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(horizontal = 12.dp, vertical = 8.dp),
@@ -625,44 +682,53 @@ fun KitsugiUserMediaListScreen(
     }
 
     // ── Floating Status FAB (sağ alt köşe) ──
-    if (!state.isLoading && state.items.isNotEmpty()) {
+    val isTv = LocalIsTvDevice.current
+    if (!isTv && !state.isLoading && state.items.isNotEmpty()) {
         Box(
             modifier = androidx.compose.ui.Modifier.fillMaxSize(),
             contentAlignment = Alignment.BottomEnd
         ) {
-            val fabLabel = when (selectedStatusFilter) {
-                WatchStatus.Watching -> if (selectedType == MediaType.Anime) "İzleniyor" else "Okunuyor"
-                WatchStatus.Completed -> "Tamamlandı"
-                WatchStatus.Planned -> "Planlandı"
-                WatchStatus.Paused -> "Durduruldu"
-                WatchStatus.Dropped -> "Bırakıldı"
-                else -> "Tümü"
-            }
-            Box(
+            AnimatedVisibility(
+                visible = isFabVisible,
+                enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+                exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
                 modifier = Modifier
                     .padding(bottom = 20.dp, end = 20.dp)
-                    .clip(RoundedCornerShape(999.dp))
-                    .background(accentColor)
-                    .tvClickable(shape = RoundedCornerShape(999.dp)) {
-                        showStatusBottomSheet = true
-                    }
-                    .padding(horizontal = 20.dp, vertical = 14.dp),
-                contentAlignment = Alignment.Center
+                    .zIndex(10f)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Rounded.List,
-                        contentDescription = "Kategori",
-                        tint = KitsugiColors.Background,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = fabLabel,
-                        color = KitsugiColors.Background,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Black
-                    )
+                val fabLabel = when (selectedStatusFilter) {
+                    WatchStatus.Watching -> if (selectedType == MediaType.Anime) "İzleniyor" else "Okunuyor"
+                    WatchStatus.Completed -> "Tamamlandı"
+                    WatchStatus.Planned -> "Planlandı"
+                    WatchStatus.Paused -> "Durduruldu"
+                    WatchStatus.Dropped -> "Bırakıldı"
+                    else -> "Tümü"
+                }
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(accentColor)
+                        .tvClickable(shape = RoundedCornerShape(999.dp)) {
+                            showStatusBottomSheet = true
+                        }
+                        .padding(horizontal = 20.dp, vertical = 14.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Rounded.List,
+                            contentDescription = "Kategori",
+                            tint = KitsugiColors.Background,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = fabLabel,
+                            color = KitsugiColors.Background,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
                 }
             }
         }

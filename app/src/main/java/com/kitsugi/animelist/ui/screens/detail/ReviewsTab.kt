@@ -55,7 +55,8 @@ fun ReviewsTabContent(
     mediaType: MediaType,
     apiClient: JikanApiClient,
     titleLanguage: String = "ROMAJI",
-    preferredTranslator: String = "DEFAULT"
+    preferredTranslator: String = "DEFAULT",
+    onImageGalleryRequest: ((urls: List<String>, index: Int) -> Unit)? = null
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -373,7 +374,8 @@ fun ReviewsTabContent(
                                                 Toast.makeText(context, "Lütfen önce giriş yapın", Toast.LENGTH_SHORT).show()
                                             }
                                         }
-                                    }
+                                    },
+                                    onImageGalleryRequest = onImageGalleryRequest
                                 )
                             }
                         }

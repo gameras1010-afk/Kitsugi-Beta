@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -43,11 +44,10 @@ fun ExplorePlatformToggle(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f)
+                        .height(44.dp)
                         .clip(RoundedCornerShape(22.dp))
                         .background(if (isSelected) accentColor else KitsugiColors.Surface)
-                        .tvClickable(shape = RoundedCornerShape(22.dp)) { onPlatformSelected(platform) }
-                        .padding(vertical = 12.dp),
+                        .tvClickable(shape = RoundedCornerShape(22.dp)) { onPlatformSelected(platform) },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(

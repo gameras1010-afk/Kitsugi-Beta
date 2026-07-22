@@ -125,6 +125,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.runtime.remember
+import com.kitsugi.animelist.utils.parseToMediaType
 
 @Composable
 fun MediaEntryDetailPage(
@@ -185,6 +186,23 @@ fun MediaEntryDetailPage(
     val reviewsState by viewModel.reviewsState.collectAsState()
     val episodesState by viewModel.episodesState.collectAsState()
     val targetSeason by viewModel.targetSeason.collectAsState()
+
+    val onMediaClick: (Int, String, String) -> Unit = { mediaId, mediaType, mediaSource ->
+        val searchType = mediaType.parseToMediaType()
+        val searchResult = JikanSearchResult(
+            malId = mediaId,
+            title = "Yükleniyor...",
+            subtitle = "",
+            type = searchType,
+            total = null,
+            score = null,
+            isAdult = false,
+            imageUrl = null,
+            year = null,
+            source = mediaSource
+        )
+        onRelationClick(searchResult)
+    }
 
     val allImages = remember(entry.imageUrl, detailState?.pictures) {
         buildList {
@@ -444,10 +462,14 @@ fun MediaEntryDetailPage(
                                                     onStudioClick = onStudioClick,
                                                     onGenreClick = onSearchByGenre,
                                                     onTagClick = onSearchByTag,
-                                                    preferredTranslator = preferredTranslator
+                                                    preferredTranslator = preferredTranslator,
+                                                    onImageGalleryRequest = { urls, index ->
+                                                        activeGalleryImages = urls
+                                                        activeGalleryIndex = index
+                                                    }
                                                 )
                                             }
-                                            1 -> CharactersTabContent(state = charactersState, onCharacterClick = onCharacterClick, onStaffClick = onStaffClick)
+                                            1 -> CharactersTabContent(state = charactersState, onCharacterClick = onCharacterClick, onStaffClick = onStaffClick, onMediaClick = onMediaClick)
                                             2 -> StaffTabContent(state = staffState, onStaffClick = onStaffClick)
                                             3 -> RecommendationsTabContent(state = recommendationsState, titleLanguage = titleLanguage, blurAdultMedia = blurAdultMedia, onRecommendationClick = { rel ->
                                                 val typeLabel = when (rel.mediaType) {
@@ -811,10 +833,14 @@ fun MediaEntryDetailPage(
                                             onStudioClick = onStudioClick,
                                             onGenreClick = onSearchByGenre,
                                             onTagClick = onSearchByTag,
-                                            preferredTranslator = preferredTranslator
+                                            preferredTranslator = preferredTranslator,
+                                            onImageGalleryRequest = { urls, index ->
+                                                activeGalleryImages = urls
+                                                activeGalleryIndex = index
+                                            }
                                         )
                                     }
-                                    1 -> CharactersTabContent(state = charactersState, onCharacterClick = onCharacterClick, onStaffClick = onStaffClick)
+                                    1 -> CharactersTabContent(state = charactersState, onCharacterClick = onCharacterClick, onStaffClick = onStaffClick, onMediaClick = onMediaClick)
                                     2 -> StaffTabContent(state = staffState, onStaffClick = onStaffClick)
                                     3 -> RecommendationsTabContent(state = recommendationsState, titleLanguage = titleLanguage, blurAdultMedia = blurAdultMedia, onRecommendationClick = { rel ->
                                         val typeLabel = when (rel.mediaType) {

@@ -46,7 +46,8 @@ internal fun ApiDetailOverviewTab(
     mdbListShowLetterboxd: Boolean = false,
     mdbListShowTmdb: Boolean = false,
     mdbListShowTrakt: Boolean = false,
-    onSettingsClick: (() -> Unit)? = null
+    onSettingsClick: (() -> Unit)? = null,
+    onImageGalleryRequest: ((urls: List<String>, index: Int) -> Unit)? = null
 ) {
     Column(
         modifier = Modifier.padding(horizontal = 0.dp, vertical = 14.dp)
@@ -55,7 +56,8 @@ internal fun ApiDetailOverviewTab(
             synopsis = displaySynopsis,
             isLoading = isDetailLoading || (!isDetailLoading && detail?.synopsis != null && isTranslating),
             onTranslateClick = onTranslateClick,
-            onCopyClick = onCopyClick
+            onCopyClick = onCopyClick,
+            onImageGalleryRequest = onImageGalleryRequest
         )
 
         if (detail != null) {

@@ -132,6 +132,9 @@ fun AppRootDetailPages(
                     onStaffClick = { staffId, staffSource, staffName, staffImageUrl ->
                         navState.navigateToDetail(DetailScreen.StaffDetail(staffId, staffSource, staffName, staffImageUrl))
                     },
+                    onCharacterClick = { charId, charSource, charName, charImageUrl ->
+                        navState.navigateToDetail(DetailScreen.CharacterDetail(charId, charSource, charName, charImageUrl))
+                    },
                     onMediaClick = { mediaId, mediaType, mediaSource ->
                         val existingEntry = mediaEntries.firstMatching(mediaId, mediaSource)
                         if (existingEntry != null) {
@@ -299,7 +302,7 @@ fun AppRootDetailPages(
                     currentEntries = mediaEntries,
                     titleLanguage = appSettings.titleLanguage,
                     onOpenAiringEntry = { airingEntry ->
-                        val result = airingEntry.toJikanSearchResult()
+                        val result = airingEntry.toJikanSearchResult(preferredSource = key.preferredSource)
                         val existingEntry = mediaEntries.firstMatching(result)
                         if (existingEntry != null) {
                             navState.navigateToDetail(DetailScreen.MediaDetail(existingEntry.id))
@@ -430,6 +433,38 @@ fun AppRootDetailPages(
                     },
                     onLocalEntryClick = { entry ->
                         navState.navigateToDetail(DetailScreen.MediaDetail(entry.id))
+                    }
+                )
+            }
+        }
+
+        is AppStateKey.Notifications -> {
+            navState.stateHolder.SaveableStateProvider(key = "notifications_${key.depth}") {
+                com.kitsugi.animelist.ui.screens.notifications.KitsugiNotificationsScreen(
+                    mediaEntries = mediaEntries,
+                    isAniListConnected = authViewModel.isAniListConnected,
+                    isMalConnected = authViewModel.isMalConnected,
+                    isSimklConnected = authViewModel.isSimklConnected,
+                    onBack = { navState.popDetailStack() },
+                    onOpenApiDetail = { mediaId, source ->
+                        val existingEntry = mediaEntries.firstMatching(mediaId, source)
+                        if (existingEntry != null) {
+                            navState.navigateToDetail(DetailScreen.MediaDetail(existingEntry.id))
+                        } else {
+                            val searchResult = JikanSearchResult(
+                                malId = mediaId,
+                                title = "Yükleniyor...",
+                                subtitle = "",
+                                type = MediaType.Anime,
+                                total = null,
+                                score = null,
+                                isAdult = false,
+                                imageUrl = null,
+                                year = null,
+                                source = source
+                            )
+                            navState.navigateToDetail(DetailScreen.ApiResultDetail(searchResult))
+                        }
                     }
                 )
             }

@@ -319,10 +319,26 @@ fun KitsugiAllActivitiesBottomSheet(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(modifier = Modifier.weight(1f)) {
+                                    var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
+                                    var activeGalleryIndex by remember { mutableStateOf(0) }
+
                                     KitsugiMarkdownText(
                                         text = displayText,
-                                        modifier = Modifier.fillMaxWidth()
+                                        modifier = Modifier.fillMaxWidth(),
+                                        onImageGalleryRequest = { urls, index ->
+                                            activeGalleryImages = urls
+                                            activeGalleryIndex = index
+                                        }
                                     )
+
+                                    if (activeGalleryImages.isNotEmpty()) {
+                                        KitsugiImageGalleryDialog(
+                                            imageUrls = activeGalleryImages,
+                                            initialIndex = activeGalleryIndex,
+                                            title = act.username,
+                                            onDismiss = { activeGalleryImages = emptyList() }
+                                        )
+                                    }
                                 }
                                 if (!act.mediaCoverUrl.isNullOrBlank()) {
                                     Spacer(modifier = Modifier.width(12.dp))

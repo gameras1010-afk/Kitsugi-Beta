@@ -190,7 +190,12 @@ private fun ExploreTabPage(ctx: TabPagesContext) {
         onOpenApiDetail = ctx.onOpenApiDetail,
         onOpenMangaReader = ctx.onOpenMangaReader,
         onOpenAiringCalendar = {
-            ctx.navState.navigateToDetail(DetailScreen.AiringCalendar)
+            val preferredSource = when (ctx.exploreViewModel.selectedPlatform) {
+                com.kitsugi.animelist.ui.screens.explore.ExplorePlatform.MAL -> "jikan"
+                com.kitsugi.animelist.ui.screens.explore.ExplorePlatform.AniList -> "anilist"
+                else -> "anilist"
+            }
+            ctx.navState.navigateToDetail(DetailScreen.AiringCalendar(preferredSource))
         },
         initialScrollIndex = ctx.appViewModel.exploreScrollIndex,
         initialScrollOffset = ctx.appViewModel.exploreScrollOffset,
@@ -201,6 +206,8 @@ private fun ExploreTabPage(ctx: TabPagesContext) {
         titleLanguage = ctx.appSettings.titleLanguage,
         scoreFormat = ctx.appSettings.scoreFormat,
         hideScores = ctx.appSettings.hideScores,
+        onOpenNotifications = { ctx.navState.navigateToDetail(DetailScreen.Notifications) },
+        isNotificationsVisible = ctx.authViewModel.isAniListConnected || ctx.authViewModel.isMalConnected || ctx.authViewModel.isSimklConnected,
         showAnimeLogos = ctx.appSettings.showAnimeLogos,
         isSimklConnected = ctx.authViewModel.isSimklConnected
     )

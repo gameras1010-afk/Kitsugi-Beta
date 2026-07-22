@@ -92,14 +92,14 @@ internal fun MediaAppearanceRow(
 @Composable
 internal fun VoiceActorRow(
     actor: com.kitsugi.animelist.data.remote.KitsugiVoiceActor,
-    onStaffClick: (staffId: Int, source: String, name: String?, imageUrl: String?) -> Unit
+    onClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(KitsugiColors.Surface)
-            .tvClickable(shape = RoundedCornerShape(16.dp), onClick = { onStaffClick(actor.id, actor.source, actor.name, actor.imageUrl) })
+            .tvClickable(shape = RoundedCornerShape(16.dp), onClick = onClick)
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -135,8 +135,13 @@ internal fun VoiceActorRow(
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold
             )
+            val labelText = if (actor.language.equals("oyuncu", ignoreCase = true)) {
+                "Oyuncu"
+            } else {
+                actor.language.replaceFirstChar { it.uppercase() }
+            }
             Text(
-                text = actor.language.replaceFirstChar { it.uppercase() },
+                text = labelText,
                 color = KitsugiColors.TextMuted,
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Medium

@@ -35,19 +35,23 @@ import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.LocalFlorist
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Tv
+import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.automirrored.rounded.TrendingUp
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -92,6 +96,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.foundation.layout.size
 import kotlinx.coroutines.delay
 import com.kitsugi.animelist.ui.components.KitsugiShimmerProvider
+import coil3.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
 
 @Composable
 fun ExploreScreen(
@@ -111,7 +118,9 @@ fun ExploreScreen(
     hideScores: Boolean = false,
     showAnimeLogos: Boolean = false,
     isSimklConnected: Boolean = false,
-    blurAdultMedia: Boolean = false
+    blurAdultMedia: Boolean = false,
+    onOpenNotifications: () -> Unit = {},
+    isNotificationsVisible: Boolean = false
 ) {
     val accentColor = LocalKitsugiAccent.current
 
@@ -374,11 +383,71 @@ fun ExploreScreen(
                                                 )
                                             }
                                         } else {
-                                            ExplorePlatformToggle(
-                                                selectedPlatform = viewModel.selectedPlatform,
-                                                onPlatformSelected = { platform -> viewModel.selectPlatform(platform) },
-                                                modifier = Modifier.fillMaxWidth()
-                                            )
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                ExplorePlatformToggle(
+                                                    selectedPlatform = viewModel.selectedPlatform,
+                                                    onPlatformSelected = { platform -> viewModel.selectPlatform(platform) },
+                                                    modifier = Modifier.weight(1f)
+                                                )
+
+                                                if (isNotificationsVisible) {
+                                                    // 🔔 Bildirim butonu
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .size(36.dp)
+                                                            .clip(RoundedCornerShape(12.dp))
+                                                            .background(KitsugiColors.Surface)
+                                                            .tvClickable(shape = RoundedCornerShape(12.dp)) {
+                                                                onOpenNotifications()
+                                                            },
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Rounded.Notifications,
+                                                            contentDescription = "Bildirimler",
+                                                            tint = KitsugiColors.TextPrimary,
+                                                            modifier = Modifier.size(20.dp)
+                                                        )
+                                                    }
+                                                } else {
+                                                    // 🎲 Rastgele keşfet butonu
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .size(36.dp)
+                                                            .clip(RoundedCornerShape(12.dp))
+                                                            .background(KitsugiColors.Surface)
+                                                            .tvClickable(shape = RoundedCornerShape(12.dp)) {
+                                                                val randomPool = mutableListOf<JikanSearchResult>()
+                                                                randomPool.addAll(filteredTopAnime)
+                                                                randomPool.addAll(filteredAiringAnime)
+                                                                randomPool.addAll(filteredUpcomingAnime)
+                                                                randomPool.addAll(filteredTopManga)
+                                                                randomPool.addAll(filteredPublishingManga)
+                                                                randomPool.addAll(filteredTrendingAnime)
+                                                                randomPool.addAll(filteredMovieAnime)
+                                                                randomPool.addAll(filteredSeasonalAnime)
+                                                                randomPool.addAll(viewModel.simklContinueMovies)
+                                                                randomPool.addAll(viewModel.simklPlannedMovies)
+                                                                randomPool.addAll(viewModel.simklContinueSeries)
+                                                                randomPool.addAll(viewModel.simklPlannedSeries)
+                                                                if (randomPool.isNotEmpty()) {
+                                                                    val randomResult = randomPool.random()
+                                                                    onOpenApiDetail(randomResult)
+                                                                }
+                                                            },
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        Text(
+                                                            text = "🎲",
+                                                            style = MaterialTheme.typography.bodyMedium
+                                                        )
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -740,19 +809,55 @@ fun ExploreScreen(
                             // ─── YAKINDA YAYINDA (Airing Soon) ───
                             if (viewModel.airingSoonAnime.isNotEmpty()) {
                                 item {
-                                    KitsugiHorizontalMediaSection(
-                                        title = "Yakında Yayında",
-                                        results = viewModel.airingSoonAnime,
-                                        isLoading = viewModel.isLoading,
-                                        alreadyInList = isAlreadyInList,
-                                        getMediaEntry = getMediaEntry,
-                                        onItemClick = onOpenApiDetail,
-                                        onSeeAllClick = onOpenAiringCalendar,
-                                        titleLanguage = titleLanguage,
-                                        scoreFormat = scoreFormat,
-                                        hideScores = hideScores,
-                                        blurAdultMedia = blurAdultMedia
-                                    )
+                                    Column(
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 20.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                text = "Yakında Yayında",
+                                                color = KitsugiColors.TextPrimary,
+                                                style = MaterialTheme.typography.titleLarge,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                            IconButton(onClick = onOpenAiringCalendar) {
+                                                Icon(
+                                                    imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                                                    contentDescription = "Yayın Takvimi",
+                                                    tint = accentColor
+                                                )
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.height(10.dp))
+
+                                        val lazyListState = remember { androidx.compose.foundation.lazy.LazyListState() }
+                                        LazyRow(
+                                            state = lazyListState,
+                                            contentPadding = PaddingValues(horizontal = 20.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                            flingBehavior = androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior(
+                                                lazyListState = lazyListState,
+                                                snapPosition = androidx.compose.foundation.gestures.snapping.SnapPosition.Start
+                                            ),
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            items(viewModel.airingSoonAnime.size) { index ->
+                                                val result = viewModel.airingSoonAnime[index]
+                                                AiringSoonHorizontalCard(
+                                                    result = result,
+                                                    alreadyInList = isAlreadyInList(result),
+                                                    onItemClick = { onOpenApiDetail(result) },
+                                                    titleLanguage = titleLanguage
+                                                )
+                                            }
+                                        }
+                                    }
                                     Spacer(modifier = Modifier.height(26.dp))
                                 }
                             }
@@ -861,7 +966,7 @@ fun ExploreScreen(
                     selectedPlatform = viewModel.selectedPlatform,
                     onPlatformSelected = { platform -> viewModel.selectPlatform(platform) },
                     isVertical = true,
-                    modifier = Modifier.fillMaxHeight(0.6f)
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }
@@ -907,5 +1012,154 @@ fun ExploreCategoryChip(
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Bold
         )
+    }
+}
+
+@Composable
+fun AiringSoonCountdownText(
+    nextAiringEpisode: String?,
+    modifier: Modifier = Modifier
+) {
+    if (nextAiringEpisode.isNullOrBlank()) return
+
+    val parts = remember(nextAiringEpisode) { nextAiringEpisode.split("|") }
+    val episode = remember(parts) { parts.getOrNull(0)?.toIntOrNull() } ?: return
+    val targetEpoch = remember(parts) { parts.getOrNull(1)?.toLongOrNull() } ?: return
+
+    var countdownText by remember(episode, targetEpoch) { mutableStateOf("") }
+
+    LaunchedEffect(episode, targetEpoch) {
+        while (true) {
+            val now = System.currentTimeMillis() / 1000L
+            val remaining = targetEpoch - now
+            countdownText = when {
+                remaining <= 0L -> "Bölüm $episode yayınlandı"
+                remaining < 3600L -> {
+                    val mins = (remaining / 60).toInt()
+                    "${mins} dk sonra"
+                }
+                remaining < 86400L -> {
+                    val hours = (remaining / 3600).toInt()
+                    val mins = ((remaining % 3600) / 60).toInt()
+                    "%02d:%02d sonra".format(hours, mins)
+                }
+                else -> {
+                    val days = (remaining / 86400).toInt()
+                    "$days gün sonra"
+                }
+            }
+            if (remaining <= 0L) break
+            val delayMs = if (remaining < 3600L) 1_000L
+                          else if (remaining < 86400L) 10_000L
+                          else 60_000L
+            delay(delayMs)
+        }
+    }
+
+    if (countdownText.isNotBlank()) {
+        Text(
+            text = countdownText,
+            color = KitsugiColors.AccentOrange,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = modifier
+        )
+    }
+}
+
+@Composable
+fun AiringSoonHorizontalCard(
+    result: JikanSearchResult,
+    alreadyInList: Boolean,
+    onItemClick: () -> Unit,
+    titleLanguage: String = "ROMAJI",
+    modifier: Modifier = Modifier
+) {
+    val displayTitle = when (titleLanguage) {
+        "ENGLISH" -> result.titleEnglish ?: result.title
+        else      -> result.title
+    }
+
+    val displayScore = when {
+        result.rawScoreDouble != null -> "⭐ ${result.rawScoreDouble}"
+        result.score != null -> {
+            if (result.score > 10) "⭐ ${result.score}%" else "⭐ ${result.score}"
+        }
+        else -> null
+    }
+
+    Row(
+        modifier = modifier
+            .width(280.dp)
+            .height(100.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(KitsugiColors.Surface)
+            .then(
+                if (alreadyInList)
+                    Modifier.border(1.dp, KitsugiColors.AccentGreen.copy(0.45f), RoundedCornerShape(12.dp))
+                else Modifier
+            )
+            .tvClickable(shape = RoundedCornerShape(12.dp), onClick = onItemClick)
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Sol Taraf: Poster
+        Box(
+            modifier = Modifier
+                .width(60.dp)
+                .fillMaxHeight()
+                .clip(RoundedCornerShape(8.dp))
+                .background(KitsugiColors.SurfaceSoft)
+        ) {
+            AsyncImage(
+                model = result.imageUrl,
+                contentDescription = displayTitle,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        Spacer(modifier = Modifier.width(10.dp))
+
+        // Sağ Taraf: Detaylar
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = displayTitle,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = KitsugiColors.TextPrimary,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            AiringSoonCountdownText(nextAiringEpisode = result.nextAiringEpisode)
+
+            if (displayScore != null) {
+                Text(
+                    text = displayScore,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = KitsugiColors.TextSecondary,
+                    fontWeight = FontWeight.Medium
+                )
+            } else {
+                Spacer(modifier = Modifier.height(1.dp))
+            }
+        }
+
+        // İzliyorum ikonu overlay
+        if (alreadyInList) {
+            Spacer(modifier = Modifier.width(4.dp))
+            Icon(
+                imageVector = androidx.compose.material.icons.Icons.Rounded.PlayCircle,
+                contentDescription = "İzliyorum",
+                tint = KitsugiColors.AccentGreen,
+                modifier = Modifier.size(18.dp)
+            )
+        }
     }
 }

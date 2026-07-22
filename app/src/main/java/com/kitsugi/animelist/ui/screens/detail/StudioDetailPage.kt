@@ -46,6 +46,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.platform.LocalContext
 import com.kitsugi.animelist.ui.components.KitsugiMarkdownText
+import com.kitsugi.animelist.ui.components.KitsugiImageGalleryDialog
 import com.kitsugi.animelist.ui.components.KitsugiPageEnter
 import com.kitsugi.animelist.ui.components.KitsugiCinematicLoadingScreen
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayTitle
@@ -87,6 +88,9 @@ fun StudioDetailPage(
     val state by viewModel.state.collectAsState()
     val isFavourite by viewModel.isFavourite.collectAsState()
     val isAniListSource = source.lowercase() == "anilist"
+    val context = LocalContext.current
+    val isAniListConnected = remember { com.kitsugi.animelist.data.auth.ExternalAuthManager.getAniListToken(context) != null }
+    val showFavouriteButton = isAniListSource || isAniListConnected
 
     Box(
         modifier = Modifier
@@ -141,10 +145,11 @@ fun StudioDetailPage(
             }
             is StudioDetailState.Success -> {
                 val detail = currentState.detail
-                val context = LocalContext.current
                 val gridState = rememberLazyGridState()
                 val showFloatingHeader = gridState.firstVisibleItemIndex >= 1
                 val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+                var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
+                var activeGalleryIndex  by remember { mutableStateOf(0) }
 
                 if (isLandscape) {
                     // ── LANDSCAPE: Sol meta paneli + Sağ media grid ──
@@ -185,7 +190,6 @@ fun StudioDetailPage(
                                             Text(detail.name.take(2).uppercase(), color = accentColor, style = MaterialTheme.typography.displayLarge, fontWeight = FontWeight.Black)
                                         }
                                     }
-                                    val context = LocalContext.current
                                     // Top Action Bar: Back (left) + Share & Favourite (right)
                                     Row(
                                         modifier = Modifier
@@ -234,7 +238,7 @@ fun StudioDetailPage(
                                                 }
                                             }
 
-                                            if (isAniListSource) {
+                                            if (showFavouriteButton) {
                                                 Box(
                                                     modifier = Modifier
                                                         .size(40.dp)
@@ -274,7 +278,13 @@ fun StudioDetailPage(
                                         ) {
                                             Text("Hakkında", color = KitsugiColors.TextPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                                             Spacer(modifier = Modifier.height(10.dp))
-                                            KitsugiMarkdownText(text = detail.about)
+                                            KitsugiMarkdownText(
+                                                text = detail.about,
+                                                onImageGalleryRequest = { urls, idx ->
+                                                    activeGalleryImages = urls
+                                                    activeGalleryIndex = idx
+                                                }
+                                            )
                                         }
                                     }
                                 }
@@ -311,6 +321,15 @@ fun StudioDetailPage(
                             }
                         }
                     }
+                    // Gallery overlay for landscape
+                    if (activeGalleryImages.isNotEmpty()) {
+                        KitsugiImageGalleryDialog(
+                            imageUrls = activeGalleryImages,
+                            initialIndex = activeGalleryIndex,
+                            title = detail.name,
+                            onDismiss = { activeGalleryImages = emptyList() }
+                        )
+                    }
                 } else {
                     // ── PORTRAIT: Mevcut LazyVerticalGrid düzeni ──
                 KitsugiPageEnter {
@@ -331,7 +350,7 @@ fun StudioDetailPage(
                                     accentColor = accentColor,
                                     onBackClick = onBackClick,
                                     isFavourite = isFavourite,
-                                    isAniListSource = isAniListSource,
+                                    isAniListSource = showFavouriteButton,
                                     onToggleFavourite = { viewModel.toggleFavourite() }
                                 )
                             }
@@ -354,7 +373,13 @@ fun StudioDetailPage(
                                             fontWeight = FontWeight.Bold
                                         )
                                         Spacer(modifier = Modifier.height(10.dp))
-                                        KitsugiMarkdownText(text = detail.about)
+                                        KitsugiMarkdownText(
+                                            text = detail.about,
+                                            onImageGalleryRequest = { urls, idx ->
+                                                activeGalleryImages = urls
+                                                activeGalleryIndex = idx
+                                            }
+                                        )
                                     }
                                 }
                             }
@@ -434,7 +459,7 @@ fun StudioDetailPage(
                                         tint = KitsugiColors.TextSecondary
                                     )
                                 }
-                                if (isAniListSource) {
+                                if (showFavouriteButton) {
                                     IconButton(onClick = { viewModel.toggleFavourite() }) {
                                         Icon(
                                             imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
@@ -447,6 +472,15 @@ fun StudioDetailPage(
                         }
                     }
                 }
+                    // Gallery overlay for portrait
+                    if (activeGalleryImages.isNotEmpty()) {
+                        KitsugiImageGalleryDialog(
+                            imageUrls = activeGalleryImages,
+                            initialIndex = activeGalleryIndex,
+                            title = detail.name,
+                            onDismiss = { activeGalleryImages = emptyList() }
+                        )
+                    }
                 } // end else (portrait)
             }
         }

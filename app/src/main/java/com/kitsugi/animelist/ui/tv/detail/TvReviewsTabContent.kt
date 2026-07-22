@@ -43,6 +43,7 @@ import com.kitsugi.animelist.data.remote.KitsugiForumReply
 import com.kitsugi.animelist.data.remote.KitsugiForumTopic
 import com.kitsugi.animelist.data.remote.KitsugiReview
 import com.kitsugi.animelist.model.MediaType
+import com.kitsugi.animelist.ui.components.KitsugiImageGalleryDialog
 import com.kitsugi.animelist.ui.components.KitsugiMarkdownText
 import com.kitsugi.animelist.ui.screens.detail.DetailTabState
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
@@ -933,10 +934,24 @@ private fun TvReviewDetailDialog(
                         }
                     } else {
                         val displayText = if (selectedLanguage == "turkish") (translatedText ?: review.fullText) else review.fullText
+                        var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
+                        var activeGalleryIndex by remember { mutableStateOf(0) }
                         KitsugiMarkdownText(
                             text = displayText,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            onImageGalleryRequest = { urls, index ->
+                                activeGalleryImages = urls
+                                activeGalleryIndex = index
+                            }
                         )
+                        if (activeGalleryImages.isNotEmpty()) {
+                            KitsugiImageGalleryDialog(
+                                imageUrls = activeGalleryImages,
+                                initialIndex = activeGalleryIndex,
+                                title = review.username,
+                                onDismiss = { activeGalleryImages = emptyList() }
+                            )
+                        }
                     }
                 }
             }
@@ -1435,7 +1450,23 @@ private fun TvForumCommentCard(
             }
         }
 
-        KitsugiMarkdownText(text = displayText)
+        var commentGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
+        var commentGalleryIndex by remember { mutableStateOf(0) }
+        KitsugiMarkdownText(
+            text = displayText,
+            onImageGalleryRequest = { urls, index ->
+                commentGalleryImages = urls
+                commentGalleryIndex = index
+            }
+        )
+        if (commentGalleryImages.isNotEmpty()) {
+            KitsugiImageGalleryDialog(
+                imageUrls = commentGalleryImages,
+                initialIndex = commentGalleryIndex,
+                title = comment.username,
+                onDismiss = { commentGalleryImages = emptyList() }
+            )
+        }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -1787,7 +1818,23 @@ private fun TvActivityDetailDialog(
                                         } else act.text
                                         val displayText = if (selectedLanguage == "turkish") translatedText ?: localizedDisplayText else localizedDisplayText
 
-                                        KitsugiMarkdownText(text = displayText)
+                                        var actGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
+                                        var actGalleryIndex by remember { mutableStateOf(0) }
+                                        KitsugiMarkdownText(
+                                            text = displayText,
+                                            onImageGalleryRequest = { urls, index ->
+                                                actGalleryImages = urls
+                                                actGalleryIndex = index
+                                            }
+                                        )
+                                        if (actGalleryImages.isNotEmpty()) {
+                                            KitsugiImageGalleryDialog(
+                                                imageUrls = actGalleryImages,
+                                                initialIndex = actGalleryIndex,
+                                                title = act.username,
+                                                onDismiss = { actGalleryImages = emptyList() }
+                                            )
+                                        }
                                     }
                                     if (!act.mediaCoverUrl.isNullOrBlank()) {
                                         Spacer(modifier = Modifier.width(12.dp))
@@ -1926,7 +1973,23 @@ private fun TvActivityReplyCard(
             }
         }
 
-        KitsugiMarkdownText(text = displayText)
+        var replyGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
+        var replyGalleryIndex by remember { mutableStateOf(0) }
+        KitsugiMarkdownText(
+            text = displayText,
+            onImageGalleryRequest = { urls, index ->
+                replyGalleryImages = urls
+                replyGalleryIndex = index
+            }
+        )
+        if (replyGalleryImages.isNotEmpty()) {
+            KitsugiImageGalleryDialog(
+                imageUrls = replyGalleryImages,
+                initialIndex = replyGalleryIndex,
+                title = reply.username,
+                onDismiss = { replyGalleryImages = emptyList() }
+            )
+        }
 
         Row(
             modifier = Modifier.fillMaxWidth(),

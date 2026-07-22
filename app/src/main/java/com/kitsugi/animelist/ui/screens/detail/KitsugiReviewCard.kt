@@ -40,7 +40,8 @@ internal fun KitsugiReviewCard(
     preferredTranslator: String = "DEFAULT",
     backgroundColor: androidx.compose.ui.graphics.Color = KitsugiColors.Surface,
     onClick: () -> Unit,
-    onHelpfulClick: () -> Unit
+    onHelpfulClick: () -> Unit,
+    onImageGalleryRequest: ((urls: List<String>, index: Int) -> Unit)? = null
 ) {
     val accentColor = LocalKitsugiAccent.current
     val context = LocalContext.current
@@ -125,7 +126,10 @@ internal fun KitsugiReviewCard(
             }
         }
         Spacer(modifier = Modifier.height(10.dp))
-        KitsugiMarkdownText(text = displaySummary)
+        KitsugiMarkdownText(
+            text = displaySummary,
+            onImageGalleryRequest = onImageGalleryRequest
+        )
 
         if ((rev.helpfulCount != null && rev.helpfulCount > 0) || rev.id != null) {
             Spacer(modifier = Modifier.height(8.dp))

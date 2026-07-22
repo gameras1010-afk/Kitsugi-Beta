@@ -116,7 +116,25 @@ internal fun KitsugiForumCommentCard(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        KitsugiMarkdownText(text = displayText)
+        var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
+        var activeGalleryIndex by remember { mutableStateOf(0) }
+
+        KitsugiMarkdownText(
+            text = displayText,
+            onImageGalleryRequest = { urls, index ->
+                activeGalleryImages = urls
+                activeGalleryIndex = index
+            }
+        )
+
+        if (activeGalleryImages.isNotEmpty()) {
+            KitsugiImageGalleryDialog(
+                imageUrls = activeGalleryImages,
+                initialIndex = activeGalleryIndex,
+                title = comment.username,
+                onDismiss = { activeGalleryImages = emptyList() }
+            )
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 

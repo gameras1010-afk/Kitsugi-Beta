@@ -90,13 +90,14 @@ class StudioDetailViewModel(application: Application) : AndroidViewModel(applica
     }
 
     /**
-     * AniList stüdyo favori toggle — sadece AniList kaynağı ve giriş yapılmışsa çalışır.
+     * AniList stüdyo favori toggle — giriş yapılmış ve aniListId biliniyorsa çalışır.
      */
     fun toggleFavourite() {
-        val token = ExternalAuthManager.getAniListToken(context) ?: return
+        ExternalAuthManager.getAniListToken(context) ?: return
         val currentState = _state.value as? StudioDetailState.Success ?: return
         val detail = currentState.detail
-        if (lastSource.lowercase() != "anilist") return
+        val targetId = detail.aniListId ?: if (lastSource.lowercase() == "anilist") detail.id else null
+        if (targetId == null || targetId <= 0) return
 
         val newFav = !_isFavourite.value
         _isFavourite.value = newFav
@@ -105,7 +106,7 @@ class StudioDetailViewModel(application: Application) : AndroidViewModel(applica
         DetailCache.putStudioDetail(lastSource, lastStudioId, updated)
 
         viewModelScope.launch(Dispatchers.IO) {
-            val ok = mutationsClient.toggleFavourite("studio", detail.id)
+            val ok = mutationsClient.toggleFavourite("studio", targetId)
             if (!ok) {
                 _isFavourite.value = !newFav
                 val rolled = detail.copy(isFavourite = !newFav)

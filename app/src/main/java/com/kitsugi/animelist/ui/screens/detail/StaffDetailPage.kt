@@ -122,6 +122,8 @@ fun StaffDetailPage(
     val translatedBio by viewModel.translatedBio.collectAsState()
     val isFavourite by viewModel.isFavourite.collectAsState()
     val isAniListSource = source.lowercase() == "anilist"
+    val isAniListConnected = remember { com.kitsugi.animelist.data.auth.ExternalAuthManager.getAniListToken(context) != null }
+    val showFavouriteButton = isAniListSource || isAniListConnected
 
     Box(
         modifier = Modifier
@@ -291,7 +293,7 @@ fun StaffDetailPage(
                                                     }
                                                 }
 
-                                                if (isAniListSource) {
+                                                if (showFavouriteButton) {
                                                     Box(
                                                         modifier = Modifier
                                                             .size(40.dp)
@@ -401,7 +403,13 @@ fun StaffDetailPage(
                                                         }
                                                         Spacer(modifier = Modifier.height(8.dp))
                                                         if (displayBio.isNullOrBlank()) Text("Biyografi bulunmuyor.", color = KitsugiColors.TextMuted, style = MaterialTheme.typography.bodyMedium)
-                                                        else KitsugiMarkdownText(text = displayBio)
+                                                        else KitsugiMarkdownText(
+                                                            text = displayBio,
+                                                            onImageGalleryRequest = { urls, idx ->
+                                                                activeGalleryImages = urls
+                                                                activeGalleryIndex = idx
+                                                            }
+                                                        )
                                                     }
                                                 }
                                             }
@@ -536,7 +544,7 @@ fun StaffDetailPage(
                                                 }
                                             }
 
-                                            if (isAniListSource) {
+                                            if (showFavouriteButton) {
                                                 Box(
                                                     modifier = Modifier
                                                         .size(40.dp)
@@ -646,7 +654,7 @@ fun StaffDetailPage(
                                                     tint = KitsugiColors.TextSecondary
                                                 )
                                             }
-                                            if (isAniListSource) {
+                                            if (showFavouriteButton) {
                                                 IconButton(onClick = { viewModel.toggleFavourite() }) {
                                                     Icon(
                                                         imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
@@ -851,7 +859,13 @@ fun StaffDetailPage(
                                                             if (displayBio.isNullOrBlank()) {
                                                                 Text("Biyografi bulunmuyor.", color = KitsugiColors.TextMuted, style = MaterialTheme.typography.bodyMedium)
                                                             } else {
-                                                                KitsugiMarkdownText(text = displayBio)
+                                                                KitsugiMarkdownText(
+                                                                    text = displayBio,
+                                                                    onImageGalleryRequest = { urls, idx ->
+                                                                        activeGalleryImages = urls
+                                                                        activeGalleryIndex = idx
+                                                                    }
+                                                                )
                                                             }
                                                         }
                                                     }

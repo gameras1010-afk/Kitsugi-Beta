@@ -117,13 +117,14 @@ class StaffDetailViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     /**
-     * AniList ekip üyesi favori toggle — sadece AniList kaynağı ve giriş yapılmışsa çalışır.
+     * AniList ekip üyesi favori toggle — giriş yapılmış ve aniListId biliniyorsa çalışır.
      */
     fun toggleFavourite() {
-        val token = ExternalAuthManager.getAniListToken(context) ?: return
+        ExternalAuthManager.getAniListToken(context) ?: return
         val currentState = _state.value as? StaffDetailState.Success ?: return
         val detail = currentState.detail
-        if (lastSource.lowercase() != "anilist") return
+        val targetId = detail.aniListId ?: if (lastSource.lowercase() == "anilist") detail.id else null
+        if (targetId == null || targetId <= 0) return
 
         val newFav = !_isFavourite.value
         _isFavourite.value = newFav
@@ -132,7 +133,7 @@ class StaffDetailViewModel(application: Application) : AndroidViewModel(applicat
         DetailCache.putStaffDetail(lastSource, lastStaffId, updated)
 
         viewModelScope.launch(Dispatchers.IO) {
-            val ok = mutationsClient.toggleFavourite("staff", detail.id)
+            val ok = mutationsClient.toggleFavourite("staff", targetId)
             if (!ok) {
                 _isFavourite.value = !newFav
                 val rolled = detail.copy(isFavourite = !newFav)

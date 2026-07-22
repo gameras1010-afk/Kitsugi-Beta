@@ -44,7 +44,8 @@ internal fun EntryDetailOverviewTab(
     mdbListShowTmdb: Boolean = false,
     mdbListShowTrakt: Boolean = false,
     onSettingsClick: (() -> Unit)? = null,
-    preferredTranslator: String = "DEFAULT"
+    preferredTranslator: String = "DEFAULT",
+    onImageGalleryRequest: ((urls: List<String>, index: Int) -> Unit)? = null
 ) {
     val context = LocalContext.current
 
@@ -62,7 +63,8 @@ internal fun EntryDetailOverviewTab(
                 val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                 clipboard.setPrimaryClip(android.content.ClipData.newPlainText("synopsis", textToCopy))
                 android.widget.Toast.makeText(context, "Panonya kopyalandı", android.widget.Toast.LENGTH_SHORT).show()
-            }
+            },
+            onImageGalleryRequest = onImageGalleryRequest
         )
 
         // İstatistikler Kartı (Puan Sırası, Oy Sayısı, Üyeler, Popülerlik)

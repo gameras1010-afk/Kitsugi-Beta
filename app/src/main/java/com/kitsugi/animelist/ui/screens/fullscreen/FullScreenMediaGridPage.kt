@@ -6,6 +6,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -62,12 +65,15 @@ import com.kitsugi.animelist.data.remote.TmdbApiClient
 import com.kitsugi.animelist.ui.components.KitsugiEmptyState
 import com.kitsugi.animelist.ui.components.KitsugiExploreMediaCard
 import com.kitsugi.animelist.ui.components.KitsugiRankingMediaCard
+import com.kitsugi.animelist.ui.components.DetailedSeasonalMediaCard
 import com.kitsugi.animelist.ui.components.KitsugiSeasonalFilterBottomSheet
 import com.kitsugi.animelist.ui.screens.explore.ExploreCategoryType
 import com.kitsugi.animelist.ui.screens.explore.ExplorePlatform
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.theme.LocalIsTv
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
+import com.kitsugi.animelist.ui.utils.tvClickable
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -228,6 +234,16 @@ fun FullScreenMediaGridPage(
 
     val showFloatingHeader = if (isGridView) gridState.firstVisibleItemIndex >= 1
     else listState.firstVisibleItemIndex >= 1
+
+    val showScrollToTop by remember {
+        derivedStateOf {
+            if (isGridView) {
+                gridState.firstVisibleItemIndex > 3
+            } else {
+                listState.firstVisibleItemIndex > 3
+            }
+        }
+    }
 
     Box(
         modifier = Modifier.fillMaxSize().background(KitsugiColors.Background),
@@ -437,16 +453,25 @@ fun FullScreenMediaGridPage(
                         displayedResults,
                         key = { idx, item -> "${item.source}_${item.malId}_l$idx" }
                     ) { index, result ->
-                        KitsugiRankingMediaCard(
-                            result = result,
-                            rankIndex = index + 1,
-                            alreadyInList = alreadyInList(result),
-                            mediaEntry = getMediaEntry(result),
-                            onClick = { onItemClick(result) },
-                            titleLanguage = titleLanguage,
-                            hideScores = hideScores,
-                            blurAdultMedia = blurAdultMedia
-                        )
+                        if (categoryType == ExploreCategoryType.SEASONAL_ANIME) {
+                            DetailedSeasonalMediaCard(
+                                result = result,
+                                alreadyInList = alreadyInList(result),
+                                onClick = { onItemClick(result) },
+                                titleLanguage = titleLanguage
+                            )
+                        } else {
+                            KitsugiRankingMediaCard(
+                                result = result,
+                                rankIndex = index + 1,
+                                alreadyInList = alreadyInList(result),
+                                mediaEntry = getMediaEntry(result),
+                                onClick = { onItemClick(result) },
+                                titleLanguage = titleLanguage,
+                                hideScores = hideScores,
+                                blurAdultMedia = blurAdultMedia
+                            )
+                        }
                     }
                 }
 
@@ -534,6 +559,39 @@ fun FullScreenMediaGridPage(
                         Icon(Icons.Rounded.FilterList, contentDescription = "Filtre", tint = accentColor)
                     }
                 }
+            }
+        }
+
+        AnimatedVisibility(
+            visible = showScrollToTop,
+            enter = fadeIn() + scaleIn(),
+            exit = fadeOut() + scaleOut(),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 20.dp, bottom = 24.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(accentColor)
+                    .tvClickable(shape = RoundedCornerShape(16.dp)) {
+                        scope.launch {
+                            if (isGridView) {
+                                gridState.animateScrollToItem(0)
+                            } else {
+                                listState.animateScrollToItem(0)
+                            }
+                        }
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.KeyboardArrowUp,
+                    contentDescription = "Yukarı Git",
+                    tint = KitsugiColors.Background,
+                    modifier = Modifier.size(28.dp)
+                )
             }
         }
 

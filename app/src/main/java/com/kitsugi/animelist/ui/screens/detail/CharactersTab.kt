@@ -36,9 +36,11 @@ import com.kitsugi.animelist.ui.components.KitsugiSheetOrDialog
 fun CharactersTabContent(
     state: DetailTabState<List<KitsugiCharacter>>,
     onCharacterClick: (KitsugiCharacter) -> Unit,
-    onStaffClick: (Int, String, String?, String?) -> Unit
+    onStaffClick: (Int, String, String?, String?) -> Unit,
+    onMediaClick: (Int, String, String) -> Unit
 ) {
     var selectedCharacterForVoiceActors by remember { mutableStateOf<KitsugiCharacter?>(null) }
+    var selectedVoiceActorForRoles by remember { mutableStateOf<com.kitsugi.animelist.data.remote.KitsugiVoiceActor?>(null) }
 
     when (state) {
         is DetailTabState.Loading -> {
@@ -80,7 +82,7 @@ fun CharactersTabContent(
                                         CharacterVoiceActorCard(
                                             char = char,
                                             onCharacterClick = onCharacterClick,
-                                            onStaffClick = onStaffClick,
+                                            onVoiceActorClick = { selectedVoiceActorForRoles = it },
                                             onShowVoiceActors = { selectedCharacterForVoiceActors = it }
                                         )
                                     }
@@ -101,7 +103,7 @@ fun CharactersTabContent(
                             CharacterVoiceActorCard(
                                 char = char,
                                 onCharacterClick = onCharacterClick,
-                                onStaffClick = onStaffClick,
+                                onVoiceActorClick = { selectedVoiceActorForRoles = it },
                                 onShowVoiceActors = { selectedCharacterForVoiceActors = it }
                             )
                         }
@@ -139,7 +141,7 @@ fun CharactersTabContent(
                             .background(KitsugiColors.Surface)
                             .tvClickable(shape = RoundedCornerShape(16.dp), onClick = {
                                 selectedCharacterForVoiceActors = null
-                                onStaffClick(va.id, va.source, va.name, va.imageUrl)
+                                selectedVoiceActorForRoles = va
                             })
                             .padding(8.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -188,13 +190,39 @@ fun CharactersTabContent(
             }
         }
     }
+
+    if (selectedVoiceActorForRoles != null) {
+        val actor = selectedVoiceActorForRoles!!
+        CharacterVoiceActorsSheet(
+            actorId = actor.id,
+            source = actor.source,
+            actorName = actor.name,
+            actorImageUrl = actor.imageUrl,
+            language = actor.language,
+            onDismiss = { selectedVoiceActorForRoles = null },
+            onCharacterClick = { charId, charSource, charName, charImageUrl ->
+                onCharacterClick(
+                    KitsugiCharacter(
+                        id = charId,
+                        name = charName ?: "",
+                        role = "",
+                        imageUrl = charImageUrl,
+                        voiceActors = emptyList(),
+                        source = charSource
+                    )
+                )
+            },
+            onMediaClick = onMediaClick,
+            onStaffClick = onStaffClick
+        )
+    }
 }
 
 @Composable
 fun CharacterVoiceActorCard(
     char: KitsugiCharacter,
     onCharacterClick: (KitsugiCharacter) -> Unit,
-    onStaffClick: (Int, String, String?, String?) -> Unit,
+    onVoiceActorClick: (com.kitsugi.animelist.data.remote.KitsugiVoiceActor) -> Unit,
     onShowVoiceActors: (KitsugiCharacter) -> Unit
 ) {
     val accentColor = LocalKitsugiAccent.current
@@ -291,7 +319,7 @@ fun CharacterVoiceActorCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .tvClickable(shape = RoundedCornerShape(16.dp), onClick = { onStaffClick(va.id, va.source, va.name, va.imageUrl) }),
+                    .tvClickable(shape = RoundedCornerShape(16.dp), onClick = { onVoiceActorClick(va) }),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(

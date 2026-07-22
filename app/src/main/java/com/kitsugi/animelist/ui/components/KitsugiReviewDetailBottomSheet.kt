@@ -280,7 +280,25 @@ fun KitsugiReviewDetailBottomSheet(
                     }
                 } else {
                     val displayText = if (selectedLanguage == "turkish") (translatedText ?: review.fullText) else review.fullText
-                    KitsugiMarkdownText(text = displayText)
+                    var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
+                    var activeGalleryIndex by remember { mutableStateOf(0) }
+
+                    KitsugiMarkdownText(
+                        text = displayText,
+                        onImageGalleryRequest = { urls, index ->
+                            activeGalleryImages = urls
+                            activeGalleryIndex = index
+                        }
+                    )
+
+                    if (activeGalleryImages.isNotEmpty()) {
+                        KitsugiImageGalleryDialog(
+                            imageUrls = activeGalleryImages,
+                            initialIndex = activeGalleryIndex,
+                            title = review.username,
+                            onDismiss = { activeGalleryImages = emptyList() }
+                        )
+                    }
                 }
             }
 

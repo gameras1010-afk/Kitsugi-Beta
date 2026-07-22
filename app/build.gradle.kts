@@ -25,7 +25,7 @@ android {
     val simklSecret       = localProperties.getProperty("simkl_client_secret")   ?: "81d3253f90d1f2c0c4ea55af6ca317861e5f40d43c16255eeabd57fc51c73f1c"
     val animeSkipClientId = localProperties.getProperty("anime_skip_client_id")  ?: "5mpKIMeowxmJ4UvAWacdPEzNbfXEjZDv"
 
-    val appVersionName = "2.4.73"
+    val appVersionName = "2.4.74"
 
     compileSdk = 36
 
@@ -223,6 +223,7 @@ dependencies {
 
     implementation(libs.markdown.renderer.core)
     implementation(libs.markdown.renderer.m3)
+    implementation(libs.markdown.renderer.coil3)
 
     implementation(libs.youtube.player)
     

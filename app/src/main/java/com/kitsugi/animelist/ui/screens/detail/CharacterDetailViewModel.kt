@@ -117,14 +117,15 @@ class CharacterDetailViewModel(application: Application) : AndroidViewModel(appl
     }
 
     /**
-     * AniList karakter favori toggle — sadece AniList kaynağı ve giriş yapılmışsa çalışır.
+     * AniList karakter favori toggle — giriş yapılmış ve aniListId biliniyorsa çalışır.
      * Anında UI güncellemesi yapar, arka planda mutasyon çalışır.
      */
     fun toggleFavourite() {
-        val token = ExternalAuthManager.getAniListToken(context) ?: return
+        ExternalAuthManager.getAniListToken(context) ?: return
         val currentState = _state.value as? CharacterDetailState.Success ?: return
         val detail = currentState.detail
-        if (lastSource.lowercase() != "anilist") return
+        val targetId = detail.aniListId ?: if (lastSource.lowercase() == "anilist") detail.id else null
+        if (targetId == null || targetId <= 0) return
 
         val newFav = !_isFavourite.value
         _isFavourite.value = newFav
@@ -133,7 +134,7 @@ class CharacterDetailViewModel(application: Application) : AndroidViewModel(appl
         DetailCache.putCharacterDetail(lastSource, lastCharacterId, updated)
 
         viewModelScope.launch(Dispatchers.IO) {
-            val ok = mutationsClient.toggleFavourite("character", detail.id)
+            val ok = mutationsClient.toggleFavourite("character", targetId)
             if (!ok) {
                 // rollback
                 _isFavourite.value = !newFav

@@ -20,16 +20,32 @@ class KitsugiStudioClient {
             when (source.lowercase()) {
                 "jikan", "mal" -> {
                     val jikanRes = fetchJikanStudioDetail(studioId)
-                    if (jikanRes != null) {
+                    val detail = if (jikanRes != null) {
                         jikanRes
                     } else if (!name.isNullOrBlank()) {
                         fetchAniListStudioByName(name)
                     } else {
                         null
                     }
+                    if (detail != null && !detail.name.isNullOrBlank() &&
+                        com.kitsugi.animelist.KitsugiApplication.getInstance()?.let { com.kitsugi.animelist.data.auth.ExternalAuthManager.getAniListToken(it) } != null) {
+                        val aniListDetail = fetchAniListStudioByName(detail.name)
+                        if (aniListDetail != null) {
+                            detail.copy(isFavourite = aniListDetail.isFavourite, aniListId = aniListDetail.id)
+                        } else detail
+                    } else detail
                 }
                 "anilist" -> fetchAniListStudioDetail(studioId)
-                "tmdb" -> fetchTmdbStudioDetail(studioId)
+                "tmdb" -> {
+                    val tmdbRes = fetchTmdbStudioDetail(studioId)
+                    if (tmdbRes != null && !tmdbRes.name.isNullOrBlank() &&
+                        com.kitsugi.animelist.KitsugiApplication.getInstance()?.let { com.kitsugi.animelist.data.auth.ExternalAuthManager.getAniListToken(it) } != null) {
+                        val aniListDetail = fetchAniListStudioByName(tmdbRes.name)
+                        if (aniListDetail != null) {
+                            tmdbRes.copy(isFavourite = aniListDetail.isFavourite, aniListId = aniListDetail.id)
+                        } else tmdbRes
+                    } else tmdbRes
+                }
                 else -> null
             }
         }
@@ -218,6 +234,7 @@ class KitsugiStudioClient {
                     id
                     name
                     isAnimationStudio
+                    isFavourite
                     favourites
                     media(page: 1, perPage: 80, sort: [START_DATE_DESC]) {
                         nodes {
@@ -277,6 +294,7 @@ class KitsugiStudioClient {
                 }
             }
 
+            val isFavourite = data.optBoolean("isFavourite", false)
             KitsugiStudioDetail(
                 id = studioId,
                 name = name,
@@ -285,7 +303,9 @@ class KitsugiStudioClient {
                 favorites = favorites,
                 established = null,
                 about = null,
-                mediaWorks = mediaWorks.distinctBy { it.mediaId }
+                mediaWorks = mediaWorks.distinctBy { it.mediaId },
+                isFavourite = isFavourite,
+                aniListId = studioId
             )
         }.getOrNull()
     }
@@ -298,6 +318,7 @@ class KitsugiStudioClient {
                         id
                         name
                         isAnimationStudio
+                        isFavourite
                         favourites
                         media(page: 1, perPage: 80, sort: [START_DATE_DESC]) {
                             nodes {
@@ -361,6 +382,7 @@ class KitsugiStudioClient {
                 }
             }
 
+            val isFavourite = studioObj.optBoolean("isFavourite", false)
             KitsugiStudioDetail(
                 id = studioId,
                 name = studioName,
@@ -369,7 +391,9 @@ class KitsugiStudioClient {
                 favorites = favorites,
                 established = null,
                 about = null,
-                mediaWorks = mediaWorks.distinctBy { it.mediaId }
+                mediaWorks = mediaWorks.distinctBy { it.mediaId },
+                isFavourite = isFavourite,
+                aniListId = studioId
             )
         }.getOrNull()
     }

@@ -436,12 +436,12 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
             val weekly = runCatching { calendarClient.fetchWeeklySchedule() }.getOrNull() ?: emptyMap()
             val nowSeconds = System.currentTimeMillis() / 1000L
             weekly.values.flatten()
-                .filter { it.airingAt > nowSeconds }
+                .filter { it.airingAt > nowSeconds && it.malId != null }
                 .sortedBy { it.airingAt }
                 .take(15)
                 .map { entry ->
                     JikanSearchResult(
-                        malId = entry.malId ?: entry.aniListId,
+                        malId = entry.malId!!,
                         title = entry.title,
                         subtitle = "${entry.episode}. Bölüm",
                         type = MediaType.Anime,
@@ -450,7 +450,7 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
                         isAdult = false,
                         imageUrl = entry.coverUrl,
                         year = null,
-                        source = "anilist",
+                        source = "jikan",
                         realMalId = entry.malId,
                         titleEnglish = entry.titleEnglish,
                         titleJapanese = entry.titleNative,

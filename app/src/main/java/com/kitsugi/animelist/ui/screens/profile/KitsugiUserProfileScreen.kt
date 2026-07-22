@@ -644,7 +644,10 @@ fun KitsugiUserProfileScreen(
                                                     KitsugiMarkdownText(
                                                         text = displayAbout,
                                                         fontSize = 14.sp,
-                                                        lineHeight = 20.sp
+                                                        lineHeight = 20.sp,
+                                                        onImageGalleryRequest = { urls, idx ->
+                                                            activeGalleryImages = Triple(urls, idx, "${state.name} Hakkında")
+                                                        }
                                                     )
                                                 } else {
                                                     Text(

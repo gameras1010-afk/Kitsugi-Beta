@@ -791,7 +791,7 @@ fun MyListScreen(
                         bottom = if (isLandscape) {
                             16.dp
                         } else {
-                            86.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                            64.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
                         },
                         end = 20.dp
                     )

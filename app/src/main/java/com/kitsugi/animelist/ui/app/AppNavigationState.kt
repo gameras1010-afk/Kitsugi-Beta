@@ -69,12 +69,13 @@ class AppNavigationState(
                 is DetailScreen.CharacterDetail -> "character_${screen.source}_${screen.characterId}"
                 is DetailScreen.StaffDetail -> "staff_${screen.source}_${screen.staffId}"
                 is DetailScreen.StudioDetail -> "studio_${screen.source}_${screen.studioId}"
-                DetailScreen.AiringCalendar -> "airing_calendar"
+                is DetailScreen.AiringCalendar -> "airing_calendar"
                 DetailScreen.Stats -> "stats"
                 DetailScreen.Favourites -> "favourites"
                 DetailScreen.About -> "about"
                 is DetailScreen.UserProfile -> "user_profile_${screen.userId}"
                 is DetailScreen.UserMediaList -> "user_media_list_${screen.userId}_${screen.initialMediaType.name}"
+                DetailScreen.Notifications -> "notifications"
             }
             stateHolder.removeState(key)
         }

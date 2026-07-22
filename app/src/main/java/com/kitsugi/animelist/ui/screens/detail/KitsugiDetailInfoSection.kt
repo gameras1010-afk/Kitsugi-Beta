@@ -589,7 +589,8 @@ internal fun DetailSynopsisCard(
     synopsisState: SynopsisState,
     originalText: String? = null,
     onTranslateClick: ((String) -> Unit)? = null,
-    onCopyClick: ((String) -> Unit)? = null
+    onCopyClick: ((String) -> Unit)? = null,
+    onImageGalleryRequest: ((urls: List<String>, index: Int) -> Unit)? = null
 ) {
     Column(
         modifier = Modifier
@@ -652,7 +653,8 @@ internal fun DetailSynopsisCard(
                 SelectionContainer {
                     KitsugiMarkdownText(
                         text = text,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        onImageGalleryRequest = onImageGalleryRequest
                     )
                 }
 

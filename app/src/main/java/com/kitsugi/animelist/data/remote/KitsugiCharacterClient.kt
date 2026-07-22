@@ -1,6 +1,7 @@
 package com.kitsugi.animelist.data.remote
 
 import android.util.Log
+import com.kitsugi.animelist.KitsugiApplication
 import com.kitsugi.animelist.model.MediaType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -330,12 +331,23 @@ class KitsugiCharacterClient {
                         }
                     }.getOrNull()
 
-                    if (jikanRes != null) {
+                    val detail = if (jikanRes != null) {
                         jikanRes
                     } else if (!name.isNullOrBlank()) {
                         fetchAniListCharacterByName(name)
                     } else {
                         null
+                    }
+
+                    if (detail != null && KitsugiApplication.getInstance()?.let { com.kitsugi.animelist.data.auth.ExternalAuthManager.getAniListToken(it) } != null) {
+                        val aniListDetail = fetchAniListCharacterByName(detail.name)
+                        if (aniListDetail != null) {
+                            detail.copy(isFavourite = aniListDetail.isFavourite, aniListId = aniListDetail.id)
+                        } else {
+                            detail
+                        }
+                    } else {
+                        detail
                     }
                 }
                 "anilist" -> {
@@ -343,6 +355,7 @@ class KitsugiCharacterClient {
                         query (${'$'}id: Int) {
                             Character(id: ${'$'}id) {
                                 id
+                                isFavourite
                                 name {
                                     userPreferred
                                     native
@@ -475,6 +488,7 @@ class KitsugiCharacterClient {
                             }
                         }
 
+                        val isFavourite = data.optBoolean("isFavourite", false)
                         KitsugiCharacterDetail(
                             id = characterId,
                             name = name,
@@ -487,12 +501,24 @@ class KitsugiCharacterClient {
                             bloodType = bloodType,
                             biography = biography,
                             voiceActors = vaMap.values.toList(),
-                            mediaAppearances = mediaAppearances
+                            mediaAppearances = mediaAppearances,
+                            isFavourite = isFavourite,
+                            aniListId = characterId
                         )
                     }.getOrNull()
                 }
                 "tmdb" -> {
-                    TmdbApiClient().fetchPersonCharacterDetail(characterId)
+                    val tmdbRes = TmdbApiClient().fetchPersonCharacterDetail(characterId)
+                    if (tmdbRes != null && KitsugiApplication.getInstance()?.let { com.kitsugi.animelist.data.auth.ExternalAuthManager.getAniListToken(it) } != null) {
+                        val aniListDetail = fetchAniListCharacterByName(tmdbRes.name)
+                        if (aniListDetail != null) {
+                            tmdbRes.copy(isFavourite = aniListDetail.isFavourite, aniListId = aniListDetail.id)
+                        } else {
+                            tmdbRes
+                        }
+                    } else {
+                        tmdbRes
+                    }
                 }
                 else -> null
             }
@@ -505,6 +531,7 @@ class KitsugiCharacterClient {
                 Page(page: 1, perPage: 1) {
                     characters(search: ${'$'}search) {
                         id
+                        isFavourite
                         name {
                             userPreferred
                             native
@@ -652,6 +679,7 @@ class KitsugiCharacterClient {
                 }
             }
 
+            val isFavourite = data.optBoolean("isFavourite", false)
             KitsugiCharacterDetail(
                 id = data.optInt("id"),
                 name = charName,
@@ -664,7 +692,9 @@ class KitsugiCharacterClient {
                 age = age,
                 bloodType = bloodType,
                 mediaAppearances = mediaAppearances,
-                voiceActors = voiceActors
+                voiceActors = voiceActors,
+                isFavourite = isFavourite,
+                aniListId = data.optInt("id")
             )
         }.getOrNull()
     }

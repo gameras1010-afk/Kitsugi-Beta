@@ -850,12 +850,13 @@ fun AppRoot(
                     activeDetailEntry != null    -> AppStateKey.MediaDetail(activeDetailEntry.id, depth = currentDepth)
                     activeFullScreenGrid != null -> AppStateKey.FullScreenGrid(activeFullScreenGrid, depth = currentDepth)
                     navState.mangaBrowseOpen              -> AppStateKey.MangaBrowse(depth = currentDepth)
-                    activeScreen is DetailScreen.AiringCalendar -> AppStateKey.AiringCalendar(depth = currentDepth)
+                    activeScreen is DetailScreen.AiringCalendar -> AppStateKey.AiringCalendar(depth = currentDepth, preferredSource = activeScreen.preferredSource)
                     activeScreen is DetailScreen.Stats -> AppStateKey.Stats(depth = currentDepth)
                     activeScreen is DetailScreen.Favourites -> AppStateKey.Favourites(depth = currentDepth)
                     activeScreen is DetailScreen.About -> AppStateKey.About(depth = currentDepth)
                     activeScreen is DetailScreen.UserProfile -> AppStateKey.UserProfile(activeScreen.userId, depth = currentDepth, username = activeScreen.username, avatarUrl = activeScreen.avatarUrl)
                     activeScreen is DetailScreen.UserMediaList -> AppStateKey.UserMediaList(activeScreen.userId, depth = currentDepth, username = activeScreen.username, initialMediaType = activeScreen.initialMediaType)
+                    activeScreen is DetailScreen.Notifications -> AppStateKey.Notifications(depth = currentDepth)
                     else                         -> AppStateKey.Tab(selectedTab)
                 }
 
@@ -1060,6 +1061,7 @@ private fun AppNavigationContent(
             is AppStateKey.About,
             is AppStateKey.UserProfile,
             is AppStateKey.UserMediaList,
+            is AppStateKey.Notifications,
             is AppStateKey.MediaDetail -> {
                 AppRootDetailPages(
                     key = key,

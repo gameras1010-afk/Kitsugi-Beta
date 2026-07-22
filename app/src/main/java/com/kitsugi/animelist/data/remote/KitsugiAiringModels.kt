@@ -39,9 +39,11 @@ data class AiringEntry(
     /** Bölümün yayınlanıp yayınlanmadığı (şu anki zamana göre). */
     fun hasAired(): Boolean = airingAt * 1000L < System.currentTimeMillis()
 
-    fun toJikanSearchResult(): JikanSearchResult {
+    fun toJikanSearchResult(preferredSource: String? = null): JikanSearchResult {
+        val finalSource = if (preferredSource == "jikan" && malId != null) "jikan" else "anilist"
+        val finalId = if (finalSource == "jikan") malId!! else (malId ?: aniListId)
         return JikanSearchResult(
-            malId = malId ?: aniListId,
+            malId = finalId,
             title = title,
             subtitle = titleEnglish ?: "",
             type = com.kitsugi.animelist.model.MediaType.Anime,
@@ -50,7 +52,7 @@ data class AiringEntry(
             isAdult = false,
             imageUrl = coverUrl,
             year = null,
-            source = "anilist",
+            source = finalSource,
             nextAiringEpisode = "$episode|$airingAt"
         )
     }

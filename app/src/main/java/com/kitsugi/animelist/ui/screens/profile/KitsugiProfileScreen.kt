@@ -86,6 +86,7 @@ import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.theme.LocalKitsugiColors
 import com.kitsugi.animelist.ui.utils.tvClickable
 import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
+import com.kitsugi.animelist.utils.KitsugiMarkdownUtils.cleanUserAboutText
 
 @Composable
 fun KitsugiProfileScreen(
@@ -672,52 +673,43 @@ fun ProfileHeaderIconTabs(
     onTabSelected: (Int) -> Unit,
     accentColor: Color
 ) {
-    val tabListState = androidx.compose.foundation.lazy.rememberLazyListState()
-    LaunchedEffect(selectedTab) {
-        tabListState.animateScrollToItem(selectedTab)
-    }
-
-    androidx.compose.foundation.lazy.LazyRow(
-        state = tabListState,
-        flingBehavior = androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior(
-            lazyListState = tabListState,
-            snapPosition = androidx.compose.foundation.gestures.snapping.SnapPosition.Start
-        ),
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(22.dp))
             .background(KitsugiColors.Surface)
             .padding(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        items(tabs.size) { index ->
-            val (icon, label) = tabs[index]
+        tabs.forEachIndexed { index, (icon, label) ->
             val isSelected = selectedTab == index
             Box(
                 modifier = Modifier
+                    .weight(if (isSelected) 1.6f else 1f)
                     .clip(RoundedCornerShape(18.dp))
                     .background(if (isSelected) accentColor else Color.Transparent)
                     .clickable { onTabSelected(index) }
-                    .padding(vertical = 10.dp, horizontal = 16.dp),
+                    .padding(vertical = 10.dp, horizontal = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = label,
                         tint = if (isSelected) KitsugiColors.Background else KitsugiColors.TextMuted,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                     if (isSelected) {
                         Text(
                             text = label,
                             color = KitsugiColors.Background,
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -1089,7 +1081,8 @@ fun AniListProfileContent(
                         when (page) {
                             0 -> {
                                 // Info tab contents
-                                if (state.about.isNotBlank()) {
+                                val displayAbout = remember(state.about) { state.about.cleanUserAboutText() }
+                                if (displayAbout.isNotBlank()) {
                                     Column(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -1113,7 +1106,7 @@ fun AniListProfileContent(
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
                                                 IconButton(
-                                                    onClick = { context.openTranslator(state.about) },
+                                                    onClick = { context.openTranslator(displayAbout) },
                                                     modifier = Modifier.size(28.dp)
                                                 ) {
                                                     Icon(
@@ -1126,7 +1119,7 @@ fun AniListProfileContent(
                                                 IconButton(
                                                     onClick = {
                                                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("about", state.about))
+                                                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("about", displayAbout))
                                                         Toast.makeText(context, "Panoya kopyalandı", Toast.LENGTH_SHORT).show()
                                                     },
                                                     modifier = Modifier.size(28.dp)
@@ -1141,10 +1134,11 @@ fun AniListProfileContent(
                                             }
                                         }
                                         Spacer(modifier = Modifier.height(8.dp))
-                                        Text(
-                                            text = state.about,
-                                            color = KitsugiColors.TextSecondary,
-                                            style = MaterialTheme.typography.bodySmall
+                                        com.kitsugi.animelist.ui.components.KitsugiMarkdownText(
+                                            text = displayAbout,
+                                            onImageGalleryRequest = { urls, idx ->
+                                                onImageClick?.invoke(urls, idx, "${state.name} Hakkında")
+                                            }
                                         )
                                     }
                                 }

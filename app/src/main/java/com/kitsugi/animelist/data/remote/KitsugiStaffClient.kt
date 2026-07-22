@@ -1,5 +1,6 @@
 package com.kitsugi.animelist.data.remote
 
+import com.kitsugi.animelist.KitsugiApplication
 import com.kitsugi.animelist.model.MediaType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -243,12 +244,23 @@ class KitsugiStaffClient {
                         }
                     }.getOrNull()
 
-                    if (jikanRes != null) {
+                    val detail = if (jikanRes != null) {
                         jikanRes
                     } else if (!name.isNullOrBlank()) {
                         fetchAniListStaffByName(name)
                     } else {
                         null
+                    }
+
+                    if (detail != null && KitsugiApplication.getInstance()?.let { com.kitsugi.animelist.data.auth.ExternalAuthManager.getAniListToken(it) } != null) {
+                        val aniListDetail = fetchAniListStaffByName(detail.name)
+                        if (aniListDetail != null) {
+                            detail.copy(isFavourite = aniListDetail.isFavourite, aniListId = aniListDetail.id)
+                        } else {
+                            detail
+                        }
+                    } else {
+                        detail
                     }
                 }
 
@@ -257,6 +269,7 @@ class KitsugiStaffClient {
                         query (${'$'}id: Int) {
                             Staff(id: ${'$'}id) {
                                 id
+                                isFavourite
                                 name {
                                     userPreferred
                                     native
@@ -416,6 +429,7 @@ class KitsugiStaffClient {
                             }
                         }
 
+                        val isFavourite = data.optBoolean("isFavourite", false)
                         KitsugiStaffDetail(
                             id = staffId,
                             name = name,
@@ -429,12 +443,24 @@ class KitsugiStaffClient {
                             gender = gender,
                             homeTown = homeTown,
                             characterRoles = characterRoles,
-                            mediaWorks = mediaWorks
+                            mediaWorks = mediaWorks,
+                            isFavourite = isFavourite,
+                            aniListId = staffId
                         )
                     }.getOrNull()
                 }
                 "tmdb" -> {
-                    TmdbApiClient().fetchPersonStaffDetail(staffId)
+                    val tmdbRes = TmdbApiClient().fetchPersonStaffDetail(staffId)
+                    if (tmdbRes != null && KitsugiApplication.getInstance()?.let { com.kitsugi.animelist.data.auth.ExternalAuthManager.getAniListToken(it) } != null) {
+                        val aniListDetail = fetchAniListStaffByName(tmdbRes.name)
+                        if (aniListDetail != null) {
+                            tmdbRes.copy(isFavourite = aniListDetail.isFavourite, aniListId = aniListDetail.id)
+                        } else {
+                            tmdbRes
+                        }
+                    } else {
+                        tmdbRes
+                    }
                 }
                 else -> null
             }
@@ -447,6 +473,7 @@ class KitsugiStaffClient {
                 Page(page: 1, perPage: 1) {
                     staff(search: ${'$'}search) {
                         id
+                        isFavourite
                         name {
                             userPreferred
                             native
@@ -617,6 +644,7 @@ class KitsugiStaffClient {
                 }
             }
 
+            val isFavourite = data.optBoolean("isFavourite", false)
             KitsugiStaffDetail(
                 id = data.optInt("id"),
                 name = staffName,
@@ -630,7 +658,9 @@ class KitsugiStaffClient {
                 gender = gender,
                 homeTown = homeTown,
                 characterRoles = characterRoles,
-                mediaWorks = mediaWorks
+                mediaWorks = mediaWorks,
+                isFavourite = isFavourite,
+                aniListId = data.optInt("id")
             )
         }.getOrNull()
     }

@@ -61,6 +61,9 @@ fun KitsugiActivityDetailBottomSheet(
 
 
 
+    var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
+    var activeGalleryIndex by remember { mutableStateOf(0) }
+
     // Load activity details & replies
     LaunchedEffect(activityId) {
         isLoading = true
@@ -340,7 +343,13 @@ fun KitsugiActivityDetailBottomSheet(
                                         act.text.replace("**${act.mediaTitle}**", "**$localizedTitle**")
                                     } else act.text
                                     val displayText = if (selectedLanguage == "turkish") translatedText ?: localizedDisplayText else localizedDisplayText
-                                    KitsugiMarkdownText(text = displayText)
+                                    KitsugiMarkdownText(
+                                        text = displayText,
+                                        onImageGalleryRequest = { urls, index ->
+                                            activeGalleryImages = urls
+                                            activeGalleryIndex = index
+                                        }
+                                    )
                                 }
                                 if (!act.mediaCoverUrl.isNullOrBlank()) {
                                     Spacer(modifier = Modifier.width(12.dp))
@@ -436,7 +445,13 @@ fun KitsugiActivityDetailBottomSheet(
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 val displayReplyText = if (selectedLanguage == "turkish") translatedReplies[reply.id] ?: reply.text else reply.text
-                                KitsugiMarkdownText(text = displayReplyText)
+                                KitsugiMarkdownText(
+                                    text = displayReplyText,
+                                    onImageGalleryRequest = { urls, index ->
+                                        activeGalleryImages = urls
+                                        activeGalleryIndex = index
+                                    }
+                                )
 
                                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -590,6 +605,15 @@ fun KitsugiActivityDetailBottomSheet(
                     activityDetails = apiClient.fetchActivityReplies(activityId)
                 }
             }
+        )
+    }
+
+    if (activeGalleryImages.isNotEmpty()) {
+        KitsugiImageGalleryDialog(
+            imageUrls = activeGalleryImages,
+            initialIndex = activeGalleryIndex,
+            title = activityDetails?.username ?: "Aktivite",
+            onDismiss = { activeGalleryImages = emptyList() }
         )
     }
 }

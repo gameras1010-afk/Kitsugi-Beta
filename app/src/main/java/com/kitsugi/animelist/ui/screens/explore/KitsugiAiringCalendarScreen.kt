@@ -1,8 +1,11 @@
 package com.kitsugi.animelist.ui.screens.explore
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -16,6 +19,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -51,11 +55,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.LaunchedEffect
+import com.kitsugi.animelist.ui.utils.tvClickable
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,19 +79,20 @@ import coil3.compose.AsyncImage
 import com.kitsugi.animelist.data.remote.AiringEntry
 import com.kitsugi.animelist.model.MediaEntry
 import com.kitsugi.animelist.ui.theme.KitsugiColors
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 // ─── Yardımcı sabitler ─────────────────────────────────────────────────────
 
 /** Calendar.DAY_OF_WEEK sırasına göre kısa gün isimleri (TR) */
 private val DAY_LABELS = mapOf(
-    Calendar.MONDAY    to "Pzt",
-    Calendar.TUESDAY   to "Sal",
-    Calendar.WEDNESDAY to "Çar",
-    Calendar.THURSDAY  to "Per",
-    Calendar.FRIDAY    to "Cum",
-    Calendar.SATURDAY  to "Cmt",
-    Calendar.SUNDAY    to "Paz"
+    Calendar.MONDAY    to "Pazartesi",
+    Calendar.TUESDAY   to "Salı",
+    Calendar.WEDNESDAY to "Çarşamba",
+    Calendar.THURSDAY  to "Perşembe",
+    Calendar.FRIDAY    to "Cuma",
+    Calendar.SATURDAY  to "Cumartesi",
+    Calendar.SUNDAY    to "Pazar"
 )
 
 /** Pazartesi'den Pazar'a sıralı gün listesi */
@@ -437,25 +446,63 @@ private fun AiringEntryList(
     }
 
     val listState = rememberLazyListState()
-    LazyColumn(
-        state = listState,
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 80.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        items(entries, key = { "${it.malId}_${it.aniListId}_${it.episode}" }) { entry ->
-            val isInList = remember(currentEntries, entry) {
-                currentEntries.any { me ->
-                    (entry.malId != null && me.malId == entry.malId) ||
-                            me.malId == entry.aniListId
+    val showScrollToTop by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex > 3
+        }
+    }
+    val scope = rememberCoroutineScope()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 80.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            items(entries, key = { "${it.malId}_${it.aniListId}_${it.episode}" }) { entry ->
+                val isInList = remember(currentEntries, entry) {
+                    currentEntries.any { me ->
+                        (entry.malId != null && me.malId == entry.malId) ||
+                                me.malId == entry.aniListId
+                    }
                 }
+                AiringEntryCard(
+                    entry = entry,
+                    isInWatchingList = isInList,
+                    titleLanguage = titleLanguage,
+                    onClick = { onEntryClick(entry) }
+                )
             }
-            AiringEntryCard(
-                entry = entry,
-                isInWatchingList = isInList,
-                titleLanguage = titleLanguage,
-                onClick = { onEntryClick(entry) }
-            )
+        }
+
+        AnimatedVisibility(
+            visible = showScrollToTop,
+            enter = fadeIn() + scaleIn(),
+            exit = fadeOut() + scaleOut(),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 20.dp, bottom = 24.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(KitsugiColors.Accent)
+                    .tvClickable(shape = RoundedCornerShape(16.dp)) {
+                        scope.launch {
+                            listState.animateScrollToItem(0)
+                        }
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.KeyboardArrowUp,
+                    contentDescription = "Yukarı Git",
+                    tint = KitsugiColors.Background,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
         }
     }
 }
@@ -484,27 +531,65 @@ private fun AiringEntryGridList(
     }
 
     val gridState = rememberLazyGridState()
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 145.dp),
-        state = gridState,
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 80.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(entries, key = { "${it.aniListId}_${it.episode}" }) { entry ->
-            val isInList = remember(currentEntries, entry) {
-                currentEntries.any { me ->
-                    (entry.malId != null && me.malId == entry.malId) ||
-                            me.malId == entry.aniListId
+    val showScrollToTop by remember {
+        derivedStateOf {
+            gridState.firstVisibleItemIndex > 3
+        }
+    }
+    val scope = rememberCoroutineScope()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 105.dp),
+            state = gridState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 80.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(entries, key = { "${it.aniListId}_${it.episode}" }) { entry ->
+                val isInList = remember(currentEntries, entry) {
+                    currentEntries.any { me ->
+                        (entry.malId != null && me.malId == entry.malId) ||
+                                me.malId == entry.aniListId
+                    }
                 }
+                AiringEntryGridCard(
+                    entry = entry,
+                    isInWatchingList = isInList,
+                    titleLanguage = titleLanguage,
+                    onClick = { onEntryClick(entry) }
+                )
             }
-            AiringEntryGridCard(
-                entry = entry,
-                isInWatchingList = isInList,
-                titleLanguage = titleLanguage,
-                onClick = { onEntryClick(entry) }
-            )
+        }
+
+        AnimatedVisibility(
+            visible = showScrollToTop,
+            enter = fadeIn() + scaleIn(),
+            exit = fadeOut() + scaleOut(),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 20.dp, bottom = 24.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(KitsugiColors.Accent)
+                    .tvClickable(shape = RoundedCornerShape(16.dp)) {
+                        scope.launch {
+                            gridState.animateScrollToItem(0)
+                        }
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.KeyboardArrowUp,
+                    contentDescription = "Yukarı Git",
+                    tint = KitsugiColors.Background,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
         }
     }
 }
@@ -542,7 +627,7 @@ fun AiringEntryGridCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(180.dp)
+                .aspectRatio(2f / 3f)
                 .clip(RoundedCornerShape(14.dp))
                 .background(KitsugiColors.SurfaceSoft)
         ) {
@@ -606,39 +691,21 @@ fun AiringEntryGridCard(
             modifier = Modifier.height(38.dp)
         )
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         // Episode & Time info
-        Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(3.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            // Bölüm rozeti
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(accentColor.copy(0.18f))
-                    .padding(horizontal = 6.dp, vertical = 2.dp)
-            ) {
-                Text(
-                    text = "Bölüm ${entry.episode}",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = accentColor
-                )
-            }
-            // Saat rozeti
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(3.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Schedule,
-                    contentDescription = null,
-                    tint = KitsugiColors.TextSecondary,
-                    modifier = Modifier.size(11.dp)
-                )
-                AiringTimeText(entry = entry)
-            }
+            Icon(
+                imageVector = Icons.Rounded.Schedule,
+                contentDescription = null,
+                tint = KitsugiColors.TextSecondary,
+                modifier = Modifier.size(11.dp)
+            )
+            AiringTimeText(entry = entry, episode = entry.episode)
         }
     }
 }
@@ -806,7 +873,7 @@ private fun Long.secondsToLegibleText(): String {
 }
 
 @Composable
-private fun AiringTimeText(entry: AiringEntry) {
+private fun AiringTimeText(entry: AiringEntry, episode: Int? = null) {
     var text by remember(entry) { mutableStateOf(entry.formattedTime()) }
 
     if (!entry.hasAired()) {
@@ -826,10 +893,14 @@ private fun AiringTimeText(entry: AiringEntry) {
         text = "${entry.formattedTime()} • Yayınlandı"
     }
 
+    val displayText = if (episode != null) "$episode. Bölüm • $text" else text
+
     Text(
-        text = text,
+        text = displayText,
         style = MaterialTheme.typography.labelSmall,
-        color = KitsugiColors.TextSecondary
+        color = KitsugiColors.TextSecondary,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
     )
 }
 

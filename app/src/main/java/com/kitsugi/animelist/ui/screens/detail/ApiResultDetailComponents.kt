@@ -351,7 +351,8 @@ internal fun ApiSynopsisCard(
     synopsis: String?,
     isLoading: Boolean,
     onTranslateClick: (() -> Unit)? = null,
-    onCopyClick: (() -> Unit)? = null
+    onCopyClick: (() -> Unit)? = null,
+    onImageGalleryRequest: ((urls: List<String>, index: Int) -> Unit)? = null
 ) {
     val context = LocalContext.current
     Column(
@@ -421,7 +422,8 @@ internal fun ApiSynopsisCard(
                 SelectionContainer {
                     KitsugiMarkdownText(
                         text = synopsis,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        onImageGalleryRequest = onImageGalleryRequest
                     )
                 }
 

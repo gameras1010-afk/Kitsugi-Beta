@@ -549,6 +549,9 @@ fun TvRootScreen(
                             onStaffClick = { staffId, src, staffName, imgUrl ->
                                 navigationState.navigateToStaffDetail(staffId, src, staffName, imgUrl)
                             },
+                            onCharacterClick = { charId, charSource, charName, imgUrl ->
+                                navigationState.navigateToCharacterDetail(charId, charSource, charName, imgUrl)
+                            },
                             titleLanguage = settingsState.titleLanguage
                         )
                     }
