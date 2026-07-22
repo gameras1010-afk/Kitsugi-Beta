@@ -58,11 +58,6 @@ internal fun ApiDetailOverviewTab(
             onCopyClick = onCopyClick
         )
 
-        if (detail?.nextAiringEpisode != null) {
-            Spacer(modifier = Modifier.height(14.dp))
-            AiringCountdownCard(nextAiring = detail.nextAiringEpisode)
-        }
-
         if (detail != null) {
             Spacer(modifier = Modifier.height(14.dp))
             DetailOverviewStatsCard(detail = detail)

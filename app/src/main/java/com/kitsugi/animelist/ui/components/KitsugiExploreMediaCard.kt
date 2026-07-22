@@ -246,6 +246,14 @@ fun KitsugiExploreMediaCard(
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold
                     )
+
+                    // Yayın geri sayımı — sadece AniList kaynaklı, nextAiringEpisode dolu ise
+                    if (!result.nextAiringEpisode.isNullOrBlank()) {
+                        Spacer(modifier = Modifier.height(5.dp))
+                        NextAiringChip(
+                            nextAiringEpisode = result.nextAiringEpisode
+                        )
+                    }
                 }
             }
         } else {
@@ -333,6 +341,14 @@ fun KitsugiExploreMediaCard(
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold
                 )
+
+                // Yayın geri sayımı — sadece AniList kaynaklı, nextAiringEpisode dolu ise
+                if (!result.nextAiringEpisode.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    NextAiringChip(
+                        nextAiringEpisode = result.nextAiringEpisode
+                    )
+                }
             }
         }
     }

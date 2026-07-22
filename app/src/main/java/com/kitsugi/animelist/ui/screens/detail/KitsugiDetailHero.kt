@@ -71,7 +71,8 @@ fun KitsugiDetailHero(
     alreadyInList: Boolean = false,
     blurAdultMedia: Boolean = false,
     onShareClick: (() -> Unit)? = null,
-    totalEpisodes: Int? = null
+    totalEpisodes: Int? = null,
+    nextAiring: String? = null
 ) {
     val accentColor = LocalKitsugiAccent.current
     val fallbackPlaceholderColor = statusColor ?: accentColor
@@ -253,6 +254,31 @@ fun KitsugiDetailHero(
                 if (statusLabel != null) {
                     val statusIcon = Icons.Rounded.RssFeed
                     MetadataIconText(icon = statusIcon, text = statusLabel, tint = statusColor ?: accentColor)
+                }
+            }
+
+            val airingText = rememberAiringCountdownText(nextAiring)
+            if (airingText.isNotBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 2.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Schedule,
+                        contentDescription = "Yaklaşan Yayın",
+                        tint = KitsugiColors.AccentOrange,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = "Yaklaşan Yayın: $airingText",
+                        color = KitsugiColors.AccentOrange,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
 

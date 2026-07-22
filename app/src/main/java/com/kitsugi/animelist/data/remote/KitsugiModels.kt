@@ -23,7 +23,9 @@ data class JikanSearchResult(
     val rank: Int? = null,
     val members: Int? = null,
     val favorites: Int? = null,
-    val rawScoreDouble: Double? = null
+    val rawScoreDouble: Double? = null,
+    // AniList kaynaklı sonuçlar için: "episode|airingAtEpoch" formatında
+    val nextAiringEpisode: String? = null
 )
 
 data class KitsugiTheme(

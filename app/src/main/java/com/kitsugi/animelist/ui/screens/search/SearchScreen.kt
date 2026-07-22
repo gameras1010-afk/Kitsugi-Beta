@@ -108,7 +108,6 @@ fun SearchScreen(
                 state = lazyListState,
                 modifier = Modifier
                     .fillMaxSize()
-                    .statusBarsPadding()
                     .padding(horizontal = 20.dp)
                     .then(if (isTvDevice) Modifier.dpadVerticalFastScroll(lazyListState) else Modifier)
             ) {

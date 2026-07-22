@@ -286,7 +286,8 @@ fun MediaEntryDetailPage(
                                     val index = allImages.indexOf(clickedUrl).coerceAtLeast(0)
                                     activeGalleryImages = allImages
                                     activeGalleryIndex = index
-                                }
+                                },
+                                nextAiring = detailState?.nextAiringEpisode
                             )
                             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                                 Spacer(modifier = Modifier.height(12.dp))
@@ -555,7 +556,8 @@ fun MediaEntryDetailPage(
                                 val index = allImages.indexOf(clickedUrl).coerceAtLeast(0)
                                 activeGalleryImages = allImages
                                 activeGalleryIndex = index
-                            }
+                            },
+                            nextAiring = detailState?.nextAiringEpisode
                         )
                     }
 

@@ -351,12 +351,13 @@ fun ApiResultDetailPage(
                                 onPosterClick = {
                                     val posterUrl = displayResult.imageUrl
                                     val idx = if (posterUrl != null) allImages.indexOf(posterUrl).coerceAtLeast(0) else 0
-                                    activeGalleryImages = allImages
-                                    activeGalleryIndex = idx
+                                     activeGalleryImages = allImages
+                                     activeGalleryIndex = idx
                                 },
                                 scoreLabel = if (!hideScores) displayResult.getDisplayScore(scoreFormat, hideScores) else null,
                                 alreadyInList = existingEntry != null,
-                                totalEpisodes = displayResult.total
+                                totalEpisodes = displayResult.total,
+                                nextAiring = detailState?.nextAiringEpisode
                             )
                             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                                 Spacer(modifier = Modifier.height(12.dp))
@@ -743,7 +744,8 @@ fun ApiResultDetailPage(
                             },
                             scoreLabel = if (!hideScores) displayResult.getDisplayScore(scoreFormat, hideScores) else null,
                             alreadyInList = existingEntry != null,
-                            totalEpisodes = displayResult.total
+                            totalEpisodes = displayResult.total,
+                            nextAiring = detailState?.nextAiringEpisode
                         )
                     }
 

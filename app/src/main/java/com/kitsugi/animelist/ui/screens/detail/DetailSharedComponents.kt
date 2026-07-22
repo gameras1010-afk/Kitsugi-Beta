@@ -97,6 +97,43 @@ internal fun parseNextAiring(raw: String): AiringInfo {
 }
 
 @Composable
+internal fun rememberAiringCountdownText(nextAiring: String?): String {
+    if (nextAiring.isNullOrBlank()) return ""
+    val info = remember(nextAiring) { parseNextAiring(nextAiring) }
+    var displayText by remember(info) { mutableStateOf("") }
+
+    if (info.targetEpoch != null && info.episode != null) {
+        val targetEpoch = info.targetEpoch
+        val episode = info.episode
+
+        LaunchedEffect(targetEpoch, episode) {
+            while (true) {
+                val now = System.currentTimeMillis() / 1000L
+                val remaining = targetEpoch - now
+                if (remaining <= 0) {
+                    displayText = "Bölüm $episode yayınlandı!"
+                    break
+                }
+
+                val days = remaining / 86400
+                displayText = if (days >= 1) {
+                    "Bölüm $episode, $days gün sonra yayında"
+                } else {
+                    val hours = remaining / 3600
+                    val minutes = (remaining % 3600) / 60
+                    String.format("Bölüm %d, %02d:%02d sonra yayınlanacak", episode, hours, minutes)
+                }
+                val delayTime = if (days >= 1) 60000L else 10000L
+                kotlinx.coroutines.delay(delayTime)
+            }
+        }
+    } else {
+        displayText = info.rawText ?: ""
+    }
+    return displayText
+}
+
+@Composable
 internal fun AiringCountdownCard(
     nextAiring: String,
     modifier: Modifier = Modifier

@@ -280,7 +280,6 @@ fun MangaReaderScreen(
                             listOf(Color.Black.copy(0.85f), Color.Transparent)
                         )
                     )
-                    .statusBarsPadding()
                     .padding(horizontal = 4.dp, vertical = 8.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {

@@ -65,10 +65,6 @@ internal fun EntryDetailOverviewTab(
             }
         )
 
-        if (detail?.nextAiringEpisode != null) {
-            AiringCountdownCard(nextAiring = detail.nextAiringEpisode)
-        }
-
         // İstatistikler Kartı (Puan Sırası, Oy Sayısı, Üyeler, Popülerlik)
         if (detail != null) {
             DetailOverviewStatsCard(detail = detail)

@@ -225,6 +225,11 @@ fun KitsugiRankingMediaCard(
                         )
                     }
                 }
+
+                // Yayın geri sayımı — sadece AniList kaynaklı, nextAiringEpisode dolu ise
+                if (!result.nextAiringEpisode.isNullOrBlank()) {
+                    NextAiringChip(nextAiringEpisode = result.nextAiringEpisode)
+                }
             }
         }
     }

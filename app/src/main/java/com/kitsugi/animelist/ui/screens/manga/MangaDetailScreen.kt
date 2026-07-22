@@ -224,7 +224,6 @@ fun MangaDetailScreen(
         IconButton(
             onClick = onBack,
             modifier = Modifier
-                .statusBarsPadding()
                 .padding(4.dp)
                 .size(40.dp)
                 .clip(CircleShape)

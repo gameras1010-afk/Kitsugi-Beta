@@ -256,6 +256,10 @@ class AniListSearchClient(
                             large
                         }
                         bannerImage
+                        nextAiringEpisode {
+                            episode
+                            airingAt
+                        }
                     }
                 }
             }
@@ -436,6 +440,14 @@ class AniListSearchClient(
             val bannerImage = item.optNullableString("bannerImage")
             val isAdult = item.optBoolean("isAdult", false)
 
+            // nextAiringEpisode — sadece ANIME tipinde dolu olur
+            val nextAiringObj = item.optJSONObject("nextAiringEpisode")
+            val nextAiringStr = if (nextAiringObj != null) {
+                val ep = nextAiringObj.optInt("episode")
+                val airingAt = nextAiringObj.optLong("airingAt")
+                if (ep > 0 && airingAt > 0) "$ep|$airingAt" else null
+            } else null
+
             if (title.isNotBlank()) {
                 results.add(
                     JikanSearchResult(
@@ -455,7 +467,8 @@ class AniListSearchClient(
                         backdropUrl = bannerImage,
                         members = popularity,
                         favorites = favourites,
-                        rawScoreDouble = rawScore
+                        rawScoreDouble = rawScore,
+                        nextAiringEpisode = nextAiringStr
                     )
                 )
             }

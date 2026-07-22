@@ -63,7 +63,6 @@ fun FavouritesScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .statusBarsPadding()
                     .padding(horizontal = if (isLandscape) 12.dp else 16.dp, vertical = 12.dp)
             ) {
                 IconButton(

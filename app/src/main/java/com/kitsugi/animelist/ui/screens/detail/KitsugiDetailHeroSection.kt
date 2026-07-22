@@ -64,7 +64,8 @@ internal fun DetailHero(
     titleLanguage: String,
     blurAdultMedia: Boolean = false,
     onPosterClick: (String) -> Unit = {},
-    onShareClick: (() -> Unit)? = null
+    onShareClick: (() -> Unit)? = null,
+    nextAiring: String? = null
 ) {
     val accentColor = LocalKitsugiAccent.current
     val statusColor = statusColor(entry.status)
@@ -244,6 +245,31 @@ internal fun DetailHero(
                 // 3. Status
                 val statusIcon = Icons.Rounded.RssFeed
                 MetadataIconText(icon = statusIcon, text = entry.status.label, tint = statusColor)
+            }
+
+            val airingText = rememberAiringCountdownText(nextAiring)
+            if (airingText.isNotBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 2.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Schedule,
+                        contentDescription = "Yaklaşan Yayın",
+                        tint = KitsugiColors.AccentOrange,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = "Yaklaşan Yayın: $airingText",
+                        color = KitsugiColors.AccentOrange,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(10.dp))

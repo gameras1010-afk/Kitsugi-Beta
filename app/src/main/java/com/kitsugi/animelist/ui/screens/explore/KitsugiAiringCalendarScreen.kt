@@ -133,7 +133,6 @@ fun KitsugiAiringCalendarScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(KitsugiColors.Background)
-            .statusBarsPadding()
     ) {
         // ── Başlık çubuğu ──────────────────────────────────────────────────
         AiringCalendarHeader(

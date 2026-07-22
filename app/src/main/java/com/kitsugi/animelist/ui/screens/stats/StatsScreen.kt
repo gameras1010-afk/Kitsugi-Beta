@@ -44,7 +44,6 @@ fun StatsScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(com.kitsugi.animelist.ui.theme.KitsugiColors.Background)
-            .statusBarsPadding()
     ) {
         Row(
             modifier = Modifier

@@ -169,6 +169,9 @@ class AppViewModel : ViewModel() {
     fun updateMyListTabIndex(context: Context, index: Int) {
         myListTabIndex = index
         resetMyListScroll()
+        if (index == 2 && myListTypeFilterId == "manga") {
+            updateMyListTypeFilter(context, "all")
+        }
         context.getSharedPreferences("Kitsugi_list_filters", Context.MODE_PRIVATE)
             .edit().putInt("tab_index", index).apply()
     }
