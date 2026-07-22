@@ -27,6 +27,7 @@ import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -417,10 +418,12 @@ internal fun ApiSynopsisCard(
                     .animateContentSize()
                     .then(if (isLongText && !isExpanded) Modifier.heightIn(max = 110.dp) else Modifier)
             ) {
-                KitsugiMarkdownText(
-                    text = synopsis,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                SelectionContainer {
+                    KitsugiMarkdownText(
+                        text = synopsis,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
 
                 if (isLongText && !isExpanded) {
                     Box(
@@ -574,54 +577,56 @@ internal fun ApiInfoSection(
     mediaType: MediaType,
     onSearchQuery: (String) -> Unit = {}
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(22.dp))
-            .background(KitsugiColors.Surface)
-    ) {
-        Text(
-            text = "Bilgiler",
-            color = KitsugiColors.TextPrimary,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 8.dp)
-        )
+    SelectionContainer {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(22.dp))
+                .background(KitsugiColors.Surface)
+        ) {
+            Text(
+                text = "Bilgiler",
+                color = KitsugiColors.TextPrimary,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 8.dp)
+            )
 
-        val rows = buildList {
-            if (!detail.status.isNullOrBlank()) add("Durum" to detail.status)
-            if (!detail.season.isNullOrBlank()) add("Sezon" to detail.season)
-            if (!detail.startDate.isNullOrBlank()) add("Başlangıç" to detail.startDate)
-            if (!detail.endDate.isNullOrBlank()) add("Bitiş" to detail.endDate)
-            if (!detail.sourceMaterial.isNullOrBlank()) add("Kaynak" to detail.sourceMaterial)
-            if (mediaType == MediaType.Anime) {
-                if (detail.studios.isNotEmpty()) add("Stüdyo" to detail.studios.joinToString(", "))
-                if (!detail.episodeDuration.isNullOrBlank()) add("Süre" to detail.episodeDuration)
-                if (!detail.broadcast.isNullOrBlank()) add("Yayın" to detail.broadcast)
-                if (!detail.rating.isNullOrBlank()) add("Yaş Sınırı" to detail.rating)
+            val rows = buildList {
+                if (!detail.status.isNullOrBlank()) add("Durum" to detail.status)
+                if (!detail.season.isNullOrBlank()) add("Sezon" to detail.season)
+                if (!detail.startDate.isNullOrBlank()) add("Başlangıç" to detail.startDate)
+                if (!detail.endDate.isNullOrBlank()) add("Bitiş" to detail.endDate)
+                if (!detail.sourceMaterial.isNullOrBlank()) add("Kaynak" to detail.sourceMaterial)
+                if (mediaType == MediaType.Anime) {
+                    if (detail.studios.isNotEmpty()) add("Stüdyo" to detail.studios.joinToString(", "))
+                    if (!detail.episodeDuration.isNullOrBlank()) add("Süre" to detail.episodeDuration)
+                    if (!detail.broadcast.isNullOrBlank()) add("Yayın" to detail.broadcast)
+                    if (!detail.rating.isNullOrBlank()) add("Yaş Sınırı" to detail.rating)
+                }
+                if (!detail.titleEnglish.isNullOrBlank()) add("İngilizce" to detail.titleEnglish)
+                if (!detail.titleJapanese.isNullOrBlank()) add("Japonca" to detail.titleJapanese)
+                if (detail.synonyms.isNotEmpty()) add("Diğer Adlar" to detail.synonyms.joinToString(", "))
             }
-            if (!detail.titleEnglish.isNullOrBlank()) add("İngilizce" to detail.titleEnglish)
-            if (!detail.titleJapanese.isNullOrBlank()) add("Japonca" to detail.titleJapanese)
-            if (detail.synonyms.isNotEmpty()) add("Diğer Adlar" to detail.synonyms.joinToString(", "))
+
+            rows.forEachIndexed { index, (label, value) ->
+                val onValueClick = if (label == "Sezon") {
+                    { onSearchQuery(value) }
+                } else {
+                    null
+                }
+                ApiInfoRow(label = label, value = value, onValueClick = onValueClick)
+                if (index < rows.lastIndex) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = KitsugiColors.Background.copy(alpha = 0.5f),
+                        thickness = 0.5.dp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
         }
-
-        rows.forEachIndexed { index, (label, value) ->
-            val onValueClick = if (label == "Sezon") {
-                { onSearchQuery(value) }
-            } else {
-                null
-            }
-            ApiInfoRow(label = label, value = value, onValueClick = onValueClick)
-            if (index < rows.lastIndex) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = KitsugiColors.Background.copy(alpha = 0.5f),
-                    thickness = 0.5.dp
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
     }
 }
 

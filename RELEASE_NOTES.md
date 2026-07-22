@@ -4,62 +4,36 @@
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### 🎬 TMDB İlişkiler ve Öneriler Sekmesi Ayrımı
-- **Benzersiz İçerik**: TMDB kaynaklı film ve dizilerde "İlişkiler" (Relations) ve "Öneriler" (Recommendations) sekmelerindeki veri çakışması giderildi. Artık İlişkiler sekmesinde doğrudan ilgili koleksiyon parçaları (seriler) veya benzer yapımlar listelenirken, Öneriler sekmesinde ise TMDB tavsiyeleri listelenmektedir.
+### 🔄 Otomatik Arka Plan Liste Senkronizasyonu
+- **Sessiz Arka Plan Güncellemesi**: Uygulama her açıldığında bağlı olan platformlardaki (AniList, MyAnimeList ve Simkl) kütüphane listeleriniz arka planda otomatik olarak yenilenir. Artık listeleri güncellemek için manuel "İçe Aktar" butonuna basmanıza gerek kalmaz.
+- **24 Saatlik Zaman Sınırı (Throttle)**: API sunucularını yormamak ve veri tasarrufu sağlamak adına otomatik yenileme işlemi son başarılı güncellemenin üzerinden 24 saat geçtikten sonra tetiklenir.
+- **Thread Optimizasyonu**: Otomatik senkronizasyon işlemi tamamen arka plan (IO) thread'i üzerinde sessizce yürütülür, uygulama arayüzünde herhangi bir donma veya gecikmeye yol açmaz.
 
-### ✎ Akıllı Liste Kaydı Düzenleme Kaynağı Seçimi
-- **Birebir Düzenleme Kaynağı Eşleşmesi**: Kütüphanede hem AniList hem de MyAnimeList bağlantısı olan kullanıcılar için, detay sayfasından veya aramadan düzenleme butonuna basıldığında açılan düzenleme penceresinin kaynağı (MAL veya AniList) akıllıca tespit edilerek doğru platformda düzenleme yapılması sağlandı. Sadece tek hesap bağlı olduğunda da otomatik olarak o hesaba yönlendirme yapılır.
+### 🎙️ Karakter Seslendirmenleri Alt Sayfası
+- **Çoklu Dil Seslendirmen Desteği**: Karakterler sekmesindeki her karakter kartına yeni bir ses simgesi eklendi. Bu simgeye tıklandığında, karakterin farklı dillerdeki (Japonca, İngilizce, Türkçe vb.) tüm seslendirmenlerini listeleyen şık bir alt sayfa açılır.
+- **Kolay Navigasyon**: Alt sayfadan herhangi bir seslendirmen seçildiğinde, doğrudan o seslendirmenin (Ekip) detay sayfasına sorunsuz geçiş yapılır.
 
-### 🔍 Keşfet Ekranı Kategorileri & Görünüm Senkronizasyonu
-- **Açılır-Kapanır Kategoriler**: Keşfet ekranında ayrı olan Anime ve Manga kategori satırları tek bir açılır-kapanır **"Kategoriler"** kartı altında birleştirildi. Manga kategorileri, Anime kategorilerinin altına konumlandırılarak görsel düzen sadeleştirildi.
-- **Scroll Senkronizasyonu**: Grid ve Liste görünümleri arasında geçiş yapıldığında kullanıcının kaydırma pozisyonu (scroll) kaybolmadan birebir senkronize edilerek geçiş yapılması sağlandı.
+### 🏷️ Platform Kaynak Rozetleri
+- **Görsel Ayrım**: Arama, keşfet ve sıralama listelerindeki poster görsellerinin sol alt köşesine şık platform rozetleri (AL: AniList, MAL: MyAnimeList, SK: Simkl, TMDB: The Movie Database) eklendi. Böylece hangi içeriğin hangi kaynaktan geldiği anında anlaşılır.
 
-### 👤 Kullanıcı Profili Navigasyonu & Sayfa Düzeni Güncellemesi
-- **Gelişmiş Pager Altyapısı**: Kullanıcı profili ekranı, premium detay sayfası standartlarına uyumlu hale getirilerek ana sekmeler için kaydırılabilir `HorizontalPager` ve dinamik sayfa yüksekliği ölçümü (`onGloballyPositioned` ile height enterpolasyonu) ile baştan aşağı yenilendi.
-- **Snap Destekli LazyRow Filtreleri**: İstatistik alt sekmeleri ve sosyal/favori filtre çipleri, kaydırma bittiğinde en yakın öğeye yumuşakça yaslanan (`rememberSnapFlingBehavior` ve `SnapPosition.Start`) modern `LazyRow` bileşenlerine dönüştürüldü.
-- **Performans & Akıcı Arayüz**: Pager sayfalarında dikey listelerin (`LazyColumn` içinde `LazyColumn` / pager çakışmaları) yol açtığı takılmalar ve kaydırma kilitlenmeleri, döngü mantığı (`forEach`) ile optimize edilerek tamamen giderildi.
-
-### 📝 Detay Sayfası Açıklama (Synopsis) Alanı Kısaltma & Buton Desteği
-- **Otomatik Kısaltma Mantığı:** Detay sayfalarındaki açıklama metinleri (hem yerel hem de API sonuçları için) satır atlama sayısı (`>= 4`) veya karakter uzunluğuna (`> 200`) bağlı olarak otomatik olarak kısaltılacak şekilde güncellendi.
-- **Akıcı Geçiş Animasyonu:** "Daha fazla" ve "Daha az" butonlarına basıldığında metin alanı boyutu `animateContentSize()` ile yumuşak geçişli bir şekilde değişecek şekilde optimize edildi.
-
-### 👤 AniList Donatör Rozeti Gösterim Düzeltmesi
-- **Gereksiz Sıfır Gösterimi Engellendi:** AniList profil sekmesinde kullanıcının donatör seviyesi (donatorTier) 0 olduğunda veya aktif bir bağışı bulunmadığında gösterilen "Donator Tier 0" rozeti gizlendi. Rozet artık yalnızca donatör seviyesi 1 veya üzerinde olan kullanıcılar için gösterilmektedir.
-
-### 🛡️ +18 Blur Yüklenme Performansı
-- **Öneriler & İlişkiler Sekmesi İyileştirmesi:** Önerilen ve ilişkili yapımlar sekmelerinde +18 içerikli kartlar yüklenirken oluşan anlık görsel sızıntıları engellemek amacıyla Coil resim yükleyicisinin geçiş (crossfade) animasyonu blurlanmış resimler için devre dışı bırakıldı. Böylece blur efekti resim yüklenir yüklenmez anında görünür hale getirildi.
-
-### 🎨 Modern Simge Tabanlı Bilgi Satırları
-- **Metadata Standardizasyonu:** Detay sayfalarındaki eski tip chip tabanlı yerleşimler kaldırılarak, modern ve simge tabanlı dinamik bilgi satırlarına (Format, Bölüm/Bölümler, Yayın Tarihi vb.) geçiş yapıldı.
+### 📋 Seçilebilir Detay Metinleri
+- **Kopyalama ve Arama Desteği**: Detay sayfalarındaki açıklama (synopsis) metinleri, bilgi alanları ve karakter/ekip hakkındaki biyografiler artık kopyalanabilir hale getirildi. Seçilebilir metin (SelectionContainer) desteği sayesinde dilediğiniz kısmı kolayca kopyalayabilir veya çevirebilirsiniz.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### 🎬 TMDB Relations & Recommendations Tab Separation
-- **Unique Content Delivery**: Separated recommendations and relations API calls for TMDB movies/shows. The relations tab now exclusively renders series collections and similar franchises, while the recommendations tab delivers TMDB-curated suggestions.
+### 🔄 Automated Background List Synchronization
+- **Silent Background Sync**: Your library lists from connected platforms (AniList, MyAnimeList, and Simkl) are now automatically refreshed in the background upon application startup. Manual import is no longer required to keep your lists up to date.
+- **24-Hour Synchronization Throttle**: To maintain API efficiency and optimize data usage, the automated refresh is throttled to run at most once every 24 hours since the last successful sync.
+- **IO Thread Offloading**: The entire sync routine executes silently on the background IO thread, preserving fluid UI performance and preventing any main thread blocking.
 
-### ✎ Intelligent Media Entry Edit Source Resolution
-- **Precise Platform Targeting**: The edit dialog launcher now dynamically resolves to MyAnimeList or AniList based on the user's active screen context and account connectivity, preventing unintended cross-platform editing sheets.
+### 🎙️ Character Voice Actors Bottom Sheet
+- **Multi-Language Voice Cast**: Added a voice icon next to each character in the Characters tab. Tapping this icon opens a premium bottom sheet displaying all voice actors for that character across different languages (Japanese, English, etc.).
+- **Seamless Navigation**: Selecting any voice actor inside the bottom sheet immediately navigates you to their respective Staff detail page.
 
-### 🔍 Explore Screen Categories & View Synchronization
-- **Collapsible Categories**: Merged separate Anime and Manga category rows on the Explore Screen into a single collapsible **"Kategoriler"** container. Manga categories are nested directly below Anime categories to reduce screen clutter.
-- **Scroll Position Synchronization**: Implemented precise scroll state synchronization when toggling between list and grid views in the Full Screen Media Grid. This prevents layout resetting and preserves the user's scroll index and offset.
+### 🏷️ Platform Source Badges
+- **Visual Branding**: Integrated premium source badges (AL: AniList, MAL: MyAnimeList, SK: Simkl, TMDB: TMDB) on the bottom-left corner of media posters across search results, rankings, and explore grids.
 
-### 👤 User Profile Navigation & Layout Modernization
-- **Horizontal Pager Integration**: The user profile screen has been modernized with scrollable tab views (`HorizontalPager`) and dynamic height tracking (`onGloballyPositioned`) to ensure visual alignment with the premium detail page architecture.
-- **Snap-Driven LazyRow Filters**: Sub-filters and stats categories are now built with a snap-fling behavior (`rememberSnapFlingBehavior` and `SnapPosition.Start`) within dynamic `LazyRow` components for a premium feel.
-- **Nested Scroll Optimization**: Resolved nested scroll and paging stutters by migrating inner pager lists to standard Column iteration blocks.
-
-### 📝 Detail Page Description (Synopsis) Truncation & Toggle
-- **Dynamic Truncation:** Descriptions on media detail pages (both local entries and API results) are now automatically truncated based on character length (`> 200`) and newline count (`>= 4`).
-- **Smooth Height Transitions:** Integrated `animateContentSize()` to provide a buttery-smooth animation when toggling between "Daha fazla" (Read more) and "Daha az" (Read less).
-
-### 👤 AniList Donator Badge Display Correction
-- **Redundant Zero Hidden:** Hided the "Donator Tier 0" badge on the AniList profile tab when the user's donation level (donatorTier) is 0 or they do not have an active donation. The badge is now exclusively displayed for users with a donator tier of 1 or higher.
-
-### 🛡️ +18 Adult Content Blur Fix
-- **Recommendations & Relations Tabs:** Fixed a minor visual race condition where +18 adult content cover images briefly flashed without the blur filter during initial load. Coil's crossfade transition is now disabled for blurred media, applying the blur modifier instantly.
-
-### 🎨 Icon-Based Metadata Layout
-- **Visual Standardization:** Replaced rigid chip layouts with premium, icon-supported horizontal metadata rows showing format, episode counts, and airing schedules.
+### 📋 Selectable Detail Content
+- **Text Selection & Copying**: Media summaries (synopsis), metadata panels, and character/staff biographies are now fully selectable. You can long-press to copy or translate text anywhere on the detail screens.

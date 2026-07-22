@@ -22,6 +22,15 @@ import com.kitsugi.animelist.data.remote.KitsugiStaff
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.components.KitsugiShimmerAvatarRow
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.RecordVoiceOver
+import com.kitsugi.animelist.ui.components.KitsugiSheetOrDialog
 
 @Composable
 fun CharactersTabContent(
@@ -29,6 +38,8 @@ fun CharactersTabContent(
     onCharacterClick: (KitsugiCharacter) -> Unit,
     onStaffClick: (Int, String, String?, String?) -> Unit
 ) {
+    var selectedCharacterForVoiceActors by remember { mutableStateOf<KitsugiCharacter?>(null) }
+
     when (state) {
         is DetailTabState.Loading -> {
             KitsugiShimmerAvatarRow(avatarCount = 6)
@@ -66,7 +77,12 @@ fun CharactersTabContent(
                             ) {
                                 rowItems.forEach { char ->
                                     Box(modifier = Modifier.weight(1f)) {
-                                        CharacterVoiceActorCard(char, onCharacterClick, onStaffClick)
+                                        CharacterVoiceActorCard(
+                                            char = char,
+                                            onCharacterClick = onCharacterClick,
+                                            onStaffClick = onStaffClick,
+                                            onShowVoiceActors = { selectedCharacterForVoiceActors = it }
+                                        )
                                     }
                                 }
                                 // Eğer tek öğe kaldıysa boş weight doldurucu
@@ -82,7 +98,90 @@ fun CharactersTabContent(
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         list.forEach { char ->
-                            CharacterVoiceActorCard(char, onCharacterClick, onStaffClick)
+                            CharacterVoiceActorCard(
+                                char = char,
+                                onCharacterClick = onCharacterClick,
+                                onStaffClick = onStaffClick,
+                                onShowVoiceActors = { selectedCharacterForVoiceActors = it }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (selectedCharacterForVoiceActors != null) {
+        val character = selectedCharacterForVoiceActors!!
+        KitsugiSheetOrDialog(
+            onDismiss = { selectedCharacterForVoiceActors = null }
+        ) {
+            Text(
+                text = "${character.name} - Seslendirmenler",
+                color = KitsugiColors.TextPrimary,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
+            )
+            
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                items(character.voiceActors.size) { index ->
+                    val va = character.voiceActors[index]
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(KitsugiColors.Surface)
+                            .tvClickable(shape = RoundedCornerShape(16.dp), onClick = {
+                                selectedCharacterForVoiceActors = null
+                                onStaffClick(va.id, va.source, va.name, va.imageUrl)
+                            })
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(52.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(KitsugiColors.SurfaceSoft)
+                        ) {
+                            if (!va.imageUrl.isNullOrBlank()) {
+                                AsyncImage(
+                                    model = va.imageUrl,
+                                    contentDescription = va.name,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            } else {
+                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    Text(va.name.take(2).uppercase(), color = KitsugiColors.TextMuted, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall)
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = va.name,
+                                color = KitsugiColors.TextPrimary,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            val labelText = if (va.language.equals("oyuncu", ignoreCase = true)) {
+                                "Oyuncu"
+                            } else {
+                                va.language
+                            }
+                            Text(
+                                text = labelText,
+                                color = KitsugiColors.TextMuted,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Medium
+                            )
                         }
                     }
                 }
@@ -95,7 +194,8 @@ fun CharactersTabContent(
 fun CharacterVoiceActorCard(
     char: KitsugiCharacter,
     onCharacterClick: (KitsugiCharacter) -> Unit,
-    onStaffClick: (Int, String, String?, String?) -> Unit
+    onStaffClick: (Int, String, String?, String?) -> Unit,
+    onShowVoiceActors: (KitsugiCharacter) -> Unit
 ) {
     val accentColor = LocalKitsugiAccent.current
     // Önce Japonca seslendirici ara (Türkçe karşılığı: "Japonca"), yoksa TMDB oyuncusu, yoksa ilki
@@ -137,7 +237,7 @@ fun CharacterVoiceActorCard(
                 }
             }
             Spacer(modifier = Modifier.width(12.dp))
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = char.name,
                     color = KitsugiColors.TextPrimary,
@@ -154,6 +254,26 @@ fun CharacterVoiceActorCard(
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.SemiBold
                 )
+            }
+            if (char.voiceActors.isNotEmpty()) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(KitsugiColors.SurfaceSoft)
+                        .tvClickable(shape = RoundedCornerShape(10.dp)) {
+                            onShowVoiceActors(char)
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.RecordVoiceOver,
+                        contentDescription = "Seslendirmenler",
+                        tint = KitsugiColors.TextPrimary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         }
         

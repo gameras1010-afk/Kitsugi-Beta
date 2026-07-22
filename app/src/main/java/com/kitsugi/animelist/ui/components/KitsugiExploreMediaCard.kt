@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
@@ -43,7 +44,7 @@ import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayScore
 @Composable
 fun KitsugiExploreMediaCard(
     result: JikanSearchResult,
-    alreadyInList: Boolean,
+    alreadyInList: Boolean = false,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     titleLanguage: String = "ROMAJI",
@@ -110,23 +111,10 @@ fun KitsugiExploreMediaCard(
                         )
                     }
 
-                    if (alreadyInList) {
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(4.dp)
-                                .clip(RoundedCornerShape(999.dp))
-                                .background(KitsugiColors.AccentGreen)
-                                .padding(horizontal = 6.dp, vertical = 3.dp)
-                        ) {
-                            Text(
-                                text = "✓",
-                                color = KitsugiColors.Background,
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
+                    KitsugiSourceBadge(
+                        source = result.source,
+                        modifier = Modifier.align(Alignment.BottomStart)
+                    )
                 }
 
                 // Başlık + meta bilgi
@@ -191,23 +179,10 @@ fun KitsugiExploreMediaCard(
                         )
                     }
 
-                    if (alreadyInList) {
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(6.dp)
-                                .clip(RoundedCornerShape(999.dp))
-                                .background(KitsugiColors.AccentGreen)
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = "Listede",
-                                color = KitsugiColors.Background,
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
+                    KitsugiSourceBadge(
+                        source = result.source,
+                        modifier = Modifier.align(Alignment.BottomStart)
+                    )
                 }
 
                 Spacer(modifier = Modifier.width(14.dp))
@@ -289,23 +264,10 @@ fun KitsugiExploreMediaCard(
                         )
                     }
 
-                    if (alreadyInList) {
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(10.dp)
-                                .clip(RoundedCornerShape(999.dp))
-                                .background(KitsugiColors.AccentGreen)
-                                .padding(horizontal = 10.dp, vertical = 6.dp)
-                        ) {
-                            Text(
-                                text = "Listede",
-                                color = KitsugiColors.Background,
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
+                    KitsugiSourceBadge(
+                        source = result.source,
+                        modifier = Modifier.align(Alignment.BottomStart)
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -333,11 +295,7 @@ fun KitsugiExploreMediaCard(
 
                 Text(
                     text = buildMetaText(result, scoreFormat, hideScores),
-                    color = if (alreadyInList) {
-                        KitsugiColors.AccentGreen
-                    } else {
-                        accentColor
-                    },
+                    color = accentColor,
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold
                 )

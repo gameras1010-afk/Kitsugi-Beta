@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Group
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.Star
@@ -48,7 +47,7 @@ import java.util.Locale
 fun KitsugiRankingMediaCard(
     result: JikanSearchResult,
     rankIndex: Int,
-    alreadyInList: Boolean,
+    alreadyInList: Boolean = false,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     titleLanguage: String = "ROMAJI",
@@ -128,24 +127,11 @@ fun KitsugiRankingMediaCard(
                     )
                 }
 
-                // Already in list checkmark
-                if (alreadyInList) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(6.dp)
-                            .clip(RoundedCornerShape(999.dp))
-                            .background(KitsugiColors.AccentGreen)
-                            .padding(4.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Check,
-                            contentDescription = "Listede",
-                            tint = KitsugiColors.Background,
-                            modifier = Modifier.size(12.dp)
-                        )
-                    }
-                }
+                // Platform source badge
+                KitsugiSourceBadge(
+                    source = result.source,
+                    modifier = Modifier.align(Alignment.BottomStart)
+                )
             }
 
             Spacer(modifier = Modifier.width(14.dp))

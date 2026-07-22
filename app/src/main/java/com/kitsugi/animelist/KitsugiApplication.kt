@@ -171,6 +171,83 @@ class KitsugiApplication : Application(), SingletonImageLoader.Factory {
             }
         }
 
+        // ── Otomatik Arka Plan Liste Yenileme ──────────────────────────────────────
+        // AniHyou / MoeList gibi: uygulama açıldığında bağlı platformların listelerini
+        // sessizce arka planda yeniler. Son yenilemeden 24 saat geçmemişse atlar.
+        applicationScope.launch {
+            try {
+                val prefs = getSharedPreferences("kitsugi_auto_sync", Context.MODE_PRIVATE)
+                val lastSync = prefs.getLong("last_list_sync_ms", 0L)
+                val now = System.currentTimeMillis()
+                val twentyFourHours = 24 * 60 * 60 * 1000L
+
+                if (now - lastSync < twentyFourHours) {
+                    android.util.Log.d("KitsugiAutoSync", "Son yenilemeden 24 saat geçmedi, atlanıyor.")
+                } else {
+                    val db = com.kitsugi.animelist.data.local.KitsugiDatabase.getDatabase(this@KitsugiApplication)
+                    val dao = db.mediaEntryDao()
+                    val repo = com.kitsugi.animelist.data.local.MediaEntryRepository(dao = dao, context = this@KitsugiApplication)
+
+                    var syncCount = 0
+
+                    // AniList
+                    val aniListToken = com.kitsugi.animelist.data.auth.ExternalAuthManager.getAniListToken(this@KitsugiApplication)
+                    if (!aniListToken.isNullOrBlank()) {
+                        try {
+                            android.util.Log.d("KitsugiAutoSync", "AniList listesi yenileniyor...")
+                            val entries = com.kitsugi.animelist.data.auth.AniListImportManager.fetchAllLists(aniListToken)
+                            repo.deleteBySource("anilist")
+                            repo.insertAll(entries)
+                            syncCount += entries.size
+                            android.util.Log.d("KitsugiAutoSync", "AniList: ${entries.size} kayıt yenilendi.")
+                        } catch (e: Exception) {
+                            android.util.Log.w("KitsugiAutoSync", "AniList yenileme hatası: ${e.message}")
+                        }
+                    }
+
+                    // MyAnimeList
+                    val malToken = com.kitsugi.animelist.data.auth.ExternalAuthManager.getOrRefreshMalToken(this@KitsugiApplication)
+                    if (!malToken.isNullOrBlank()) {
+                        try {
+                            android.util.Log.d("KitsugiAutoSync", "MAL listesi yenileniyor...")
+                            val dataStore = com.kitsugi.animelist.data.settings.SettingsDataStore(this@KitsugiApplication)
+                            val showAdult = dataStore.settingsFlow.first().showAdultContent
+                            val entries = com.kitsugi.animelist.data.auth.MalImportManager.fetchAllLists(malToken, showAdult)
+                            repo.deleteBySource("mal")
+                            repo.insertAll(entries)
+                            syncCount += entries.size
+                            android.util.Log.d("KitsugiAutoSync", "MAL: ${entries.size} kayıt yenilendi.")
+                        } catch (e: Exception) {
+                            android.util.Log.w("KitsugiAutoSync", "MAL yenileme hatası: ${e.message}")
+                        }
+                    }
+
+                    // Simkl
+                    val simklToken = com.kitsugi.animelist.data.auth.ExternalAuthManager.getSimklToken(this@KitsugiApplication)
+                    if (!simklToken.isNullOrBlank()) {
+                        try {
+                            android.util.Log.d("KitsugiAutoSync", "Simkl listesi yenileniyor...")
+                            val entries = com.kitsugi.animelist.data.auth.SimklImportManager.fetchAllLists(simklToken)
+                            repo.deleteBySource("simkl")
+                            repo.insertAll(entries)
+                            syncCount += entries.size
+                            android.util.Log.d("KitsugiAutoSync", "Simkl: ${entries.size} kayıt yenilendi.")
+                        } catch (e: Exception) {
+                            android.util.Log.w("KitsugiAutoSync", "Simkl yenileme hatası: ${e.message}")
+                        }
+                    }
+
+                    if (syncCount > 0) {
+                        prefs.edit().putLong("last_list_sync_ms", now).apply()
+                        android.util.Log.i("KitsugiAutoSync", "Otomatik liste yenileme tamamlandı: toplam $syncCount kayıt.")
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("KitsugiAutoSync", "Otomatik sync hatası: ${e.message}")
+            }
+        }
+        // ─────────────────────────────────────────────────────────────────────────────
+
         // Initialize Cloudstream runtime singleton context and client
         com.kitsugi.animelist.data.cloudstream.CsRuntimeInit.init(this)
 

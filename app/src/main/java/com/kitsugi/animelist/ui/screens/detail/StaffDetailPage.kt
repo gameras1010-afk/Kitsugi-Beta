@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.layout
@@ -357,7 +358,8 @@ fun StaffDetailPage(
                                     ) {
                                         when (page) {
                                             0 -> {
-                                                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                                SelectionContainer {
+                                                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                                                     if (detail.alternativeNames.isNotEmpty()) {
                                                         Column(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(KitsugiColors.Surface).padding(16.dp)) {
                                                             Text("Diğer İsimler", color = KitsugiColors.TextPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
@@ -402,6 +404,7 @@ fun StaffDetailPage(
                                                         else KitsugiMarkdownText(text = displayBio)
                                                     }
                                                 }
+                                            }
                                             }
                                             1 -> {
                                                 if (detail.characterRoles.isEmpty()) Text("Karakter seslendirme bilgisi bulunmuyor.", color = KitsugiColors.TextSecondary, modifier = Modifier.padding(vertical = 16.dp))
@@ -751,7 +754,8 @@ fun StaffDetailPage(
                                         ) {
                                             when (page) {
                                                 0 -> { // Hakkında
-                                                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                                    SelectionContainer {
+                                                        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                                                         if (detail.alternativeNames.isNotEmpty()) {
                                                             Column(
                                                                 modifier = Modifier
@@ -851,6 +855,7 @@ fun StaffDetailPage(
                                                             }
                                                         }
                                                     }
+                                                }
                                                 }
                                                 1 -> { // Karakterler
                                                     if (detail.characterRoles.isEmpty()) {

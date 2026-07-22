@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.layout
@@ -403,7 +404,8 @@ fun CharacterDetailPage(
                                     ) {
                                         when (currentTab) {
                                             "Hakkında" -> {
-                                                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                                SelectionContainer {
+                                                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                                                     if (detail.alternativeNames.isNotEmpty()) {
                                                         Column(
                                                             modifier = Modifier
@@ -468,6 +470,7 @@ fun CharacterDetailPage(
                                                         }
                                                     }
                                                 }
+                                            }
                                             }
                                             "Yapımlar" -> {
                                                 if (detail.mediaAppearances.isEmpty()) {
@@ -835,7 +838,8 @@ fun CharacterDetailPage(
                                         ) {
                                             when (currentTab) {
                                                 "Hakkında" -> { // Hakkında
-                                                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                                    SelectionContainer {
+                                                        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                                                         // Alternative Names if present
                                                         if (detail.alternativeNames.isNotEmpty()) {
                                                             Column(
@@ -937,6 +941,7 @@ fun CharacterDetailPage(
                                                             }
                                                         }
                                                     }
+                                                }
                                                 }
                                                 "Yapımlar" -> { // Yapımlar
                                                     if (detail.mediaAppearances.isEmpty()) {

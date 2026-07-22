@@ -832,6 +832,12 @@ private fun PosterView(
                 fontWeight = FontWeight.Black
             )
         }
+
+        // Platform kaynak rozeti — sol alt
+        KitsugiSourceBadge(
+            source = entry.source,
+            modifier = Modifier.align(Alignment.BottomStart)
+        )
     }
 }
 
@@ -895,6 +901,12 @@ private fun LargePosterView(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(12.dp)
+        )
+
+        // Platform kaynak rozeti — sol alt
+        KitsugiSourceBadge(
+            source = entry.source,
+            modifier = Modifier.align(Alignment.BottomStart)
         )
     }
 }
@@ -1255,13 +1267,19 @@ private fun PosterGridMediaEntryCard(
                 )
             }
 
-            // Puan rozeti — sol alt köşe (gizlenmemişse)
+            // Platform kaynak rozeti — sol alt köşe
+            KitsugiSourceBadge(
+                source = entry.source,
+                modifier = Modifier.align(Alignment.BottomStart)
+            )
+
+            // Puan rozeti — SAĞ alt köşe (gizlenmemişse)
             if (!hideScores) {
                 val scoreText = entry.getDisplayScore(scoreFormat, hideScores)
                 if (scoreText != "unrated") {
                     Box(
                         modifier = Modifier
-                            .align(Alignment.BottomStart)
+                            .align(Alignment.BottomEnd)
                             .padding(5.dp)
                             .clip(RoundedCornerShape(7.dp))
                             .background(KitsugiColors.Background.copy(alpha = 0.80f))
