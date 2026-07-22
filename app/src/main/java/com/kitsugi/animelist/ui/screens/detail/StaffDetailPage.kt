@@ -591,37 +591,98 @@ fun StaffDetailPage(
                             }
 
                             // Tabs row
-                            item(key = "tabs") {
+                            stickyHeader(key = "tabs") {
                                 LaunchedEffect(selectedTab) {
+                                    if (listState.firstVisibleItemIndex > 1) {
+                                        listState.scrollToItem(1)
+                                    }
                                     tabListState.animateScrollToItem(selectedTab)
                                 }
-                                LazyRow(
-                                    state = tabListState,
+                                Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 20.dp, vertical = 10.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        .background(KitsugiColors.Surface.copy(alpha = 0.97f))
                                 ) {
-                                    items(tabs.size) { index ->
-                                        val title = tabs[index]
-                                        val isSelected = selectedTab == index
-                                        val bgColor = if (isSelected) accentColor else KitsugiColors.Surface
-                                        val textColor = if (isSelected) KitsugiColors.Background else KitsugiColors.TextSecondary
-
-                                        Box(
+                                    AnimatedVisibility(
+                                        visible = showFloatingHeader,
+                                        enter = expandVertically() + fadeIn(),
+                                        exit = shrinkVertically() + fadeOut()
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
                                             modifier = Modifier
-                                                .clip(RoundedCornerShape(999.dp))
-                                                .background(bgColor)
-                                                .tvClickable(shape = RoundedCornerShape(999.dp)) { coroutineScope.launch { pagerState.animateScrollToPage(index) } }
-                                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                                            contentAlignment = Alignment.Center
+                                                .fillMaxWidth()
+                                                .height(64.dp)
+                                                .background(KitsugiColors.Surface.copy(alpha = 0.92f))
+                                                .padding(horizontal = 8.dp)
                                         ) {
+                                            IconButton(onClick = onBackClick) {
+                                                Icon(
+                                                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                                    contentDescription = "Geri",
+                                                    tint = KitsugiColors.TextPrimary
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.width(8.dp))
                                             Text(
-                                                text = title,
-                                                color = textColor,
-                                                style = MaterialTheme.typography.labelLarge,
-                                                fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold
+                                                text = detail.name,
+                                                color = KitsugiColors.TextPrimary,
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Black,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                                modifier = Modifier.weight(1f)
                                             )
+                                            IconButton(onClick = {
+                                                val url = com.kitsugi.animelist.utils.ShareUtils.buildStaffUrl(source, staffId)
+                                                com.kitsugi.animelist.utils.ShareUtils.shareText(context, detail.name, url)
+                                            }) {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.Share,
+                                                    contentDescription = "Paylaş",
+                                                    tint = KitsugiColors.TextSecondary
+                                                )
+                                            }
+                                            if (isAniListSource) {
+                                                IconButton(onClick = { viewModel.toggleFavourite() }) {
+                                                    Icon(
+                                                        imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                                                        contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
+                                                        tint = if (isFavourite) accentColor else KitsugiColors.TextSecondary
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    LazyRow(
+                                        state = tabListState,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 20.dp, vertical = 10.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        items(tabs.size) { index ->
+                                            val title = tabs[index]
+                                            val isSelected = selectedTab == index
+                                            val bgColor = if (isSelected) accentColor else KitsugiColors.Surface
+                                            val textColor = if (isSelected) KitsugiColors.Background else KitsugiColors.TextSecondary
+
+                                            Box(
+                                                modifier = Modifier
+                                                    .clip(RoundedCornerShape(999.dp))
+                                                    .background(bgColor)
+                                                    .tvClickable(shape = RoundedCornerShape(999.dp)) { coroutineScope.launch { pagerState.animateScrollToPage(index) } }
+                                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = title,
+                                                    color = textColor,
+                                                    style = MaterialTheme.typography.labelLarge,
+                                                    fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -649,6 +710,8 @@ fun StaffDetailPage(
                                     if (heightPx > 0f) with(density) { heightPx.toDp() } else null
                                 }
 
+                                val screenHeightDp = androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp
+
                                 @OptIn(ExperimentalFoundationApi::class)
                                 HorizontalPager(
                                     state = pagerState,
@@ -659,13 +722,14 @@ fun StaffDetailPage(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .layout { measurable, constraints ->
+                                            val minPagerHeightPx = with(density) { (screenHeightDp - 64).dp.roundToPx() }
                                             val placeable = measurable.measure(
                                                 constraints.copy(
-                                                    minHeight = 0,
+                                                    minHeight = minPagerHeightPx,
                                                     maxHeight = androidx.compose.ui.unit.Constraints.Infinity
                                                 )
                                             )
-                                            val height = interpolatedHeightDp?.roundToPx() ?: placeable.height
+                                            val height = interpolatedHeightDp?.roundToPx()?.coerceAtLeast(minPagerHeightPx) ?: placeable.height
                                             layout(placeable.width, height) {
                                                 placeable.placeRelative(0, 0)
                                             }
@@ -827,59 +891,7 @@ fun StaffDetailPage(
                             )
                         }
 
-                        // Floating header overlay
-                        AnimatedVisibility(
-                            visible = showFloatingHeader,
-                            enter = expandVertically() + fadeIn(),
-                            exit = shrinkVertically() + fadeOut(),
-                            modifier = Modifier.align(Alignment.TopCenter)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(64.dp)
-                                    .background(KitsugiColors.Surface.copy(alpha = 0.92f))
-                                    .padding(horizontal = 8.dp)
-                            ) {
-                                IconButton(onClick = onBackClick) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                                        contentDescription = "Geri",
-                                        tint = KitsugiColors.TextPrimary
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = detail.name,
-                                    color = KitsugiColors.TextPrimary,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Black,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                IconButton(onClick = {
-                                    val url = com.kitsugi.animelist.utils.ShareUtils.buildStaffUrl(source, staffId)
-                                    com.kitsugi.animelist.utils.ShareUtils.shareText(context, detail.name, url)
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Share,
-                                        contentDescription = "Paylaş",
-                                        tint = KitsugiColors.TextSecondary
-                                    )
-                                }
-                                if (isAniListSource) {
-                                    IconButton(onClick = { viewModel.toggleFavourite() }) {
-                                        Icon(
-                                            imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                                            contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
-                                            tint = if (isFavourite) accentColor else KitsugiColors.TextSecondary
-                                        )
-                                    }
-                                }
-                            }
-                        }
+
                     }
                 }
             } // end else (portrait)

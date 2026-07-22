@@ -767,6 +767,8 @@ fun MediaEntryDetailPage(
                             if (heightPx > 0f) with(density) { heightPx.toDp() } else null
                         }
 
+                        val screenHeightDp = androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp
+
                         HorizontalPager(
                             state = pagerState,
                             userScrollEnabled = !isTv,
@@ -777,13 +779,14 @@ fun MediaEntryDetailPage(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .layout { measurable, constraints ->
+                                    val minPagerHeightPx = with(density) { (screenHeightDp - 64).dp.roundToPx() }
                                     val placeable = measurable.measure(
                                         constraints.copy(
-                                            minHeight = 0,
+                                            minHeight = minPagerHeightPx,
                                             maxHeight = androidx.compose.ui.unit.Constraints.Infinity
                                         )
                                     )
-                                    val height = interpolatedHeightDp?.roundToPx() ?: placeable.height
+                                    val height = interpolatedHeightDp?.roundToPx()?.coerceAtLeast(minPagerHeightPx) ?: placeable.height
                                     layout(placeable.width, height) {
                                         placeable.placeRelative(0, 0)
                                     }
