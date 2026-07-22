@@ -305,20 +305,7 @@ internal fun DetailHero(
                 }
             }
 
-            val isRedundantSubtitle = entry.subtitle.isBlank() ||
-                entry.subtitle.contains(" • ") ||
-                entry.subtitle.equals("Manuel eklenen içerik", ignoreCase = true)
 
-            if (!isRedundantSubtitle) {
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    text = entry.subtitle,
-                    color = KitsugiColors.TextSecondary,
-                    style = MaterialTheme.typography.bodyLarge,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
         }
     }
 }

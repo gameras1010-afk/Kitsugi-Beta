@@ -114,9 +114,24 @@ fun KitsugiEditMediaSheet(
 ) {
     val isEditing    = initialEntry != null
     val accentColor  = LocalKitsugiAccent.current
-    val isAniList    = source == "anilist" || initialEntry?.aniListEntryId != null
-    val isMal        = (source == "mal" || source == "jikan") && !isAniList
-    val isSimkl      = (source == "simkl" || source == "tmdb") && !isAniList
+    val isAniList = when (source.lowercase()) {
+        "anilist" -> true
+        "mal", "jikan", "myanimelist" -> false
+        "simkl", "tmdb" -> false
+        else -> initialEntry?.aniListEntryId != null
+    }
+    val isMal = when (source.lowercase()) {
+        "anilist" -> false
+        "mal", "jikan", "myanimelist" -> true
+        "simkl", "tmdb" -> false
+        else -> !isAniList && (initialEntry?.malId != null || initialEntry?.source == "mal")
+    }
+    val isSimkl = when (source.lowercase()) {
+        "anilist" -> false
+        "mal", "jikan", "myanimelist" -> false
+        "simkl", "tmdb" -> true
+        else -> !isAniList && !isMal && (initialEntry?.simklId != null || initialEntry?.source == "simkl")
+    }
     val isManual     = !isAniList && !isMal && !isSimkl
 
     // ── State ──────────────────────────────────────────────────────────────

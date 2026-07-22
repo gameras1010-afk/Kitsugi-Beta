@@ -30,7 +30,7 @@ class KitsugiDetailClient {
                 // 100_000_000+ offset'li stableId → gerçek AniList ID'yi çıkar
                 externalId - 100_000_000
             } else null
-            KitsugiIdResolver.resolveIds(malId = malIdForResolve, aniListId = aniListIdForResolve, tmdbId = providedTmdbId).tmdbId
+            KitsugiIdResolver.resolveIds(malId = malIdForResolve, aniListId = aniListIdForResolve, tmdbId = providedTmdbId, mediaType = mediaType).tmdbId
         }
 
         if (tmdbId != null && tmdbId > 0) {
@@ -87,7 +87,8 @@ class KitsugiDetailClient {
         externalId: Int?,
         mediaType: MediaType,
         tmdbId: Int? = null,
-        realMalId: Int? = null
+        realMalId: Int? = null,
+        title: String? = null
     ): KitsugiMediaDetail? {
         return withContext(Dispatchers.IO) {
             if (externalId == null || externalId <= 0) return@withContext null
@@ -106,7 +107,7 @@ class KitsugiDetailClient {
                 "simkl" -> {
                     val resolvedTmdb = tmdbId ?: run {
                         val malIdForResolve = realMalId ?: DetailCache.getMediaDetail("simkl", externalId)?.realMalId
-                        KitsugiIdResolver.resolveIds(malId = malIdForResolve, aniListId = null, tmdbId = tmdbId).tmdbId
+                        KitsugiIdResolver.resolveIds(malId = malIdForResolve, aniListId = null, tmdbId = tmdbId, mediaType = mediaType).tmdbId
                     }
                     // ── Öncelik zinciri (Simkl son çaredir) ────────────────────────────
                     // 1. Anime ise ve gerçek MAL ID varsa -> Jikan (rate-limit yok, önerilen)
@@ -136,13 +137,41 @@ class KitsugiDetailClient {
             }
 
             var finalDetail = detail
+            
+            // Fallback scenario 1: Primary fetch returned null for Movie/TV show -> Try direct TMDB search fallback by title!
+            if (finalDetail == null && (mediaType == MediaType.Movie || mediaType == MediaType.TvShow) && !title.isNullOrBlank()) {
+                android.util.Log.d("KitsugiDetailClient", "Primary fetch returned null for Movie/TV show. Triggering direct TMDB search fallback for: $title")
+                val searchResults = TmdbApiClient().search(title)
+                val matchedResult = searchResults.firstOrNull { it.type == mediaType }
+                if (matchedResult != null && matchedResult.tmdbId != null && matchedResult.tmdbId > 0) {
+                    android.util.Log.d("KitsugiDetailClient", "Fallback direct TMDB search resolved tmdbId: ${matchedResult.tmdbId} for title: $title")
+                    finalDetail = TmdbApiClient().fetchMediaDetail(matchedResult.tmdbId, mediaType == MediaType.Movie)
+                }
+            }
+
             if (finalDetail != null && mediaType != MediaType.Manga) {
                 // TMDB zenginleştirmesi için en iyi MAL ID'yi bul
-                // AniList source'da realMalId, detail.realMalId veya stableId < 100M ise stableId kendisi
                 val effectiveRealMalId = realMalId
                     ?: finalDetail.realMalId
                     ?: if (source.lowercase() == "anilist" && externalId < 100_000_000) externalId else null
-                val trMeta = getTurkishMetadataFromTmdb(source, externalId, mediaType, tmdbId ?: finalDetail.tmdbId, effectiveRealMalId)
+                
+                var resolvedTmdbId = tmdbId ?: finalDetail.tmdbId
+                
+                // Fallback scenario 2: Primary detail is not null, but tmdbId is missing -> Try direct TMDB search fallback by title!
+                if ((resolvedTmdbId == null || resolvedTmdbId <= 0) && (mediaType == MediaType.Movie || mediaType == MediaType.TvShow)) {
+                    val searchTitle = title ?: finalDetail.title ?: finalDetail.titleEnglish
+                    if (!searchTitle.isNullOrBlank()) {
+                        android.util.Log.d("KitsugiDetailClient", "Primary resolution has no tmdbId. Triggering TMDB search for title: $searchTitle")
+                        val searchResults = TmdbApiClient().search(searchTitle)
+                        val matchedResult = searchResults.firstOrNull { it.type == mediaType }
+                        if (matchedResult != null && matchedResult.tmdbId != null && matchedResult.tmdbId > 0) {
+                            resolvedTmdbId = matchedResult.tmdbId
+                            android.util.Log.d("KitsugiDetailClient", "Resolved tmdbId = $resolvedTmdbId via search for title: $searchTitle")
+                        }
+                    }
+                }
+                
+                val trMeta = getTurkishMetadataFromTmdb(source, externalId, mediaType, resolvedTmdbId, effectiveRealMalId)
                 if (trMeta != null) {
                     val updatedSynopsis = if (!trMeta.synopsis.isNullOrBlank()) trMeta.synopsis else finalDetail.synopsis
                     val updatedTitle = if (!trMeta.title.isNullOrBlank()) trMeta.title else finalDetail.title
@@ -157,7 +186,7 @@ class KitsugiDetailClient {
                         title = updatedTitle,
                         titleEnglish = updatedTitleEnglish,
                         genres = updatedGenres,
-                        tmdbId = tmdbId ?: finalDetail.tmdbId,
+                        tmdbId = resolvedTmdbId ?: finalDetail.tmdbId,
                         pictures = combinedPictures,
                         studios = mergedStudios,
                         producers = mergedProducers,
@@ -188,7 +217,7 @@ class KitsugiDetailClient {
                         else -> null
                     }
                     val resolvedAniListId = runCatching {
-                        KitsugiIdResolver.resolveIds(malId = malIdForResolve, aniListId = null).aniListId
+                        KitsugiIdResolver.resolveIds(malId = malIdForResolve, aniListId = null, mediaType = mediaType).aniListId
                     }.getOrNull()
                     if (resolvedAniListId != null && resolvedAniListId > 0) {
                         val nextAiring = KitsugiAniListDetailClient.fetchNextAiringEpisodeOnly(resolvedAniListId)

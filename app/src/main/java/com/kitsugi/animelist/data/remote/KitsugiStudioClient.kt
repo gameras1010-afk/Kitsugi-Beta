@@ -121,7 +121,7 @@ class KitsugiStudioClient {
                 favorites = null,
                 established = null,
                 about = about,
-                mediaWorks = mediaWorks
+                mediaWorks = mediaWorks.distinctBy { it.mediaId }
             )
         }.getOrNull()
     }
@@ -206,7 +206,7 @@ class KitsugiStudioClient {
                 favorites = favorites,
                 established = established,
                 about = about,
-                mediaWorks = mediaWorks
+                mediaWorks = mediaWorks.distinctBy { it.mediaId }
             )
         }.getOrNull()
     }
@@ -285,7 +285,7 @@ class KitsugiStudioClient {
                 favorites = favorites,
                 established = null,
                 about = null,
-                mediaWorks = mediaWorks
+                mediaWorks = mediaWorks.distinctBy { it.mediaId }
             )
         }.getOrNull()
     }
@@ -369,7 +369,7 @@ class KitsugiStudioClient {
                 favorites = favorites,
                 established = null,
                 about = null,
-                mediaWorks = mediaWorks
+                mediaWorks = mediaWorks.distinctBy { it.mediaId }
             )
         }.getOrNull()
     }

@@ -92,6 +92,9 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
     var seasonalAnime by mutableStateOf<List<JikanSearchResult>>(initialPayload?.seasonalAnime ?: emptyList())
         private set
 
+    var airingSoonAnime by mutableStateOf<List<JikanSearchResult>>(initialPayload?.airingSoonAnime ?: emptyList())
+        private set
+
     var heroIndex by mutableIntStateOf(0)
 
     // ── Simkl Kullanıcı Listeleri (NyanTV HomeSections.kt referans) ──────────────
@@ -197,6 +200,7 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         trendingAnime = payload.trendingAnime
         movieAnime = payload.movieAnime
         seasonalAnime = payload.seasonalAnime
+        airingSoonAnime = payload.airingSoonAnime
         heroIndex = 0
 
         simklContinueMovies = payload.simklContinueMovies
@@ -215,6 +219,7 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         trendingAnime = emptyList()
         movieAnime = emptyList()
         seasonalAnime = emptyList()
+        airingSoonAnime = emptyList()
         // Simkl kullanıcı şeritlerini temizleme — platform değişiminde de gözüksün
         heroIndex = 0
         errorMessage = null
@@ -389,7 +394,8 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
             simklContinueMovies = continueMovies,
             simklPlannedMovies = plannedMovies,
             simklContinueSeries = continueSeries,
-            simklPlannedSeries = plannedSeries
+            simklPlannedSeries = plannedSeries,
+            airingSoonAnime = emptyList()
         )
     }
 
@@ -424,6 +430,34 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
             rawTopAnime
         }
 
+        val airingSoonDeferred = async {
+            val calendarClient = com.kitsugi.animelist.data.remote.KitsugiAiringCalendarClient()
+            val weekly = runCatching { calendarClient.fetchWeeklySchedule() }.getOrNull() ?: emptyMap()
+            val nowSeconds = System.currentTimeMillis() / 1000L
+            weekly.values.flatten()
+                .filter { it.airingAt > nowSeconds }
+                .sortedBy { it.airingAt }
+                .take(15)
+                .map { entry ->
+                    JikanSearchResult(
+                        malId = entry.malId ?: entry.aniListId,
+                        title = entry.title,
+                        subtitle = "${entry.episode}. Bölüm",
+                        type = MediaType.Anime,
+                        total = null,
+                        score = null,
+                        isAdult = false,
+                        imageUrl = entry.coverUrl,
+                        year = null,
+                        source = "anilist",
+                        realMalId = entry.malId,
+                        titleEnglish = entry.titleEnglish,
+                        titleJapanese = entry.titleNative,
+                        nextAiringEpisode = "${entry.episode}|${entry.airingAt}"
+                    )
+                }
+        }
+
         ExplorePayload(
             topAnime = enrichedTopAnime,
             airingAnime = runCatching { airingAnimeDeferred.await() }.getOrDefault(emptyList()),
@@ -432,7 +466,8 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
             publishingManga = runCatching { publishingMangaDeferred.await() }.getOrDefault(emptyList()),
             trendingAnime = runCatching { trendingAnimeDeferred.await() }.getOrDefault(emptyList()),
             movieAnime = runCatching { movieAnimeDeferred.await() }.getOrDefault(emptyList()),
-            seasonalAnime = runCatching { seasonalAnimeDeferred.await() }.getOrDefault(emptyList())
+            seasonalAnime = runCatching { seasonalAnimeDeferred.await() }.getOrDefault(emptyList()),
+            airingSoonAnime = runCatching { airingSoonDeferred.await() }.getOrDefault(emptyList())
         )
     }
 
@@ -447,6 +482,34 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         val movieAnimeDeferred = async { apiClient.aniListMovieAnime(showAdultContent = showAdult) }
         val seasonalAnimeDeferred = async { apiClient.aniListSeasonalAnime(showAdultContent = showAdult) }
 
+        val airingSoonDeferred = async {
+            val calendarClient = com.kitsugi.animelist.data.remote.KitsugiAiringCalendarClient()
+            val weekly = runCatching { calendarClient.fetchWeeklySchedule() }.getOrNull() ?: emptyMap()
+            val nowSeconds = System.currentTimeMillis() / 1000L
+            weekly.values.flatten()
+                .filter { it.airingAt > nowSeconds }
+                .sortedBy { it.airingAt }
+                .take(15)
+                .map { entry ->
+                    JikanSearchResult(
+                        malId = entry.malId ?: entry.aniListId,
+                        title = entry.title,
+                        subtitle = "${entry.episode}. Bölüm",
+                        type = MediaType.Anime,
+                        total = null,
+                        score = null,
+                        isAdult = false,
+                        imageUrl = entry.coverUrl,
+                        year = null,
+                        source = "anilist",
+                        realMalId = entry.malId,
+                        titleEnglish = entry.titleEnglish,
+                        titleJapanese = entry.titleNative,
+                        nextAiringEpisode = "${entry.episode}|${entry.airingAt}"
+                    )
+                }
+        }
+
         ExplorePayload(
             topAnime = runCatching { topAnimeDeferred.await() }.getOrDefault(emptyList()),
             airingAnime = runCatching { airingAnimeDeferred.await() }.getOrDefault(emptyList()),
@@ -455,7 +518,8 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
             publishingManga = runCatching { publishingMangaDeferred.await() }.getOrDefault(emptyList()),
             trendingAnime = runCatching { trendingAnimeDeferred.await() }.getOrDefault(emptyList()),
             movieAnime = runCatching { movieAnimeDeferred.await() }.getOrDefault(emptyList()),
-            seasonalAnime = runCatching { seasonalAnimeDeferred.await() }.getOrDefault(emptyList())
+            seasonalAnime = runCatching { seasonalAnimeDeferred.await() }.getOrDefault(emptyList()),
+            airingSoonAnime = runCatching { airingSoonDeferred.await() }.getOrDefault(emptyList())
         )
     }
 
@@ -528,6 +592,34 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
                                     rawTopAnime
                                 }
 
+                                val airingSoonDeferred = async {
+                                    val calendarClient = com.kitsugi.animelist.data.remote.KitsugiAiringCalendarClient()
+                                    val weekly = runCatching { calendarClient.fetchWeeklySchedule() }.getOrNull() ?: emptyMap()
+                                    val nowSeconds = System.currentTimeMillis() / 1000L
+                                    weekly.values.flatten()
+                                        .filter { it.airingAt > nowSeconds }
+                                        .sortedBy { it.airingAt }
+                                        .take(15)
+                                        .map { entry ->
+                                            JikanSearchResult(
+                                                malId = entry.malId ?: entry.aniListId,
+                                                title = entry.title,
+                                                subtitle = "${entry.episode}. Bölüm",
+                                                type = MediaType.Anime,
+                                                total = null,
+                                                score = null,
+                                                isAdult = false,
+                                                imageUrl = entry.coverUrl,
+                                                year = null,
+                                                source = "anilist",
+                                                realMalId = entry.malId,
+                                                titleEnglish = entry.titleEnglish,
+                                                titleJapanese = entry.titleNative,
+                                                nextAiringEpisode = "${entry.episode}|${entry.airingAt}"
+                                            )
+                                        }
+                                }
+
                                 ExplorePayload(
                                     topAnime = enrichedTopAnime,
                                     airingAnime = runCatching { airingAnimeDeferred.await() }.getOrDefault(emptyList()),
@@ -536,7 +628,8 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
                                     publishingManga = runCatching { publishingMangaDeferred.await() }.getOrDefault(emptyList()),
                                     trendingAnime = runCatching { trendingAnimeDeferred.await() }.getOrDefault(emptyList()),
                                     movieAnime = runCatching { movieAnimeDeferred.await() }.getOrDefault(emptyList()),
-                                    seasonalAnime = runCatching { seasonalAnimeDeferred.await() }.getOrDefault(emptyList())
+                                    seasonalAnime = runCatching { seasonalAnimeDeferred.await() }.getOrDefault(emptyList()),
+                                    airingSoonAnime = runCatching { airingSoonDeferred.await() }.getOrDefault(emptyList())
                                 )
                             }.getOrNull()
                         }
@@ -553,6 +646,34 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
                                 val movieAnimeDeferred = async { apiClient.aniListMovieAnime(showAdultContent = showAdult) }
                                 val seasonalAnimeDeferred = async { apiClient.aniListSeasonalAnime(showAdultContent = showAdult) }
 
+                                val airingSoonDeferred = async {
+                                    val calendarClient = com.kitsugi.animelist.data.remote.KitsugiAiringCalendarClient()
+                                    val weekly = runCatching { calendarClient.fetchWeeklySchedule() }.getOrNull() ?: emptyMap()
+                                    val nowSeconds = System.currentTimeMillis() / 1000L
+                                    weekly.values.flatten()
+                                        .filter { it.airingAt > nowSeconds }
+                                        .sortedBy { it.airingAt }
+                                        .take(15)
+                                        .map { entry ->
+                                            JikanSearchResult(
+                                                malId = entry.malId ?: entry.aniListId,
+                                                title = entry.title,
+                                                subtitle = "${entry.episode}. Bölüm",
+                                                type = MediaType.Anime,
+                                                total = null,
+                                                score = null,
+                                                isAdult = false,
+                                                imageUrl = entry.coverUrl,
+                                                year = null,
+                                                source = "anilist",
+                                                realMalId = entry.malId,
+                                                titleEnglish = entry.titleEnglish,
+                                                titleJapanese = entry.titleNative,
+                                                nextAiringEpisode = "${entry.episode}|${entry.airingAt}"
+                                            )
+                                        }
+                                }
+
                                 ExplorePayload(
                                     topAnime = runCatching { topAnimeDeferred.await() }.getOrDefault(emptyList()),
                                     airingAnime = runCatching { airingAnimeDeferred.await() }.getOrDefault(emptyList()),
@@ -561,7 +682,8 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
                                     publishingManga = runCatching { publishingMangaDeferred.await() }.getOrDefault(emptyList()),
                                     trendingAnime = runCatching { trendingAnimeDeferred.await() }.getOrDefault(emptyList()),
                                     movieAnime = runCatching { movieAnimeDeferred.await() }.getOrDefault(emptyList()),
-                                    seasonalAnime = runCatching { seasonalAnimeDeferred.await() }.getOrDefault(emptyList())
+                                    seasonalAnime = runCatching { seasonalAnimeDeferred.await() }.getOrDefault(emptyList()),
+                                    airingSoonAnime = runCatching { airingSoonDeferred.await() }.getOrDefault(emptyList())
                                 )
                             }.getOrNull()
                         }
@@ -693,7 +815,8 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
                                     simklContinueMovies = continueMovies,
                                     simklPlannedMovies = plannedMovies,
                                     simklContinueSeries = continueSeries,
-                                    simklPlannedSeries = plannedSeries
+                                    simklPlannedSeries = plannedSeries,
+                                    airingSoonAnime = emptyList()
                                 )
                             }.getOrNull()
                         }
@@ -735,5 +858,6 @@ data class ExplorePayload(
     val simklContinueMovies: List<JikanSearchResult> = emptyList(),
     val simklPlannedMovies: List<JikanSearchResult> = emptyList(),
     val simklContinueSeries: List<JikanSearchResult> = emptyList(),
-    val simklPlannedSeries: List<JikanSearchResult> = emptyList()
+    val simklPlannedSeries: List<JikanSearchResult> = emptyList(),
+    val airingSoonAnime: List<JikanSearchResult> = emptyList()
 )

@@ -92,6 +92,10 @@ fun ReviewsTabContent(
         mutableStateOf(if (state is DetailTabState.Success) state.data else emptyList())
     }
 
+    val topicsListState = androidx.compose.foundation.lazy.rememberLazyListState()
+    val activitiesListState = androidx.compose.foundation.lazy.rememberLazyListState()
+    val reviewsListState = androidx.compose.foundation.lazy.rememberLazyListState()
+
     Column(
         verticalArrangement = Arrangement.spacedBy(20.dp),
         modifier = Modifier.fillMaxWidth()
@@ -136,9 +140,14 @@ fun ReviewsTabContent(
                 }
 
                 LazyRow(
+                    state = topicsListState,
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     contentPadding = PaddingValues(horizontal = 14.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    flingBehavior = androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior(
+                        lazyListState = topicsListState,
+                        snapPosition = androidx.compose.foundation.gestures.snapping.SnapPosition.Start
+                    )
                 ) {
                     items(forumTopics) { topic ->
                         TopicCard(
@@ -214,9 +223,14 @@ fun ReviewsTabContent(
                 }
 
                 LazyRow(
+                    state = activitiesListState,
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     contentPadding = PaddingValues(horizontal = 14.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    flingBehavior = androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior(
+                        lazyListState = activitiesListState,
+                        snapPosition = androidx.compose.foundation.gestures.snapping.SnapPosition.Start
+                    )
                 ) {
                     items(activitiesList) { activity ->
                         ActivityCard(
@@ -317,9 +331,14 @@ fun ReviewsTabContent(
                         )
                     } else {
                         LazyRow(
+                            state = reviewsListState,
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
                             contentPadding = PaddingValues(horizontal = 14.dp),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            flingBehavior = androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior(
+                                lazyListState = reviewsListState,
+                                snapPosition = androidx.compose.foundation.gestures.snapping.SnapPosition.Start
+                            )
                         ) {
                             items(reviewsList) { rev ->
                                 KitsugiReviewCard(

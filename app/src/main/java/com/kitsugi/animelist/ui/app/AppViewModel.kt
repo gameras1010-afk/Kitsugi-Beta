@@ -323,10 +323,24 @@ class AppViewModel : ViewModel() {
 
         val targetSource = when {
             result.type == MediaType.TvShow || result.type == MediaType.Movie -> "simkl"
-            isAniListConnected -> "anilist"
-            isMalConnected -> "mal"
-            isSimklConnected -> "simkl"
-            else -> if (result.source.equals("anilist", ignoreCase = true)) "anilist" else "mal"
+            else -> {
+                val orig = if (result.source.equals("anilist", ignoreCase = true)) "anilist" else "mal"
+                val origConnected = when (orig) {
+                    "anilist" -> isAniListConnected
+                    "mal" -> isMalConnected
+                    else -> false
+                }
+                if (origConnected) {
+                    orig
+                } else {
+                    when {
+                        isAniListConnected -> "anilist"
+                        isMalConnected -> "mal"
+                        isSimklConnected -> "simkl"
+                        else -> orig
+                    }
+                }
+            }
         }
 
         val isConnected = when (targetSource) {
@@ -349,10 +363,10 @@ class AppViewModel : ViewModel() {
             return
         }
 
-        val finalSource = when {
-            isAniListConnected && (targetSource == "mal" || targetSource == "anilist") -> "anilist"
-            isMalConnected && targetSource == "mal" -> "mal"
-            isSimklConnected && targetSource == "simkl" -> "simkl"
+        val finalSource = when (targetSource) {
+            "anilist" -> if (isAniListConnected) "anilist" else if (isMalConnected) "mal" else "anilist"
+            "mal" -> if (isMalConnected) "mal" else if (isAniListConnected) "anilist" else "mal"
+            "simkl" -> if (isSimklConnected) "simkl" else targetSource
             else -> targetSource
         }
 

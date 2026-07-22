@@ -70,10 +70,12 @@ object KitsugiApiBase {
                 if (response.isSuccessful) {
                     response.body?.string()
                 } else {
+                    android.util.Log.w("KitsugiApiBase", "HTTP Error: ${response.code} ${response.message} for URL: $url")
                     null
                 }
             }
         } catch (e: Exception) {
+            android.util.Log.e("KitsugiApiBase", "executeGetRequest Exception: ${e.message} for URL: $url", e)
             null
         }
     }
@@ -183,6 +185,7 @@ object KitsugiApiBase {
                     val responseBody = response.body?.string() ?: ""
                     AniListResult.Success(responseBody)
                 } else if (response.code == 429 || response.code in 500..599) {
+                    android.util.Log.w("KitsugiApiBase", "AniList query retryable failure with code: ${response.code} ${response.message}")
                     val retryAfterSec = response.header("Retry-After")?.toLongOrNull()
                     val resetEpoch = response.header("X-RateLimit-Reset")?.toLongOrNull()
                     val retryAfterMs = when {
@@ -192,10 +195,12 @@ object KitsugiApiBase {
                     }
                     AniListResult.Retryable(retryAfterMs)
                 } else {
+                    android.util.Log.e("KitsugiApiBase", "AniList query permanent failure with code: ${response.code} ${response.message}")
                     AniListResult.Failure
                 }
             }
         } catch (e: Exception) {
+            android.util.Log.e("KitsugiApiBase", "AniList performRequest Exception: ${e.message}", e)
             AniListResult.Retryable(null)
         }
     }

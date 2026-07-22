@@ -27,9 +27,15 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.rounded.ViewList
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.CheckCircle
@@ -113,6 +119,7 @@ fun KitsugiAiringCalendarScreen(
 ) {
     val accentColor = KitsugiColors.Accent
     var showOnlyMyList by rememberSaveable { mutableStateOf(false) }
+    var isGridView by rememberSaveable { mutableStateOf(true) }
 
     val filteredScheduleMap = remember(viewModel.weekSchedule, showOnlyMyList, currentEntries) {
         if (showOnlyMyList) {
@@ -140,6 +147,8 @@ fun KitsugiAiringCalendarScreen(
             isLoading = viewModel.isLoading,
             showOnlyMyList = showOnlyMyList,
             onShowOnlyMyListChange = { showOnlyMyList = it },
+            isGridView = isGridView,
+            onGridViewChange = { isGridView = it },
             onRefresh = { viewModel.loadSchedule() },
             onBackClick = onBackClick
         )
@@ -179,12 +188,21 @@ fun KitsugiAiringCalendarScreen(
                     label = "day_anim"
                 ) { day ->
                     val entries = filteredScheduleMap[day] ?: emptyList()
-                    AiringEntryList(
-                        entries = entries,
-                        currentEntries = currentEntries,
-                        titleLanguage = titleLanguage,
-                        onEntryClick = onOpenAiringEntry
-                    )
+                    if (isGridView) {
+                        AiringEntryGridList(
+                            entries = entries,
+                            currentEntries = currentEntries,
+                            titleLanguage = titleLanguage,
+                            onEntryClick = onOpenAiringEntry
+                        )
+                    } else {
+                        AiringEntryList(
+                            entries = entries,
+                            currentEntries = currentEntries,
+                            titleLanguage = titleLanguage,
+                            onEntryClick = onOpenAiringEntry
+                        )
+                    }
                 }
             }
         }
@@ -199,6 +217,8 @@ private fun AiringCalendarHeader(
     isLoading: Boolean,
     showOnlyMyList: Boolean,
     onShowOnlyMyListChange: (Boolean) -> Unit,
+    isGridView: Boolean,
+    onGridViewChange: (Boolean) -> Unit,
     onRefresh: () -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -272,6 +292,17 @@ private fun AiringCalendarHeader(
         }
 
         Spacer(modifier = Modifier.width(8.dp))
+
+        // Grid/List toggle button
+        IconButton(onClick = { onGridViewChange(!isGridView) }) {
+            Icon(
+                imageVector = if (isGridView) Icons.Rounded.ViewList else Icons.Rounded.GridView,
+                contentDescription = "Görünüm Değiştir",
+                tint = KitsugiColors.TextSecondary
+            )
+        }
+
+        Spacer(modifier = Modifier.width(4.dp))
 
         IconButton(onClick = onRefresh, enabled = !isLoading) {
             if (isLoading) {
@@ -409,7 +440,7 @@ private fun AiringEntryList(
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+        contentPadding = PaddingValues(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 80.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         items(entries, key = { "${it.malId}_${it.aniListId}_${it.episode}" }) { entry ->
@@ -426,7 +457,189 @@ private fun AiringEntryList(
                 onClick = { onEntryClick(entry) }
             )
         }
-        item { Spacer(modifier = Modifier.height(80.dp)) }
+    }
+}
+
+@Composable
+private fun AiringEntryGridList(
+    entries: List<AiringEntry>,
+    currentEntries: List<MediaEntry>,
+    titleLanguage: String,
+    onEntryClick: (AiringEntry) -> Unit
+) {
+    if (entries.isEmpty()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(32.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Bu gün için yayın bulunamadı.",
+                color = KitsugiColors.TextSecondary,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+        return
+    }
+
+    val gridState = rememberLazyGridState()
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 145.dp),
+        state = gridState,
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 80.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(entries, key = { "${it.aniListId}_${it.episode}" }) { entry ->
+            val isInList = remember(currentEntries, entry) {
+                currentEntries.any { me ->
+                    (entry.malId != null && me.malId == entry.malId) ||
+                            me.malId == entry.aniListId
+                }
+            }
+            AiringEntryGridCard(
+                entry = entry,
+                isInWatchingList = isInList,
+                titleLanguage = titleLanguage,
+                onClick = { onEntryClick(entry) }
+            )
+        }
+    }
+}
+
+@Composable
+fun AiringEntryGridCard(
+    entry: AiringEntry,
+    isInWatchingList: Boolean,
+    titleLanguage: String = "ROMAJI",
+    onClick: () -> Unit = {}
+) {
+    val displayTitle = when (titleLanguage) {
+        "ENGLISH" -> entry.titleEnglish ?: entry.title
+        "NATIVE"  -> entry.titleNative ?: entry.title
+        else      -> entry.title
+    }
+
+    val accentColor = if (isInWatchingList) KitsugiColors.AccentGreen else KitsugiColors.Accent
+    val hasAired = entry.hasAired()
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(KitsugiColors.Surface)
+            .then(
+                if (isInWatchingList)
+                    Modifier.border(1.dp, KitsugiColors.AccentGreen.copy(0.45f), RoundedCornerShape(18.dp))
+                else Modifier
+            )
+            .clickable(onClick = onClick)
+            .padding(8.dp)
+    ) {
+        // Kapak görseli
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(KitsugiColors.SurfaceSoft)
+        ) {
+            AsyncImage(
+                model = entry.coverUrl,
+                contentDescription = displayTitle,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+            // Yayınlandı overlay
+            if (hasAired) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(Color.Transparent, Color.Black.copy(0.55f))
+                            )
+                        )
+                )
+                Icon(
+                    imageVector = Icons.Rounded.CheckCircle,
+                    contentDescription = "Yayınlandı",
+                    tint = KitsugiColors.AccentGreen,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .align(Alignment.BottomEnd)
+                        .padding(4.dp)
+                )
+            }
+            // İzliyorum ikonu overlay
+            if (isInWatchingList) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(6.dp)
+                        .clip(CircleShape)
+                        .background(KitsugiColors.AccentGreen)
+                        .padding(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.PlayCircle,
+                        contentDescription = "İzliyorum",
+                        tint = KitsugiColors.Background,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Başlık
+        Text(
+            text = displayTitle,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = KitsugiColors.TextPrimary,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.height(38.dp)
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        // Episode & Time info
+        Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            // Bölüm rozeti
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(accentColor.copy(0.18f))
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = "Bölüm ${entry.episode}",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = accentColor
+                )
+            }
+            // Saat rozeti
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Schedule,
+                    contentDescription = null,
+                    tint = KitsugiColors.TextSecondary,
+                    modifier = Modifier.size(11.dp)
+                )
+                AiringTimeText(entry = entry)
+            }
+        }
     }
 }
 
@@ -558,6 +771,40 @@ fun AiringEntryCard(
     }
 }
 
+private fun Long.secondsToLegibleText(): String {
+    val remaining = this
+    val days = remaining / 86400
+    val hours = (remaining % 86400) / 3600
+    val minutes = (remaining % 3600) / 60
+    return when {
+        days > 30 -> {
+            val months = days / 30
+            "$months ay sonra"
+        }
+        days > 7 -> {
+            val weeks = days / 7
+            "$weeks hafta sonra"
+        }
+        days >= 1 -> {
+            if (hours > 0) {
+                "$days gün $hours saat sonra"
+            } else {
+                "$days gün sonra"
+            }
+        }
+        hours >= 1 -> {
+            if (minutes > 0) {
+                "$hours saat $minutes dakika sonra"
+            } else {
+                "$hours saat sonra"
+            }
+        }
+        else -> {
+            if (minutes > 0) "$minutes dakika sonra" else "Az sonra"
+        }
+    }
+}
+
 @Composable
 private fun AiringTimeText(entry: AiringEntry) {
     var text by remember(entry) { mutableStateOf(entry.formattedTime()) }
@@ -570,15 +817,8 @@ private fun AiringTimeText(entry: AiringEntry) {
                     text = "${entry.formattedTime()} • Yayınlandı"
                     break
                 }
-                val days = remaining / 86400
-                text = if (days >= 1) {
-                    "${entry.formattedTime()} • $days gün sonra yayında"
-                } else {
-                    val hours = remaining / 3600
-                    val minutes = (remaining % 3600) / 60
-                    String.format("%s • %02d:%02d sonra", entry.formattedTime(), hours, minutes)
-                }
-                val delayTime = if (days >= 1) 60000L else 10000L
+                text = "${entry.formattedTime()} • ${remaining.secondsToLegibleText()}"
+                val delayTime = if (remaining > 86400) 60000L else 10000L
                 kotlinx.coroutines.delay(delayTime)
             }
         }

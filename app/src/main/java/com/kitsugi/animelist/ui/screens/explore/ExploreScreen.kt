@@ -73,7 +73,10 @@ import com.kitsugi.animelist.ui.theme.LocalIsTv
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.runtime.CompositionLocalProvider
 import com.kitsugi.animelist.ui.utils.KitsugiScrollDefaults
@@ -560,54 +563,117 @@ fun ExploreScreen(
                                 }
                             }
                         } else {
-                            // ─── ANİME KATEGORİLERİ ───
+                            // ─── ANİME KATEGORİLERİ (Chips) ───
                             item {
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(horizontal = 20.dp)
                                 ) {
-                                    ExploreCategoryGrid(
-                                        title = "Keşfet",
-                                        items = listOf(
-                                            ExploreCategoryItem(
-                                                title = "Trend",
-                                                icon = Icons.AutoMirrored.Rounded.TrendingUp,
-                                                gradientColors = animeGradients[1],
-                                                onClick = { onSeeAllSection("Trend Anime", ExploreCategoryType.TRENDING_ANIME, filteredTrendingAnime) }
-                                            ),
-                                            ExploreCategoryItem(
-                                                title = "Filmler",
-                                                icon = Icons.Rounded.Movie,
-                                                gradientColors = animeGradients[4],
-                                                onClick = { onSeeAllSection("Anime Filmleri", ExploreCategoryType.MOVIE_ANIME, filteredMovieAnime) }
-                                            ),
-                                            ExploreCategoryItem(
-                                                title = "Mevsimlik",
-                                                icon = Icons.Rounded.LocalFlorist,
-                                                gradientColors = animeGradients[5],
-                                                onClick = { onSeeAllSection("Mevsimlik Anime", ExploreCategoryType.SEASONAL_ANIME, filteredSeasonalAnime) }
-                                            ),
-                                            ExploreCategoryItem(
-                                                title = "Yayın Takvimi",
-                                                icon = Icons.Rounded.CalendarMonth,
-                                                gradientColors = listOf(
-                                                    Color(0xFF0D47A1),
-                                                    Color(0xFF1976D2)
-                                                ),
-                                                onClick = onOpenAiringCalendar
-                                            ),
-                                            ExploreCategoryItem(
-                                                title = "Manga Oku",
-                                                icon = Icons.Default.AutoStories,
-                                                gradientColors = listOf(
-                                                    Color(0xFF6A1B9A),
-                                                    Color(0xFFAD1457)
-                                                ),
-                                                onClick = onOpenMangaReader
-                                            ),
-                                        )
+                                    Text(
+                                        text = "Anime",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = KitsugiColors.TextPrimary
                                     )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    
+                                    LazyRow(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        item {
+                                            ExploreCategoryChip(
+                                                label = "Sezon",
+                                                onClick = { onSeeAllSection("Mevsimlik Anime", ExploreCategoryType.SEASONAL_ANIME, filteredSeasonalAnime) }
+                                            )
+                                        }
+                                        item {
+                                            ExploreCategoryChip(
+                                                label = "Yayın Takvimi",
+                                                onClick = onOpenAiringCalendar
+                                            )
+                                        }
+                                        item {
+                                            ExploreCategoryChip(
+                                                label = "En İyi 100",
+                                                onClick = { onSeeAllSection("En İyi Anime", ExploreCategoryType.TOP_ANIME, filteredTopAnime) }
+                                            )
+                                        }
+                                        item {
+                                            ExploreCategoryChip(
+                                                label = "Trend",
+                                                onClick = { onSeeAllSection("Trend Anime", ExploreCategoryType.TRENDING_ANIME, filteredTrendingAnime) }
+                                            )
+                                        }
+                                        item {
+                                            ExploreCategoryChip(
+                                                label = "Filmler",
+                                                onClick = { onSeeAllSection("Anime Filmleri", ExploreCategoryType.MOVIE_ANIME, filteredMovieAnime) }
+                                            )
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(26.dp))
+                                }
+                            }
+
+                            // ─── YAKINDA YAYINDA (Airing Soon) ───
+                            if (viewModel.airingSoonAnime.isNotEmpty()) {
+                                item {
+                                    KitsugiHorizontalMediaSection(
+                                        title = "Yakında Yayında",
+                                        results = viewModel.airingSoonAnime,
+                                        isLoading = viewModel.isLoading,
+                                        alreadyInList = isAlreadyInList,
+                                        onItemClick = onOpenApiDetail,
+                                        onSeeAllClick = onOpenAiringCalendar,
+                                        titleLanguage = titleLanguage,
+                                        scoreFormat = scoreFormat,
+                                        hideScores = hideScores,
+                                        blurAdultMedia = blurAdultMedia
+                                    )
+                                    Spacer(modifier = Modifier.height(26.dp))
+                                }
+                            }
+
+                            // ─── MANGA KATEGORİLERİ (Chips) ───
+                            item {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp)
+                                ) {
+                                    Text(
+                                        text = "Manga",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = KitsugiColors.TextPrimary
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    
+                                    LazyRow(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        item {
+                                            ExploreCategoryChip(
+                                                label = "En İyi 100",
+                                                onClick = { onSeeAllSection("En Popüler Manga", ExploreCategoryType.TOP_MANGA, filteredTopManga) }
+                                            )
+                                        }
+                                        item {
+                                            ExploreCategoryChip(
+                                                label = "Yakında",
+                                                onClick = { onSeeAllSection("Yayındaki Manga", ExploreCategoryType.PUBLISHING_MANGA, filteredPublishingManga) }
+                                            )
+                                        }
+                                        item {
+                                            ExploreCategoryChip(
+                                                label = "Manga Oku",
+                                                onClick = onOpenMangaReader
+                                            )
+                                        }
+                                    }
                                     Spacer(modifier = Modifier.height(26.dp))
                                 }
                             }
@@ -731,6 +797,30 @@ fun ExploreScreen(
             hideScores = hideScores,
             showAdultContent = showAdultContent,
             blurAdultMedia = blurAdultMedia
+        )
+    }
+}
+
+@Composable
+fun ExploreCategoryChip(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(KitsugiColors.Accent.copy(alpha = 0.08f))
+            .border(1.dp, KitsugiColors.Accent.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label,
+            color = KitsugiColors.Accent,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold
         )
     }
 }

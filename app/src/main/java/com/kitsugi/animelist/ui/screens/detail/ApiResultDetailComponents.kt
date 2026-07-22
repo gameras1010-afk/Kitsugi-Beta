@@ -20,6 +20,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ContentCopy
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Visibility
@@ -665,6 +667,11 @@ internal fun ApiThemesList(
 ) {
     val accentColor = LocalKitsugiAccent.current
     val uriHandler = LocalUriHandler.current
+
+    val INITIAL_COUNT = 3
+    var openingsExpanded by remember { mutableStateOf(false) }
+    var endingsExpanded by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -674,13 +681,46 @@ internal fun ApiThemesList(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         if (openings.isNotEmpty()) {
-            Text(
-                text = "Açılış Müzikleri",
-                color = KitsugiColors.TextPrimary,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            openings.forEach { theme ->
+            val visibleOpenings = if (openingsExpanded) openings else openings.take(INITIAL_COUNT)
+            val hasMoreOpenings = openings.size > INITIAL_COUNT
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Açılış Müzikleri",
+                    color = KitsugiColors.TextPrimary,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
+                )
+                if (hasMoreOpenings) {
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .tvClickable(shape = RoundedCornerShape(8.dp)) { openingsExpanded = !openingsExpanded }
+                            .padding(horizontal = 10.dp, vertical = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = if (openingsExpanded) "Daha Az" else "+${openings.size - INITIAL_COUNT} Daha",
+                            color = accentColor,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        androidx.compose.material3.Icon(
+                            imageVector = if (openingsExpanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
+                            contentDescription = null,
+                            tint = accentColor,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
+            visibleOpenings.forEach { theme ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -715,13 +755,46 @@ internal fun ApiThemesList(
             if (openings.isNotEmpty()) {
                 HorizontalDivider(color = KitsugiColors.Background.copy(alpha = 0.5f), thickness = 0.5.dp)
             }
-            Text(
-                text = "Kapanış Müzikleri",
-                color = KitsugiColors.TextPrimary,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            endings.forEach { theme ->
+            val visibleEndings = if (endingsExpanded) endings else endings.take(INITIAL_COUNT)
+            val hasMoreEndings = endings.size > INITIAL_COUNT
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Kapanış Müzikleri",
+                    color = KitsugiColors.TextPrimary,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
+                )
+                if (hasMoreEndings) {
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .tvClickable(shape = RoundedCornerShape(8.dp)) { endingsExpanded = !endingsExpanded }
+                            .padding(horizontal = 10.dp, vertical = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = if (endingsExpanded) "Daha Az" else "+${endings.size - INITIAL_COUNT} Daha",
+                            color = accentColor,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        androidx.compose.material3.Icon(
+                            imageVector = if (endingsExpanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
+                            contentDescription = null,
+                            tint = accentColor,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
+            visibleEndings.forEach { theme ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

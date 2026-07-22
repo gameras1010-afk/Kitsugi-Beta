@@ -96,7 +96,11 @@ fun ModernHomeRows(
                 LazyRow(
                     state = rowState,
                     contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    flingBehavior = androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior(
+                        lazyListState = rowState,
+                        snapPosition = androidx.compose.foundation.gestures.snapping.SnapPosition.Start
+                    )
                 ) {
                     items(results, key = { "${it.source}_${it.malId}" }) { item ->
                         ModernHomeMediaCard(

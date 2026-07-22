@@ -209,13 +209,30 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
         // Run fetches in view model scope
         // fetchDetail önce tamamlanır; TMDB'den Türkçe synopsis gelirse fetchSynopsis onu görür.
         viewModelScope.launch {
-            fetchDetail(entry)
-            fetchSynopsis(entry)
-            fetchMdbListRatingsForEntry(entry)
+            try {
+                fetchDetail(entry)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching detail: ${e.message}", e)
+                _detailLoading.value = false
+            }
+            try {
+                fetchSynopsis(entry)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching synopsis: ${e.message}", e)
+            }
+            try {
+                fetchMdbListRatingsForEntry(entry)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching mdbList ratings: ${e.message}", e)
+            }
         }
 
         viewModelScope.launch {
-            fetchLogo(entry, showAnimeLogos)
+            try {
+                fetchLogo(entry, showAnimeLogos)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching logo: ${e.message}", e)
+            }
         }
     }
 
@@ -226,28 +243,34 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
             cached
         } else {
             _detailLoading.value = true
-            val fetched = withContext(Dispatchers.IO) {
-                apiClient.fetchDetail(
-                    source = entry.source,
-                    externalId = entry.malId,
-                    mediaType = entry.type,
-                    // TMDB zenginleştirmesi için entry'deki ID'leri ilet
-                    tmdbId = entry.tmdbId,
-                    // realMalId → Jikan/ARM için gerçek MAL ID'si; kaynak bazında hesaplanır
-                    realMalId = when (entry.source.lowercase()) {
-                        "simkl" -> {
-                            // Simkl API ids.mal alanı varsa entry.malId gerçek MAL ID'dir (simklId'den farklı)
-                            val m = entry.malId; val s = entry.simklId
-                            if (m != null && m > 0 && m != s && m < 100_000_000) m else null
-                        }
-                        "anilist" -> {
-                            // 100M+ offset'li stableId gerçek MAL ID değil; < 100M ise MAL ID'dir
-                            val m = entry.malId
-                            if (m != null && m > 0 && m < 100_000_000) m else null
-                        }
-                        else -> entry.malId
-                    }
-                )
+            val fetched = try {
+                withContext(Dispatchers.IO) {
+                    apiClient.fetchDetail(
+                        source = entry.source,
+                        externalId = entry.malId,
+                        mediaType = entry.type,
+                        // TMDB zenginleştirmesi için entry'deki ID'leri ilet
+                        tmdbId = entry.tmdbId,
+                        // realMalId → Jikan/ARM için gerçek MAL ID'si; kaynak bazında hesaplanır
+                        realMalId = when (entry.source.lowercase()) {
+                            "simkl" -> {
+                                // Simkl API ids.mal alanı varsa entry.malId gerçek MAL ID'dir (simklId'den farklı)
+                                val m = entry.malId; val s = entry.simklId
+                                if (m != null && m > 0 && m != s && m < 100_000_000) m else null
+                            }
+                            "anilist" -> {
+                                // 100M+ offset'li stableId gerçek MAL ID değil; < 100M ise MAL ID'dir
+                                val m = entry.malId
+                                if (m != null && m > 0 && m < 100_000_000) m else null
+                            }
+                            else -> entry.malId
+                        },
+                        title = entry.title
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Exception during apiClient.fetchDetail: ${e.message}", e)
+                null
             }
             if (fetched != null) {
                 DetailCache.putMediaDetail(entry.source, stableId, fetched)
@@ -420,125 +443,138 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
         val malId = entry.malId ?: 0
         val tmdbId = entry.tmdbId ?: _detailState.value?.tmdbId ?: _resolvedTmdbId.value
         viewModelScope.launch {
-            when (tabIndex) {
-                1 -> {
-                    val currentSuccess = _charactersState.value as? DetailTabState.Success
-                    val needsRefetch = currentSuccess == null ||
-                        (currentSuccess.data.isEmpty() && DetailCache.getMediaCharacters(entry.source, malId) == null)
-                    if (needsRefetch) {
-                        _charactersState.value = DetailTabState.Loading
-                        val result = withContext(Dispatchers.IO) {
-                            apiClient.fetchCharacters(
-                                source = entry.source,
-                                externalId = entry.malId,
-                                mediaType = entry.type,
-                                realMalId = realMalId,
-                                tmdbId = tmdbId
-                            )
+            try {
+                when (tabIndex) {
+                    1 -> {
+                        val currentSuccess = _charactersState.value as? DetailTabState.Success
+                        val needsRefetch = currentSuccess == null ||
+                            (currentSuccess.data.isEmpty() && DetailCache.getMediaCharacters(entry.source, malId) == null)
+                        if (needsRefetch) {
+                            _charactersState.value = DetailTabState.Loading
+                            val result = withContext(Dispatchers.IO) {
+                                apiClient.fetchCharacters(
+                                    source = entry.source,
+                                    externalId = entry.malId,
+                                    mediaType = entry.type,
+                                    realMalId = realMalId,
+                                    tmdbId = tmdbId
+                                )
+                            }
+                            if (result.isNotEmpty()) {
+                                DetailCache.putMediaCharacters(entry.source, malId, result)
+                            }
+                            _charactersState.value = DetailTabState.Success(result)
                         }
-                        if (result.isNotEmpty()) {
-                            DetailCache.putMediaCharacters(entry.source, malId, result)
+                    }
+                    2 -> {
+                        val currentSuccess = _staffState.value as? DetailTabState.Success
+                        val needsRefetch = currentSuccess == null ||
+                            (currentSuccess.data.isEmpty() && DetailCache.getMediaStaff(entry.source, malId) == null)
+                        if (needsRefetch) {
+                            _staffState.value = DetailTabState.Loading
+                            val result = withContext(Dispatchers.IO) {
+                                apiClient.fetchStaff(entry.source, entry.malId, entry.type, tmdbId = tmdbId, realMalId = realMalId)
+                            }
+                            if (result.isNotEmpty()) {
+                                DetailCache.putMediaStaff(entry.source, malId, result)
+                            }
+                            _staffState.value = DetailTabState.Success(result)
                         }
-                        _charactersState.value = DetailTabState.Success(result)
+                    }
+                    3 -> {
+                        val currentSuccess = _recommendationsState.value as? DetailTabState.Success
+                        val needsRefetch = currentSuccess == null ||
+                            (currentSuccess.data.isEmpty() && DetailCache.getMediaRecommendations(entry.source, malId) == null)
+                        if (needsRefetch) {
+                            _recommendationsState.value = DetailTabState.Loading
+                            val result = withContext(Dispatchers.IO) {
+                                apiClient.fetchRecommendations(entry.source, entry.malId, entry.type, tmdbId = tmdbId, realMalId = realMalId)
+                            }
+                            if (result.isNotEmpty()) {
+                                DetailCache.putMediaRecommendations(entry.source, malId, result)
+                            }
+                            _recommendationsState.value = DetailTabState.Success(result)
+                        }
+                    }
+                    4 -> {
+                        val currentSuccess = _relationsState.value as? DetailTabState.Success
+                        val needsRefetch = currentSuccess == null ||
+                            (currentSuccess.data.isEmpty() && DetailCache.getMediaRelations(entry.source, malId) == null)
+                        if (needsRefetch) {
+                            _relationsState.value = DetailTabState.Loading
+                            val result = withContext(Dispatchers.IO) {
+                                apiClient.fetchRelations(entry.source, entry.malId, entry.type, tmdbId = tmdbId, realMalId = realMalId)
+                            }
+                            if (result.isNotEmpty()) {
+                                DetailCache.putMediaRelations(entry.source, malId, result)
+                            }
+                            _relationsState.value = DetailTabState.Success(result)
+                        }
+                    }
+                    5 -> {
+                        if (_statsState.value !is DetailTabState.Success) {
+                            _statsState.value = DetailTabState.Loading
+                            val result = withContext(Dispatchers.IO) {
+                                apiClient.fetchStats(entry.source, entry.malId, entry.type, realMalId = realMalId)
+                            }
+                            if (result != null) {
+                                DetailCache.putMediaStats(entry.source, malId, result)
+                                _statsState.value = DetailTabState.Success(result)
+                            } else {
+                                _statsState.value = DetailTabState.Success(null)
+                            }
+                        }
+                    }
+                    6 -> {
+                        val currentSuccess = _reviewsState.value as? DetailTabState.Success
+                        val needsRefetch = currentSuccess == null ||
+                            (currentSuccess.data.isEmpty() && DetailCache.getMediaReviews(entry.source, malId) == null)
+                        if (needsRefetch) {
+                            _reviewsState.value = DetailTabState.Loading
+                            val result = withContext(Dispatchers.IO) {
+                                apiClient.fetchReviews(entry.source, entry.malId, entry.type, tmdbId = tmdbId, realMalId = realMalId)
+                            }
+                            if (result.isNotEmpty()) {
+                                DetailCache.putMediaReviews(entry.source, malId, result)
+                            }
+                            _reviewsState.value = DetailTabState.Success(result)
+                        }
+                    }
+                    7 -> {
+                        val currentEpisodes = _episodesState.value
+                        val needsEpFetch = currentEpisodes !is DetailTabState.Success ||
+                            (currentEpisodes is DetailTabState.Success && currentEpisodes.data.isEmpty())
+                        if (needsEpFetch) {
+                            _episodesState.value = DetailTabState.Loading
+                            val result = withContext(Dispatchers.IO) {
+                                apiClient.fetchEpisodes(
+                                    source = entry.source,
+                                    externalId = entry.malId,
+                                    mediaType = entry.type,
+                                    realMalId = realMalId,
+                                    totalEpisodes = maxOf(entry.total ?: _detailState.value?.total ?: 0, entry.progress),
+                                    context = context,
+                                    targetSeason = _targetSeason.value,
+                                    tmdbId = tmdbId
+                                )
+                            }
+                            if (result.isNotEmpty()) {
+                                DetailCache.putMediaEpisodes(entry.source, malId, result)
+                            }
+                            _episodesState.value = DetailTabState.Success(result)
+                        }
                     }
                 }
-                2 -> {
-                    val currentSuccess = _staffState.value as? DetailTabState.Success
-                    val needsRefetch = currentSuccess == null ||
-                        (currentSuccess.data.isEmpty() && DetailCache.getMediaStaff(entry.source, malId) == null)
-                    if (needsRefetch) {
-                        _staffState.value = DetailTabState.Loading
-                        val result = withContext(Dispatchers.IO) {
-                            apiClient.fetchStaff(entry.source, entry.malId, entry.type, tmdbId = tmdbId, realMalId = realMalId)
-                        }
-                        if (result.isNotEmpty()) {
-                            DetailCache.putMediaStaff(entry.source, malId, result)
-                        }
-                        _staffState.value = DetailTabState.Success(result)
-                    }
-                }
-                3 -> {
-                    val currentSuccess = _recommendationsState.value as? DetailTabState.Success
-                    val needsRefetch = currentSuccess == null ||
-                        (currentSuccess.data.isEmpty() && DetailCache.getMediaRecommendations(entry.source, malId) == null)
-                    if (needsRefetch) {
-                        _recommendationsState.value = DetailTabState.Loading
-                        val result = withContext(Dispatchers.IO) {
-                            apiClient.fetchRecommendations(entry.source, entry.malId, entry.type, tmdbId = tmdbId, realMalId = realMalId)
-                        }
-                        if (result.isNotEmpty()) {
-                            DetailCache.putMediaRecommendations(entry.source, malId, result)
-                        }
-                        _recommendationsState.value = DetailTabState.Success(result)
-                    }
-                }
-                4 -> {
-                    val currentSuccess = _relationsState.value as? DetailTabState.Success
-                    val needsRefetch = currentSuccess == null ||
-                        (currentSuccess.data.isEmpty() && DetailCache.getMediaRelations(entry.source, malId) == null)
-                    if (needsRefetch) {
-                        _relationsState.value = DetailTabState.Loading
-                        val result = withContext(Dispatchers.IO) {
-                            apiClient.fetchRelations(entry.source, entry.malId, entry.type, tmdbId = tmdbId, realMalId = realMalId)
-                        }
-                        if (result.isNotEmpty()) {
-                            DetailCache.putMediaRelations(entry.source, malId, result)
-                        }
-                        _relationsState.value = DetailTabState.Success(result)
-                    }
-                }
-                5 -> {
-                    if (_statsState.value !is DetailTabState.Success) {
-                        _statsState.value = DetailTabState.Loading
-                        val result = withContext(Dispatchers.IO) {
-                            apiClient.fetchStats(entry.source, entry.malId, entry.type, realMalId = realMalId)
-                        }
-                        if (result != null) {
-                            DetailCache.putMediaStats(entry.source, malId, result)
-                            _statsState.value = DetailTabState.Success(result)
-                        } else {
-                            _statsState.value = DetailTabState.Success(null)
-                        }
-                    }
-                }
-                6 -> {
-                    val currentSuccess = _reviewsState.value as? DetailTabState.Success
-                    val needsRefetch = currentSuccess == null ||
-                        (currentSuccess.data.isEmpty() && DetailCache.getMediaReviews(entry.source, malId) == null)
-                    if (needsRefetch) {
-                        _reviewsState.value = DetailTabState.Loading
-                        val result = withContext(Dispatchers.IO) {
-                            apiClient.fetchReviews(entry.source, entry.malId, entry.type, tmdbId = tmdbId, realMalId = realMalId)
-                        }
-                        if (result.isNotEmpty()) {
-                            DetailCache.putMediaReviews(entry.source, malId, result)
-                        }
-                        _reviewsState.value = DetailTabState.Success(result)
-                    }
-                }
-                7 -> {
-                    val currentEpisodes = _episodesState.value
-                    val needsEpFetch = currentEpisodes !is DetailTabState.Success ||
-                        (currentEpisodes is DetailTabState.Success && currentEpisodes.data.isEmpty())
-                    if (needsEpFetch) {
-                        _episodesState.value = DetailTabState.Loading
-                        val result = withContext(Dispatchers.IO) {
-                            apiClient.fetchEpisodes(
-                                source = entry.source,
-                                externalId = entry.malId,
-                                mediaType = entry.type,
-                                realMalId = realMalId,
-                                totalEpisodes = maxOf(entry.total ?: _detailState.value?.total ?: 0, entry.progress),
-                                context = context,
-                                targetSeason = _targetSeason.value,
-                                tmdbId = tmdbId
-                            )
-                        }
-                        if (result.isNotEmpty()) {
-                            DetailCache.putMediaEpisodes(entry.source, malId, result)
-                        }
-                        _episodesState.value = DetailTabState.Success(result)
-                    }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading tab data for index $tabIndex: ${e.message}", e)
+                when (tabIndex) {
+                    1 -> _charactersState.value = DetailTabState.Error
+                    2 -> _staffState.value = DetailTabState.Error
+                    3 -> _recommendationsState.value = DetailTabState.Error
+                    4 -> _relationsState.value = DetailTabState.Error
+                    5 -> _statsState.value = DetailTabState.Error
+                    6 -> _reviewsState.value = DetailTabState.Error
+                    7 -> _episodesState.value = DetailTabState.Error
                 }
             }
         }

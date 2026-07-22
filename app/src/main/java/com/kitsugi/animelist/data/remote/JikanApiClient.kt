@@ -114,7 +114,7 @@ class JikanApiClient(
 
     // Detail & Synopsis
     suspend fun fetchSynopsis(source: String, externalId: Int?, mediaType: MediaType) = detailClient.fetchSynopsis(source, externalId, mediaType)
-    suspend fun fetchDetail(source: String, externalId: Int?, mediaType: MediaType, tmdbId: Int? = null, realMalId: Int? = null) = detailClient.fetchDetail(source, externalId, mediaType, tmdbId, realMalId)
+    suspend fun fetchDetail(source: String, externalId: Int?, mediaType: MediaType, tmdbId: Int? = null, realMalId: Int? = null, title: String? = null) = detailClient.fetchDetail(source, externalId, mediaType, tmdbId, realMalId, title)
 
     // Characters & Staff
     suspend fun fetchCharacters(source: String, externalId: Int?, mediaType: MediaType, realMalId: Int? = null, tmdbId: Int? = null) = characterClient.fetchCharacters(source, externalId, mediaType, realMalId, tmdbId)

@@ -50,7 +50,8 @@ data class AiringEntry(
             isAdult = false,
             imageUrl = coverUrl,
             year = null,
-            source = "anilist"
+            source = "anilist",
+            nextAiringEpisode = "$episode|$airingAt"
         )
     }
 }

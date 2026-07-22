@@ -269,7 +269,16 @@ fun ApiResultDetailPage(
     val tabBarFocusRequester = remember { FocusRequester() }
 
     // Call loadTab when tab changes
-    LaunchedEffect(result.source, result.malId, result.type, selectedTab, displayResult.realMalId) {
+    LaunchedEffect(
+        result.source,
+        result.malId,
+        result.type,
+        selectedTab,
+        displayResult.realMalId,
+        detailState?.tmdbId,
+        resolvedTmdbId,
+        detailState == null
+    ) {
         viewModel.loadTab(selectedTab, result, displayResult.realMalId)
     }
 
@@ -296,6 +305,12 @@ fun ApiResultDetailPage(
                 logoUrl = if (showAnimeLogos) logoUrl else null,
                 isAdult = displayResult.isAdult,
                 blurAdultMedia = blurAdultMedia
+            )
+        } else if (detailState == null) {
+            DataUnavailableScreen(
+                title = displayResult.title,
+                onBackClick = onBackClick,
+                onRetryClick = { viewModel.loadResult(result, showAnimeLogos) }
             )
         } else {
             val pullRefreshState = rememberPullToRefreshState()

@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Fullscreen
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Button
@@ -348,6 +349,11 @@ fun KitsugiThemesList(
     // URL state: hangi tema seçili (null = kapalı)
     var activeVideoUrl by remember { mutableStateOf<String?>(null) }
 
+    // Collapse state — varsayılan 3 öğe gösterilir
+    val INITIAL_COUNT = 3
+    var openingsExpanded by remember { mutableStateOf(false) }
+    var endingsExpanded by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -358,13 +364,48 @@ fun KitsugiThemesList(
     ) {
         // Açılış Müzikleri
         if (openings.isNotEmpty()) {
-            Text(
-                text = "Açılış Müzikleri / Videolar",
-                color = KitsugiColors.TextPrimary,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            openings.forEach { theme ->
+            val visibleOpenings = if (openingsExpanded) openings else openings.take(INITIAL_COUNT)
+            val hasMore = openings.size > INITIAL_COUNT
+
+            // Başlık + toggle satırı
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Açılış Müzikleri / Videolar",
+                    color = KitsugiColors.TextPrimary,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
+                )
+                if (hasMore) {
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .tvClickable(shape = RoundedCornerShape(8.dp)) { openingsExpanded = !openingsExpanded }
+                            .padding(horizontal = 10.dp, vertical = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = if (openingsExpanded) "Daha Az" else "+${openings.size - INITIAL_COUNT} Daha",
+                            color = accentColor,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Icon(
+                            imageVector = if (openingsExpanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
+                            contentDescription = null,
+                            tint = accentColor,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
+
+            visibleOpenings.forEach { theme ->
                 Column(modifier = Modifier.fillMaxWidth()) {
                     ThemeRow(
                         theme = theme,
@@ -429,13 +470,49 @@ fun KitsugiThemesList(
                     thickness = 0.5.dp
                 )
             }
-            Text(
-                text = "Kapanış Müzikleri",
-                color = KitsugiColors.TextPrimary,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            endings.forEach { theme ->
+
+            val visibleEndings = if (endingsExpanded) endings else endings.take(INITIAL_COUNT)
+            val hasMore = endings.size > INITIAL_COUNT
+
+            // Başlık + toggle satırı
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Kapanış Müzikleri",
+                    color = KitsugiColors.TextPrimary,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
+                )
+                if (hasMore) {
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .tvClickable(shape = RoundedCornerShape(8.dp)) { endingsExpanded = !endingsExpanded }
+                            .padding(horizontal = 10.dp, vertical = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = if (endingsExpanded) "Daha Az" else "+${endings.size - INITIAL_COUNT} Daha",
+                            color = accentColor,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Icon(
+                            imageVector = if (endingsExpanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
+                            contentDescription = null,
+                            tint = accentColor,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
+
+            visibleEndings.forEach { theme ->
                 Column(modifier = Modifier.fillMaxWidth()) {
                     ThemeRow(
                         theme = theme,

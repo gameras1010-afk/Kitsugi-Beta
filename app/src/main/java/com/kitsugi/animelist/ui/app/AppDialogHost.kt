@@ -91,13 +91,19 @@ fun AppDialogHost(
         val isAniListConnected = androidx.compose.runtime.remember { com.kitsugi.animelist.data.auth.ExternalAuthManager.getAniListToken(context) != null }
         val isMalConnected = androidx.compose.runtime.remember { com.kitsugi.animelist.data.auth.ExternalAuthManager.getMalToken(context) != null }
 
-        val resolvedSource = when {
-            entry.source == "anilist" || entry.aniListEntryId != null -> "anilist"
-            entry.source == "simkl" || entry.simklId != null -> "simkl"
-            entry.source == "mal" || entry.source == "jikan" -> {
-                if (isAniListConnected && !isMalConnected) "anilist" else "mal"
+        val resolvedSource = when (entry.source.lowercase()) {
+            "anilist" -> "anilist"
+            "simkl" -> "simkl"
+            "mal" -> "mal"
+            "jikan" -> if (isAniListConnected && !isMalConnected) "anilist" else "mal"
+            else -> {
+                when {
+                    entry.aniListEntryId != null -> "anilist"
+                    entry.simklId != null -> "simkl"
+                    entry.malId != null -> "mal"
+                    else -> entry.source
+                }
             }
-            else -> entry.source
         }
 
         KitsugiMediaEntryEditorDialog(

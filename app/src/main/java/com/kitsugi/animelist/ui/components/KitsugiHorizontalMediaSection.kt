@@ -157,7 +157,11 @@ fun KitsugiHorizontalMediaSection(
                     LazyRow(
                         state = lazyListState,
                         contentPadding = PaddingValues(horizontal = 20.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        flingBehavior = androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior(
+                            lazyListState = lazyListState,
+                            snapPosition = androidx.compose.foundation.gestures.snapping.SnapPosition.Start
+                        )
                     ) {
                         itemsIndexed(
                             items = results,

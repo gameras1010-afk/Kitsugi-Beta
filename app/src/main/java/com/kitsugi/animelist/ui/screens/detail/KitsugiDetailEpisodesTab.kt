@@ -116,6 +116,20 @@ fun EpisodesTabContent(
                 }
             }
         }
+        is DetailTabState.Error -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Bölümler yüklenirken bir hata oluştu.",
+                    color = KitsugiColors.TextSecondary,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
         else -> Unit
     }
 }

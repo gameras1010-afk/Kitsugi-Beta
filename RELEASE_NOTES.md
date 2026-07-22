@@ -4,6 +4,11 @@
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
+### 👤 Kullanıcı Profili Navigasyonu & Sayfa Düzeni Güncellemesi
+- **Gelişmiş Pager Altyapısı**: Kullanıcı profili ekranı, premium detay sayfası standartlarına uyumlu hale getirilerek ana sekmeler için kaydırılabilir `HorizontalPager` ve dinamik sayfa yüksekliği ölçümü (`onGloballyPositioned` ile height enterpolasyonu) ile baştan aşağı yenilendi.
+- **Snap Destekli LazyRow Filtreleri**: İstatistik alt sekmeleri ve sosyal/favori filtre çipleri, kaydırma bittiğinde en yakın öğeye yumuşakça yaslanan (`rememberSnapFlingBehavior` ve `SnapPosition.Start`) modern `LazyRow` bileşenlerine dönüştürüldü.
+- **Performans & Akıcı Arayüz**: Pager sayfalarında dikey listelerin (`LazyColumn` içinde `LazyColumn` / pager çakışmaları) yol açtığı takılmalar ve kaydırma kilitlenmeleri, döngü mantığı (`forEach`) ile optimize edilerek tamamen giderildi.
+
 ### 📝 Detay Sayfası Açıklama (Synopsis) Alanı Kısaltma & Buton Desteği
 - **Otomatik Kısaltma Mantığı:** Detay sayfalarındaki açıklama metinleri (hem yerel hem de API sonuçları için) satır atlama sayısı (`>= 4`) veya karakter uzunluğuna (`> 200`) bağlı olarak otomatik olarak kısaltılacak şekilde güncellendi.
 - **Akıcı Geçiş Animasyonu:** "Daha fazla" ve "Daha az" butonlarına basıldığında metin alanı boyutu `animateContentSize()` ile yumuşak geçişli bir şekilde değişecek şekilde optimize edildi.
@@ -17,6 +22,11 @@
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
+
+### 👤 User Profile Navigation & Layout Modernization
+- **Horizontal Pager Integration**: The user profile screen has been modernized with scrollable tab views (`HorizontalPager`) and dynamic height tracking (`onGloballyPositioned`) to ensure visual alignment with the premium detail page architecture.
+- **Snap-Driven LazyRow Filters**: Sub-filters and stats categories are now built with a snap-fling behavior (`rememberSnapFlingBehavior` and `SnapPosition.Start`) within dynamic `LazyRow` components for a premium feel.
+- **Nested Scroll Optimization**: Resolved nested scroll and paging stutters by migrating inner pager lists to standard Column iteration blocks.
 
 ### 📝 Detail Page Description (Synopsis) Truncation & Toggle
 - **Dynamic Truncation:** Descriptions on media detail pages (both local entries and API results) are now automatically truncated based on character length (`> 200`) and newline count (`>= 4`).

@@ -219,7 +219,7 @@ fun MediaEntryDetailPage(
     val selectedTab = pagerState.currentPage
 
     // Call loadTab when tab changes
-    LaunchedEffect(entry.id, selectedTab, detailState?.realMalId) {
+    LaunchedEffect(entry.id, selectedTab, detailState?.realMalId, detailState?.tmdbId, resolvedTmdbId, detailState == null) {
         viewModel.loadTab(selectedTab, entry, detailState?.realMalId)
     }
 
@@ -240,6 +240,12 @@ fun MediaEntryDetailPage(
                 logoUrl = if (showAnimeLogos) logoUrl else null,
                 isAdult = entry.isAdult,
                 blurAdultMedia = blurAdultMedia
+            )
+        } else if (detailState == null) {
+            DataUnavailableScreen(
+                title = entry.title,
+                onBackClick = onBackClick,
+                onRetryClick = { viewModel.loadEntry(entry, showAnimeLogos, forceRefresh = true) }
             )
         } else {
             val pullRefreshState = rememberPullToRefreshState()

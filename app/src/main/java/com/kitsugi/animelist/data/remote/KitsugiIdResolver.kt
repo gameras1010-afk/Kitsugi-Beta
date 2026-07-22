@@ -5,6 +5,7 @@ import org.json.JSONObject
 import java.net.URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.kitsugi.animelist.model.MediaType
 
 /**
  * Holds all resolved external IDs for a given anime entry.
@@ -24,22 +25,49 @@ object KitsugiIdResolver {
      * Resolves both IMDb ID and Kitsu ID in a single ARM API call.
      * Falls back to TMDB for the IMDb ID if ARM doesn't have one.
      */
-    suspend fun resolveIds(malId: Int?, aniListId: Int?, tmdbId: Int? = null): ResolvedIds = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Starting ID resolution: malParam=$malId, aniListParam=$aniListId, tmdbParam=$tmdbId")
-        // Try ARM with MAL first, then AniList, then TMDB
-        var armJson = fetchArmJson("myanimelist", malId)
-        if (armJson != null) {
-            Log.d(TAG, "Successfully fetched ARM JSON for myanimelist: $malId -> $armJson")
-        } else {
-            armJson = fetchArmJson("anilist", aniListId)
+    suspend fun resolveIds(
+        malId: Int?,
+        aniListId: Int?,
+        tmdbId: Int? = null,
+        mediaType: MediaType? = null
+    ): ResolvedIds = withContext(Dispatchers.IO) {
+        Log.d(TAG, "Starting ID resolution: malParam=$malId, aniListParam=$aniListId, tmdbParam=$tmdbId, mediaType=$mediaType")
+        
+        var armJson: JSONObject? = null
+        val isNonAnime = mediaType == MediaType.Movie || mediaType == MediaType.TvShow
+        
+        if (isNonAnime) {
+            armJson = fetchArmJson("themoviedb", tmdbId)
             if (armJson != null) {
-                Log.d(TAG, "Successfully fetched ARM JSON for anilist: $aniListId -> $armJson")
+                Log.d(TAG, "Non-anime mapping prioritized: Successfully fetched ARM JSON for themoviedb: $tmdbId -> $armJson")
             } else {
-                armJson = fetchArmJson("themoviedb", tmdbId)
+                armJson = fetchArmJson("myanimelist", malId)
                 if (armJson != null) {
-                    Log.d(TAG, "Successfully fetched ARM JSON for themoviedb: $tmdbId -> $armJson")
+                    Log.d(TAG, "Successfully fetched ARM JSON for myanimelist: $malId -> $armJson")
                 } else {
-                    Log.w(TAG, "ARM lookup failed for all sources (malId=$malId, aniListId=$aniListId, tmdbId=$tmdbId)")
+                    armJson = fetchArmJson("anilist", aniListId)
+                    if (armJson != null) {
+                        Log.d(TAG, "Successfully fetched ARM JSON for anilist: $aniListId -> $armJson")
+                    } else {
+                        Log.w(TAG, "ARM lookup failed for all sources (tmdbId=$tmdbId, malId=$malId, aniListId=$aniListId)")
+                    }
+                }
+            }
+        } else {
+            armJson = fetchArmJson("myanimelist", malId)
+            if (armJson != null) {
+                Log.d(TAG, "Successfully fetched ARM JSON for myanimelist: $malId -> $armJson")
+            } else {
+                armJson = fetchArmJson("anilist", aniListId)
+                if (armJson != null) {
+                    Log.d(TAG, "Successfully fetched ARM JSON for anilist: $aniListId -> $armJson")
+                } else {
+                    armJson = fetchArmJson("themoviedb", tmdbId)
+                    if (armJson != null) {
+                        Log.d(TAG, "Successfully fetched ARM JSON for themoviedb: $tmdbId -> $armJson")
+                    } else {
+                        Log.w(TAG, "ARM lookup failed for all sources (malId=$malId, aniListId=$aniListId, tmdbId=$tmdbId)")
+                    }
                 }
             }
         }
@@ -89,23 +117,35 @@ object KitsugiIdResolver {
         if (id == null || id <= 0) return null
         val url = runCatching {
             URL("https://arm.haglund.dev/api/v2/ids?source=$source&id=$id")
-        }.getOrNull() ?: return null
+        }.getOrNull()
+        if (url == null) {
+            Log.e(TAG, "fetchArmJson: Invalid URL construction for source=$source id=$id")
+            return null
+        }
         return try {
-            val response = KitsugiApiBase.executeGetRequest(url) ?: return null
+            val response = KitsugiApiBase.executeGetRequest(url)
+            if (response == null) {
+                Log.w(TAG, "fetchArmJson: Network failure or empty response for URL: $url")
+                return null
+            }
             val trimmed = response.trim()
-            // ARM returns "null" string or "[]" empty array when ID is not in anime DB
-            // (e.g. Turkish TV shows, movies not indexed by ARM). Silently return null.
-            if (trimmed == "null" || trimmed == "[]" || trimmed.isEmpty()) return null
+            if (trimmed == "null" || trimmed == "[]" || trimmed.isEmpty()) {
+                Log.d(TAG, "fetchArmJson: Valid empty response (media not mapped/obscure) for URL: $url")
+                return null
+            }
             // ARM may return an array with one element — unwrap it
             if (trimmed.startsWith("[")) {
                 val arr = org.json.JSONArray(trimmed)
-                if (arr.length() == 0) return null
+                if (arr.length() == 0) {
+                    Log.d(TAG, "fetchArmJson: Empty array returned for URL: $url")
+                    return null
+                }
                 arr.optJSONObject(0)
             } else {
                 JSONObject(trimmed)
             }
         } catch (e: Exception) {
-            Log.w(TAG, "ARM fetch failed for $source ID $id: ${e.message}")
+            Log.e(TAG, "fetchArmJson: Exception occurred during fetch for source=$source ID=$id: ${e.message}", e)
             null
         }
     }
