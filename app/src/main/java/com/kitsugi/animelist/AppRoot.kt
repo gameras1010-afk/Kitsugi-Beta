@@ -602,16 +602,16 @@ fun AppRoot(
         )
     }
 
-    val entryKeysSet = remember(mediaEntries) {
-        val keys = mutableSetOf<String>()
+    val entryMap = remember(mediaEntries) {
+        val mapping = mutableMapOf<String, MediaEntry>()
         mediaEntries.forEach { entry ->
-            keys.add("${entry.source.lowercase()}_${entry.malId}")
+            mapping["${entry.source.lowercase()}_${entry.malId}"] = entry
             if (entry.tmdbId != null) {
-                keys.add("tmdb_${entry.tmdbId}")
+                mapping["tmdb_${entry.tmdbId}"] = entry
             }
             if (entry.source.equals("jikan", ignoreCase = true) || entry.source.equals("mal", ignoreCase = true)) {
-                keys.add("mal_${entry.malId}")
-                keys.add("jikan_${entry.malId}")
+                mapping["mal_${entry.malId}"] = entry
+                mapping["jikan_${entry.malId}"] = entry
             }
             val normTitle = buildString {
                 for (c in entry.title.lowercase()) {
@@ -619,39 +619,41 @@ fun AppRoot(
                 }
             }.trim()
             if (normTitle.isNotEmpty()) {
-                keys.add("${entry.type}_$normTitle")
+                mapping["${entry.type.name.lowercase()}_$normTitle"] = entry
             }
         }
-        keys
+        mapping
     }
 
-    val isAlreadyInListLambda: (JikanSearchResult) -> Boolean = remember(entryKeysSet) {
+    val getMediaEntryLambda: (JikanSearchResult) -> MediaEntry? = remember(entryMap) {
         { result: JikanSearchResult ->
             val directKey = "${result.source.lowercase()}_${result.malId}"
-            if (entryKeysSet.contains(directKey)) {
-                true
-            } else {
+            entryMap[directKey] ?: run {
                 val tmdbId = result.tmdbId ?: if (result.source.equals("tmdb", ignoreCase = true)) result.malId else null
-                if (tmdbId != null && entryKeysSet.contains("tmdb_$tmdbId")) {
-                    true
+                if (tmdbId != null && entryMap.containsKey("tmdb_$tmdbId")) {
+                    entryMap["tmdb_$tmdbId"]
                 } else {
                     val rMal = if (result.source.equals("jikan", ignoreCase = true) || result.source.equals("mal", ignoreCase = true)) result.malId else result.realMalId
-                    if (rMal != null && (entryKeysSet.contains("mal_$rMal") || entryKeysSet.contains("jikan_$rMal"))) {
-                        true
+                    if (rMal != null && (entryMap.containsKey("mal_$rMal") || entryMap.containsKey("jikan_$rMal"))) {
+                        entryMap["mal_$rMal"] ?: entryMap["jikan_$rMal"]
                     } else {
                         val normTitle = buildString {
                             for (c in result.title.lowercase()) {
                                 if (c in 'a'..'z' || c in '0'..'9') append(c)
                             }
                         }.trim()
-                        normTitle.isNotEmpty() && entryKeysSet.contains("${result.type}_$normTitle")
+                        if (normTitle.isNotEmpty()) {
+                            entryMap["${result.type.name.lowercase()}_$normTitle"]
+                        } else null
                     }
                 }
             }
         }
     }
 
-    fun isAlreadyInList(result: JikanSearchResult): Boolean = isAlreadyInListLambda(result)
+    fun getMediaEntry(result: JikanSearchResult): MediaEntry? = getMediaEntryLambda(result)
+
+    fun isAlreadyInList(result: JikanSearchResult): Boolean = getMediaEntryLambda(result) != null
 
     fun openFullScreenSection(
         title: String,
@@ -872,7 +874,8 @@ fun AppRoot(
                     triggerSearch = triggerSearch,
                     triggerSearchByGenre = triggerSearchByGenre,
                     triggerSearchByTag = triggerSearchByTag,
-                    isAlreadyInList = ::isAlreadyInList
+                    isAlreadyInList = ::isAlreadyInList,
+                    getMediaEntry = ::getMediaEntry
                 )
 
                 AppBulkInstallProgress(
@@ -956,7 +959,8 @@ fun AppRoot(
             onMediaGridItemClick = { result ->
                 navState.navigateToDetail(DetailScreen.ApiResultDetail(result))
             },
-            onDismissMediaGrid = { showMediaGridDialog = false }
+            onDismissMediaGrid = { showMediaGridDialog = false },
+            getMediaEntry = getMediaEntryLambda
         )
 
         KitsugiUpdateDialog(
@@ -1006,7 +1010,8 @@ private fun AppNavigationContent(
     triggerSearch: (String) -> Unit,
     triggerSearchByGenre: (String) -> Unit = {},
     triggerSearchByTag: (String) -> Unit = {},
-    isAlreadyInList: (JikanSearchResult) -> Boolean
+    isAlreadyInList: (JikanSearchResult) -> Boolean,
+    getMediaEntry: (JikanSearchResult) -> MediaEntry?
 ) {
 
     AnimatedContent(
@@ -1091,7 +1096,8 @@ private fun AppNavigationContent(
                     titleLanguage = appSettings.titleLanguage,
                     scoreFormat = appSettings.scoreFormat,
                     hideScores = appSettings.hideScores,
-                    showAdultContent = appSettings.showAdultContent
+                    showAdultContent = appSettings.showAdultContent,
+                    getMediaEntry = getMediaEntry
                 )
             }
 

@@ -19,6 +19,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,6 +46,7 @@ import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayScore
 fun KitsugiExploreMediaCard(
     result: JikanSearchResult,
     alreadyInList: Boolean = false,
+    mediaEntry: com.kitsugi.animelist.model.MediaEntry? = null,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     titleLanguage: String = "ROMAJI",
@@ -115,6 +117,16 @@ fun KitsugiExploreMediaCard(
                         source = result.source,
                         modifier = Modifier.align(Alignment.BottomStart)
                     )
+
+                    if (mediaEntry != null) {
+                        StatusBadge(
+                            text = mediaEntry.status.label,
+                            color = statusColor(mediaEntry.status),
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(8.dp)
+                        )
+                    }
                 }
 
                 // Başlık + meta bilgi
@@ -134,15 +146,50 @@ fun KitsugiExploreMediaCard(
                         fontSize = 11.sp
                     )
                     Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = buildMetaText(result, scoreFormat, hideScores),
-                        color = if (alreadyInList) KitsugiColors.AccentGreen else accentColor,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        fontSize = 9.sp
-                    )
+                    if (mediaEntry != null) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = entryProgressText(mediaEntry),
+                                color = statusColor(mediaEntry.status),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 9.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            if (mediaEntry.score != null) {
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "• ★${mediaEntry.score}",
+                                    color = KitsugiColors.TextMuted,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 9.sp,
+                                    maxLines = 1
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        EpisodeProgressBar(
+                            progress = mediaEntry.progress,
+                            total = mediaEntry.total,
+                            color = statusColor(mediaEntry.status),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    } else {
+                        Text(
+                            text = buildMetaText(result, scoreFormat, hideScores),
+                            color = if (alreadyInList) KitsugiColors.AccentGreen else accentColor,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            fontSize = 9.sp
+                        )
+                    }
                 }
             }
         // ── MOBİL LANDSCAPE ──────────────────────────────────────────────────
@@ -183,6 +230,16 @@ fun KitsugiExploreMediaCard(
                         source = result.source,
                         modifier = Modifier.align(Alignment.BottomStart)
                     )
+
+                    if (mediaEntry != null) {
+                        StatusBadge(
+                            text = mediaEntry.status.label,
+                            color = statusColor(mediaEntry.status),
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(6.dp)
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.width(14.dp))
@@ -211,16 +268,45 @@ fun KitsugiExploreMediaCard(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Text(
-                        text = buildMetaText(result, scoreFormat, hideScores),
-                        color = if (alreadyInList) {
-                            KitsugiColors.AccentGreen
-                        } else {
-                            accentColor
-                        },
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold
-                    )
+                    if (mediaEntry != null) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = entryProgressText(mediaEntry),
+                                color = statusColor(mediaEntry.status),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                            if (mediaEntry.score != null) {
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "• ★${mediaEntry.score}",
+                                    color = KitsugiColors.TextMuted,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        EpisodeProgressBar(
+                            progress = mediaEntry.progress,
+                            total = mediaEntry.total,
+                            color = statusColor(mediaEntry.status),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    } else {
+                        Text(
+                            text = buildMetaText(result, scoreFormat, hideScores),
+                            color = if (alreadyInList) {
+                                KitsugiColors.AccentGreen
+                            } else {
+                                accentColor
+                            },
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
 
                     // Yayın geri sayımı — sadece AniList kaynaklı, nextAiringEpisode dolu ise
                     if (!result.nextAiringEpisode.isNullOrBlank()) {
@@ -268,6 +354,16 @@ fun KitsugiExploreMediaCard(
                         source = result.source,
                         modifier = Modifier.align(Alignment.BottomStart)
                     )
+
+                    if (mediaEntry != null) {
+                        StatusBadge(
+                            text = mediaEntry.status.label,
+                            color = statusColor(mediaEntry.status),
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(8.dp)
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -293,12 +389,41 @@ fun KitsugiExploreMediaCard(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                Text(
-                    text = buildMetaText(result, scoreFormat, hideScores),
-                    color = accentColor,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold
-                )
+                if (mediaEntry != null) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = entryProgressText(mediaEntry),
+                            color = statusColor(mediaEntry.status),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        if (mediaEntry.score != null) {
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "• ★${mediaEntry.score}",
+                                color = KitsugiColors.TextMuted,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    EpisodeProgressBar(
+                        progress = mediaEntry.progress,
+                        total = mediaEntry.total,
+                        color = statusColor(mediaEntry.status),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                } else {
+                    Text(
+                        text = buildMetaText(result, scoreFormat, hideScores),
+                        color = accentColor,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
 
                 // Yayın geri sayımı — sadece AniList kaynaklı, nextAiringEpisode dolu ise
                 if (!result.nextAiringEpisode.isNullOrBlank()) {
@@ -310,6 +435,80 @@ fun KitsugiExploreMediaCard(
             }
         }
     }
+}
+
+@Composable
+private fun StatusBadge(
+    text: String,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(color.copy(alpha = 0.85f))
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        Text(
+            text = text,
+            color = Color.White,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            fontSize = 9.sp
+        )
+    }
+}
+
+@Composable
+private fun EpisodeProgressBar(
+    progress: Int,
+    total: Int?,
+    color: Color = LocalKitsugiAccent.current,
+    modifier: Modifier = Modifier
+) {
+    val fraction = remember(progress, total) {
+        val maxVal = if (total != null && total > 0) total else if (progress > 0) progress else 1
+        (progress.toFloat() / maxVal.toFloat()).coerceIn(0f, 1f)
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(4.dp)
+            .clip(RoundedCornerShape(999.dp))
+            .background(KitsugiColors.SurfaceSoft)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(fraction)
+                .height(4.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(color)
+        )
+    }
+}
+
+private fun statusColor(status: com.kitsugi.animelist.model.WatchStatus): Color {
+    return when (status) {
+        com.kitsugi.animelist.model.WatchStatus.Watching   -> KitsugiColors.AccentBlue
+        com.kitsugi.animelist.model.WatchStatus.Completed  -> KitsugiColors.AccentGreen
+        com.kitsugi.animelist.model.WatchStatus.Planned    -> KitsugiColors.AccentOrange
+        com.kitsugi.animelist.model.WatchStatus.Dropped    -> KitsugiColors.AccentRed
+        com.kitsugi.animelist.model.WatchStatus.Paused     -> KitsugiColors.AccentPurple
+        com.kitsugi.animelist.model.WatchStatus.Repeating  -> KitsugiColors.AccentBlue
+    }
+}
+
+private fun entryProgressText(entry: com.kitsugi.animelist.model.MediaEntry): String {
+    val unit = when (entry.type) {
+        com.kitsugi.animelist.model.MediaType.Anime -> "bölüm"
+        com.kitsugi.animelist.model.MediaType.Manga -> "chapter"
+        else -> "bölüm"
+    }
+
+    val totalText = entry.total?.toString() ?: "?"
+    return "${entry.progress}/$totalText $unit"
 }
 
 private fun buildMetaText(

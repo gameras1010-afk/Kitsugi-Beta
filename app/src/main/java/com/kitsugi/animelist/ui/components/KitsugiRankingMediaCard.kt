@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,6 +49,7 @@ fun KitsugiRankingMediaCard(
     result: JikanSearchResult,
     rankIndex: Int,
     alreadyInList: Boolean = false,
+    mediaEntry: com.kitsugi.animelist.model.MediaEntry? = null,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     titleLanguage: String = "ROMAJI",
@@ -127,6 +129,16 @@ fun KitsugiRankingMediaCard(
                     )
                 }
 
+                if (mediaEntry != null) {
+                    StatusBadge(
+                        text = mediaEntry.status.label,
+                        color = statusColor(mediaEntry.status),
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(6.dp)
+                    )
+                }
+
                 // Platform source badge
                 KitsugiSourceBadge(
                     source = result.source,
@@ -163,52 +175,82 @@ fun KitsugiRankingMediaCard(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(2.dp))
+                if (mediaEntry != null) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = entryProgressText(mediaEntry),
+                            color = statusColor(mediaEntry.status),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        if (mediaEntry.score != null) {
+                            Text(
+                                text = "• ★${mediaEntry.score}",
+                                color = KitsugiColors.TextMuted,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(2.dp))
+                    EpisodeProgressBar(
+                        progress = mediaEntry.progress,
+                        total = mediaEntry.total,
+                        color = statusColor(mediaEntry.status),
+                        modifier = Modifier.fillMaxWidth(0.9f)
+                    )
+                } else {
+                    Spacer(modifier = Modifier.height(2.dp))
 
-                // Score Line
-                if (!hideScores) {
-                    val scoreVal = result.rawScoreDouble
-                        ?: result.score?.let { it.toDouble() }
-                    if (scoreVal != null && scoreVal > 0) {
+                    // Score Line
+                    if (!hideScores) {
+                        val scoreVal = result.rawScoreDouble
+                            ?: result.score?.let { it.toDouble() }
+                        if (scoreVal != null && scoreVal > 0) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Star,
+                                    contentDescription = "Puan",
+                                    tint = Color(0xFFFFB800),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = String.format(Locale.US, "%.2f", scoreVal),
+                                    color = KitsugiColors.TextPrimary,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+
+                    // Members / Popularity Line
+                    val membersVal = result.members ?: result.favorites
+                    if (membersVal != null && membersVal > 0) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.Star,
-                                contentDescription = "Puan",
-                                tint = Color(0xFFFFB800),
+                                imageVector = Icons.Rounded.Group,
+                                contentDescription = "Üyeler",
+                                tint = KitsugiColors.TextMuted,
                                 modifier = Modifier.size(16.dp)
                             )
                             Text(
-                                text = String.format(Locale.US, "%.2f", scoreVal),
-                                color = KitsugiColors.TextPrimary,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Bold
+                                text = formatNumber(membersVal),
+                                color = KitsugiColors.TextMuted,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.SemiBold
                             )
                         }
-                    }
-                }
-
-                // Members / Popularity Line
-                val membersVal = result.members ?: result.favorites
-                if (membersVal != null && membersVal > 0) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Group,
-                            contentDescription = "Üyeler",
-                            tint = KitsugiColors.TextMuted,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Text(
-                            text = formatNumber(membersVal),
-                            color = KitsugiColors.TextMuted,
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.SemiBold
-                        )
                     }
                 }
 
@@ -219,6 +261,80 @@ fun KitsugiRankingMediaCard(
             }
         }
     }
+}
+
+@Composable
+private fun StatusBadge(
+    text: String,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(color.copy(alpha = 0.85f))
+            .padding(horizontal = 6.dp, vertical = 3.dp)
+    ) {
+        Text(
+            text = text,
+            color = Color.White,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            fontSize = 8.sp
+        )
+    }
+}
+
+@Composable
+private fun EpisodeProgressBar(
+    progress: Int,
+    total: Int?,
+    color: Color = LocalKitsugiAccent.current,
+    modifier: Modifier = Modifier
+) {
+    val fraction = remember(progress, total) {
+        val maxVal = if (total != null && total > 0) total else if (progress > 0) progress else 1
+        (progress.toFloat() / maxVal.toFloat()).coerceIn(0f, 1f)
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(4.dp)
+            .clip(RoundedCornerShape(999.dp))
+            .background(KitsugiColors.SurfaceSoft)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(fraction)
+                .height(4.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(color)
+        )
+    }
+}
+
+private fun statusColor(status: com.kitsugi.animelist.model.WatchStatus): Color {
+    return when (status) {
+        com.kitsugi.animelist.model.WatchStatus.Watching   -> KitsugiColors.AccentBlue
+        com.kitsugi.animelist.model.WatchStatus.Completed  -> KitsugiColors.AccentGreen
+        com.kitsugi.animelist.model.WatchStatus.Planned    -> KitsugiColors.AccentOrange
+        com.kitsugi.animelist.model.WatchStatus.Dropped    -> KitsugiColors.AccentRed
+        com.kitsugi.animelist.model.WatchStatus.Paused     -> KitsugiColors.AccentPurple
+        com.kitsugi.animelist.model.WatchStatus.Repeating  -> KitsugiColors.AccentBlue
+    }
+}
+
+private fun entryProgressText(entry: com.kitsugi.animelist.model.MediaEntry): String {
+    val unit = when (entry.type) {
+        com.kitsugi.animelist.model.MediaType.Anime -> "bölüm"
+        com.kitsugi.animelist.model.MediaType.Manga -> "chapter"
+        else -> "bölüm"
+    }
+
+    val totalText = entry.total?.toString() ?: "?"
+    return "${entry.progress}/$totalText $unit"
 }
 
 private fun buildFormatText(result: JikanSearchResult): String {

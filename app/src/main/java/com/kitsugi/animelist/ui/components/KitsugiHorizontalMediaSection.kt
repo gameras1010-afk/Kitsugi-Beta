@@ -52,7 +52,8 @@ fun KitsugiHorizontalMediaSection(
     titleLanguage: String = "ROMAJI",
     scoreFormat: String = "POINT_10",
     hideScores: Boolean = false,
-    blurAdultMedia: Boolean = false
+    blurAdultMedia: Boolean = false,
+    getMediaEntry: (JikanSearchResult) -> com.kitsugi.animelist.model.MediaEntry? = { null }
 ) {
     val accentColor = LocalKitsugiAccent.current
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -72,7 +73,7 @@ fun KitsugiHorizontalMediaSection(
                 modifier = Modifier.weight(1f)
             )
 
-            if (onSeeAllClick != null && results.isNotEmpty()) {
+            if (onSeeAllClick != null) {
                 TextButton(
                     onClick = onSeeAllClick
                 ) {
@@ -94,11 +95,13 @@ fun KitsugiHorizontalMediaSection(
             }
 
             results.isEmpty() -> {
-                Text(
-                    text = "Gösterilecek içerik yok.",
-                    color = KitsugiColors.TextSecondary,
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                if (onSeeAllClick == null) {
+                    Text(
+                        text = "Gösterilecek içerik yok.",
+                        color = KitsugiColors.TextSecondary,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
 
             else -> {
@@ -133,6 +136,7 @@ fun KitsugiHorizontalMediaSection(
                                 KitsugiExploreMediaCard(
                                     result = result,
                                     alreadyInList = alreadyInList(result),
+                                    mediaEntry = getMediaEntry(result),
                                     modifier = Modifier
                                         .width(cardWidth)
                                         .focusRequester(requester)
@@ -171,6 +175,7 @@ fun KitsugiHorizontalMediaSection(
                             KitsugiExploreMediaCard(
                                 result = result,
                                 alreadyInList = alreadyInList(result),
+                                mediaEntry = getMediaEntry(result),
                                 modifier = Modifier.width(cardWidth),
                                 onClick = {
                                     onItemClick(result)

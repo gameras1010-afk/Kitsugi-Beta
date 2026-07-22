@@ -36,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -78,9 +79,54 @@ fun SearchScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    fun isAlreadyInList(result: JikanSearchResult): Boolean {
-        return currentEntries.any { entry ->
-            entry.matches(result)
+    val entryMap = remember(currentEntries) {
+        val mapping = mutableMapOf<String, MediaEntry>()
+        currentEntries.forEach { entry ->
+            mapping["${entry.source.lowercase()}_${entry.malId}"] = entry
+            if (entry.tmdbId != null) {
+                mapping["tmdb_${entry.tmdbId}"] = entry
+            }
+            if (entry.source.equals("jikan", ignoreCase = true) || entry.source.equals("mal", ignoreCase = true)) {
+                mapping["mal_${entry.malId}"] = entry
+                mapping["jikan_${entry.malId}"] = entry
+            }
+            val normTitle = entry.title.lowercase().filter { it in 'a'..'z' || it in '0'..'9' }.trim()
+            if (normTitle.isNotEmpty()) {
+                mapping["${entry.type.name.lowercase()}_$normTitle"] = entry
+            }
+        }
+        mapping
+    }
+
+    val getMediaEntry = remember(entryMap) {
+        { result: JikanSearchResult ->
+            val directKey = "${result.source.lowercase()}_${result.malId}"
+            entryMap[directKey] ?: run {
+                val tmdbId = result.tmdbId ?: if (result.source.equals("tmdb", ignoreCase = true)) result.malId else null
+                if (tmdbId != null && entryMap.containsKey("tmdb_$tmdbId")) {
+                    entryMap["tmdb_$tmdbId"]
+                } else {
+                    val rMal = if (result.source.equals("jikan", ignoreCase = true) || result.source.equals("mal", ignoreCase = true)) result.malId else result.realMalId
+                    if (rMal != null && (entryMap.containsKey("mal_$rMal") || entryMap.containsKey("jikan_$rMal"))) {
+                        entryMap["mal_$rMal"] ?: entryMap["jikan_$rMal"]
+                    } else {
+                        val normTitle = buildString {
+                            for (c in result.title.lowercase()) {
+                                if (c in 'a'..'z' || c in '0'..'9') append(c)
+                            }
+                        }.trim()
+                        if (normTitle.isNotEmpty()) {
+                            entryMap["${result.type.name.lowercase()}_$normTitle"]
+                        } else null
+                    }
+                }
+            }
+        }
+    }
+
+    val isAlreadyInList = remember(getMediaEntry) {
+        { result: JikanSearchResult ->
+            getMediaEntry(result) != null
         }
     }
 
@@ -221,6 +267,7 @@ fun SearchScreen(
             SearchResultRow(
                 result = result,
                 alreadyInList = isAlreadyInList(result),
+                mediaEntry = getMediaEntry(result),
                 onItemClick = { onOpenApiDetail(result) },
                 onAddClick = {
                     onAddSelectionToList(ApiSearchSelection(result = result, synopsis = null))

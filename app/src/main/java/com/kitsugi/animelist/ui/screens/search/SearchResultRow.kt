@@ -20,6 +20,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,6 +28,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
 import coil3.compose.AsyncImage
 import com.kitsugi.animelist.data.remote.JikanSearchResult
 import com.kitsugi.animelist.ui.theme.LocalIsTv
@@ -47,6 +49,7 @@ import com.kitsugi.animelist.ui.utils.tvClickable
 fun SearchResultRow(
     result: JikanSearchResult,
     alreadyInList: Boolean,
+    mediaEntry: com.kitsugi.animelist.model.MediaEntry? = null,
     onItemClick: () -> Unit,
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -113,55 +116,101 @@ fun SearchResultRow(
                 )
             }
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (!hideScores) {
-                    val displayScore = result.getDisplayScore(scoreFormat, hideScores)
-                    val scoreText = if (displayScore == "unrated") "unrated" else "★ $displayScore"
-                    Text(
-                        text = scoreText,
-                        color = KitsugiColors.AccentOrange,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                if (result.year != null) {
-                    Text(
-                        text = "${result.year}",
-                        color = KitsugiColors.TextMuted,
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                }
-                Text(
-                    text = result.type.name,
-                    color = accentColor.copy(alpha = 0.75f),
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.SemiBold
-                )
-                
-                val sourceLabel = when (result.source.lowercase()) {
-                    "anilist" -> "AniList"
-                    "mal", "jikan" -> "MAL"
-                    else -> result.source.uppercase()
-                }
-                val sourceColor = when (result.source.lowercase()) {
-                    "anilist" -> KitsugiColors.AccentBlue
-                    else -> accentColor
-                }
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(KitsugiColors.SurfaceStrong)
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
+            if (mediaEntry != null) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(statusColor(mediaEntry.status).copy(alpha = 0.16f))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = mediaEntry.status.label,
+                            color = statusColor(mediaEntry.status),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
                     Text(
-                        text = sourceLabel,
-                        color = sourceColor,
+                        text = entryProgressText(mediaEntry),
+                        color = KitsugiColors.TextPrimary,
                         style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Medium
                     )
+
+                    if (mediaEntry.score != null) {
+                        Text(
+                            text = "★ ${mediaEntry.score}",
+                            color = KitsugiColors.AccentOrange,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(2.dp))
+
+                EpisodeProgressBar(
+                    progress = mediaEntry.progress,
+                    total = mediaEntry.total,
+                    color = statusColor(mediaEntry.status),
+                    modifier = Modifier.fillMaxWidth(0.9f)
+                )
+            } else {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (!hideScores) {
+                        val displayScore = result.getDisplayScore(scoreFormat, hideScores)
+                        val scoreText = if (displayScore == "unrated") "unrated" else "★ $displayScore"
+                        Text(
+                            text = scoreText,
+                            color = KitsugiColors.AccentOrange,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    if (result.year != null) {
+                        Text(
+                            text = "${result.year}",
+                            color = KitsugiColors.TextMuted,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+                    Text(
+                        text = result.type.name,
+                        color = accentColor.copy(alpha = 0.75f),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    
+                    val sourceLabel = when (result.source.lowercase()) {
+                        "anilist" -> "AniList"
+                        "mal", "jikan" -> "MAL"
+                        else -> result.source.uppercase()
+                    }
+                    val sourceColor = when (result.source.lowercase()) {
+                        "anilist" -> KitsugiColors.AccentBlue
+                        else -> accentColor
+                    }
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(KitsugiColors.SurfaceStrong)
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = sourceLabel,
+                            color = sourceColor,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
@@ -191,4 +240,55 @@ fun SearchResultRow(
             )
         }
     }
+}
+
+@Composable
+private fun EpisodeProgressBar(
+    progress: Int,
+    total: Int?,
+    color: Color = LocalKitsugiAccent.current,
+    modifier: Modifier = Modifier
+) {
+    val fraction = remember(progress, total) {
+        val maxVal = if (total != null && total > 0) total else if (progress > 0) progress else 1
+        (progress.toFloat() / maxVal.toFloat()).coerceIn(0f, 1f)
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(4.dp)
+            .clip(RoundedCornerShape(999.dp))
+            .background(KitsugiColors.SurfaceSoft)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(fraction)
+                .height(4.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(color)
+        )
+    }
+}
+
+private fun statusColor(status: com.kitsugi.animelist.model.WatchStatus): Color {
+    return when (status) {
+        com.kitsugi.animelist.model.WatchStatus.Watching   -> KitsugiColors.AccentBlue
+        com.kitsugi.animelist.model.WatchStatus.Completed  -> KitsugiColors.AccentGreen
+        com.kitsugi.animelist.model.WatchStatus.Planned    -> KitsugiColors.AccentOrange
+        com.kitsugi.animelist.model.WatchStatus.Dropped    -> KitsugiColors.AccentRed
+        com.kitsugi.animelist.model.WatchStatus.Paused     -> KitsugiColors.AccentPurple
+        com.kitsugi.animelist.model.WatchStatus.Repeating  -> KitsugiColors.AccentBlue
+    }
+}
+
+private fun entryProgressText(entry: com.kitsugi.animelist.model.MediaEntry): String {
+    val unit = when (entry.type) {
+        com.kitsugi.animelist.model.MediaType.Anime -> "bölüm"
+        com.kitsugi.animelist.model.MediaType.Manga -> "chapter"
+        else -> "bölüm"
+    }
+
+    val totalText = entry.total?.toString() ?: "?"
+    return "${entry.progress}/$totalText $unit"
 }

@@ -84,13 +84,18 @@ fun FullScreenMediaGridPage(
     scoreFormat: String = "POINT_10",
     hideScores: Boolean = false,
     showAdultContent: Boolean = false,
-    blurAdultMedia: Boolean = false
+    blurAdultMedia: Boolean = false,
+    getMediaEntry: (JikanSearchResult) -> com.kitsugi.animelist.model.MediaEntry? = { null }
 ) {
     val accentColor = LocalKitsugiAccent.current
     val isTv = LocalIsTv.current
     val scope = rememberCoroutineScope()
     val apiClient = remember { JikanApiClient() }
     val tmdbApiClient = remember { TmdbApiClient() }
+
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+    val columnCount = if (isLandscape) 3 else 2
 
     // false = Liste görünümü (varsayılan), true = Grid görünümü
     var isGridView by rememberSaveable { mutableStateOf(false) }
@@ -122,25 +127,10 @@ fun FullScreenMediaGridPage(
     }
 
     var loadedResults by remember { mutableStateOf(initialResults) }
-    var currentPage by remember { mutableStateOf(1) }
+    var currentPage by remember { mutableStateOf(if (initialResults.isEmpty()) 0 else 1) }
     var isLoadingMore by remember { mutableStateOf(false) }
     var hasMorePages by remember { mutableStateOf(true) }
     var loadError by remember { mutableStateOf<String?>(null) }
-
-    fun applySeasonalFilter(season: String, year: Int, sort: String) {
-        seasonalSeason = season; seasonalYear = year; seasonalSort = sort
-        currentPage = 1; hasMorePages = true; loadedResults = emptyList()
-        isLoadingMore = true; loadError = null
-        scope.launch {
-            try {
-                loadedResults = if (platform == ExplorePlatform.AniList)
-                    apiClient.aniListSeasonalAnime(1, showAdultContent, year, season, sort)
-                else apiClient.seasonalAnime(1, showAdultContent, year, season, sort)
-            } catch (e: Exception) {
-                loadError = e.message ?: "Hata"
-            } finally { isLoadingMore = false }
-        }
-    }
 
     fun loadNextPage() {
         if (isLoadingMore || !hasMorePages) return
@@ -191,6 +181,27 @@ fun FullScreenMediaGridPage(
         }
     }
 
+    LaunchedEffect(Unit) {
+        if (loadedResults.isEmpty()) {
+            loadNextPage()
+        }
+    }
+
+    fun applySeasonalFilter(season: String, year: Int, sort: String) {
+        seasonalSeason = season; seasonalYear = year; seasonalSort = sort
+        currentPage = 1; hasMorePages = true; loadedResults = emptyList()
+        isLoadingMore = true; loadError = null
+        scope.launch {
+            try {
+                loadedResults = if (platform == ExplorePlatform.AniList)
+                    apiClient.aniListSeasonalAnime(1, showAdultContent, year, season, sort)
+                else apiClient.seasonalAnime(1, showAdultContent, year, season, sort)
+            } catch (e: Exception) {
+                loadError = e.message ?: "Hata"
+            } finally { isLoadingMore = false }
+        }
+    }
+
     val displayedResults = remember(loadedResults, showAdultContent) {
         loadedResults.filter { showAdultContent || !it.isAdult }
     }
@@ -226,7 +237,7 @@ fun FullScreenMediaGridPage(
         if (isGridView) {
             // ── GRID MODU ────────────────────────────────────────────────────
             LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
+                columns = GridCells.Fixed(columnCount),
                 state = gridState,
                 modifier = if (isTv) Modifier.width(960.dp) else Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(start = 12.dp, end = 12.dp, bottom = 90.dp),
@@ -306,6 +317,7 @@ fun FullScreenMediaGridPage(
                         KitsugiExploreMediaCard(
                             result = result,
                             alreadyInList = alreadyInList(result),
+                            mediaEntry = getMediaEntry(result),
                             onClick = { onItemClick(result) },
                             titleLanguage = titleLanguage,
                             scoreFormat = scoreFormat,
@@ -429,6 +441,7 @@ fun FullScreenMediaGridPage(
                             result = result,
                             rankIndex = index + 1,
                             alreadyInList = alreadyInList(result),
+                            mediaEntry = getMediaEntry(result),
                             onClick = { onItemClick(result) },
                             titleLanguage = titleLanguage,
                             hideScores = hideScores,

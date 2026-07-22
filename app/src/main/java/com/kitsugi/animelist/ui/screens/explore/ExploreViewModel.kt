@@ -362,19 +362,23 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         var plannedSeries  = userShows.filter { it.subtitle.contains("Planlandı") }
 
         if (tmdbEnabledState && tmdbEnrichContinueWatchingState) {
-            // Sadece "İzlemeye Devam Et" listelerini paralel olarak zenginleştir
-            val movieJobs = continueMovies.map { item ->
+            // Sadece "İzlemeye Devam Et" listelerini paralel olarak zenginleştir (maksimum ilk 8 öğe)
+            val moviesToEnrich = continueMovies.take(8)
+            val seriesToEnrich = continueSeries.take(8)
+            val movieJobs = moviesToEnrich.map { item ->
                 async { enrichWithTmdb(item) }
             }
-            val seriesJobs = continueSeries.map { item ->
+            val seriesJobs = seriesToEnrich.map { item ->
                 async { enrichWithTmdb(item) }
             }
-            continueMovies = movieJobs.mapIndexed { idx, job ->
-                runCatching { job.await() }.getOrDefault(continueMovies[idx])
+            val enrichedMovies = movieJobs.mapIndexed { idx, job ->
+                runCatching { job.await() }.getOrDefault(moviesToEnrich[idx])
             }
-            continueSeries = seriesJobs.mapIndexed { idx, job ->
-                runCatching { job.await() }.getOrDefault(continueSeries[idx])
+            val enrichedSeries = seriesJobs.mapIndexed { idx, job ->
+                runCatching { job.await() }.getOrDefault(seriesToEnrich[idx])
             }
+            continueMovies = enrichedMovies + continueMovies.drop(8)
+            continueSeries = enrichedSeries + continueSeries.drop(8)
         }
 
         simklContinueMovies  = continueMovies
@@ -406,9 +410,6 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         val upcomingAnimeDeferred = async { apiClient.upcomingAnime(showAdultContent = showAdult) }
         val topMangaDeferred = async { apiClient.topManga(showAdultContent = showAdult) }
         val publishingMangaDeferred = async { apiClient.publishingManga(showAdultContent = showAdult) }
-        val trendingAnimeDeferred = async { apiClient.trendingAnime(showAdultContent = showAdult) }
-        val movieAnimeDeferred = async { apiClient.movieAnime(showAdultContent = showAdult) }
-        val seasonalAnimeDeferred = async { apiClient.seasonalAnime(showAdultContent = showAdult) }
 
         val rawTopAnime = runCatching { topAnimeDeferred.await() }.getOrDefault(emptyList())
 
@@ -464,9 +465,9 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
             upcomingAnime = runCatching { upcomingAnimeDeferred.await() }.getOrDefault(emptyList()),
             topManga = runCatching { topMangaDeferred.await() }.getOrDefault(emptyList()),
             publishingManga = runCatching { publishingMangaDeferred.await() }.getOrDefault(emptyList()),
-            trendingAnime = runCatching { trendingAnimeDeferred.await() }.getOrDefault(emptyList()),
-            movieAnime = runCatching { movieAnimeDeferred.await() }.getOrDefault(emptyList()),
-            seasonalAnime = runCatching { seasonalAnimeDeferred.await() }.getOrDefault(emptyList()),
+            trendingAnime = emptyList(),
+            movieAnime = emptyList(),
+            seasonalAnime = emptyList(),
             airingSoonAnime = runCatching { airingSoonDeferred.await() }.getOrDefault(emptyList())
         )
     }
@@ -478,9 +479,6 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         val upcomingAnimeDeferred = async { apiClient.aniListUpcomingAnime(showAdultContent = showAdult) }
         val topMangaDeferred = async { apiClient.aniListTopManga(showAdultContent = showAdult) }
         val publishingMangaDeferred = async { apiClient.aniListPublishingManga(showAdultContent = showAdult) }
-        val trendingAnimeDeferred = async { apiClient.aniListTrendingAnime(showAdultContent = showAdult) }
-        val movieAnimeDeferred = async { apiClient.aniListMovieAnime(showAdultContent = showAdult) }
-        val seasonalAnimeDeferred = async { apiClient.aniListSeasonalAnime(showAdultContent = showAdult) }
 
         val airingSoonDeferred = async {
             val calendarClient = com.kitsugi.animelist.data.remote.KitsugiAiringCalendarClient()
@@ -516,9 +514,9 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
             upcomingAnime = runCatching { upcomingAnimeDeferred.await() }.getOrDefault(emptyList()),
             topManga = runCatching { topMangaDeferred.await() }.getOrDefault(emptyList()),
             publishingManga = runCatching { publishingMangaDeferred.await() }.getOrDefault(emptyList()),
-            trendingAnime = runCatching { trendingAnimeDeferred.await() }.getOrDefault(emptyList()),
-            movieAnime = runCatching { movieAnimeDeferred.await() }.getOrDefault(emptyList()),
-            seasonalAnime = runCatching { seasonalAnimeDeferred.await() }.getOrDefault(emptyList()),
+            trendingAnime = emptyList(),
+            movieAnime = emptyList(),
+            seasonalAnime = emptyList(),
             airingSoonAnime = runCatching { airingSoonDeferred.await() }.getOrDefault(emptyList())
         )
     }
@@ -554,285 +552,146 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
                     val showAdult = settings.showAdultContent
                     val tmdbEnabled = settings.tmdbEnabled
                     val tmdbEnrich = settings.tmdbEnrichContinueWatching
-                    val aniListToken = ExternalAuthManager.getAniListToken(app)
                     val simklToken = ExternalAuthManager.getSimklToken(app)
                     
-                    val apiClient = JikanApiClient(aniListToken = aniListToken)
                     val tmdbApiClient = TmdbApiClient(userApiKey = settings.tmdbUserApiKey)
                     
                     supervisorScope {
-                        // MAL Prefetch
-                        val malJob = async {
-                            runCatching {
-                                val topAnimeDeferred = async { apiClient.topAnime(showAdultContent = showAdult) }
-                                val airingAnimeDeferred = async { apiClient.airingAnime(showAdultContent = showAdult) }
-                                val upcomingAnimeDeferred = async { apiClient.upcomingAnime(showAdultContent = showAdult) }
-                                val topMangaDeferred = async { apiClient.topManga(showAdultContent = showAdult) }
-                                val publishingMangaDeferred = async { apiClient.publishingManga(showAdultContent = showAdult) }
-                                val trendingAnimeDeferred = async { apiClient.trendingAnime(showAdultContent = showAdult) }
-                                val movieAnimeDeferred = async { apiClient.movieAnime(showAdultContent = showAdult) }
-                                val seasonalAnimeDeferred = async { apiClient.seasonalAnime(showAdultContent = showAdult) }
+                        // Startup prefetch only fetches TMDB (default platform) to minimize latency and bandwidth
+                        val tmdbPayload = runCatching {
+                            val trendingMoviesDeferred = async { runCatching { tmdbApiClient.getTrendingMovies() }.getOrDefault(emptyList()) }
+                            val trendingShowsDeferred  = async { runCatching { tmdbApiClient.getTrendingShows() }.getOrDefault(emptyList()) }
+                            val popularMoviesDeferred  = async { runCatching { tmdbApiClient.getPopularMovies() }.getOrDefault(emptyList()) }
+                            val trendingAllDeferred    = async { runCatching { tmdbApiClient.getTrendingAll() }.getOrDefault(emptyList()) }
+                            val popularShowsDeferred   = async { runCatching { tmdbApiClient.getPopularShows() }.getOrDefault(emptyList()) }
+                            val topRatedMoviesDeferred = async { runCatching { tmdbApiClient.getTopRatedMovies() }.getOrDefault(emptyList()) }
+                            val topRatedShowsDeferred  = async { runCatching { tmdbApiClient.getTopRatedShows() }.getOrDefault(emptyList()) }
 
-                                val rawTopAnime = runCatching { topAnimeDeferred.await() }.getOrDefault(emptyList())
+                            val moviesList    = trendingMoviesDeferred.await()
+                            val showsList     = trendingShowsDeferred.await()
+                            val popularMovies = popularMoviesDeferred.await()
+                            val allTrending   = trendingAllDeferred.await()
+                            val popularShows  = popularShowsDeferred.await()
+                            val topRatedMovies = topRatedMoviesDeferred.await()
+                            val topRatedShows  = topRatedShowsDeferred.await()
 
-                                val enrichedTopAnime = if (rawTopAnime.isNotEmpty() && tmdbEnabled) {
-                                    val heroCount = minOf(rawTopAnime.size, 5)
-                                    val backdropJobs = (0 until heroCount).map { index ->
-                                        val item = rawTopAnime[index]
-                                        async {
-                                            val backdrop = tmdbApiClient.fetchBackdropByTitle(item.title)
-                                            if (backdrop != null) item.copy(backdropUrl = backdrop) else item
-                                        }
-                                    }
-                                    val enrichedHeroes = backdropJobs.mapIndexed { index, job ->
-                                        runCatching { job.await() }.getOrDefault(rawTopAnime[index])
-                                    }
-                                    enrichedHeroes + rawTopAnime.drop(heroCount)
-                                } else {
-                                    rawTopAnime
-                                }
+                            val userMoviesDeferred = if (!simklToken.isNullOrBlank()) {
+                                async { SimklSyncManager.fetchSimklWatchlist(app, "movies") }
+                            } else null
+                            val userShowsDeferred = if (!simklToken.isNullOrBlank()) {
+                                async { SimklSyncManager.fetchSimklWatchlist(app, "shows") }
+                            } else null
 
-                                val airingSoonDeferred = async {
-                                    val calendarClient = com.kitsugi.animelist.data.remote.KitsugiAiringCalendarClient()
-                                    val weekly = runCatching { calendarClient.fetchWeeklySchedule() }.getOrNull() ?: emptyMap()
-                                    val nowSeconds = System.currentTimeMillis() / 1000L
-                                    weekly.values.flatten()
-                                        .filter { it.airingAt > nowSeconds }
-                                        .sortedBy { it.airingAt }
-                                        .take(15)
-                                        .map { entry ->
-                                            JikanSearchResult(
-                                                malId = entry.malId ?: entry.aniListId,
-                                                title = entry.title,
-                                                subtitle = "${entry.episode}. Bölüm",
-                                                type = MediaType.Anime,
-                                                total = null,
-                                                score = null,
-                                                isAdult = false,
-                                                imageUrl = entry.coverUrl,
-                                                year = null,
-                                                source = "anilist",
-                                                realMalId = entry.malId,
-                                                titleEnglish = entry.titleEnglish,
-                                                titleJapanese = entry.titleNative,
-                                                nextAiringEpisode = "${entry.episode}|${entry.airingAt}"
-                                            )
-                                        }
-                                }
+                            val userMovies = userMoviesDeferred?.let { runCatching { it.await() }.getOrDefault(emptyList()) } ?: emptyList()
+                            val userShows  = userShowsDeferred?.let { runCatching { it.await() }.getOrDefault(emptyList()) } ?: emptyList()
 
-                                ExplorePayload(
-                                    topAnime = enrichedTopAnime,
-                                    airingAnime = runCatching { airingAnimeDeferred.await() }.getOrDefault(emptyList()),
-                                    upcomingAnime = runCatching { upcomingAnimeDeferred.await() }.getOrDefault(emptyList()),
-                                    topManga = runCatching { topMangaDeferred.await() }.getOrDefault(emptyList()),
-                                    publishingManga = runCatching { publishingMangaDeferred.await() }.getOrDefault(emptyList()),
-                                    trendingAnime = runCatching { trendingAnimeDeferred.await() }.getOrDefault(emptyList()),
-                                    movieAnime = runCatching { movieAnimeDeferred.await() }.getOrDefault(emptyList()),
-                                    seasonalAnime = runCatching { seasonalAnimeDeferred.await() }.getOrDefault(emptyList()),
-                                    airingSoonAnime = runCatching { airingSoonDeferred.await() }.getOrDefault(emptyList())
-                                )
-                            }.getOrNull()
-                        }
+                            var continueMovies = userMovies.filter { it.subtitle.contains("İzleniyor") }
+                            val plannedMovies  = userMovies.filter { it.subtitle.contains("Planlandı") }
+                            var continueSeries = userShows.filter { it.subtitle.contains("İzleniyor") }
+                            val plannedSeries  = userShows.filter { it.subtitle.contains("Planlandı") }
 
-                        // AniList Prefetch
-                        val aniListJob = async {
-                            runCatching {
-                                val topAnimeDeferred = async { apiClient.aniListTopAnime(showAdultContent = showAdult) }
-                                val airingAnimeDeferred = async { apiClient.aniListAiringAnime(showAdultContent = showAdult) }
-                                val upcomingAnimeDeferred = async { apiClient.aniListUpcomingAnime(showAdultContent = showAdult) }
-                                val topMangaDeferred = async { apiClient.aniListTopManga(showAdultContent = showAdult) }
-                                val publishingMangaDeferred = async { apiClient.aniListPublishingManga(showAdultContent = showAdult) }
-                                val trendingAnimeDeferred = async { apiClient.aniListTrendingAnime(showAdultContent = showAdult) }
-                                val movieAnimeDeferred = async { apiClient.aniListMovieAnime(showAdultContent = showAdult) }
-                                val seasonalAnimeDeferred = async { apiClient.aniListSeasonalAnime(showAdultContent = showAdult) }
-
-                                val airingSoonDeferred = async {
-                                    val calendarClient = com.kitsugi.animelist.data.remote.KitsugiAiringCalendarClient()
-                                    val weekly = runCatching { calendarClient.fetchWeeklySchedule() }.getOrNull() ?: emptyMap()
-                                    val nowSeconds = System.currentTimeMillis() / 1000L
-                                    weekly.values.flatten()
-                                        .filter { it.airingAt > nowSeconds }
-                                        .sortedBy { it.airingAt }
-                                        .take(15)
-                                        .map { entry ->
-                                            JikanSearchResult(
-                                                malId = entry.malId ?: entry.aniListId,
-                                                title = entry.title,
-                                                subtitle = "${entry.episode}. Bölüm",
-                                                type = MediaType.Anime,
-                                                total = null,
-                                                score = null,
-                                                isAdult = false,
-                                                imageUrl = entry.coverUrl,
-                                                year = null,
-                                                source = "anilist",
-                                                realMalId = entry.malId,
-                                                titleEnglish = entry.titleEnglish,
-                                                titleJapanese = entry.titleNative,
-                                                nextAiringEpisode = "${entry.episode}|${entry.airingAt}"
-                                            )
-                                        }
-                                }
-
-                                ExplorePayload(
-                                    topAnime = runCatching { topAnimeDeferred.await() }.getOrDefault(emptyList()),
-                                    airingAnime = runCatching { airingAnimeDeferred.await() }.getOrDefault(emptyList()),
-                                    upcomingAnime = runCatching { upcomingAnimeDeferred.await() }.getOrDefault(emptyList()),
-                                    topManga = runCatching { topMangaDeferred.await() }.getOrDefault(emptyList()),
-                                    publishingManga = runCatching { publishingMangaDeferred.await() }.getOrDefault(emptyList()),
-                                    trendingAnime = runCatching { trendingAnimeDeferred.await() }.getOrDefault(emptyList()),
-                                    movieAnime = runCatching { movieAnimeDeferred.await() }.getOrDefault(emptyList()),
-                                    seasonalAnime = runCatching { seasonalAnimeDeferred.await() }.getOrDefault(emptyList()),
-                                    airingSoonAnime = runCatching { airingSoonDeferred.await() }.getOrDefault(emptyList())
-                                )
-                            }.getOrNull()
-                        }
-
-                        // TMDB Prefetch
-                        val tmdbJob = async {
-                            runCatching {
-                                val trendingMoviesDeferred = async { runCatching { tmdbApiClient.getTrendingMovies() }.getOrDefault(emptyList()) }
-                                val trendingShowsDeferred  = async { runCatching { tmdbApiClient.getTrendingShows() }.getOrDefault(emptyList()) }
-                                val popularMoviesDeferred  = async { runCatching { tmdbApiClient.getPopularMovies() }.getOrDefault(emptyList()) }
-                                val trendingAllDeferred    = async { runCatching { tmdbApiClient.getTrendingAll() }.getOrDefault(emptyList()) }
-                                val popularShowsDeferred   = async { runCatching { tmdbApiClient.getPopularShows() }.getOrDefault(emptyList()) }
-                                val topRatedMoviesDeferred = async { runCatching { tmdbApiClient.getTopRatedMovies() }.getOrDefault(emptyList()) }
-                                val topRatedShowsDeferred  = async { runCatching { tmdbApiClient.getTopRatedShows() }.getOrDefault(emptyList()) }
-
-                                val moviesList    = trendingMoviesDeferred.await()
-                                val showsList     = trendingShowsDeferred.await()
-                                val popularMovies = popularMoviesDeferred.await()
-                                val allTrending   = trendingAllDeferred.await()
-                                val popularShows  = popularShowsDeferred.await()
-                                val topRatedMovies = topRatedMoviesDeferred.await()
-                                val topRatedShows  = topRatedShowsDeferred.await()
-
-                                val userMoviesDeferred = if (!simklToken.isNullOrBlank()) {
-                                    async { SimklSyncManager.fetchSimklWatchlist(app, "movies") }
-                                } else null
-                                val userShowsDeferred = if (!simklToken.isNullOrBlank()) {
-                                    async { SimklSyncManager.fetchSimklWatchlist(app, "shows") }
-                                } else null
-
-                                val userMovies = userMoviesDeferred?.let { runCatching { it.await() }.getOrDefault(emptyList()) } ?: emptyList()
-                                val userShows  = userShowsDeferred?.let { runCatching { it.await() }.getOrDefault(emptyList()) } ?: emptyList()
-
-                                var continueMovies = userMovies.filter { it.subtitle.contains("İzleniyor") }
-                                val plannedMovies  = userMovies.filter { it.subtitle.contains("Planlandı") }
-                                var continueSeries = userShows.filter { it.subtitle.contains("İzleniyor") }
-                                val plannedSeries  = userShows.filter { it.subtitle.contains("Planlandı") }
-
-                                if (tmdbEnabled && tmdbEnrich) {
-                                    val movieJobs = continueMovies.map { item ->
-                                        async {
-                                            if (item.source != "tmdb") {
-                                                val tmdbId = item.tmdbId
-                                                if (tmdbId != null) {
-                                                    val isMovie = item.type == MediaType.Movie
-                                                    val details = tmdbApiClient.fetchMediaDetail(tmdbId, isMovie)
-                                                    if (details != null) {
-                                                        val typeStr = when (item.type) {
-                                                            MediaType.Movie -> "Film"
-                                                            MediaType.TvShow -> "Dizi"
-                                                            MediaType.Anime -> "Anime"
-                                                            else -> "Anime"
-                                                        }
-                                                        val subtitleParts = buildList {
-                                                            add(typeStr)
-                                                            val yearVal = item.year ?: details.year
-                                                            if (yearVal != null && yearVal > 0) add(yearVal.toString())
-                                                            addAll(details.genres.take(3))
-                                                        }
-                                                        val ratingInt = (details.score ?: 0) / 10
-                                                        val finalScore = if (ratingInt > 0) ratingInt else null
-                                                        val backdropUrl = details.pictures.firstOrNull { it.contains("/w1280/") } ?: item.backdropUrl
-                                                        item.copy(
-                                                            title = details.title?.takeIf { it.isNotBlank() } ?: item.title,
-                                                            subtitle = subtitleParts.joinToString(", "),
-                                                            score = finalScore ?: item.score,
-                                                            year = details.year ?: item.year,
-                                                            imageUrl = details.imageUrl ?: item.imageUrl,
-                                                            backdropUrl = backdropUrl
-                                                        )
-                                                    } else item
+                            if (tmdbEnabled && tmdbEnrich) {
+                                val moviesToEnrich = continueMovies.take(8)
+                                val seriesToEnrich = continueSeries.take(8)
+                                val movieJobs = moviesToEnrich.map { item ->
+                                    async {
+                                        if (item.source != "tmdb") {
+                                            val tmdbId = item.tmdbId
+                                            if (tmdbId != null) {
+                                                val isMovie = item.type == MediaType.Movie
+                                                val details = tmdbApiClient.fetchMediaDetail(tmdbId, isMovie)
+                                                if (details != null) {
+                                                    val typeStr = when (item.type) {
+                                                        MediaType.Movie -> "Film"
+                                                        MediaType.TvShow -> "Dizi"
+                                                        MediaType.Anime -> "Anime"
+                                                        else -> "Anime"
+                                                    }
+                                                    val subtitleParts = buildList {
+                                                        add(typeStr)
+                                                        val yearVal = item.year ?: details.year
+                                                        if (yearVal != null && yearVal > 0) add(yearVal.toString())
+                                                        addAll(details.genres.take(3))
+                                                    }
+                                                    val ratingInt = (details.score ?: 0) / 10
+                                                    val finalScore = if (ratingInt > 0) ratingInt else null
+                                                    val backdropUrl = details.pictures.firstOrNull { it.contains("/w1280/") } ?: item.backdropUrl
+                                                    item.copy(
+                                                        title = details.title?.takeIf { it.isNotBlank() } ?: item.title,
+                                                        subtitle = subtitleParts.joinToString(", "),
+                                                        score = finalScore ?: item.score,
+                                                        year = details.year ?: item.year,
+                                                        imageUrl = details.imageUrl ?: item.imageUrl,
+                                                        backdropUrl = backdropUrl
+                                                    )
                                                 } else item
                                             } else item
-                                        }
-                                    }
-                                    val seriesJobs = continueSeries.map { item ->
-                                        async {
-                                            if (item.source != "tmdb") {
-                                                val tmdbId = item.tmdbId
-                                                if (tmdbId != null) {
-                                                    val isMovie = item.type == MediaType.Movie
-                                                    val details = tmdbApiClient.fetchMediaDetail(tmdbId, isMovie)
-                                                    if (details != null) {
-                                                        val typeStr = when (item.type) {
-                                                            MediaType.Movie -> "Film"
-                                                            MediaType.TvShow -> "Dizi"
-                                                            MediaType.Anime -> "Anime"
-                                                            else -> "Anime"
-                                                        }
-                                                        val subtitleParts = buildList {
-                                                            add(typeStr)
-                                                            val yearVal = item.year ?: details.year
-                                                            if (yearVal != null && yearVal > 0) add(yearVal.toString())
-                                                            addAll(details.genres.take(3))
-                                                        }
-                                                        val ratingInt = (details.score ?: 0) / 10
-                                                        val finalScore = if (ratingInt > 0) ratingInt else null
-                                                        val backdropUrl = details.pictures.firstOrNull { it.contains("/w1280/") } ?: item.backdropUrl
-                                                        item.copy(
-                                                            title = details.title?.takeIf { it.isNotBlank() } ?: item.title,
-                                                            subtitle = subtitleParts.joinToString(", "),
-                                                            score = finalScore ?: item.score,
-                                                            year = details.year ?: item.year,
-                                                            imageUrl = details.imageUrl ?: item.imageUrl,
-                                                            backdropUrl = backdropUrl
-                                                        )
-                                                    } else item
-                                                } else item
-                                            } else item
-                                        }
-                                    }
-                                    continueMovies = movieJobs.mapIndexed { idx, job ->
-                                        runCatching { job.await() }.getOrDefault(continueMovies[idx])
-                                    }
-                                    continueSeries = seriesJobs.mapIndexed { idx, job ->
-                                        runCatching { job.await() }.getOrDefault(continueSeries[idx])
+                                        } else item
                                     }
                                 }
+                                val seriesJobs = seriesToEnrich.map { item ->
+                                    async {
+                                        if (item.source != "tmdb") {
+                                            val tmdbId = item.tmdbId
+                                            if (tmdbId != null) {
+                                                val isMovie = item.type == MediaType.Movie
+                                                val details = tmdbApiClient.fetchMediaDetail(tmdbId, isMovie)
+                                                if (details != null) {
+                                                    val typeStr = when (item.type) {
+                                                        MediaType.Movie -> "Film"
+                                                        MediaType.TvShow -> "Dizi"
+                                                        MediaType.Anime -> "Anime"
+                                                        else -> "Anime"
+                                                    }
+                                                    val subtitleParts = buildList {
+                                                        add(typeStr)
+                                                        val yearVal = item.year ?: details.year
+                                                        if (yearVal != null && yearVal > 0) add(yearVal.toString())
+                                                        addAll(details.genres.take(3))
+                                                    }
+                                                    val ratingInt = (details.score ?: 0) / 10
+                                                    val finalScore = if (ratingInt > 0) ratingInt else null
+                                                    val backdropUrl = details.pictures.firstOrNull { it.contains("/w1280/") } ?: item.backdropUrl
+                                                    item.copy(
+                                                        title = details.title?.takeIf { it.isNotBlank() } ?: item.title,
+                                                        subtitle = subtitleParts.joinToString(", "),
+                                                        score = finalScore ?: item.score,
+                                                        year = details.year ?: item.year,
+                                                        imageUrl = details.imageUrl ?: item.imageUrl,
+                                                        backdropUrl = backdropUrl
+                                                    )
+                                                } else item
+                                            } else item
+                                        } else item
+                                    }
+                                }
+                                continueMovies = movieJobs.mapIndexed { idx, job ->
+                                    runCatching { job.await() }.getOrDefault(moviesToEnrich[idx])
+                                }
+                                continueSeries = seriesJobs.mapIndexed { idx, job ->
+                                    runCatching { job.await() }.getOrDefault(seriesToEnrich[idx])
+                                }
+                                continueMovies = continueMovies + userMovies.filter { it.subtitle.contains("İzleniyor") }.drop(8)
+                                continueSeries = continueSeries + userShows.filter { it.subtitle.contains("İzleniyor") }.drop(8)
+                            }
 
-                                ExplorePayload(
-                                    topAnime      = allTrending,
-                                    airingAnime   = showsList,
-                                    upcomingAnime = popularMovies,
-                                    topManga      = popularShows,
-                                    publishingManga = topRatedMovies,
-                                    trendingAnime = allTrending,
-                                    movieAnime    = moviesList,
-                                    seasonalAnime = topRatedShows,
-                                    simklContinueMovies = continueMovies,
-                                    simklPlannedMovies = plannedMovies,
-                                    simklContinueSeries = continueSeries,
-                                    simklPlannedSeries = plannedSeries,
-                                    airingSoonAnime = emptyList()
-                                )
-                            }.getOrNull()
-                        }
+                            ExplorePayload(
+                                topAnime      = allTrending,
+                                airingAnime   = showsList,
+                                upcomingAnime = popularMovies,
+                                topManga      = popularShows,
+                                publishingManga = topRatedMovies,
+                                trendingAnime = allTrending,
+                                movieAnime    = moviesList,
+                                seasonalAnime = topRatedShows,
+                                simklContinueMovies = continueMovies,
+                                simklPlannedMovies = plannedMovies,
+                                simklContinueSeries = continueSeries,
+                                simklPlannedSeries = plannedSeries,
+                                airingSoonAnime = emptyList()
+                            )
+                        }.getOrNull()
 
-                        val malPayload = malJob.await()
-                        val aniListPayload = aniListJob.await()
-                        val tmdbPayload = tmdbJob.await()
-
-                        if (malPayload != null) {
-                            platformCache[ExplorePlatform.MAL] = malPayload
-                            loadedPlatforms.add(ExplorePlatform.MAL)
-                        }
-                        if (aniListPayload != null) {
-                            platformCache[ExplorePlatform.AniList] = aniListPayload
-                            loadedPlatforms.add(ExplorePlatform.AniList)
-                        }
                         if (tmdbPayload != null) {
                             platformCache[ExplorePlatform.TMDB] = tmdbPayload
                             loadedPlatforms.add(ExplorePlatform.TMDB)

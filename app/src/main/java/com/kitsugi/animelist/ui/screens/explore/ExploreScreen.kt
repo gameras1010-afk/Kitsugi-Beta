@@ -151,49 +151,54 @@ fun ExploreScreen(
         }
     }
 
-    val entryKeysSet = remember(currentEntries) {
-        val keys = mutableSetOf<String>()
+    val entryMap = remember(currentEntries) {
+        val mapping = mutableMapOf<String, MediaEntry>()
         currentEntries.forEach { entry ->
-            keys.add("${entry.source.lowercase()}_${entry.malId}")
+            mapping["${entry.source.lowercase()}_${entry.malId}"] = entry
             if (entry.tmdbId != null) {
-                keys.add("tmdb_${entry.tmdbId}")
+                mapping["tmdb_${entry.tmdbId}"] = entry
             }
             if (entry.source.equals("jikan", ignoreCase = true) || entry.source.equals("mal", ignoreCase = true)) {
-                keys.add("mal_${entry.malId}")
-                keys.add("jikan_${entry.malId}")
+                mapping["mal_${entry.malId}"] = entry
+                mapping["jikan_${entry.malId}"] = entry
             }
             val normTitle = entry.title.lowercase().filter { it in 'a'..'z' || it in '0'..'9' }.trim()
             if (normTitle.isNotEmpty()) {
-                keys.add("${entry.type}_$normTitle")
+                mapping["${entry.type.name.lowercase()}_$normTitle"] = entry
             }
         }
-        keys
+        mapping
     }
 
-    val isAlreadyInList = remember(entryKeysSet) {
+    val getMediaEntry = remember(entryMap) {
         { result: JikanSearchResult ->
-            // Key'leri onceden hesaplanmis set'ten O(1) lookup — her render'da string filter yok
             val directKey = "${result.source.lowercase()}_${result.malId}"
-            if (entryKeysSet.contains(directKey)) {
-                true
-            } else {
+            entryMap[directKey] ?: run {
                 val tmdbId = result.tmdbId ?: if (result.source.equals("tmdb", ignoreCase = true)) result.malId else null
-                if (tmdbId != null && entryKeysSet.contains("tmdb_$tmdbId")) {
-                    true
+                if (tmdbId != null && entryMap.containsKey("tmdb_$tmdbId")) {
+                    entryMap["tmdb_$tmdbId"]
                 } else {
                     val rMal = if (result.source.equals("jikan", ignoreCase = true) || result.source.equals("mal", ignoreCase = true)) result.malId else result.realMalId
-                    if (rMal != null && (entryKeysSet.contains("mal_$rMal") || entryKeysSet.contains("jikan_$rMal"))) {
-                        true
+                    if (rMal != null && (entryMap.containsKey("mal_$rMal") || entryMap.containsKey("jikan_$rMal"))) {
+                        entryMap["mal_$rMal"] ?: entryMap["jikan_$rMal"]
                     } else {
                         val normTitle = buildString {
                             for (c in result.title.lowercase()) {
                                 if (c in 'a'..'z' || c in '0'..'9') append(c)
                             }
                         }.trim()
-                        normTitle.isNotEmpty() && entryKeysSet.contains("${result.type}_$normTitle")
+                        if (normTitle.isNotEmpty()) {
+                            entryMap["${result.type.name.lowercase()}_$normTitle"]
+                        } else null
                     }
                 }
             }
+        }
+    }
+
+    val isAlreadyInList = remember(getMediaEntry) {
+        { result: JikanSearchResult ->
+            getMediaEntry(result) != null
         }
     }
 
@@ -707,6 +712,7 @@ fun ExploreScreen(
                                         results = viewModel.airingSoonAnime,
                                         isLoading = viewModel.isLoading,
                                         alreadyInList = isAlreadyInList,
+                                        getMediaEntry = getMediaEntry,
                                         onItemClick = onOpenApiDetail,
                                         onSeeAllClick = onOpenAiringCalendar,
                                         titleLanguage = titleLanguage,
@@ -725,6 +731,7 @@ fun ExploreScreen(
                                     results = filteredTopAnime,
                                     isLoading = viewModel.isLoading,
                                     alreadyInList = isAlreadyInList,
+                                    getMediaEntry = getMediaEntry,
                                     onItemClick = onOpenApiDetail,
                                     onSeeAllClick = { onSeeAllSection("Popüler Anime", ExploreCategoryType.TOP_ANIME, filteredTopAnime) },
                                     titleLanguage = titleLanguage,
@@ -741,6 +748,7 @@ fun ExploreScreen(
                                     results = filteredAiringAnime,
                                     isLoading = viewModel.isLoading,
                                     alreadyInList = isAlreadyInList,
+                                    getMediaEntry = getMediaEntry,
                                     onItemClick = onOpenApiDetail,
                                     onSeeAllClick = { onSeeAllSection("Yayındaki Anime", ExploreCategoryType.AIRING_ANIME, filteredAiringAnime) },
                                     titleLanguage = titleLanguage,
@@ -757,6 +765,7 @@ fun ExploreScreen(
                                     results = filteredUpcomingAnime,
                                     isLoading = viewModel.isLoading,
                                     alreadyInList = isAlreadyInList,
+                                    getMediaEntry = getMediaEntry,
                                     onItemClick = onOpenApiDetail,
                                     onSeeAllClick = { onSeeAllSection("Yaklaşan Anime", ExploreCategoryType.UPCOMING_ANIME, filteredUpcomingAnime) },
                                     titleLanguage = titleLanguage,
@@ -773,6 +782,7 @@ fun ExploreScreen(
                                     results = filteredTopManga,
                                     isLoading = viewModel.isLoading,
                                     alreadyInList = isAlreadyInList,
+                                    getMediaEntry = getMediaEntry,
                                     onItemClick = onOpenApiDetail,
                                     onSeeAllClick = { onSeeAllSection("Popüler Manga", ExploreCategoryType.TOP_MANGA, filteredTopManga) },
                                     titleLanguage = titleLanguage,
@@ -789,6 +799,7 @@ fun ExploreScreen(
                                     results = filteredPublishingManga,
                                     isLoading = viewModel.isLoading,
                                     alreadyInList = isAlreadyInList,
+                                    getMediaEntry = getMediaEntry,
                                     onItemClick = onOpenApiDetail,
                                     onSeeAllClick = { onSeeAllSection("Yayındaki Manga", ExploreCategoryType.PUBLISHING_MANGA, filteredPublishingManga) },
                                     titleLanguage = titleLanguage,
@@ -836,7 +847,8 @@ fun ExploreScreen(
             titleLanguage = titleLanguage,
             hideScores = hideScores,
             showAdultContent = showAdultContent,
-            blurAdultMedia = blurAdultMedia
+            blurAdultMedia = blurAdultMedia,
+            getMediaEntry = getMediaEntry
         )
     }
 }

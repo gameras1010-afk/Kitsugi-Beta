@@ -73,6 +73,7 @@ fun AppDialogHost(
     isAlreadyInList: (JikanSearchResult) -> Boolean,
     onMediaGridItemClick: (JikanSearchResult) -> Unit,
     onDismissMediaGrid: () -> Unit,
+    getMediaEntry: (JikanSearchResult) -> MediaEntry? = { null }
 ) {
     val context = LocalContext.current
 
@@ -165,7 +166,8 @@ fun AppDialogHost(
                 onMediaGridItemClick(result)
                 onDismissMediaGrid()
             },
-            onDismiss = onDismissMediaGrid
+            onDismiss = onDismissMediaGrid,
+            getMediaEntry = getMediaEntry
         )
     }
 }

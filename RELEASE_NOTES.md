@@ -16,6 +16,10 @@
 ### 🏷️ Platform Kaynak Rozetleri
 - **Görsel Ayrım**: Arama, keşfet ve sıralama listelerindeki poster görsellerinin sol alt köşesine şık platform rozetleri (AL: AniList, MAL: MyAnimeList, SK: Simkl, TMDB: The Movie Database) eklendi. Böylece hangi içeriğin hangi kaynaktan geldiği anında anlaşılır.
 
+### 🏷️ Keşfet ve Arama Arayüzünde Kütüphane Durumu Entegrasyonu
+- **Liste Durum Rozetleri ve İlerleme Barları**: Keşfet ekranı, arama sonuçları ve sıralama alt sayfalarındaki tüm medya kartları artık kütüphanenizdeki durumunuzu (İzleniyor, Tamamlandı, Planlandı vb.) ve izleme ilerlemenizi (örn. 12/24 bölüm) dinamik olarak gösterir.
+- **O(1) Performans Optimizasyonu**: Kütüphane durum sorgulamaları arka plan eşlemesi ile O(1) karmaşıklığa indirilerek, grid kaydırma ve hızlı gezinme esnasında arayüz akıcılığından ödün verilmez.
+
 ### 📋 Seçilebilir Detay Metinleri
 - **Kopyalama ve Arama Desteği**: Detay sayfalarındaki açıklama (synopsis) metinleri, bilgi alanları ve karakter/ekip hakkındaki biyografiler artık kopyalanabilir hale getirildi. Seçilebilir metin (SelectionContainer) desteği sayesinde dilediğiniz kısmı kolayca kopyalayabilir veya çevirebilirsiniz.
 
@@ -27,6 +31,10 @@
 - **Silent Background Sync**: Your library lists from connected platforms (AniList, MyAnimeList, and Simkl) are now automatically refreshed in the background upon application startup. Manual import is no longer required to keep your lists up to date.
 - **24-Hour Synchronization Throttle**: To maintain API efficiency and optimize data usage, the automated refresh is throttled to run at most once every 24 hours since the last successful sync.
 - **IO Thread Offloading**: The entire sync routine executes silently on the background IO thread, preserving fluid UI performance and preventing any main thread blocking.
+
+### 🏷️ Explore & Search Library Status Integration
+- **Status Badges & Progress Bars**: Media cards in the Explore screen, search results, and ranking bottom sheets now dynamically reflect your library watch status (Watching, Completed, Planned, etc.) and granular episode progress (e.g., 12/24 episodes).
+- **O(1) Performance Optimization**: Library status checks are optimized to run in O(1) time using background-mapped indexing, ensuring buttery-smooth scrolling and layout transition responsiveness during navigation.
 
 ### 🎙️ Character Voice Actors Bottom Sheet
 - **Multi-Language Voice Cast**: Added a voice icon next to each character in the Characters tab. Tapping this icon opens a premium bottom sheet displaying all voice actors for that character across different languages (Japanese, English, etc.).

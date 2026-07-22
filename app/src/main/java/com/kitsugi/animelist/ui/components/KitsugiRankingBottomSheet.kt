@@ -65,7 +65,8 @@ fun KitsugiRankingBottomSheet(
     titleLanguage: String = "ROMAJI",
     hideScores: Boolean = false,
     showAdultContent: Boolean = false,
-    blurAdultMedia: Boolean = false
+    blurAdultMedia: Boolean = false,
+    getMediaEntry: (JikanSearchResult) -> com.kitsugi.animelist.model.MediaEntry? = { null }
 ) {
     val accentColor = LocalKitsugiAccent.current
     val scope = rememberCoroutineScope()
@@ -216,6 +217,7 @@ fun KitsugiRankingBottomSheet(
                             result = item,
                             rankIndex = index + 1,
                             alreadyInList = alreadyInList(item),
+                            mediaEntry = getMediaEntry(item),
                             onClick = {
                                 onItemClick(item)
                                 onDismissRequest()

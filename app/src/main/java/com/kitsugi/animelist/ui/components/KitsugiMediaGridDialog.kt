@@ -43,7 +43,8 @@ fun KitsugiMediaGridDialog(
     results: List<JikanSearchResult>,
     alreadyInList: (JikanSearchResult) -> Boolean,
     onItemClick: (JikanSearchResult) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    getMediaEntry: (JikanSearchResult) -> com.kitsugi.animelist.model.MediaEntry? = { null }
 ) {
     var searchQuery by rememberSaveable {
         mutableStateOf("")
@@ -164,6 +165,7 @@ fun KitsugiMediaGridDialog(
                                     KitsugiExploreMediaCard(
                                         result = result,
                                         alreadyInList = alreadyInList(result),
+                                        mediaEntry = getMediaEntry(result),
                                         modifier = Modifier.fillMaxWidth(),
                                         onClick = {
                                             onItemClick(result)
@@ -238,6 +240,7 @@ fun KitsugiMediaGridDialog(
                                 KitsugiExploreMediaCard(
                                     result = result,
                                     alreadyInList = alreadyInList(result),
+                                    mediaEntry = getMediaEntry(result),
                                     modifier = Modifier.weight(1f),
                                     onClick = {
                                         onItemClick(result)

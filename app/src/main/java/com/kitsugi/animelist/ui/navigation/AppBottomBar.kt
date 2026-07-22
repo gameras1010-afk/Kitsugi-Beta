@@ -90,7 +90,7 @@ fun AppNavigationRail(
                 .fillMaxHeight()
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Top
         ) {
             MainTab.entries.forEach { tab ->
                 androidx.compose.material3.NavigationRailItem(
