@@ -57,6 +57,7 @@ fun KitsugiExploreMediaCard(
     mediaEntry: com.kitsugi.animelist.model.MediaEntry? = null,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null,
     titleLanguage: String = "ROMAJI",
     scoreFormat: String = "POINT_10",
     hideScores: Boolean = false,
@@ -81,6 +82,7 @@ fun KitsugiExploreMediaCard(
             .tvClickable(
                 shape = cardShape,
                 scaleFocused = focusScale,
+                onLongClick = onLongClick,
                 onClick = onClick
             ),
         shape = cardShape,

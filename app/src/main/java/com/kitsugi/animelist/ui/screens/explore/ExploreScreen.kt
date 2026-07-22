@@ -97,6 +97,8 @@ import androidx.compose.foundation.layout.size
 import kotlinx.coroutines.delay
 import com.kitsugi.animelist.ui.components.KitsugiShimmerProvider
 import coil3.compose.AsyncImage
+import androidx.compose.ui.res.stringResource
+import com.kitsugi.animelist.R
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 
@@ -107,6 +109,7 @@ fun ExploreScreen(
     onAddSelectionToList: (ApiSearchSelection) -> Unit,
     onSeeAllSection: (title: String, categoryType: ExploreCategoryType, results: List<JikanSearchResult>) -> Unit,
     onOpenApiDetail: (JikanSearchResult) -> Unit,
+    onEditEntry: (MediaEntry) -> Unit,
     onOpenMangaReader: () -> Unit = {},
     onOpenAiringCalendar: () -> Unit = {},
     initialScrollIndex: Int = 0,
@@ -123,6 +126,7 @@ fun ExploreScreen(
     isNotificationsVisible: Boolean = false
 ) {
     val accentColor = LocalKitsugiAccent.current
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     val filteredTopAnime = remember(viewModel.topAnime, showAdultContent) { viewModel.topAnime.filter { showAdultContent || !it.isAdult } }
     val filteredAiringAnime = remember(viewModel.airingAnime, showAdultContent) { viewModel.airingAnime.filter { showAdultContent || !it.isAdult } }
@@ -132,6 +136,9 @@ fun ExploreScreen(
     val filteredTrendingAnime = remember(viewModel.trendingAnime, showAdultContent) { viewModel.trendingAnime.filter { showAdultContent || !it.isAdult } }
     val filteredMovieAnime = remember(viewModel.movieAnime, showAdultContent) { viewModel.movieAnime.filter { showAdultContent || !it.isAdult } }
     val filteredSeasonalAnime = remember(viewModel.seasonalAnime, showAdultContent) { viewModel.seasonalAnime.filter { showAdultContent || !it.isAdult } }
+    val filteredTrendingManga = remember(viewModel.trendingManga, showAdultContent) { viewModel.trendingManga.filter { showAdultContent || !it.isAdult } }
+    val filteredNewlyAddedAnime = remember(viewModel.newlyAddedAnime, showAdultContent) { viewModel.newlyAddedAnime.filter { showAdultContent || !it.isAdult } }
+    val filteredNewlyAddedManga = remember(viewModel.newlyAddedManga, showAdultContent) { viewModel.newlyAddedManga.filter { showAdultContent || !it.isAdult } }
 
     val heroItems = remember(viewModel.selectedPlatform, filteredTopAnime, filteredAiringAnime, filteredMovieAnime) {
         if (viewModel.selectedPlatform == ExplorePlatform.TMDB) {
@@ -239,6 +246,17 @@ fun ExploreScreen(
         }
     }
 
+    val onLongClickItem = remember(getMediaEntry) {
+        { result: JikanSearchResult ->
+            val entry = getMediaEntry(result)
+            if (entry != null) {
+                onEditEntry(entry)
+            } else {
+                onAddSelectionToList(ApiSearchSelection(result = result, synopsis = null))
+            }
+        }
+    }
+
     // Kategori kartları için gradient renk tanımları
     val animeGradients = listOf(
         listOf(KitsugiColors.AccentPurple.copy(0.85f), KitsugiColors.AccentBlue.copy(0.70f)),   // Top 100
@@ -261,14 +279,6 @@ fun ExploreScreen(
 
     var activeRankingSheetData by remember { mutableStateOf<Triple<String, MediaType, List<JikanSearchResult>>?>(null) }
     var isCategoriesExpanded by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(true) }
-
-    var activeAnimeFilter by remember { mutableStateOf("top") }
-    var activeMangaFilter by remember { mutableStateOf("top") }
-
-    LaunchedEffect(viewModel.selectedPlatform) {
-        activeAnimeFilter = "top"
-        activeMangaFilter = "top"
-    }
 
     val isHeroGone by remember {
         androidx.compose.runtime.derivedStateOf {
@@ -487,13 +497,14 @@ fun ExploreScreen(
                             // ─── TMDB YATAY MEDYA LİSTELERİ ───
                             item {
                                 KitsugiHorizontalMediaSection(
-                                    title = "Trend Her Şey",
+                                    title = stringResource(R.string.explore_tmdb_trending_all),
                                     results = filteredTopAnime,
                                     isLoading = viewModel.isLoading,
                                     alreadyInList = isAlreadyInList,
                                     getMediaEntry = getMediaEntry,
                                     onItemClick = onOpenApiDetail,
-                                    onSeeAllClick = { onSeeAllSection("Trend Her Şey", ExploreCategoryType.TOP_ANIME, filteredTopAnime) },
+                                    onLongClickItem = onLongClickItem,
+                                    onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_tmdb_trending_all), ExploreCategoryType.TOP_ANIME, filteredTopAnime) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
                                     hideScores = hideScores,
@@ -504,13 +515,14 @@ fun ExploreScreen(
 
                             item {
                                 KitsugiHorizontalMediaSection(
-                                    title = "Trend Diziler",
+                                    title = stringResource(R.string.explore_tmdb_trending_shows),
                                     results = filteredAiringAnime,
                                     isLoading = viewModel.isLoading,
                                     alreadyInList = isAlreadyInList,
                                     getMediaEntry = getMediaEntry,
                                     onItemClick = onOpenApiDetail,
-                                    onSeeAllClick = { onSeeAllSection("Trend Diziler", ExploreCategoryType.AIRING_ANIME, filteredAiringAnime) },
+                                    onLongClickItem = onLongClickItem,
+                                    onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_tmdb_trending_shows), ExploreCategoryType.AIRING_ANIME, filteredAiringAnime) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
                                     hideScores = hideScores,
@@ -521,13 +533,14 @@ fun ExploreScreen(
 
                             item {
                                 KitsugiHorizontalMediaSection(
-                                    title = "Trend Filmler",
+                                    title = stringResource(R.string.explore_tmdb_trending_movies),
                                     results = filteredMovieAnime,
                                     isLoading = viewModel.isLoading,
                                     alreadyInList = isAlreadyInList,
                                     getMediaEntry = getMediaEntry,
                                     onItemClick = onOpenApiDetail,
-                                    onSeeAllClick = { onSeeAllSection("Trend Filmler", ExploreCategoryType.MOVIE_ANIME, filteredMovieAnime) },
+                                    onLongClickItem = onLongClickItem,
+                                    onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_tmdb_trending_movies), ExploreCategoryType.MOVIE_ANIME, filteredMovieAnime) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
                                     hideScores = hideScores,
@@ -538,13 +551,14 @@ fun ExploreScreen(
 
                             item {
                                 KitsugiHorizontalMediaSection(
-                                    title = "Popüler Diziler",
+                                    title = stringResource(R.string.explore_tmdb_popular_shows),
                                     results = filteredTopManga,
                                     isLoading = viewModel.isLoading,
                                     alreadyInList = isAlreadyInList,
                                     getMediaEntry = getMediaEntry,
                                     onItemClick = onOpenApiDetail,
-                                    onSeeAllClick = { onSeeAllSection("Popüler Diziler", ExploreCategoryType.AIRING_ANIME, filteredTopManga) },
+                                    onLongClickItem = onLongClickItem,
+                                    onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_tmdb_popular_shows), ExploreCategoryType.AIRING_ANIME, filteredTopManga) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
                                     hideScores = hideScores,
@@ -555,13 +569,14 @@ fun ExploreScreen(
 
                             item {
                                 KitsugiHorizontalMediaSection(
-                                    title = "Popüler Filmler",
+                                    title = stringResource(R.string.explore_tmdb_popular_movies),
                                     results = filteredUpcomingAnime,
                                     isLoading = viewModel.isLoading,
                                     alreadyInList = isAlreadyInList,
                                     getMediaEntry = getMediaEntry,
                                     onItemClick = onOpenApiDetail,
-                                    onSeeAllClick = { onSeeAllSection("Popüler Filmler", ExploreCategoryType.UPCOMING_ANIME, filteredUpcomingAnime) },
+                                    onLongClickItem = onLongClickItem,
+                                    onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_tmdb_popular_movies), ExploreCategoryType.UPCOMING_ANIME, filteredUpcomingAnime) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
                                     hideScores = hideScores,
@@ -572,13 +587,14 @@ fun ExploreScreen(
 
                             item {
                                 KitsugiHorizontalMediaSection(
-                                    title = "En Yüksek Puanlı Filmler",
+                                    title = stringResource(R.string.explore_tmdb_top_rated_movies),
                                     results = filteredPublishingManga,
                                     isLoading = viewModel.isLoading,
                                     alreadyInList = isAlreadyInList,
                                     getMediaEntry = getMediaEntry,
                                     onItemClick = onOpenApiDetail,
-                                    onSeeAllClick = { onSeeAllSection("En Yüksek Puanlı Filmler", ExploreCategoryType.TOP_MANGA, filteredPublishingManga) },
+                                    onLongClickItem = onLongClickItem,
+                                    onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_tmdb_top_rated_movies), ExploreCategoryType.TOP_MANGA, filteredPublishingManga) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
                                     hideScores = hideScores,
@@ -589,13 +605,14 @@ fun ExploreScreen(
 
                             item {
                                 KitsugiHorizontalMediaSection(
-                                    title = "En Yüksek Puanlı Diziler",
+                                    title = stringResource(R.string.explore_tmdb_top_rated_shows),
                                     results = filteredSeasonalAnime,
                                     isLoading = viewModel.isLoading,
                                     alreadyInList = isAlreadyInList,
                                     getMediaEntry = getMediaEntry,
                                     onItemClick = onOpenApiDetail,
-                                    onSeeAllClick = { onSeeAllSection("En Yüksek Puanlı Diziler", ExploreCategoryType.SEASONAL_ANIME, filteredSeasonalAnime) },
+                                    onLongClickItem = onLongClickItem,
+                                    onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_tmdb_top_rated_shows), ExploreCategoryType.SEASONAL_ANIME, filteredSeasonalAnime) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
                                     hideScores = hideScores,
@@ -608,13 +625,14 @@ fun ExploreScreen(
                                 item {
                                     Spacer(modifier = Modifier.height(26.dp))
                                     KitsugiHorizontalMediaSection(
-                                        title = "İzlemeye Devam Et — Diziler",
+                                        title = stringResource(R.string.explore_simkl_continue_watching_series),
                                         results = viewModel.simklContinueSeries,
                                         isLoading = viewModel.isLoading,
                                         alreadyInList = isAlreadyInList,
                                         getMediaEntry = getMediaEntry,
                                         onItemClick = onOpenApiDetail,
-                                        onSeeAllClick = { onSeeAllSection("İzlemeye Devam Et — Diziler", ExploreCategoryType.AIRING_ANIME, viewModel.simklContinueSeries) },
+                                        onLongClickItem = onLongClickItem,
+                                        onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_simkl_continue_watching_series), ExploreCategoryType.AIRING_ANIME, viewModel.simklContinueSeries) },
                                         titleLanguage = titleLanguage,
                                         scoreFormat = scoreFormat,
                                         hideScores = hideScores,
@@ -627,13 +645,14 @@ fun ExploreScreen(
                                 item {
                                     Spacer(modifier = Modifier.height(26.dp))
                                     KitsugiHorizontalMediaSection(
-                                        title = "İzlemeye Devam Et — Filmler",
+                                        title = stringResource(R.string.explore_simkl_continue_watching_movies),
                                         results = viewModel.simklContinueMovies,
                                         isLoading = viewModel.isLoading,
                                         alreadyInList = isAlreadyInList,
                                         getMediaEntry = getMediaEntry,
                                         onItemClick = onOpenApiDetail,
-                                        onSeeAllClick = { onSeeAllSection("İzlemeye Devam Et — Filmler", ExploreCategoryType.MOVIE_ANIME, viewModel.simklContinueMovies) },
+                                        onLongClickItem = onLongClickItem,
+                                        onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_simkl_continue_watching_movies), ExploreCategoryType.MOVIE_ANIME, viewModel.simklContinueMovies) },
                                         titleLanguage = titleLanguage,
                                         scoreFormat = scoreFormat,
                                         hideScores = hideScores,
@@ -646,13 +665,14 @@ fun ExploreScreen(
                                 item {
                                     Spacer(modifier = Modifier.height(26.dp))
                                     KitsugiHorizontalMediaSection(
-                                        title = "Planladıklarım — Diziler",
+                                        title = stringResource(R.string.explore_simkl_plantowatch_series),
                                         results = viewModel.simklPlannedSeries,
                                         isLoading = viewModel.isLoading,
                                         alreadyInList = isAlreadyInList,
                                         getMediaEntry = getMediaEntry,
                                         onItemClick = onOpenApiDetail,
-                                        onSeeAllClick = { onSeeAllSection("Planladıklarım — Diziler", ExploreCategoryType.AIRING_ANIME, viewModel.simklPlannedSeries) },
+                                        onLongClickItem = onLongClickItem,
+                                        onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_simkl_plantowatch_series), ExploreCategoryType.AIRING_ANIME, viewModel.simklPlannedSeries) },
                                         titleLanguage = titleLanguage,
                                         scoreFormat = scoreFormat,
                                         hideScores = hideScores,
@@ -665,13 +685,14 @@ fun ExploreScreen(
                                 item {
                                     Spacer(modifier = Modifier.height(26.dp))
                                     KitsugiHorizontalMediaSection(
-                                        title = "Planladıklarım — Filmler",
+                                        title = stringResource(R.string.explore_simkl_plantowatch_movies),
                                         results = viewModel.simklPlannedMovies,
                                         isLoading = viewModel.isLoading,
                                         alreadyInList = isAlreadyInList,
                                         getMediaEntry = getMediaEntry,
                                         onItemClick = onOpenApiDetail,
-                                        onSeeAllClick = { onSeeAllSection("Planladıklarım — Filmler", ExploreCategoryType.MOVIE_ANIME, viewModel.simklPlannedMovies) },
+                                        onLongClickItem = onLongClickItem,
+                                        onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_simkl_plantowatch_movies), ExploreCategoryType.MOVIE_ANIME, viewModel.simklPlannedMovies) },
                                         titleLanguage = titleLanguage,
                                         scoreFormat = scoreFormat,
                                         hideScores = hideScores,
@@ -743,32 +764,38 @@ fun ExploreScreen(
                                             ) {
                                                 item {
                                                     ExploreCategoryChip(
-                                                        label = "Sezon",
-                                                        onClick = { onSeeAllSection("Mevsimlik Anime", ExploreCategoryType.SEASONAL_ANIME, filteredSeasonalAnime) }
+                                                        label = stringResource(R.string.explore_seasonal_anime),
+                                                        onClick = { onSeeAllSection(context.getString(R.string.explore_seasonal_anime), ExploreCategoryType.SEASONAL_ANIME, filteredSeasonalAnime) }
                                                     )
                                                 }
                                                 item {
                                                     ExploreCategoryChip(
-                                                        label = "Yayın Takvimi",
+                                                        label = stringResource(R.string.explore_airing_soon),
                                                         onClick = onOpenAiringCalendar
                                                     )
                                                 }
                                                 item {
                                                     ExploreCategoryChip(
-                                                        label = "En İyi 100",
-                                                        onClick = { onSeeAllSection("En İyi Anime", ExploreCategoryType.TOP_ANIME, filteredTopAnime) }
+                                                        label = stringResource(R.string.explore_top_anime),
+                                                        onClick = { onSeeAllSection(context.getString(R.string.explore_top_anime), ExploreCategoryType.TOP_ANIME, filteredTopAnime) }
                                                     )
                                                 }
                                                 item {
                                                     ExploreCategoryChip(
-                                                        label = "Trend",
-                                                        onClick = { onSeeAllSection("Trend Anime", ExploreCategoryType.TRENDING_ANIME, filteredTrendingAnime) }
+                                                        label = stringResource(R.string.explore_trending_anime),
+                                                        onClick = { onSeeAllSection(context.getString(R.string.explore_trending_anime), ExploreCategoryType.TRENDING_ANIME, filteredTrendingAnime) }
                                                     )
                                                 }
                                                 item {
                                                     ExploreCategoryChip(
-                                                        label = "Filmler",
-                                                        onClick = { onSeeAllSection("Anime Filmleri", ExploreCategoryType.MOVIE_ANIME, filteredMovieAnime) }
+                                                        label = stringResource(R.string.explore_movie_anime),
+                                                        onClick = { onSeeAllSection(context.getString(R.string.explore_movie_anime), ExploreCategoryType.MOVIE_ANIME, filteredMovieAnime) }
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = stringResource(R.string.explore_newly_added_anime),
+                                                        onClick = { onSeeAllSection(context.getString(R.string.explore_newly_added_anime), ExploreCategoryType.NEWLY_ADDED_ANIME, filteredNewlyAddedAnime) }
                                                     )
                                                 }
                                             }
@@ -789,19 +816,31 @@ fun ExploreScreen(
                                             ) {
                                                 item {
                                                     ExploreCategoryChip(
-                                                        label = "En İyi 100",
-                                                        onClick = { onSeeAllSection("En Popüler Manga", ExploreCategoryType.TOP_MANGA, filteredTopManga) }
+                                                        label = stringResource(R.string.explore_top_manga),
+                                                        onClick = { onSeeAllSection(context.getString(R.string.explore_top_manga), ExploreCategoryType.TOP_MANGA, filteredTopManga) }
                                                     )
                                                 }
                                                 item {
                                                     ExploreCategoryChip(
-                                                        label = "Yakında",
-                                                        onClick = { onSeeAllSection("Yayındaki Manga", ExploreCategoryType.PUBLISHING_MANGA, filteredPublishingManga) }
+                                                        label = stringResource(R.string.explore_publishing_manga),
+                                                        onClick = { onSeeAllSection(context.getString(R.string.explore_publishing_manga), ExploreCategoryType.PUBLISHING_MANGA, filteredPublishingManga) }
                                                     )
                                                 }
                                                 item {
                                                     ExploreCategoryChip(
-                                                        label = "Manga Oku",
+                                                        label = stringResource(R.string.explore_trending_manga),
+                                                        onClick = { onSeeAllSection(context.getString(R.string.explore_trending_manga), ExploreCategoryType.TRENDING_MANGA, filteredTrendingManga) }
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = stringResource(R.string.explore_newly_added_manga),
+                                                        onClick = { onSeeAllSection(context.getString(R.string.explore_newly_added_manga), ExploreCategoryType.NEWLY_ADDED_MANGA, filteredNewlyAddedManga) }
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = stringResource(R.string.explore_read_manga),
                                                         onClick = onOpenMangaReader
                                                     )
                                                 }
@@ -826,7 +865,7 @@ fun ExploreScreen(
                                             horizontalArrangement = Arrangement.SpaceBetween
                                         ) {
                                             Text(
-                                                text = "Yakında Yayında",
+                                                text = stringResource(R.string.explore_airing_soon),
                                                 color = KitsugiColors.TextPrimary,
                                                 style = MaterialTheme.typography.titleLarge,
                                                 fontWeight = FontWeight.Bold
@@ -859,6 +898,7 @@ fun ExploreScreen(
                                                     result = result,
                                                     alreadyInList = isAlreadyInList(result),
                                                     onItemClick = { onOpenApiDetail(result) },
+                                                    onLongClick = { onLongClickItem(result) },
                                                     titleLanguage = titleLanguage
                                                 )
                                             }
@@ -868,199 +908,154 @@ fun ExploreScreen(
                                 }
                             }
 
-                            // ─── ANİME FİLTRELENMİŞ SEKSİYON ───
+                            // ─── POPÜLER ANİME ───
                             item {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 20.dp)
-                                ) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Text(
-                                            text = "Anime",
-                                            color = KitsugiColors.TextPrimary,
-                                            style = MaterialTheme.typography.titleLarge,
-                                            fontWeight = FontWeight.Bold
-                                        )
-
-                                        val activeAnimeList = when (activeAnimeFilter) {
-                                            "airing" -> filteredAiringAnime
-                                            "upcoming" -> filteredUpcomingAnime
-                                            else -> filteredTopAnime
-                                        }
-                                        val activeAnimeTitle = when (activeAnimeFilter) {
-                                            "airing" -> "Yayındaki Anime"
-                                            "upcoming" -> "Yaklaşan Anime"
-                                            else -> "Popüler Anime"
-                                        }
-                                        val activeAnimeCategory = when (activeAnimeFilter) {
-                                            "airing" -> ExploreCategoryType.AIRING_ANIME
-                                            "upcoming" -> ExploreCategoryType.UPCOMING_ANIME
-                                            else -> ExploreCategoryType.TOP_ANIME
-                                        }
-
-                                        TextButton(
-                                            onClick = {
-                                                onSeeAllSection(activeAnimeTitle, activeAnimeCategory, activeAnimeList)
-                                            }
-                                        ) {
-                                            Text(
-                                                text = "Tümünü Gör",
-                                                color = accentColor,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                        }
-                                    }
-
-                                    Spacer(modifier = Modifier.height(6.dp))
-
-                                    LazyRow(
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        item {
-                                            ExploreFilterChip(
-                                                label = "En Popüler",
-                                                selected = activeAnimeFilter == "top",
-                                                onClick = { activeAnimeFilter = "top" }
-                                            )
-                                        }
-                                        item {
-                                            ExploreFilterChip(
-                                                label = "Yayınlanıyor",
-                                                selected = activeAnimeFilter == "airing",
-                                                onClick = { activeAnimeFilter = "airing" }
-                                            )
-                                        }
-                                        item {
-                                            ExploreFilterChip(
-                                                label = "Yakında",
-                                                selected = activeAnimeFilter == "upcoming",
-                                                onClick = { activeAnimeFilter = "upcoming" }
-                                            )
-                                        }
-                                    }
-                                }
-                                Spacer(modifier = Modifier.height(14.dp))
-                            }
-
-                            item {
-                                val activeAnimeList = when (activeAnimeFilter) {
-                                    "airing" -> filteredAiringAnime
-                                    "upcoming" -> filteredUpcomingAnime
-                                    else -> filteredTopAnime
-                                }
-
                                 KitsugiHorizontalMediaSection(
-                                    title = "anime_$activeAnimeFilter",
-                                    results = activeAnimeList,
+                                    title = stringResource(R.string.explore_top_anime),
+                                    results = filteredTopAnime,
                                     isLoading = viewModel.isLoading,
                                     alreadyInList = isAlreadyInList,
                                     getMediaEntry = getMediaEntry,
                                     onItemClick = onOpenApiDetail,
-                                    onSeeAllClick = null,
+                                    onLongClickItem = onLongClickItem,
+                                    onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_top_anime), ExploreCategoryType.TOP_ANIME, filteredTopAnime) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
                                     hideScores = hideScores,
-                                    blurAdultMedia = blurAdultMedia,
-                                    showTitle = false
+                                    blurAdultMedia = blurAdultMedia
                                 )
                                 Spacer(modifier = Modifier.height(26.dp))
                             }
 
-                            // ─── MANGA FİLTRELENMİŞ SEKSİYON ───
+                            // ─── YAYINDAKİ ANİME ───
                             item {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 20.dp)
-                                ) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Text(
-                                            text = "Manga",
-                                            color = KitsugiColors.TextPrimary,
-                                            style = MaterialTheme.typography.titleLarge,
-                                            fontWeight = FontWeight.Bold
-                                        )
-
-                                        val activeMangaList = when (activeMangaFilter) {
-                                            "publishing" -> filteredPublishingManga
-                                            else -> filteredTopManga
-                                        }
-                                        val activeMangaTitle = when (activeMangaFilter) {
-                                            "publishing" -> "Yayındaki Manga"
-                                            else -> "Popüler Manga"
-                                        }
-                                        val activeMangaCategory = when (activeMangaFilter) {
-                                            "publishing" -> ExploreCategoryType.PUBLISHING_MANGA
-                                            else -> ExploreCategoryType.TOP_MANGA
-                                        }
-
-                                        TextButton(
-                                            onClick = {
-                                                onSeeAllSection(activeMangaTitle, activeMangaCategory, activeMangaList)
-                                            }
-                                        ) {
-                                            Text(
-                                                text = "Tümünü Gör",
-                                                color = accentColor,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                        }
-                                    }
-
-                                    Spacer(modifier = Modifier.height(6.dp))
-
-                                    LazyRow(
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        item {
-                                            ExploreFilterChip(
-                                                label = "En İyi 100",
-                                                selected = activeMangaFilter == "top",
-                                                onClick = { activeMangaFilter = "top" }
-                                            )
-                                        }
-                                        item {
-                                            ExploreFilterChip(
-                                                label = "Yakında",
-                                                selected = activeMangaFilter == "publishing",
-                                                onClick = { activeMangaFilter = "publishing" }
-                                            )
-                                        }
-                                    }
-                                }
-                                Spacer(modifier = Modifier.height(14.dp))
-                            }
-
-                            item {
-                                val activeMangaList = when (activeMangaFilter) {
-                                    "publishing" -> filteredPublishingManga
-                                    else -> filteredTopManga
-                                }
-
                                 KitsugiHorizontalMediaSection(
-                                    title = "manga_$activeMangaFilter",
-                                    results = activeMangaList,
+                                    title = stringResource(R.string.explore_airing_anime),
+                                    results = filteredAiringAnime,
                                     isLoading = viewModel.isLoading,
                                     alreadyInList = isAlreadyInList,
                                     getMediaEntry = getMediaEntry,
                                     onItemClick = onOpenApiDetail,
-                                    onSeeAllClick = null,
+                                    onLongClickItem = onLongClickItem,
+                                    onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_airing_anime), ExploreCategoryType.AIRING_ANIME, filteredAiringAnime) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
                                     hideScores = hideScores,
-                                    blurAdultMedia = blurAdultMedia,
-                                    showTitle = false
+                                    blurAdultMedia = blurAdultMedia
+                                )
+                                Spacer(modifier = Modifier.height(26.dp))
+                            }
+
+                            // ─── YAKLAŞAN ANİME ───
+                            item {
+                                KitsugiHorizontalMediaSection(
+                                    title = stringResource(R.string.explore_upcoming_anime),
+                                    results = filteredUpcomingAnime,
+                                    isLoading = viewModel.isLoading,
+                                    alreadyInList = isAlreadyInList,
+                                    getMediaEntry = getMediaEntry,
+                                    onItemClick = onOpenApiDetail,
+                                    onLongClickItem = onLongClickItem,
+                                    onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_upcoming_anime), ExploreCategoryType.UPCOMING_ANIME, filteredUpcomingAnime) },
+                                    titleLanguage = titleLanguage,
+                                    scoreFormat = scoreFormat,
+                                    hideScores = hideScores,
+                                    blurAdultMedia = blurAdultMedia
+                                )
+                                Spacer(modifier = Modifier.height(26.dp))
+                            }
+
+                            // ─── YENİ EKLENEN ANİME ───
+                            item {
+                                KitsugiHorizontalMediaSection(
+                                    title = stringResource(R.string.explore_newly_added_anime),
+                                    results = filteredNewlyAddedAnime,
+                                    isLoading = viewModel.isLoading,
+                                    alreadyInList = isAlreadyInList,
+                                    getMediaEntry = getMediaEntry,
+                                    onItemClick = onOpenApiDetail,
+                                    onLongClickItem = onLongClickItem,
+                                    onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_newly_added_anime), ExploreCategoryType.NEWLY_ADDED_ANIME, filteredNewlyAddedAnime) },
+                                    titleLanguage = titleLanguage,
+                                    scoreFormat = scoreFormat,
+                                    hideScores = hideScores,
+                                    blurAdultMedia = blurAdultMedia
+                                )
+                                Spacer(modifier = Modifier.height(26.dp))
+                            }
+
+                            // ─── POPÜLER MANGA ───
+                            item {
+                                KitsugiHorizontalMediaSection(
+                                    title = stringResource(R.string.explore_top_manga),
+                                    results = filteredTopManga,
+                                    isLoading = viewModel.isLoading,
+                                    alreadyInList = isAlreadyInList,
+                                    getMediaEntry = getMediaEntry,
+                                    onItemClick = onOpenApiDetail,
+                                    onLongClickItem = onLongClickItem,
+                                    onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_top_manga), ExploreCategoryType.TOP_MANGA, filteredTopManga) },
+                                    titleLanguage = titleLanguage,
+                                    scoreFormat = scoreFormat,
+                                    hideScores = hideScores,
+                                    blurAdultMedia = blurAdultMedia
+                                )
+                                Spacer(modifier = Modifier.height(26.dp))
+                            }
+
+                            // ─── YAYINDAKİ MANGA ───
+                            item {
+                                KitsugiHorizontalMediaSection(
+                                    title = stringResource(R.string.explore_publishing_manga),
+                                    results = filteredPublishingManga,
+                                    isLoading = viewModel.isLoading,
+                                    alreadyInList = isAlreadyInList,
+                                    getMediaEntry = getMediaEntry,
+                                    onItemClick = onOpenApiDetail,
+                                    onLongClickItem = onLongClickItem,
+                                    onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_publishing_manga), ExploreCategoryType.PUBLISHING_MANGA, filteredPublishingManga) },
+                                    titleLanguage = titleLanguage,
+                                    scoreFormat = scoreFormat,
+                                    hideScores = hideScores,
+                                    blurAdultMedia = blurAdultMedia
+                                )
+                                Spacer(modifier = Modifier.height(26.dp))
+                            }
+
+                            // ─── TREND MANGA ───
+                            item {
+                                KitsugiHorizontalMediaSection(
+                                    title = stringResource(R.string.explore_trending_manga),
+                                    results = filteredTrendingManga,
+                                    isLoading = viewModel.isLoading,
+                                    alreadyInList = isAlreadyInList,
+                                    getMediaEntry = getMediaEntry,
+                                    onItemClick = onOpenApiDetail,
+                                    onLongClickItem = onLongClickItem,
+                                    onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_trending_manga), ExploreCategoryType.TRENDING_MANGA, filteredTrendingManga) },
+                                    titleLanguage = titleLanguage,
+                                    scoreFormat = scoreFormat,
+                                    hideScores = hideScores,
+                                    blurAdultMedia = blurAdultMedia
+                                )
+                                Spacer(modifier = Modifier.height(26.dp))
+                            }
+
+                            // ─── YENİ EKLENEN MANGA ───
+                            item {
+                                KitsugiHorizontalMediaSection(
+                                    title = stringResource(R.string.explore_newly_added_manga),
+                                    results = filteredNewlyAddedManga,
+                                    isLoading = viewModel.isLoading,
+                                    alreadyInList = isAlreadyInList,
+                                    getMediaEntry = getMediaEntry,
+                                    onItemClick = onOpenApiDetail,
+                                    onLongClickItem = onLongClickItem,
+                                    onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_newly_added_manga), ExploreCategoryType.NEWLY_ADDED_MANGA, filteredNewlyAddedManga) },
+                                    titleLanguage = titleLanguage,
+                                    scoreFormat = scoreFormat,
+                                    hideScores = hideScores,
+                                    blurAdultMedia = blurAdultMedia
                                 )
                             }
                         }
@@ -1116,35 +1111,6 @@ fun ExploreCategoryChip(
     }
 }
 
-@Composable
-fun ExploreFilterChip(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val accentColor = LocalKitsugiAccent.current
-    val backgroundColor = if (selected) accentColor else KitsugiColors.Surface
-    val contentColor = if (selected) KitsugiColors.Background else KitsugiColors.TextSecondary
-    val borderColor = if (selected) accentColor else KitsugiColors.SurfaceSoft
-
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(backgroundColor)
-            .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = label,
-            color = contentColor,
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
 
 @Composable
 fun AiringSoonCountdownText(
@@ -1167,16 +1133,25 @@ fun AiringSoonCountdownText(
                 remaining <= 0L -> "Bölüm $episode yayınlandı"
                 remaining < 3600L -> {
                     val mins = (remaining / 60).toInt()
-                    "${mins} dk sonra yayında"
+                    "${mins} dk sonra yayınlanacak"
                 }
                 remaining < 86400L -> {
                     val hours = (remaining / 3600).toInt()
-                    val mins = ((remaining % 3600) / 60).toInt()
-                    "%02d:%02d sonra yayında".format(hours, mins)
+                    "${hours} saat sonra yayınlanacak"
                 }
                 else -> {
                     val days = (remaining / 86400).toInt()
-                    "$days gün sonra yayında"
+                    if (days > 6) {
+                        val weeks = days / 7
+                        if (weeks > 4) {
+                            val months = days / 30
+                            "$months ay sonra yayınlanacak"
+                        } else {
+                            "$weeks hafta sonra yayınlanacak"
+                        }
+                    } else {
+                        "$days gün sonra yayınlanacak"
+                    }
                 }
             }
             if (remaining <= 0L) break
@@ -1205,6 +1180,7 @@ fun AiringSoonHorizontalCard(
     result: JikanSearchResult,
     alreadyInList: Boolean,
     onItemClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
     titleLanguage: String = "ROMAJI",
     modifier: Modifier = Modifier
 ) {
@@ -1214,9 +1190,9 @@ fun AiringSoonHorizontalCard(
     }
 
     val displayScore = when {
-        result.rawScoreDouble != null -> "⭐ ${result.rawScoreDouble}"
+        result.rawScoreDouble != null -> "★ ${result.rawScoreDouble}"
         result.score != null -> {
-            if (result.score > 10) "⭐ ${result.score}%" else "⭐ ${result.score}"
+            if (result.score > 10) "★ ${result.score}%" else "★ ${result.score}"
         }
         else -> null
     }
@@ -1232,7 +1208,11 @@ fun AiringSoonHorizontalCard(
                     Modifier.border(1.dp, KitsugiColors.AccentGreen.copy(0.45f), RoundedCornerShape(12.dp))
                 else Modifier
             )
-            .tvClickable(shape = RoundedCornerShape(12.dp), onClick = onItemClick)
+            .tvClickable(
+                shape = RoundedCornerShape(12.dp),
+                onLongClick = onLongClick,
+                onClick = onItemClick
+            )
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

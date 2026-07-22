@@ -95,6 +95,15 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
     var airingSoonAnime by mutableStateOf<List<JikanSearchResult>>(initialPayload?.airingSoonAnime ?: emptyList())
         private set
 
+    var trendingManga by mutableStateOf<List<JikanSearchResult>>(initialPayload?.trendingManga ?: emptyList())
+        private set
+
+    var newlyAddedAnime by mutableStateOf<List<JikanSearchResult>>(initialPayload?.newlyAddedAnime ?: emptyList())
+        private set
+
+    var newlyAddedManga by mutableStateOf<List<JikanSearchResult>>(initialPayload?.newlyAddedManga ?: emptyList())
+        private set
+
     var heroIndex by mutableIntStateOf(0)
 
     // ── Simkl Kullanıcı Listeleri (NyanTV HomeSections.kt referans) ──────────────
@@ -201,6 +210,9 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         movieAnime = payload.movieAnime
         seasonalAnime = payload.seasonalAnime
         airingSoonAnime = payload.airingSoonAnime
+        trendingManga = payload.trendingManga
+        newlyAddedAnime = payload.newlyAddedAnime
+        newlyAddedManga = payload.newlyAddedManga
         heroIndex = 0
 
         simklContinueMovies = payload.simklContinueMovies
@@ -220,6 +232,9 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         movieAnime = emptyList()
         seasonalAnime = emptyList()
         airingSoonAnime = emptyList()
+        trendingManga = emptyList()
+        newlyAddedAnime = emptyList()
+        newlyAddedManga = emptyList()
         // Simkl kullanıcı şeritlerini temizleme — platform değişiminde de gözüksün
         heroIndex = 0
         errorMessage = null
@@ -410,10 +425,13 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         val upcomingAnimeDeferred = async { apiClient.upcomingAnime(showAdultContent = showAdult) }
         val topMangaDeferred = async { apiClient.topManga(showAdultContent = showAdult) }
         val publishingMangaDeferred = async { apiClient.publishingManga(showAdultContent = showAdult) }
+        val trendingMangaDeferred = async { apiClient.trendingManga(showAdultContent = showAdult) }
+        val newlyAddedAnimeDeferred = async { apiClient.newlyAddedAnime(showAdultContent = showAdult) }
+        val newlyAddedMangaDeferred = async { apiClient.newlyAddedManga(showAdultContent = showAdult) }
 
         val rawTopAnime = runCatching { topAnimeDeferred.await() }.getOrDefault(emptyList())
 
-        // İlk 5 vitrin öğesini paralel olarak TMDB'den yatay backdrop resmi ile zenginleştir
+        // İlk 5 vitrin öğesini paralel olarak TMDB'den yatay backdrop resmi ile zenrichleştir
         val enrichedTopAnime = if (rawTopAnime.isNotEmpty() && tmdbEnabledState) {
             val heroCount = minOf(rawTopAnime.size, 5)
             val backdropJobs = (0 until heroCount).map { index ->
@@ -446,7 +464,7 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
                         subtitle = "${entry.episode}. Bölüm",
                         type = MediaType.Anime,
                         total = null,
-                        score = null,
+                        score = entry.averageScore,
                         isAdult = false,
                         imageUrl = entry.coverUrl,
                         year = null,
@@ -465,6 +483,9 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
             upcomingAnime = runCatching { upcomingAnimeDeferred.await() }.getOrDefault(emptyList()),
             topManga = runCatching { topMangaDeferred.await() }.getOrDefault(emptyList()),
             publishingManga = runCatching { publishingMangaDeferred.await() }.getOrDefault(emptyList()),
+            trendingManga = runCatching { trendingMangaDeferred.await() }.getOrDefault(emptyList()),
+            newlyAddedAnime = runCatching { newlyAddedAnimeDeferred.await() }.getOrDefault(emptyList()),
+            newlyAddedManga = runCatching { newlyAddedMangaDeferred.await() }.getOrDefault(emptyList()),
             trendingAnime = emptyList(),
             movieAnime = emptyList(),
             seasonalAnime = emptyList(),
@@ -479,6 +500,9 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         val upcomingAnimeDeferred = async { apiClient.aniListUpcomingAnime(showAdultContent = showAdult) }
         val topMangaDeferred = async { apiClient.aniListTopManga(showAdultContent = showAdult) }
         val publishingMangaDeferred = async { apiClient.aniListPublishingManga(showAdultContent = showAdult) }
+        val trendingMangaDeferred = async { apiClient.aniListTrendingManga(showAdultContent = showAdult) }
+        val newlyAddedAnimeDeferred = async { apiClient.aniListNewlyAddedAnime(showAdultContent = showAdult) }
+        val newlyAddedMangaDeferred = async { apiClient.aniListNewlyAddedManga(showAdultContent = showAdult) }
 
         val airingSoonDeferred = async {
             val calendarClient = com.kitsugi.animelist.data.remote.KitsugiAiringCalendarClient()
@@ -495,7 +519,7 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
                         subtitle = "${entry.episode}. Bölüm",
                         type = MediaType.Anime,
                         total = null,
-                        score = null,
+                        score = entry.averageScore,
                         isAdult = false,
                         imageUrl = entry.coverUrl,
                         year = null,
@@ -514,6 +538,9 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
             upcomingAnime = runCatching { upcomingAnimeDeferred.await() }.getOrDefault(emptyList()),
             topManga = runCatching { topMangaDeferred.await() }.getOrDefault(emptyList()),
             publishingManga = runCatching { publishingMangaDeferred.await() }.getOrDefault(emptyList()),
+            trendingManga = runCatching { trendingMangaDeferred.await() }.getOrDefault(emptyList()),
+            newlyAddedAnime = runCatching { newlyAddedAnimeDeferred.await() }.getOrDefault(emptyList()),
+            newlyAddedManga = runCatching { newlyAddedMangaDeferred.await() }.getOrDefault(emptyList()),
             trendingAnime = emptyList(),
             movieAnime = emptyList(),
             seasonalAnime = emptyList(),
@@ -718,5 +745,8 @@ data class ExplorePayload(
     val simklPlannedMovies: List<JikanSearchResult> = emptyList(),
     val simklContinueSeries: List<JikanSearchResult> = emptyList(),
     val simklPlannedSeries: List<JikanSearchResult> = emptyList(),
-    val airingSoonAnime: List<JikanSearchResult> = emptyList()
+    val airingSoonAnime: List<JikanSearchResult> = emptyList(),
+    val trendingManga: List<JikanSearchResult> = emptyList(),
+    val newlyAddedAnime: List<JikanSearchResult> = emptyList(),
+    val newlyAddedManga: List<JikanSearchResult> = emptyList()
 )

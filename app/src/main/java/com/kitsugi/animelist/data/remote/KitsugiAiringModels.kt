@@ -22,7 +22,8 @@ data class AiringEntry(
      * Haftanın günü: Calendar.MONDAY (2) … Calendar.SUNDAY (1).
      * Kullanıcının yerel saat dilimine göre hesaplanır.
      */
-    val dayOfWeek: Int
+    val dayOfWeek: Int,
+    val averageScore: Int? = null
 ) {
     /** Yayın saatini okunabilir "HH:mm" formatında döndürür. */
     fun formattedTime(): String {
@@ -48,7 +49,7 @@ data class AiringEntry(
             subtitle = titleEnglish ?: "",
             type = com.kitsugi.animelist.model.MediaType.Anime,
             total = null,
-            score = null,
+            score = averageScore,
             isAdult = false,
             imageUrl = coverUrl,
             year = null,

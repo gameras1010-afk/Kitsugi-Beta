@@ -747,7 +747,7 @@ fun CharacterDetailPage(
                                                     tint = KitsugiColors.TextSecondary
                                                 )
                                             }
-                                            if (isAniListSource) {
+                                            if (showFavouriteButton) {
                                                 IconButton(onClick = { viewModel.toggleFavourite() }) {
                                                     Icon(
                                                         imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,

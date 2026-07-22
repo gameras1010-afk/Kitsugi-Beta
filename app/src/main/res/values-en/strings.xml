@@ -388,4 +388,33 @@
     <string name="notif_empty_list_mal">No new episodes found for anime in your watch list</string>
     <string name="notif_empty_list_simkl">No new notifications for content in your watch list</string>
     <string name="notif_empty_no_notifications">No new notifications</string>
+
+    <!-- Explore Categories -->
+    <string name="explore_top_anime">Popular Anime</string>
+    <string name="explore_airing_anime">Airing Anime</string>
+    <string name="explore_upcoming_anime">Upcoming Anime</string>
+    <string name="explore_top_manga">Popular Manga</string>
+    <string name="explore_publishing_manga">Publishing Manga</string>
+    <string name="explore_trending_manga">Trending Manga</string>
+    <string name="explore_newly_added_anime">Newly Added Anime</string>
+    <string name="explore_newly_added_manga">Newly Added Manga</string>
+    <string name="explore_airing_soon">Airing Soon</string>
+    <string name="explore_trending_anime">Trending Anime</string>
+    <string name="explore_movie_anime">Anime Movies</string>
+    <string name="explore_seasonal_anime">Seasonal Anime</string>
+
+    <!-- TMDB / Simkl Explore Sections -->
+    <string name="explore_tmdb_trending_all">Trending All</string>
+    <string name="explore_tmdb_trending_shows">Trending Shows</string>
+    <string name="explore_tmdb_trending_movies">Trending Movies</string>
+    <string name="explore_tmdb_popular_shows">Popular Shows</string>
+    <string name="explore_tmdb_popular_movies">Popular Movies</string>
+    <string name="explore_tmdb_top_rated_movies">Top Rated Movies</string>
+    <string name="explore_tmdb_top_rated_shows">Top Rated Shows</string>
+
+    <string name="explore_simkl_continue_watching_movies">Continue Watching (Movies)</string>
+    <string name="explore_simkl_plantowatch_movies">Plan to Watch (Movies)</string>
+    <string name="explore_simkl_continue_watching_series">Continue Watching (Series &amp; Anime)</string>
+    <string name="explore_simkl_plantowatch_series">Plan to Watch (Series &amp; Anime)</string>
+    <string name="explore_read_manga">Read Manga</string>
 </resources>

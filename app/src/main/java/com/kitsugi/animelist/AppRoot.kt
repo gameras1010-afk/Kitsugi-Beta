@@ -816,9 +816,7 @@ fun AppRoot(
                 if (isLandscape && !isInFullScreenMode) {
                     AppNavigationRail(
                         selectedTab = selectedTab,
-                        onTabSelected = { tab -> appViewModel.selectTab(tab) },
-                        onNotificationsClick = { navState.navigateToDetail(DetailScreen.Notifications) },
-                        isNotificationsSelected = activeScreen is DetailScreen.Notifications
+                        onTabSelected = { tab -> appViewModel.selectTab(tab) }
                     )
                 }
             Box(
@@ -1172,6 +1170,7 @@ private fun AppNavigationContent(
                         onAddApiSelectionToList = onAddApiSelectionToList,
                         onSeeAllSection = onSeeAllSection,
                         onOpenMangaReader = onOpenMangaReader,
+                        onEditEntry = onEditEntry,
                         onSearchByGenre = triggerSearchByGenre,
                         onSearchByTag = triggerSearchByTag
                     )

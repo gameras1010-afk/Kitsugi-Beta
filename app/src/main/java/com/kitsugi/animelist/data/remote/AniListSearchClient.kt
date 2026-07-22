@@ -153,6 +153,48 @@ class AniListSearchClient(
         }
     }
 
+    suspend fun aniListTrendingManga(page: Int = 1, showAdultContent: Boolean = false): List<JikanSearchResult> {
+        return withContext(Dispatchers.IO) {
+            requestAniList(
+                mediaType = MediaType.Manga,
+                search = null,
+                status = null,
+                sort = listOf("TRENDING_DESC", "POPULARITY_DESC"),
+                perPage = 20,
+                page = page,
+                showAdultContent = showAdultContent
+            )
+        }
+    }
+
+    suspend fun aniListNewlyAddedAnime(page: Int = 1, showAdultContent: Boolean = false): List<JikanSearchResult> {
+        return withContext(Dispatchers.IO) {
+            requestAniList(
+                mediaType = MediaType.Anime,
+                search = null,
+                status = null,
+                sort = listOf("ID_DESC"),
+                perPage = 20,
+                page = page,
+                showAdultContent = showAdultContent
+            )
+        }
+    }
+
+    suspend fun aniListNewlyAddedManga(page: Int = 1, showAdultContent: Boolean = false): List<JikanSearchResult> {
+        return withContext(Dispatchers.IO) {
+            requestAniList(
+                mediaType = MediaType.Manga,
+                search = null,
+                status = null,
+                sort = listOf("ID_DESC"),
+                perPage = 20,
+                page = page,
+                showAdultContent = showAdultContent
+            )
+        }
+    }
+
     suspend fun aniListSeasonalAnime(
         page: Int = 1,
         showAdultContent: Boolean = false,

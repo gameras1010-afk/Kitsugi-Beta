@@ -338,22 +338,27 @@ fun StaffDetailPage(
                                     LaunchedEffect(selectedTab) {
                                         tabListState.animateScrollToItem(selectedTab)
                                     }
-                                    LazyRow(
-                                        state = tabListState,
-                                        modifier = Modifier.fillMaxWidth()
+                                    // Full-width tab row — each tab fills equally (AniHyou style)
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
                                             .focusRequester(tabBarFocusRequester)
                                             .focusProperties { left = leftPanelFocusRequester }
                                             .padding(horizontal = 16.dp, vertical = 12.dp),
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        items(tabs.size) { index ->
-                                            val title = tabs[index]
+                                        tabs.forEachIndexed { index, title ->
                                             val isSelected = selectedTab == index
                                             Box(
-                                                modifier = Modifier.clip(RoundedCornerShape(999.dp)).background(if (isSelected) accentColor else KitsugiColors.Surface).tvClickable(shape = RoundedCornerShape(999.dp)) { coroutineScope.launch { pagerState.animateScrollToPage(index) } }.padding(horizontal = 16.dp, vertical = 8.dp),
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .clip(RoundedCornerShape(999.dp))
+                                                    .background(if (isSelected) accentColor else KitsugiColors.Surface)
+                                                    .tvClickable(shape = RoundedCornerShape(999.dp)) { coroutineScope.launch { pagerState.animateScrollToPage(index) } }
+                                                    .padding(horizontal = 8.dp, vertical = 8.dp),
                                                 contentAlignment = Alignment.Center
                                             ) {
-                                                Text(title, color = if (isSelected) KitsugiColors.Background else KitsugiColors.TextSecondary, style = MaterialTheme.typography.labelLarge, fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold)
+                                                Text(title, color = if (isSelected) KitsugiColors.Background else KitsugiColors.TextSecondary, style = MaterialTheme.typography.labelLarge, fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                             }
                                         }
                                     }
@@ -609,13 +614,13 @@ fun StaffDetailPage(
                                 }
                             }
 
+
                             // Tabs row
                             stickyHeader(key = "tabs") {
                                 LaunchedEffect(selectedTab) {
                                     if (listState.firstVisibleItemIndex > 1) {
                                         listState.scrollToItem(1)
                                     }
-                                    tabListState.animateScrollToItem(selectedTab)
                                 }
                                 Column(
                                     modifier = Modifier
@@ -674,38 +679,41 @@ fun StaffDetailPage(
                                         }
                                     }
 
-                                    LazyRow(
-                                        state = tabListState,
+                                    // Full-width tab row — each tab fills equally (AniHyou style)
+                                    Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(horizontal = 20.dp, vertical = 10.dp),
+                                            .padding(horizontal = 16.dp, vertical = 10.dp),
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        items(tabs.size) { index ->
-                                            val title = tabs[index]
+                                        tabs.forEachIndexed { index, title ->
                                             val isSelected = selectedTab == index
-                                            val bgColor = if (isSelected) accentColor else KitsugiColors.Surface
+                                            val bgColor = if (isSelected) accentColor else KitsugiColors.SurfaceSoft
                                             val textColor = if (isSelected) KitsugiColors.Background else KitsugiColors.TextSecondary
 
                                             Box(
                                                 modifier = Modifier
+                                                    .weight(1f)
                                                     .clip(RoundedCornerShape(999.dp))
                                                     .background(bgColor)
                                                     .tvClickable(shape = RoundedCornerShape(999.dp)) { coroutineScope.launch { pagerState.animateScrollToPage(index) } }
-                                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                                    .padding(horizontal = 8.dp, vertical = 8.dp),
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Text(
                                                     text = title,
                                                     color = textColor,
                                                     style = MaterialTheme.typography.labelLarge,
-                                                    fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold
+                                                    fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis
                                                 )
                                             }
                                         }
                                     }
                                 }
                             }
+
 
                             // Tab content rendering
                             item(key = "content") {

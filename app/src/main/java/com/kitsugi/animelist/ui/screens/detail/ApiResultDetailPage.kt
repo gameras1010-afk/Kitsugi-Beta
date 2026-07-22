@@ -120,6 +120,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -1016,6 +1018,16 @@ fun ApiResultDetailPage(
                                             contentDescription = "Paylaş",
                                             tint = KitsugiColors.TextSecondary
                                         )
+                                    }
+                                    if (showFavouriteButton && onToggleFavoriteClick != null) {
+                                        val isFavorite = existingEntry?.isFavorite ?: false
+                                        IconButton(onClick = onToggleFavoriteClick) {
+                                            Icon(
+                                                imageVector = if (isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                                                contentDescription = if (isFavorite) "Favoriden Çıkar" else "Favori Yap",
+                                                tint = if (isFavorite) accentColor else KitsugiColors.TextSecondary
+                                            )
+                                        }
                                     }
                                 }
                             }

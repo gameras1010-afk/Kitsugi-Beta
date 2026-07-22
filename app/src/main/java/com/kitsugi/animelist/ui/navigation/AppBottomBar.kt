@@ -88,8 +88,6 @@ fun AppBottomBar(
 fun AppNavigationRail(
     selectedTab: MainTab,
     onTabSelected: (MainTab) -> Unit,
-    onNotificationsClick: () -> Unit,
-    isNotificationsSelected: Boolean,
     modifier: androidx.compose.ui.Modifier = androidx.compose.ui.Modifier
 ) {
     val accentColor = LocalKitsugiAccent.current
@@ -161,7 +159,7 @@ fun AppNavigationRail(
             )
 
             mainTabs.forEach { tab ->
-                val isSelected = selectedTab == tab && !isNotificationsSelected
+                val isSelected = selectedTab == tab
                 androidx.compose.material3.NavigationRailItem(
                     selected = isSelected,
                     onClick = {
@@ -198,40 +196,9 @@ fun AppNavigationRail(
                 Spacer(modifier = androidx.compose.ui.Modifier.height(itemSpacingHeight))
             }
 
-            // Notifications Item
-            androidx.compose.material3.NavigationRailItem(
-                selected = isNotificationsSelected,
-                onClick = {
-                    onNotificationsClick()
-                },
-                icon = {
-                    Icon(
-                        imageVector = if (isNotificationsSelected) Icons.Rounded.Notifications else Icons.Rounded.NotificationsNone,
-                        contentDescription = "Bildirimler"
-                    )
-                },
-                label = if (showLabels) {
-                    {
-                        Text(
-                            text = "Bildirimler",
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                } else null,
-                colors = androidx.compose.material3.NavigationRailItemDefaults.colors(
-                    selectedIconColor = KitsugiColors.Background,
-                    selectedTextColor = accentColor,
-                    indicatorColor = accentColor,
-                    unselectedIconColor = KitsugiColors.TextSecondary,
-                    unselectedTextColor = KitsugiColors.TextSecondary
-                )
-            )
-            Spacer(modifier = androidx.compose.ui.Modifier.height(itemSpacingHeight))
-
             // Settings Item
             val settingsTab = MainTab.Settings
-            val isSettingsSelected = selectedTab == settingsTab && !isNotificationsSelected
+            val isSettingsSelected = selectedTab == settingsTab
             androidx.compose.material3.NavigationRailItem(
                 selected = isSettingsSelected,
                 onClick = {

@@ -78,54 +78,162 @@ fun KitsugiMarkdownText(
     }
 
     CompositionLocalProvider(LocalUriHandler provides uriHandler) {
-        Markdown(
-            content = rendered,
-            colors = markdownColor(
-                text             = KitsugiColors.TextPrimary,
-                codeBackground   = KitsugiColors.SurfaceStrong,
-                inlineCodeBackground = KitsugiColors.Surface,
-                dividerColor     = KitsugiColors.Border,
-                tableBackground  = KitsugiColors.Surface,
-            ),
-            typography = markdownTypography(
-                text = MaterialTheme.typography.bodyMedium.copy(
-                    fontSize   = fontSize,
-                    lineHeight = lineHeight,
-                    color      = KitsugiColors.TextPrimary,
+        val parts = remember(rendered) { rendered.split("~~~") }
+        if (parts.size <= 1) {
+            Markdown(
+                content = rendered,
+                colors = markdownColor(
+                    text             = KitsugiColors.TextPrimary,
+                    codeBackground   = KitsugiColors.SurfaceStrong,
+                    inlineCodeBackground = KitsugiColors.Surface,
+                    dividerColor     = KitsugiColors.Border,
+                    tableBackground  = KitsugiColors.Surface,
                 ),
-                link = MaterialTheme.typography.bodyMedium.copy(
-                    fontSize       = fontSize,
-                    lineHeight     = lineHeight,
-                    color          = accent,
-                    fontWeight     = FontWeight.Medium,
-                    textDecoration = TextDecoration.Underline,
+                typography = markdownTypography(
+                    text = MaterialTheme.typography.bodyMedium.copy(
+                        fontSize   = fontSize,
+                        lineHeight = lineHeight,
+                        color      = KitsugiColors.TextPrimary,
+                    ),
+                    link = MaterialTheme.typography.bodyMedium.copy(
+                        fontSize       = fontSize,
+                        lineHeight     = lineHeight,
+                        color          = accent,
+                        fontWeight     = FontWeight.Medium,
+                        textDecoration = TextDecoration.Underline,
+                    ),
+                    code = TextStyle(
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                        fontSize   = (fontSize.value * 0.88f).sp,
+                        color      = KitsugiColors.TextSecondary,
+                    ),
+                    h1 = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color      = KitsugiColors.TextPrimary,
+                    ),
+                    h2 = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color      = KitsugiColors.TextPrimary,
+                    ),
+                    h3 = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color      = KitsugiColors.TextPrimary,
+                    ),
+                    quote = MaterialTheme.typography.bodyMedium.copy(
+                        fontSize   = fontSize,
+                        color      = KitsugiColors.TextSecondary,
+                        fontStyle  = androidx.compose.ui.text.font.FontStyle.Italic,
+                    ),
                 ),
-                code = TextStyle(
-                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                    fontSize   = (fontSize.value * 0.88f).sp,
-                    color      = KitsugiColors.TextSecondary,
-                ),
-                h1 = MaterialTheme.typography.headlineSmall.copy(
-                    fontWeight = FontWeight.Bold,
-                    color      = KitsugiColors.TextPrimary,
-                ),
-                h2 = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    color      = KitsugiColors.TextPrimary,
-                ),
-                h3 = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    color      = KitsugiColors.TextPrimary,
-                ),
-                quote = MaterialTheme.typography.bodyMedium.copy(
-                    fontSize   = fontSize,
-                    color      = KitsugiColors.TextSecondary,
-                    fontStyle  = androidx.compose.ui.text.font.FontStyle.Italic,
-                ),
-            ),
-            imageTransformer = Coil3ImageTransformerImpl,
-            modifier = modifier,
-        )
+                imageTransformer = Coil3ImageTransformerImpl,
+                modifier = modifier,
+            )
+        } else {
+            Column(
+                modifier = modifier,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                val normalTypography = markdownTypography(
+                    text = MaterialTheme.typography.bodyMedium.copy(
+                        fontSize   = fontSize,
+                        lineHeight = lineHeight,
+                        color      = KitsugiColors.TextPrimary,
+                    ),
+                    link = MaterialTheme.typography.bodyMedium.copy(
+                        fontSize       = fontSize,
+                        lineHeight     = lineHeight,
+                        color          = accent,
+                        fontWeight     = FontWeight.Medium,
+                        textDecoration = TextDecoration.Underline,
+                    ),
+                    code = TextStyle(
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                        fontSize   = (fontSize.value * 0.88f).sp,
+                        color      = KitsugiColors.TextSecondary,
+                    ),
+                    h1 = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color      = KitsugiColors.TextPrimary,
+                    ),
+                    h2 = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color      = KitsugiColors.TextPrimary,
+                    ),
+                    h3 = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color      = KitsugiColors.TextPrimary,
+                    ),
+                    quote = MaterialTheme.typography.bodyMedium.copy(
+                        fontSize   = fontSize,
+                        color      = KitsugiColors.TextSecondary,
+                        fontStyle  = androidx.compose.ui.text.font.FontStyle.Italic,
+                    ),
+                )
+
+                val centeredTypography = markdownTypography(
+                    text = MaterialTheme.typography.bodyMedium.copy(
+                        fontSize   = fontSize,
+                        lineHeight = lineHeight,
+                        color      = KitsugiColors.TextPrimary,
+                        textAlign  = androidx.compose.ui.text.style.TextAlign.Center,
+                    ),
+                    link = MaterialTheme.typography.bodyMedium.copy(
+                        fontSize       = fontSize,
+                        lineHeight     = lineHeight,
+                        color          = accent,
+                        fontWeight     = FontWeight.Medium,
+                        textDecoration = TextDecoration.Underline,
+                        textAlign      = androidx.compose.ui.text.style.TextAlign.Center,
+                    ),
+                    code = TextStyle(
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                        fontSize   = (fontSize.value * 0.88f).sp,
+                        color      = KitsugiColors.TextSecondary,
+                        textAlign  = androidx.compose.ui.text.style.TextAlign.Center,
+                    ),
+                    h1 = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color      = KitsugiColors.TextPrimary,
+                        textAlign  = androidx.compose.ui.text.style.TextAlign.Center,
+                    ),
+                    h2 = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color      = KitsugiColors.TextPrimary,
+                        textAlign  = androidx.compose.ui.text.style.TextAlign.Center,
+                    ),
+                    h3 = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color      = KitsugiColors.TextPrimary,
+                        textAlign  = androidx.compose.ui.text.style.TextAlign.Center,
+                    ),
+                    quote = MaterialTheme.typography.bodyMedium.copy(
+                        fontSize   = fontSize,
+                        color      = KitsugiColors.TextSecondary,
+                        fontStyle  = androidx.compose.ui.text.font.FontStyle.Italic,
+                        textAlign  = androidx.compose.ui.text.style.TextAlign.Center,
+                    ),
+                )
+
+                parts.forEachIndexed { index, part ->
+                    if (part.isNotBlank()) {
+                        val isCentered = index % 2 == 1
+                        Markdown(
+                            content = part,
+                            colors = markdownColor(
+                                text             = KitsugiColors.TextPrimary,
+                                codeBackground   = KitsugiColors.SurfaceStrong,
+                                inlineCodeBackground = KitsugiColors.Surface,
+                                dividerColor     = KitsugiColors.Border,
+                                tableBackground  = KitsugiColors.Surface,
+                            ),
+                            typography = if (isCentered) centeredTypography else normalTypography,
+                            imageTransformer = Coil3ImageTransformerImpl,
+                            modifier = if (isCentered) Modifier.fillMaxWidth() else Modifier,
+                        )
+                    }
+                }
+            }
+        }
     }
 
     // Spoiler overlay sheet

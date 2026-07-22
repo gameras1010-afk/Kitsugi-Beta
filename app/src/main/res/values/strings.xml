@@ -389,4 +389,33 @@
     <string name="notif_empty_list_mal">İzleme listenizdeki animeler için yeni bölüm bulunamadı</string>
     <string name="notif_empty_list_simkl">İzleme listenizdeki içerikler için yeni bildirim yok</string>
     <string name="notif_empty_no_notifications">Yeni bildirim yok</string>
+
+    <!-- Explore Categories -->
+    <string name="explore_top_anime">Popüler Anime</string>
+    <string name="explore_airing_anime">Yayındaki Anime</string>
+    <string name="explore_upcoming_anime">Yaklaşan Anime</string>
+    <string name="explore_top_manga">Popüler Manga</string>
+    <string name="explore_publishing_manga">Yayındaki Manga</string>
+    <string name="explore_trending_manga">Trend Manga</string>
+    <string name="explore_newly_added_anime">Yeni Eklenen Anime</string>
+    <string name="explore_newly_added_manga">Yeni Eklenen Manga</string>
+    <string name="explore_airing_soon">Yakında Yayında</string>
+    <string name="explore_trending_anime">Trend Anime</string>
+    <string name="explore_movie_anime">Anime Filmleri</string>
+    <string name="explore_seasonal_anime">Mevsimlik Anime</string>
+
+    <!-- TMDB / Simkl Explore Sections -->
+    <string name="explore_tmdb_trending_all">Trend Her Şey</string>
+    <string name="explore_tmdb_trending_shows">Trend Diziler</string>
+    <string name="explore_tmdb_trending_movies">Trend Filmler</string>
+    <string name="explore_tmdb_popular_shows">Popüler Diziler</string>
+    <string name="explore_tmdb_popular_movies">Popüler Filmler</string>
+    <string name="explore_tmdb_top_rated_movies">En Çok Oy Alan Filmler</string>
+    <string name="explore_tmdb_top_rated_shows">En Çok Oy Alan Diziler</string>
+
+    <string name="explore_simkl_continue_watching_movies">İzlemeye Devam Et (Film)</string>
+    <string name="explore_simkl_plantowatch_movies">Planladıklarım (Film)</string>
+    <string name="explore_simkl_continue_watching_series">İzlemeye Devam Et (Dizi &amp; Anime)</string>
+    <string name="explore_simkl_plantowatch_series">Planladıklarım (Dizi &amp; Anime)</string>
+    <string name="explore_read_manga">Manga Oku</string>
 </resources>

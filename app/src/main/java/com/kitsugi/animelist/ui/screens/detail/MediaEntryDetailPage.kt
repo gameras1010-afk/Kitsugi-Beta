@@ -27,6 +27,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -733,6 +735,15 @@ fun MediaEntryDetailPage(
                                             contentDescription = "Paylaş",
                                             tint = KitsugiColors.TextSecondary
                                         )
+                                    }
+                                    if (showFavouriteButton) {
+                                        IconButton(onClick = onToggleFavoriteClick) {
+                                            Icon(
+                                                imageVector = if (entry.isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                                                contentDescription = if (entry.isFavorite) "Favoriden Çıkar" else "Favori Yap",
+                                                tint = if (entry.isFavorite) accentColor else KitsugiColors.TextSecondary
+                                            )
+                                        }
                                     }
                                 }
                             }

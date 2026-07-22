@@ -61,6 +61,7 @@ data class TabPagesContext(
     val onAddApiSelectionToList: (ApiSearchSelection) -> Unit,
     val onSeeAllSection: (String, ExploreCategoryType, List<JikanSearchResult>) -> Unit,
     val onOpenMangaReader: () -> Unit,
+    val onEditEntry: (MediaEntry) -> Unit,
     val onSearchByGenre: (String) -> Unit = {},
     val onSearchByTag: (String) -> Unit = {}
 )
@@ -189,6 +190,7 @@ private fun ExploreTabPage(ctx: TabPagesContext) {
         onSeeAllSection = ctx.onSeeAllSection,
         onOpenApiDetail = ctx.onOpenApiDetail,
         onOpenMangaReader = ctx.onOpenMangaReader,
+        onEditEntry = ctx.onEditEntry,
         onOpenAiringCalendar = {
             val preferredSource = when (ctx.exploreViewModel.selectedPlatform) {
                 com.kitsugi.animelist.ui.screens.explore.ExplorePlatform.MAL -> "jikan"

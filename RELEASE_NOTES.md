@@ -4,6 +4,15 @@
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI — Son Güncelleme
 
+### 💬 AniList Sosyal Sekme ve Parite Düzeltmeleri
+- **Sosyal İçerik Yükleme Sorunları Giderildi**: Detay sayfalarında AniList kaynaklı incelemeler (reviews), tartışma konuları (forum topics) ve aktivite akışlarının (activities) yüklenmeme sorunu giderildi.
+- **Akıllı Kimlik Çözümleme**: Arayüzde veya `KitsugiMediaSocialClient` içerisinde kullanılan MAL ID'lerinin (MyAnimeList kimliklerinin), ilişkiler istemcisi (`relationsClient`) aracılığıyla otomatik olarak gerçek AniList ID'lerine dönüştürülmesi sağlandı. Bu sayede API isteklerinin geçersiz veya boş yanıt dönmesi tamamen engellendi.
+
+### 🎙️ Seslendirmen Detay Sayfası — AniHyou Pariteği
+- **Karakter Listesi Yeni Görünümü**: Seslendirmen detay sayfasındaki "Karakterler" sekmesi artık AniHyou'nun tasarımına birebir uygun, kompakt tek satır kart formatını kullanıyor. Her satırda karakter görseli, karakter adı ve altında `"Yapım Adı • Rol"` (örn. `Detective Conan • Ana Karakter`) bilgisi yer alıyor.
+- **TMDB Oyuncu Rol Desteği**: TMDB kaynaklı kişi detay sayfalarında artık oyuncunun oynadığı karakterler listeleniyor. `combined_credits` API'dan gelen cast verileri popülerliğe göre sıralanarak en fazla 30 karakter/rol gösterilir.
+- **Tam Genişlik Sekme Çubukları**: Portrait ve landscape modlarındaki sekme çubuklarındaki (Hakkında / Karakterler / Yapımlar) her sekme butonu artık `weight(1f)` ile ekran genişliğini eşit bölerek tam dolduruyor; sağdaki boş alan tamamen ortadan kalktı.
+
 ### ❤️ Standartlaştırılmış Favori Sistemi ve AniList Senkronizasyonu
 - **Detay Sayfalarında Favori Butonu**: `MediaEntryDetailPage` ve `ApiResultDetailPage` ekranları, NuvioTV standartlarına uygun şekilde üst aksiyon çubuğunda premium bir kalp butonu ile güncellendi.
 - **Güvenli Senkronizasyon (Toggle-Flip Düzeltmesi)**: `AniListSyncManager` ve `ExternalListSyncManager` modülleri "önce kontrol et, sonra değiştir" (check-then-toggle) mimarisiyle yeniden tasarlandı. AniList üzerindeki mevcut favori durumu sorgulanarak senkronizasyon sırasındaki durum tersine dönme hataları tamamen giderildi.
@@ -14,14 +23,23 @@
 - **StateFlow Tabanlı UI**: Ekran artık `collectAsState()` ile reaktif olarak ViewModel state'ini okur; veri kaybolmaz, sonsuz scroll güvenli çalışır, filtre değişimi atomik olarak sıfırlanır.
 
 ### ⏱️ Yayın Geri Sayımı Metin Düzeltmesi
-- **"X gün sonra" → "X gün sonra yayında"**: Keşfet ve Yaklaşan ekranlarındaki `NextAiringChip` bileşeninde geri sayım metni "Bölüm 1 · 2 gün sonra" yerine artık "Bölüm 1 · 2 gün sonra yayında" şeklinde görünür. Saat bazlı sayaçlar da güncellendi.
+- **"X gün sonra yayınlanacak" Formatı**: Keşfet ekranındaki geri sayım metinleri (gün, saat, hafta, ay) artık `"X sonra yayınlanacak"` formatıyla gösteriliyor.
 
-### 🧹 Ayarlar Temizliği — Liste Görünümü Kaldırıldı
-- **"Liste Görünümü" Ayarı Silindi**: Görünüm & Tercihler → Arayüz & Tema sekmesindeki "Liste Görünümü" (Klasik/Modern/Izgara) açılır menüsü tamamen kaldırıldı.
+### 🧹 Ayarlar Temizliği — Navigasyon İyileştirmeleri
+- **Yatay Modda Bildirim Butonu Kaldırıldı**: NavigationRail'de zaten alt çubukta bulunan bildirim butonu ile çakışmaması için yan navigasyon barındaki tekrarlı bildirim girişi kaldırıldı.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES — Latest Update
+
+### 💬 AniList Social Tab Parity Fixes
+- **Resolved Social Content Loading Issues**: Fixed an issue where reviews, discussion topics, and activity feeds from AniList sources would fail to load on detail pages.
+- **Smart ID Resolution**: Integrated automated resolution of MyAnimeList (MAL) IDs to AniList IDs inside the client network orchestration layer. This ensures that queries for forum topics, activities, and reviews receive valid AniList identifiers instead of failing with invalid mappings.
+
+### 🎙️ Staff Detail Page — AniHyou Visual Parity
+- **New Character List Layout**: The "Characters" tab on the Staff/Voice Actor detail page now uses a compact single-row card format matching AniHyou's design. Each row shows the character image, bold character name, and a subtitle in `"Show Title • Role"` format (e.g. `Detective Conan • Main Character`).
+- **TMDB Actor Role Support**: Staff detail pages sourced from TMDB now display the characters/roles an actor has played. Data is fetched from the `combined_credits` API, sorted by popularity and showing up to 30 entries.
+- **Full-Width Tab Bar Buttons**: Both portrait and landscape tab bars (Info / Characters / Works) now use `weight(1f)` so each tab fills equal screen width — no more dead space on the right side.
 
 ### ❤️ Standardized Favoriting System & AniList Sync
 - **Detail Page Favorite Button**: Integrated a premium heart button into the top action bar of `MediaEntryDetailPage` and `ApiResultDetailPage`, matching NuvioTV standards.
@@ -33,12 +51,14 @@
 - **StateFlow-Driven UI**: The screen now reactively collects ViewModel state via `collectAsState()`. Data is never lost on scroll, infinite scroll works reliably, and filter changes reset pagination atomically.
 
 ### ⏱️ Airing Countdown Text Fix
-- **"X gün sonra" → "X gün sonra yayında"**: The `NextAiringChip` component on Explore and Upcoming screens now reads "Bölüm 1 · 2 gün sonra yayında" instead of ending with bare "sonra". Hour-based countdown labels updated too.
+- **"X sonra yayınlanacak" Format**: Countdown labels in the Explore screen now follow the `"X sonra yayınlanacak"` pattern with week/month granularity for longer durations.
 
-### 🧹 Settings Cleanup — List Layout Removed
-- **Removed "Liste Görünümü" Setting**: The "List Layout" (Klasik/Modern/Izgara) dropdown in Appearance & Preferences → Interface & Theme tab has been fully removed.
+### 🧹 Navigation Cleanup
+- **Removed Duplicate Notifications Button**: The notifications entry in the NavigationRail (landscape mode) was removed since it duplicated the bell icon already present in the bottom bar.
 
 ---
+
+
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 

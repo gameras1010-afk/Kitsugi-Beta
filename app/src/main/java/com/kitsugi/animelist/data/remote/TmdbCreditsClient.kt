@@ -348,12 +348,13 @@ internal object TmdbCreditsClient {
             val department = root.optString("known_for_department", "Ekip Üyesi")
                 .takeIf { it.isNotBlank() }?.toTurkishStaffRole()
             val works = fetchPersonMediaWorks(personId, apiKey, executeGet)
+            val characterRoles = fetchPersonCharacterRoles(personId, apiKey, executeGet)
             KitsugiStaffDetail(
                 id = personId, name = name, nativeName = null,
                 alternativeNames = alternativeNames, imageUrl = imageUrl,
                 biography = biography, occupation = department, birthday = birthday,
                 age = null, gender = gender, homeTown = placeOfBirth,
-                characterRoles = emptyList(), mediaWorks = works
+                characterRoles = characterRoles, mediaWorks = works
             )
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching TMDB staff details: ${e.message}", e)
@@ -395,6 +396,52 @@ internal object TmdbCreditsClient {
         }
     }
 
+    private suspend fun fetchPersonCharacterRoles(
+        personId: Int,
+        apiKey: String,
+        executeGet: suspend (String) -> String?
+    ): List<KitsugiStaffCharacterRole> {
+        val url = "https://api.themoviedb.org/3/person/$personId/combined_credits?api_key=$apiKey&language=tr-TR"
+        return try {
+            val responseText = executeGet(url) ?: return emptyList()
+            val root = JSONObject(responseText)
+            val castArray = root.optJSONArray("cast") ?: return emptyList()
+            val list = mutableListOf<KitsugiStaffCharacterRole>()
+            // Sort by popularity descending and take top 30
+            val sorted = (0 until castArray.length())
+                .map { castArray.getJSONObject(it) }
+                .sortedByDescending { it.optDouble("popularity", 0.0) }
+                .take(30)
+            for (item in sorted) {
+                val mediaId = item.optInt("id")
+                val isMovie = item.optString("media_type") == "movie"
+                val mediaTitle = if (isMovie) item.optString("title", "Bilinmeyen") else item.optString("name", "Bilinmeyen")
+                val characterName = item.optString("character", "").ifBlank { "Bilinmeyen" }
+                val posterPath = item.optNullableString("poster_path") ?: ""
+                val mediaImageUrl = if (posterPath.isNotEmpty()) "$IMG_W185$posterPath" else null
+                val mediaType = if (isMovie) "movie".toTurkishMediaTypeString() else "tv".toTurkishMediaTypeString()
+                // TMDB has no character profile images; use media poster as fallback
+                list.add(
+                    KitsugiStaffCharacterRole(
+                        characterId = mediaId, // TMDB has no separate char IDs; use media ID
+                        characterName = characterName,
+                        characterImageUrl = mediaImageUrl,
+                        characterSource = "tmdb",
+                        mediaId = mediaId,
+                        mediaTitle = mediaTitle,
+                        mediaImageUrl = mediaImageUrl,
+                        mediaType = mediaType,
+                        characterRole = if (item.optInt("order", 999) < 5) "Ana Karakter" else "Oyuncu",
+                        mediaSource = "tmdb"
+                    )
+                )
+            }
+            list
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching TMDB character roles: ${e.message}", e)
+            emptyList()
+        }
+    }
     suspend fun fetchStats(
         tmdbId: Int,
         isMovie: Boolean,

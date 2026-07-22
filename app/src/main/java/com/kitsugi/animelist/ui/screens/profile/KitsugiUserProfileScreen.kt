@@ -641,8 +641,8 @@ fun KitsugiUserProfileScreen(
                                                     }
                                                 }
                                                 if (displayAbout.isNotBlank()) {
-                                                    com.kitsugi.animelist.ui.components.KitsugiHtmlWebView(
-                                                        html = displayAbout
+                                                    com.kitsugi.animelist.ui.components.KitsugiMarkdownText(
+                                                        text = displayAbout, modifier = Modifier.fillMaxWidth(), onImageGalleryRequest = { urls, index -> activeGalleryImages = Triple(urls, index, "${state.name ?: "Kullanıcı"} Biyografi") }
                                                     )
                                                 } else {
                                                     Text(

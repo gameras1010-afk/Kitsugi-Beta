@@ -292,6 +292,47 @@ class JikanSearchClient {
         }
     }
 
+    suspend fun trendingManga(page: Int = 1, showAdultContent: Boolean = false): List<JikanSearchResult> {
+        return withContext(Dispatchers.IO) {
+            val offset = (page - 1) * 20
+            val fields = "id,title,main_picture,alternative_titles,start_date,mean,num_chapters,media_type,genres,nsfw"
+            val url = "https://api.myanimelist.net/v2/manga/ranking?ranking_type=bypopularity&limit=20&offset=$offset&fields=$fields"
+
+            val results = getOfficialMalRankingOrSeason(url, MediaType.Manga)
+            if (results.isNotEmpty()) {
+                results
+            } else {
+                runCatching { aniListSearchClient.aniListTrendingManga(page, showAdultContent) }.getOrDefault(emptyList())
+            }
+        }
+    }
+
+    suspend fun newlyAddedAnime(page: Int = 1, showAdultContent: Boolean = false): List<JikanSearchResult> {
+        return withContext(Dispatchers.IO) {
+            val url = URL("https://api.jikan.moe/v4/anime?order_by=start_date&sort=desc&limit=20&sfw=${!showAdultContent}&page=$page")
+            requestAndParseWithFallback(
+                url = url,
+                mediaType = MediaType.Anime,
+                fallback = {
+                    runCatching { aniListSearchClient.aniListNewlyAddedAnime(page, showAdultContent) }.getOrDefault(emptyList())
+                }
+            )
+        }
+    }
+
+    suspend fun newlyAddedManga(page: Int = 1, showAdultContent: Boolean = false): List<JikanSearchResult> {
+        return withContext(Dispatchers.IO) {
+            val url = URL("https://api.jikan.moe/v4/manga?order_by=start_date&sort=desc&limit=20&sfw=${!showAdultContent}&page=$page")
+            requestAndParseWithFallback(
+                url = url,
+                mediaType = MediaType.Manga,
+                fallback = {
+                    runCatching { aniListSearchClient.aniListNewlyAddedManga(page, showAdultContent) }.getOrDefault(emptyList())
+                }
+            )
+        }
+    }
+
     suspend fun seasonalAnime(
         page: Int = 1,
         showAdultContent: Boolean = false,

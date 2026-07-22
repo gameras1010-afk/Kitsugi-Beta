@@ -25,8 +25,8 @@ object KitsugiMarkdownUtils {
     private val boldUnderscoreRegex = Regex("__(.*?)__")
     private val htmlBrRegex     = Regex("<br\\s*/?>", RegexOption.IGNORE_CASE)
 
-    /** AniList img syntax: img(url) veya img300%(url) vb. */
-    private val aniListImgRegex = Regex("""img\d*%*\((.*?)\)""")
+    /** AniList img syntax: img(url), img720(url), img720{url}, etc. */
+    private val aniListImgRegex = Regex("""img\d*%*[({\[](.*?)[)}\]]""")
 
     /** Eski spoiler formatı: > ⚠️ *Spoiler:* ... */
     private val oldSpoilerRegex = Regex(""">\s*⚠️\s*\*?Spoiler:\*?\s*(.*)""", RegexOption.IGNORE_CASE)
@@ -64,25 +64,30 @@ object KitsugiMarkdownUtils {
     fun String.formatAniListMarkdown(): String {
         val cleaned = this.cleanUserAboutText()
         val bbConverted = cleaned.convertBBCodeToMarkdown()
-        return bbConverted
+        var current = bbConverted
             .replace(htmlBrRegex, "\n\n")
-            .replace(centerRegex) { it.groupValues[1].trim() }
             .replace(boldUnderscoreRegex) { "**${it.groupValues[1]}**" }
-            // AniList resim syntax → çift satır markdown resim + tıklanabilir galeri link
             .formatAniListImageTags()
-            // Spoiler dönüşümü
-            .replace(spoilerRegex) { match ->
-                val raw     = match.groupValues[1]
-                val cleaned2 = cleanSpoilerContent(raw)
-                val encoded  = safeUrlEncode(cleaned2)
-                "\n[⚠️ Spoiler - Görmek için tıkla](${KitsugiMarkdownUriHandler.SPOILER_SCHEME}$encoded)\n"
-            }
-            .replace(oldSpoilerRegex) { match ->
-                val raw     = match.groupValues[1]
-                val cleaned2 = cleanSpoilerContent(raw)
-                val encoded  = safeUrlEncode(cleaned2)
-                "\n[⚠️ Spoiler - Görmek için tıkla](${KitsugiMarkdownUriHandler.SPOILER_SCHEME}$encoded)\n"
-            }
+
+        var previous: String
+        do {
+            previous = current
+            current = current
+                .replace(spoilerRegex) { match ->
+                    val raw     = match.groupValues[1]
+                    val cleaned2 = cleanSpoilerContent(raw)
+                    val encoded  = safeUrlEncode(cleaned2)
+                    "\n[⚠️ Spoiler - Görmek için tıkla](${KitsugiMarkdownUriHandler.SPOILER_SCHEME}$encoded)\n"
+                }
+                .replace(oldSpoilerRegex) { match ->
+                    val raw     = match.groupValues[1]
+                    val cleaned2 = cleanSpoilerContent(raw)
+                    val encoded  = safeUrlEncode(cleaned2)
+                    "\n[⚠️ Spoiler - Görmek için tıkla](${KitsugiMarkdownUriHandler.SPOILER_SCHEME}$encoded)\n"
+                }
+        } while (current != previous)
+
+        return current
     }
 
     /**
@@ -166,7 +171,7 @@ object KitsugiMarkdownUtils {
                 .replace(italicRegex)        { "*${it.groupValues[1]}*" }
                 .replace(underlineRegex)     { "__${it.groupValues[1]}__" }
                 .replace(strikeRegex)        { "~~${it.groupValues[1]}~~" }
-                .replace(centerRegexBB)      { it.groupValues[1] }
+                .replace(centerRegexBB)      { "~~~${it.groupValues[1]}~~~" }
                 .replace(sizeRegex)          { it.groupValues[1] }
                 .replace(colorRegex)         { it.groupValues[1] }
                 .replace(spoilerSimpleRegex) { "~!${it.groupValues[1]}!~" }

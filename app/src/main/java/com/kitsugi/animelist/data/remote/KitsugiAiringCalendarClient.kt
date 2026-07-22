@@ -92,6 +92,8 @@ class KitsugiAiringCalendarClient {
                 if (aniListId <= 0) continue
                 val malId = if (media.has("idMal") && !media.isNull("idMal"))
                     media.optInt("idMal", 0).takeIf { it > 0 } else null
+                val averageScore = if (media.has("averageScore") && !media.isNull("averageScore"))
+                    media.optInt("averageScore", 0).takeIf { it > 0 } else null
                 val titleObj = media.optJSONObject("title")
                 val romaji = titleObj?.optNullableString("romaji")
                 val english = titleObj?.optNullableString("english")
@@ -111,7 +113,8 @@ class KitsugiAiringCalendarClient {
                         coverUrl = coverUrl,
                         episode = episode,
                         airingAt = airingAt,
-                        dayOfWeek = dayOfWeek
+                        dayOfWeek = dayOfWeek,
+                        averageScore = averageScore
                     )
                 )
             }
@@ -150,6 +153,7 @@ class KitsugiAiringCalendarClient {
                     id idMal
                     title{romaji english native}
                     coverImage{large}
+                    averageScore
                   }
                 }
               }

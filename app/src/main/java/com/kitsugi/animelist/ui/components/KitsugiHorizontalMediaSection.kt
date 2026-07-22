@@ -48,6 +48,7 @@ fun KitsugiHorizontalMediaSection(
     isLoading: Boolean,
     alreadyInList: (JikanSearchResult) -> Boolean,
     onItemClick: (JikanSearchResult) -> Unit,
+    onLongClickItem: ((JikanSearchResult) -> Unit)? = null,
     onSeeAllClick: (() -> Unit)? = null,
     titleLanguage: String = "ROMAJI",
     scoreFormat: String = "POINT_10",
@@ -149,6 +150,7 @@ fun KitsugiHorizontalMediaSection(
                                             }
                                         },
                                     onClick = { onItemClick(result) },
+                                    onLongClick = if (onLongClickItem != null) { { onLongClickItem(result) } } else null,
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
                                     hideScores = hideScores,
@@ -183,6 +185,7 @@ fun KitsugiHorizontalMediaSection(
                                 onClick = {
                                     onItemClick(result)
                                 },
+                                onLongClick = if (onLongClickItem != null) { { onLongClickItem(result) } } else null,
                                 titleLanguage = titleLanguage,
                                 scoreFormat = scoreFormat,
                                 hideScores = hideScores,

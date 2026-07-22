@@ -1134,8 +1134,8 @@ fun AniListProfileContent(
                                             }
                                         }
                                         Spacer(modifier = Modifier.height(8.dp))
-                                        com.kitsugi.animelist.ui.components.KitsugiHtmlWebView(
-                                             html = displayAbout
+                                        com.kitsugi.animelist.ui.components.KitsugiMarkdownText(
+                                             text = displayAbout, modifier = Modifier.fillMaxWidth(), onImageGalleryRequest = { urls, index -> onImageClick?.invoke(urls, index, "${state.name ?: "Kullanıcı"} Biyografi") }
                                          )
                                     }
                                 }

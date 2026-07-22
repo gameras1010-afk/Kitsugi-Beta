@@ -309,7 +309,11 @@ class KitsugiMediaSocialClient {
     }
 
     private suspend fun fetchReviewsFromAniList(externalId: Int, mediaType: MediaType, page: Int): List<KitsugiReview> {
-        val aniListId = if (externalId >= 100_000_000) externalId - 100_000_000 else null
+        val aniListId = if (externalId >= 100_000_000) {
+            externalId - 100_000_000
+        } else {
+            relationsClient.resolveAniListId(externalId, mediaType)
+        }
         val idParam  = if (aniListId != null) "\$id: Int" else "\$idMal: Int"
         val idFilter = if (aniListId != null) "id: \$id"  else "idMal: \$idMal"
         val query = """
@@ -384,7 +388,14 @@ class KitsugiMediaSocialClient {
                     if (page > 1) return@withContext emptyList()
                     fetchForumTopicsFromJikan(externalId, mediaType)
                 }
-                "anilist" -> fetchForumTopicsFromAniList(externalId, page)
+                "anilist" -> {
+                    val aniListId = if (externalId >= 100_000_000) {
+                        externalId - 100_000_000
+                    } else {
+                        relationsClient.resolveAniListId(externalId, mediaType) ?: externalId
+                    }
+                    fetchForumTopicsFromAniList(aniListId, page)
+                }
                 else -> emptyList()
             }
         }
@@ -465,7 +476,11 @@ class KitsugiMediaSocialClient {
     ): List<KitsugiActivity> {
         return withContext(Dispatchers.IO) {
             val aniListId = if (source.lowercase() == "anilist") {
-                if (externalId >= 100_000_000) externalId - 100_000_000 else externalId
+                if (externalId >= 100_000_000) {
+                    externalId - 100_000_000
+                } else {
+                    relationsClient.resolveAniListId(externalId, mediaType) ?: externalId
+                }
             } else {
                 relationsClient.resolveAniListId(externalId, mediaType) ?: return@withContext emptyList()
             }

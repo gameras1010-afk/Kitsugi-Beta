@@ -38,45 +38,45 @@ internal fun StaffCharacterRoleCard(
 ) {
     val accentColor = LocalKitsugiAccent.current
     val displayMediaTitle = role.mediaTitle
-    Column(
+    // AniHyou PersonItemHorizontal-style: single compact row
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(KitsugiColors.Surface)
-            .padding(12.dp)
+            .tvClickable(shape = RoundedCornerShape(16.dp)) {
+                onCharacterClick(role.characterId, role.characterSource, role.characterName, role.characterImageUrl)
+            }
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
+        // Character image
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .tvClickable(shape = RoundedCornerShape(16.dp), onClick = { onCharacterClick(role.characterId, role.characterSource, role.characterName, role.characterImageUrl) }),
-            verticalAlignment = Alignment.CenterVertically
+                .size(52.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(KitsugiColors.SurfaceSoft)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(KitsugiColors.SurfaceSoft)
-            ) {
-                if (!role.characterImageUrl.isNullOrBlank()) {
-                    AsyncImage(
-                        model = role.characterImageUrl,
-                        contentDescription = role.characterName,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
+            if (!role.characterImageUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = role.characterImageUrl,
+                    contentDescription = role.characterName,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = role.characterName.take(2).uppercase(),
+                        color = KitsugiColors.TextMuted,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.labelSmall
                     )
-                } else {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = role.characterName.take(2).uppercase(),
-                            color = KitsugiColors.TextMuted,
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                    }
                 }
             }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = role.characterName,
                     color = KitsugiColors.TextPrimary,
@@ -86,71 +86,16 @@ internal fun StaffCharacterRoleCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = "Seslendirdiği Karakter (${role.characterRole})",
-                    color = accentColor,
+                    text = "${role.mediaTitle} • ${role.characterRole}",
+                    color = KitsugiColors.TextSecondary,
                     style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-        }
-
-        Box(
-            modifier = Modifier
-                .padding(start = 21.dp, top = 2.dp, bottom = 2.dp)
-                .width(2.dp)
-                .height(10.dp)
-                .background(KitsugiColors.SurfaceSoft)
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .tvClickable(shape = RoundedCornerShape(16.dp), onClick = { onMediaClick(role.mediaId, role.mediaType, role.mediaSource) }),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(KitsugiColors.SurfaceSoft)
-            ) {
-                if (!role.mediaImageUrl.isNullOrBlank()) {
-                    AsyncImage(
-                        model = role.mediaImageUrl,
-                        contentDescription = displayMediaTitle,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = displayMediaTitle.take(2).uppercase(),
-                            color = KitsugiColors.TextMuted,
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Text(
-                    text = displayMediaTitle,
-                    color = KitsugiColors.TextPrimary,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Medium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text(
-                    text = "Yapım (${role.mediaType.replaceFirstChar { it.uppercase() }})",
-                    color = KitsugiColors.TextMuted,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Medium
-                )
             }
         }
-    }
+
 }
 
 @Composable

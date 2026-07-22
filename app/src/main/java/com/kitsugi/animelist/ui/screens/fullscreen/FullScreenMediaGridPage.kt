@@ -154,6 +154,9 @@ fun FullScreenMediaGridPage(
                         ExploreCategoryType.SEASONAL_ANIME -> apiClient.seasonalAnime(np, showAdultContent, seasonalYear, seasonalSeason, seasonalSort)
                         ExploreCategoryType.TOP_MANGA -> apiClient.topManga(np)
                         ExploreCategoryType.PUBLISHING_MANGA -> apiClient.publishingManga(np)
+                        ExploreCategoryType.TRENDING_MANGA -> apiClient.trendingManga(np)
+                        ExploreCategoryType.NEWLY_ADDED_ANIME -> apiClient.newlyAddedAnime(np)
+                        ExploreCategoryType.NEWLY_ADDED_MANGA -> apiClient.newlyAddedManga(np)
                     }
                     ExplorePlatform.AniList -> when (categoryType) {
                         ExploreCategoryType.TOP_ANIME -> apiClient.aniListTopAnime(np)
@@ -164,6 +167,9 @@ fun FullScreenMediaGridPage(
                         ExploreCategoryType.SEASONAL_ANIME -> apiClient.aniListSeasonalAnime(np, showAdultContent, seasonalYear, seasonalSeason, seasonalSort)
                         ExploreCategoryType.TOP_MANGA -> apiClient.aniListTopManga(np)
                         ExploreCategoryType.PUBLISHING_MANGA -> apiClient.aniListPublishingManga(np)
+                        ExploreCategoryType.TRENDING_MANGA -> apiClient.aniListTrendingManga(np)
+                        ExploreCategoryType.NEWLY_ADDED_ANIME -> apiClient.aniListNewlyAddedAnime(np)
+                        ExploreCategoryType.NEWLY_ADDED_MANGA -> apiClient.aniListNewlyAddedManga(np)
                     }
                     ExplorePlatform.TMDB -> {
                         if (title.startsWith("İzlemeye Devam") || title.startsWith("Planladıklarım")) emptyList()
@@ -176,6 +182,9 @@ fun FullScreenMediaGridPage(
                             ExploreCategoryType.TOP_MANGA -> tmdbApiClient.getTopRatedMovies(np)
                             ExploreCategoryType.PUBLISHING_MANGA -> tmdbApiClient.getTopRatedMovies(np)
                             ExploreCategoryType.SEASONAL_ANIME -> tmdbApiClient.getTopRatedShows(np)
+                            ExploreCategoryType.TRENDING_MANGA -> emptyList()
+                            ExploreCategoryType.NEWLY_ADDED_ANIME -> emptyList()
+                            ExploreCategoryType.NEWLY_ADDED_MANGA -> emptyList()
                         }
                     }
                 }
