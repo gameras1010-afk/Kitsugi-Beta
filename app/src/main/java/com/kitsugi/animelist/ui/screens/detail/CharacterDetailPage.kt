@@ -29,7 +29,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.graphics.Brush
@@ -706,151 +710,190 @@ fun CharacterDetailPage(
                             }
 
                             // Tab contents - swipeable HorizontalPager
-                             item(key = "content") {
-                                 @OptIn(ExperimentalFoundationApi::class)
-                                 HorizontalPager(
-                                     state = pagerState,
-                                     userScrollEnabled = !isTv,
-                                     beyondViewportPageCount = 1,
-                                     pageSpacing = 12.dp,
-                                     modifier = Modifier.fillMaxWidth()
-                                 ) { page ->
-                                val currentTab = tabs.getOrNull(page)
-                                Column(
+                            item(key = "content") {
+                                val pageHeights = remember { androidx.compose.runtime.mutableStateMapOf<Int, Int>() }
+                                val density = androidx.compose.ui.platform.LocalDensity.current
+                                val currentPage = pagerState.currentPage
+                                val currentPageOffset = pagerState.currentPageOffsetFraction
+                                val targetPage = if (currentPageOffset > 0f) currentPage + 1 else if (currentPageOffset < 0f) currentPage - 1 else currentPage
+
+                                val currentHeightPx = pageHeights[currentPage] ?: 0
+                                val targetHeightPx = pageHeights[targetPage] ?: currentHeightPx
+
+                                val interpolatedHeightDp = remember(currentHeightPx, targetHeightPx, currentPageOffset) {
+                                    val heightPx = if (currentHeightPx > 0 && targetHeightPx > 0) {
+                                        currentHeightPx + (targetHeightPx - currentHeightPx) * kotlin.math.abs(currentPageOffset)
+                                    } else if (currentHeightPx > 0) {
+                                        currentHeightPx.toFloat()
+                                    } else {
+                                        0f
+                                    }
+                                    if (heightPx > 0f) with(density) { heightPx.toDp() } else null
+                                }
+
+                                @OptIn(ExperimentalFoundationApi::class)
+                                HorizontalPager(
+                                    state = pagerState,
+                                    userScrollEnabled = !isTv,
+                                    beyondViewportPageCount = 1,
+                                    pageSpacing = 12.dp,
+                                    verticalAlignment = Alignment.Top,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 20.dp)
-                                ) {
-                                    when (currentTab) {
-                                        "Hakkında" -> { // Hakkında
-                                            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                                                // Alternative Names if present
-                                                if (detail.alternativeNames.isNotEmpty()) {
-                                                    Column(
-                                                        modifier = Modifier
-                                                            .fillMaxWidth()
-                                                            .clip(RoundedCornerShape(18.dp))
-                                                            .background(KitsugiColors.Surface)
-                                                            .padding(16.dp)
-                                                    ) {
-                                                        Text(
-                                                            text = "Diğer İsimler",
-                                                            color = KitsugiColors.TextPrimary,
-                                                            style = MaterialTheme.typography.titleMedium,
-                                                            fontWeight = FontWeight.Bold
-                                                        )
-                                                        Spacer(modifier = Modifier.height(8.dp))
-                                                        Text(
-                                                            text = detail.alternativeNames.joinToString(", "),
-                                                            color = KitsugiColors.TextSecondary,
-                                                            style = MaterialTheme.typography.bodyMedium
-                                                        )
-                                                    }
+                                        .then(
+                                            if (interpolatedHeightDp != null) {
+                                                Modifier.height(interpolatedHeightDp)
+                                            } else {
+                                                Modifier.wrapContentHeight()
+                                            }
+                                        )
+                                        .clipToBounds()
+                                ) { page ->
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .heightIn(min = 600.dp)
+                                    ) {
+                                        val currentTab = tabs.getOrNull(page)
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 20.dp)
+                                                .onGloballyPositioned { coordinates ->
+                                                    pageHeights[page] = coordinates.size.height
                                                 }
+                                        ) {
+                                            when (currentTab) {
+                                                "Hakkında" -> { // Hakkında
+                                                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                                        // Alternative Names if present
+                                                        if (detail.alternativeNames.isNotEmpty()) {
+                                                            Column(
+                                                                modifier = Modifier
+                                                                    .fillMaxWidth()
+                                                                    .clip(RoundedCornerShape(18.dp))
+                                                                    .background(KitsugiColors.Surface)
+                                                                    .padding(16.dp)
+                                                            ) {
+                                                                Text(
+                                                                    text = "Diğer İsimler",
+                                                                    color = KitsugiColors.TextPrimary,
+                                                                    style = MaterialTheme.typography.titleMedium,
+                                                                    fontWeight = FontWeight.Bold
+                                                                )
+                                                                Spacer(modifier = Modifier.height(8.dp))
+                                                                Text(
+                                                                    text = detail.alternativeNames.joinToString(", "),
+                                                                    color = KitsugiColors.TextSecondary,
+                                                                    style = MaterialTheme.typography.bodyMedium
+                                                                )
+                                                            }
+                                                        }
 
-                                                // Stats/demographics Card (Gender, Age, Birthday, Blood Type)
-                                                val hasDemographics = detail.gender != null || detail.age != null || detail.birthday != null || detail.bloodType != null
-                                                if (hasDemographics) {
-                                                    Column(
-                                                        modifier = Modifier
-                                                            .fillMaxWidth()
-                                                            .clip(RoundedCornerShape(18.dp))
-                                                            .background(KitsugiColors.Surface)
-                                                            .padding(16.dp)
-                                                    ) {
-                                                        Text(
-                                                            text = "Bilgiler",
-                                                            color = KitsugiColors.TextPrimary,
-                                                            style = MaterialTheme.typography.titleMedium,
-                                                            fontWeight = FontWeight.Bold
-                                                        )
-                                                        Spacer(modifier = Modifier.height(12.dp))
+                                                        // Stats/demographics Card (Gender, Age, Birthday, Blood Type)
+                                                        val hasDemographics = detail.gender != null || detail.age != null || detail.birthday != null || detail.bloodType != null
+                                                        if (hasDemographics) {
+                                                            Column(
+                                                                modifier = Modifier
+                                                                    .fillMaxWidth()
+                                                                    .clip(RoundedCornerShape(18.dp))
+                                                                    .background(KitsugiColors.Surface)
+                                                                    .padding(16.dp)
+                                                            ) {
+                                                                Text(
+                                                                    text = "Bilgiler",
+                                                                    color = KitsugiColors.TextPrimary,
+                                                                    style = MaterialTheme.typography.titleMedium,
+                                                                    fontWeight = FontWeight.Bold
+                                                                )
+                                                                Spacer(modifier = Modifier.height(12.dp))
 
-                                                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                                            if (detail.gender != null) InfoRow(label = "Cinsiyet", value = detail.gender)
-                                                            if (detail.age != null) InfoRow(label = "Yaş", value = detail.age)
-                                                            if (detail.birthday != null) InfoRow(label = "Doğum Günü", value = detail.birthday)
-                                                            if (detail.bloodType != null) InfoRow(label = "Kan Grubu", value = detail.bloodType)
+                                                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                                    if (detail.gender != null) InfoRow(label = "Cinsiyet", value = detail.gender)
+                                                                    if (detail.age != null) InfoRow(label = "Yaş", value = detail.age)
+                                                                    if (detail.birthday != null) InfoRow(label = "Doğum Günü", value = detail.birthday)
+                                                                    if (detail.bloodType != null) InfoRow(label = "Kan Grubu", value = detail.bloodType)
+                                                                }
+                                                            }
+                                                        }
+
+                                                        // Biography/About Card
+                                                        val displayBio = translatedBio ?: detail.biography
+                                                        Column(
+                                                            modifier = Modifier
+                                                                .fillMaxWidth()
+                                                                .clip(RoundedCornerShape(18.dp))
+                                                                .background(KitsugiColors.Surface)
+                                                                .padding(16.dp)
+                                                        ) {
+                                                            Row(
+                                                                modifier = Modifier.fillMaxWidth(),
+                                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                                verticalAlignment = Alignment.CenterVertically
+                                                            ) {
+                                                                Text(
+                                                                    text = "Biyografi",
+                                                                    color = KitsugiColors.TextPrimary,
+                                                                    style = MaterialTheme.typography.titleMedium,
+                                                                    fontWeight = FontWeight.Bold,
+                                                                    modifier = Modifier.weight(1f)
+                                                                )
+
+                                                                if (!detail.biography.isNullOrBlank()) {
+                                                                    IconButton(
+                                                                        onClick = { context.openTranslator(detail.biography, preferredTranslator) },
+                                                                        modifier = Modifier.size(36.dp)
+                                                                    ) {
+                                                                        Icon(Icons.Rounded.Translate, contentDescription = "Çevir", tint = accentColor)
+                                                                    }
+                                                                    Spacer(modifier = Modifier.width(6.dp))
+                                                                    IconButton(
+                                                                        onClick = {
+                                                                            val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                                                            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("biography", displayBio))
+                                                                            android.widget.Toast.makeText(context, "Panoya kopyalandı", android.widget.Toast.LENGTH_SHORT).show()
+                                                                        },
+                                                                        modifier = Modifier.size(36.dp)
+                                                                    ) {
+                                                                        Icon(Icons.Rounded.ContentCopy, contentDescription = "Kopyala", tint = KitsugiColors.TextSecondary)
+                                                                    }
+                                                                }
+                                                            }
+                                                            Spacer(modifier = Modifier.height(8.dp))
+                                                            if (displayBio.isNullOrBlank()) {
+                                                                Text("Biyografi bulunmuyor.", color = KitsugiColors.TextMuted, style = MaterialTheme.typography.bodyMedium)
+                                                            } else {
+                                                                KitsugiMarkdownText(text = displayBio)
+                                                            }
                                                         }
                                                     }
                                                 }
-
-                                                // Biography/About Card
-                                                val displayBio = translatedBio ?: detail.biography
-                                                Column(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .clip(RoundedCornerShape(18.dp))
-                                                        .background(KitsugiColors.Surface)
-                                                        .padding(16.dp)
-                                                ) {
-                                                    Row(
-                                                        modifier = Modifier.fillMaxWidth(),
-                                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                                        verticalAlignment = Alignment.CenterVertically
-                                                    ) {
-                                                        Text(
-                                                            text = "Biyografi",
-                                                            color = KitsugiColors.TextPrimary,
-                                                            style = MaterialTheme.typography.titleMedium,
-                                                            fontWeight = FontWeight.Bold,
-                                                            modifier = Modifier.weight(1f)
-                                                        )
-
-                                                        if (!detail.biography.isNullOrBlank()) {
-                                                            IconButton(
-                                                                onClick = { context.openTranslator(detail.biography, preferredTranslator) },
-                                                                modifier = Modifier.size(36.dp)
-                                                            ) {
-                                                                Icon(Icons.Rounded.Translate, contentDescription = "Çevir", tint = accentColor)
-                                                            }
-                                                            Spacer(modifier = Modifier.width(6.dp))
-                                                            IconButton(
-                                                                onClick = {
-                                                                    val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                                                    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("biography", displayBio))
-                                                                    android.widget.Toast.makeText(context, "Panoya kopyalandı", android.widget.Toast.LENGTH_SHORT).show()
-                                                                },
-                                                                modifier = Modifier.size(36.dp)
-                                                            ) {
-                                                                Icon(Icons.Rounded.ContentCopy, contentDescription = "Kopyala", tint = KitsugiColors.TextSecondary)
-                                                            }
-                                                        }
-                                                    }
-                                                    Spacer(modifier = Modifier.height(8.dp))
-                                                    if (displayBio.isNullOrBlank()) {
-                                                        Text("Biyografi bulunmuyor.", color = KitsugiColors.TextMuted, style = MaterialTheme.typography.bodyMedium)
+                                                "Yapımlar" -> { // Yapımlar
+                                                    if (detail.mediaAppearances.isEmpty()) {
+                                                        Text("Yapım bilgisi bulunmuyor.", color = KitsugiColors.TextSecondary, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 16.dp))
                                                     } else {
-                                                        KitsugiMarkdownText(text = displayBio)
+                                                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                                            detail.mediaAppearances.forEach { appearance ->
+                                                                MediaAppearanceRow(appearance = appearance, titleLanguage = titleLanguage, onMediaClick = onMediaClick)
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                "Seslendirenler" -> { // Seslendirenler
+                                                    if (detail.voiceActors.isEmpty()) {
+                                                        Text("Seslendiren sanatçı bulunmuyor.", color = KitsugiColors.TextSecondary, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 16.dp))
+                                                    } else {
+                                                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                                            detail.voiceActors.forEach { actor ->
+                                                                VoiceActorRow(actor = actor, onStaffClick = onStaffClick)
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }
-                                        }
-                                        "Yapımlar" -> { // Yapımlar
-                                            if (detail.mediaAppearances.isEmpty()) {
-                                                Text("Yapım bilgisi bulunmuyor.", color = KitsugiColors.TextSecondary, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 16.dp))
-                                            } else {
-                                                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                                    detail.mediaAppearances.forEach { appearance ->
-                                                        MediaAppearanceRow(appearance = appearance, titleLanguage = titleLanguage, onMediaClick = onMediaClick)
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        "Seslendirenler" -> { // Seslendirenler
-                                            if (detail.voiceActors.isEmpty()) {
-                                                Text("Seslendiren sanatçı bulunmuyor.", color = KitsugiColors.TextSecondary, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 16.dp))
-                                            } else {
-                                                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                                    detail.voiceActors.forEach { actor ->
-                                                        VoiceActorRow(actor = actor, onStaffClick = onStaffClick)
-                                                    }
-                                                }
-                                            }
+                                            Spacer(modifier = Modifier.height(50.dp))
                                         }
                                     }
-                                    Spacer(modifier = Modifier.height(50.dp))
-                                }
                                 } // end HorizontalPager
                             }
                         }

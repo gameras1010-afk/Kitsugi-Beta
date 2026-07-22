@@ -744,18 +744,44 @@ fun MediaEntryDetailPage(
                             )
                         }
                     }
-
                     // Sekme İçerikleri
                     item(key = "content") {
+                        val pageHeights = remember { androidx.compose.runtime.mutableStateMapOf<Int, Int>() }
+                        val density = androidx.compose.ui.platform.LocalDensity.current
+                        val currentPage = pagerState.currentPage
+                        val currentPageOffset = pagerState.currentPageOffsetFraction
+                        val targetPage = if (currentPageOffset > 0f) currentPage + 1 else if (currentPageOffset < 0f) currentPage - 1 else currentPage
+
+                        val currentHeightPx = pageHeights[currentPage] ?: 0
+                        val targetHeightPx = pageHeights[targetPage] ?: currentHeightPx
+
+                        val interpolatedHeightDp = remember(currentHeightPx, targetHeightPx, currentPageOffset) {
+                            val heightPx = if (currentHeightPx > 0 && targetHeightPx > 0) {
+                                currentHeightPx + (targetHeightPx - currentHeightPx) * kotlin.math.abs(currentPageOffset)
+                            } else if (currentHeightPx > 0) {
+                                currentHeightPx.toFloat()
+                            } else {
+                                0f
+                            }
+                            if (heightPx > 0f) with(density) { heightPx.toDp() } else null
+                        }
+
                         HorizontalPager(
                             state = pagerState,
                             userScrollEnabled = !isTv,
                             beyondViewportPageCount = 1,
                             contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
                             pageSpacing = 12.dp,
+                            verticalAlignment = Alignment.Top,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .wrapContentHeight()
+                                .then(
+                                    if (interpolatedHeightDp != null) {
+                                        Modifier.height(interpolatedHeightDp)
+                                    } else {
+                                        Modifier.wrapContentHeight()
+                                    }
+                                )
                                 .clipToBounds()
                         ) { page ->
                             Box(
@@ -763,7 +789,14 @@ fun MediaEntryDetailPage(
                                     .fillMaxWidth()
                                     .heightIn(min = 600.dp)
                             ) {
-                                when (page) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .onGloballyPositioned { coordinates ->
+                                            pageHeights[page] = coordinates.size.height
+                                        }
+                                ) {
+                                    when (page) {
                                     0 -> {
                                         EntryDetailOverviewTab(
                                             entry = entry,
@@ -856,6 +889,7 @@ fun MediaEntryDetailPage(
                                 }
                             }
                         }
+                    }
                         Spacer(modifier = Modifier.height(90.dp))
                     }
                 }
