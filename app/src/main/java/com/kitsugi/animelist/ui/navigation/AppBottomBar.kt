@@ -3,6 +3,7 @@ package com.kitsugi.animelist.ui.navigation
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -23,6 +24,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.padding
 
 @Composable
 fun AppBottomBar(
@@ -38,7 +40,8 @@ fun AppBottomBar(
         )
         NavigationBar(
             containerColor = KitsugiColors.BackgroundElevated.copy(alpha = 0.85f),
-            contentColor = KitsugiColors.TextPrimary
+            contentColor = KitsugiColors.TextPrimary,
+            modifier = Modifier.height(72.dp)
         ) {
             MainTab.entries.forEach { tab ->
                 NavigationBarItem(
@@ -77,21 +80,23 @@ fun AppNavigationRail(
     val accentColor = LocalKitsugiAccent.current
     val isTv = LocalIsTv.current
 
-    androidx.compose.material3.NavigationRail(
-        containerColor = KitsugiColors.BackgroundElevated.copy(alpha = 0.85f),
+    androidx.compose.material3.Surface(
+        color = KitsugiColors.BackgroundElevated.copy(alpha = 0.85f),
         contentColor = KitsugiColors.TextPrimary,
-        modifier = modifier,
-        header = {
-            Spacer(modifier = androidx.compose.ui.Modifier.height(16.dp))
-        }
+        modifier = modifier
+            .fillMaxHeight()
+            .width(80.dp)
     ) {
         Column(
             modifier = androidx.compose.ui.Modifier
                 .fillMaxHeight()
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState())
+                .padding(vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
+            Spacer(modifier = androidx.compose.ui.Modifier.height(16.dp))
+
             MainTab.entries.forEach { tab ->
                 androidx.compose.material3.NavigationRailItem(
                     selected = selectedTab == tab,

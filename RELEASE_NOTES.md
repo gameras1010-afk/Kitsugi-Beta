@@ -4,6 +4,14 @@
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
+### 📱 Yatay Modda Sol Navigasyon Barı Hizalaması
+- **Üste Hizalama**: Yatay modda ekranın sol tarafında bulunan navigasyon barı (NavigationRail), butonları dikeyde ortalamak yerine artık üste hizalı olarak başlar. 
+- **Boş Alan Kazanımı**: Sol barın üst tarafında oluşan gereksiz boşluk kaldırıldı, butonlar daha erişilebilir ve şık bir yerleşime kavuşturuldu.
+
+### 🏷️ Keşfet ve Arama Arayüzünde Kütüphane Durumu Entegrasyonu
+- **Liste Durum Rozetleri ve İlerleme Barları**: Keşfet ekranı (bütün yatay şeritler), arama sonuçları, "Hepsini Gör" grid sayfaları ve sıralama alt panellerindeki tüm medya kartları artık kütüphanenizdeki durumunuzu (İzleniyor, Tamamlandı, Planlandı vb.) ve izleme ilerlemenizi (örn. 12/24 bölüm) dinamik olarak gösterir.
+- **Güçlendirilmiş Çapraz Platform Eşleştirmesi**: Simkl (`simklId`), AniList (MAL ID'si olmayan yapımlar için özel offset çözümü), TMDB (`tmdbId`) ve MyAnimeList entegrasyonları için O(1) karmaşıklıkta tam çapraz eşleme getirilerek durum rozetlerinin her platformda tutarlı görünmesi sağlandı.
+
 ### 🔄 Otomatik Arka Plan Liste Senkronizasyonu
 - **Sessiz Arka Plan Güncellemesi**: Uygulama her açıldığında bağlı olan platformlardaki (AniList, MyAnimeList ve Simkl) kütüphane listeleriniz arka planda otomatik olarak yenilenir. Artık listeleri güncellemek için manuel "İçe Aktar" butonuna basmanıza gerek kalmaz.
 - **24 Saatlik Zaman Sınırı (Throttle)**: API sunucularını yormamak ve veri tasarrufu sağlamak adına otomatik yenileme işlemi son başarılı güncellemenin üzerinden 24 saat geçtikten sonra tetiklenir.
@@ -16,10 +24,6 @@
 ### 🏷️ Platform Kaynak Rozetleri
 - **Görsel Ayrım**: Arama, keşfet ve sıralama listelerindeki poster görsellerinin sol alt köşesine şık platform rozetleri (AL: AniList, MAL: MyAnimeList, SK: Simkl, TMDB: The Movie Database) eklendi. Böylece hangi içeriğin hangi kaynaktan geldiği anında anlaşılır.
 
-### 🏷️ Keşfet ve Arama Arayüzünde Kütüphane Durumu Entegrasyonu
-- **Liste Durum Rozetleri ve İlerleme Barları**: Keşfet ekranı, arama sonuçları ve sıralama alt sayfalarındaki tüm medya kartları artık kütüphanenizdeki durumunuzu (İzleniyor, Tamamlandı, Planlandı vb.) ve izleme ilerlemenizi (örn. 12/24 bölüm) dinamik olarak gösterir.
-- **O(1) Performans Optimizasyonu**: Kütüphane durum sorgulamaları arka plan eşlemesi ile O(1) karmaşıklığa indirilerek, grid kaydırma ve hızlı gezinme esnasında arayüz akıcılığından ödün verilmez.
-
 ### 📋 Seçilebilir Detay Metinleri
 - **Kopyalama ve Arama Desteği**: Detay sayfalarındaki açıklama (synopsis) metinleri, bilgi alanları ve karakter/ekip hakkındaki biyografiler artık kopyalanabilir hale getirildi. Seçilebilir metin (SelectionContainer) desteği sayesinde dilediğiniz kısmı kolayca kopyalayabilir veya çevirebilirsiniz.
 
@@ -27,14 +31,18 @@
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
+### 📱 Landscape Left Navigation Rail Alignment
+- **Top-Aligned Items**: The navigation rail on the left side of the screen in landscape mode is now top-aligned rather than vertically centered.
+- **Reclaimed Screen Space**: Reclaims unused top space in the navigation rail, improving usability, accessibility, and visual structure.
+
+### 🏷️ Explore & Search Library Status Integration
+- **Status Badges & Progress Bars**: Media cards in the Explore screen (all horizontal shelves), search results, full-screen "See All" grids, and ranking bottom sheets now dynamically reflect your library watch status (Watching, Completed, Planned, etc.) and granular episode progress (e.g., 12/24 episodes).
+- **Advanced Cross-Platform Mapping**: Refactored mapping algorithm using O(1) indexed caching to perfectly cross-reference Simkl (`simklId`), AniList (with offset mapping for non-MAL linked titles), TMDB (`tmdbId`), and MyAnimeList sources, ensuring status indicators remain fully synchronized.
+
 ### 🔄 Automated Background List Synchronization
 - **Silent Background Sync**: Your library lists from connected platforms (AniList, MyAnimeList, and Simkl) are now automatically refreshed in the background upon application startup. Manual import is no longer required to keep your lists up to date.
 - **24-Hour Synchronization Throttle**: To maintain API efficiency and optimize data usage, the automated refresh is throttled to run at most once every 24 hours since the last successful sync.
 - **IO Thread Offloading**: The entire sync routine executes silently on the background IO thread, preserving fluid UI performance and preventing any main thread blocking.
-
-### 🏷️ Explore & Search Library Status Integration
-- **Status Badges & Progress Bars**: Media cards in the Explore screen, search results, and ranking bottom sheets now dynamically reflect your library watch status (Watching, Completed, Planned, etc.) and granular episode progress (e.g., 12/24 episodes).
-- **O(1) Performance Optimization**: Library status checks are optimized to run in O(1) time using background-mapped indexing, ensuring buttery-smooth scrolling and layout transition responsiveness during navigation.
 
 ### 🎙️ Character Voice Actors Bottom Sheet
 - **Multi-Language Voice Cast**: Added a voice icon next to each character in the Characters tab. Tapping this icon opens a premium bottom sheet displaying all voice actors for that character across different languages (Japanese, English, etc.).

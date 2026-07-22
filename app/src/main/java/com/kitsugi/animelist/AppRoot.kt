@@ -609,6 +609,12 @@ fun AppRoot(
             if (entry.tmdbId != null) {
                 mapping["tmdb_${entry.tmdbId}"] = entry
             }
+            if (entry.simklId != null) {
+                mapping["simkl_${entry.simklId}"] = entry
+            }
+            if (entry.source.equals("anilist", ignoreCase = true) && entry.malId != null && entry.malId >= 100_000_000) {
+                mapping["anilist_${entry.malId - 100_000_000}"] = entry
+            }
             if (entry.source.equals("jikan", ignoreCase = true) || entry.source.equals("mal", ignoreCase = true)) {
                 mapping["mal_${entry.malId}"] = entry
                 mapping["jikan_${entry.malId}"] = entry
@@ -628,26 +634,42 @@ fun AppRoot(
     val getMediaEntryLambda: (JikanSearchResult) -> MediaEntry? = remember(entryMap) {
         { result: JikanSearchResult ->
             val directKey = "${result.source.lowercase()}_${result.malId}"
-            entryMap[directKey] ?: run {
+            var found = entryMap[directKey]
+
+            if (found == null) {
                 val tmdbId = result.tmdbId ?: if (result.source.equals("tmdb", ignoreCase = true)) result.malId else null
-                if (tmdbId != null && entryMap.containsKey("tmdb_$tmdbId")) {
-                    entryMap["tmdb_$tmdbId"]
-                } else {
-                    val rMal = if (result.source.equals("jikan", ignoreCase = true) || result.source.equals("mal", ignoreCase = true)) result.malId else result.realMalId
-                    if (rMal != null && (entryMap.containsKey("mal_$rMal") || entryMap.containsKey("jikan_$rMal"))) {
-                        entryMap["mal_$rMal"] ?: entryMap["jikan_$rMal"]
-                    } else {
-                        val normTitle = buildString {
-                            for (c in result.title.lowercase()) {
-                                if (c in 'a'..'z' || c in '0'..'9') append(c)
-                            }
-                        }.trim()
-                        if (normTitle.isNotEmpty()) {
-                            entryMap["${result.type.name.lowercase()}_$normTitle"]
-                        } else null
-                    }
+                if (tmdbId != null) {
+                    found = entryMap["tmdb_$tmdbId"]
                 }
             }
+
+            if (found == null) {
+                val rMal = if (result.source.equals("jikan", ignoreCase = true) || result.source.equals("mal", ignoreCase = true)) {
+                    result.malId
+                } else {
+                    result.realMalId
+                }
+                if (rMal != null) {
+                    found = entryMap["${result.source.lowercase()}_$rMal"]
+                        ?: entryMap["mal_$rMal"]
+                        ?: entryMap["jikan_$rMal"]
+                        ?: entryMap["anilist_$rMal"]
+                        ?: entryMap["simkl_$rMal"]
+                }
+            }
+
+            if (found == null) {
+                val normTitle = buildString {
+                    for (c in result.title.lowercase()) {
+                        if (c in 'a'..'z' || c in '0'..'9') append(c)
+                    }
+                }.trim()
+                if (normTitle.isNotEmpty()) {
+                    found = entryMap["${result.type.name.lowercase()}_$normTitle"]
+                }
+            }
+
+            found
         }
     }
 
