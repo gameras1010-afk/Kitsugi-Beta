@@ -68,8 +68,8 @@ class KitsugiMediaRelationsClient {
                     }
                     if (resolvedTmdb != null && resolvedTmdb > 0) {
                         val isMovie = mediaType == MediaType.Movie
-                        val tmdbRelations = TmdbApiClient().fetchRecommendations(resolvedTmdb, isMovie)
-                        if (tmdbRelations.isNotEmpty()) return@withContext tmdbRelations
+                        val tmdbRelations = TmdbApiClient().fetchRelations(resolvedTmdb, isMovie)
+                        if (tmdbRelations.isNotEmpty()) return@withContext tmdbRelations.map { it.copy(source = "simkl") }
                     }
                     emptyList()
                 }
@@ -77,7 +77,7 @@ class KitsugiMediaRelationsClient {
                     val effectiveTmdbId = tmdbId ?: externalId
                     if (effectiveTmdbId > 0) {
                         val isMovie = mediaType == MediaType.Movie
-                        TmdbApiClient().fetchRecommendations(effectiveTmdbId, isMovie)
+                        TmdbApiClient().fetchRelations(effectiveTmdbId, isMovie).map { it.copy(source = "tmdb") }
                     } else emptyList()
                 }
                 "jikan", "mal" -> fetchRelationsFromJikan(externalId, mediaType)
@@ -265,7 +265,7 @@ class KitsugiMediaRelationsClient {
                     if (resolvedTmdb != null && resolvedTmdb > 0) {
                         val isMovie = mediaType == MediaType.Movie
                         val tmdbRecommendations = TmdbApiClient().fetchRecommendations(resolvedTmdb, isMovie)
-                        if (tmdbRecommendations.isNotEmpty()) return@withContext tmdbRecommendations
+                        if (tmdbRecommendations.isNotEmpty()) return@withContext tmdbRecommendations.map { it.copy(source = "simkl") }
                     }
                     emptyList()
                 }
@@ -273,7 +273,7 @@ class KitsugiMediaRelationsClient {
                     val effectiveTmdbId = tmdbId ?: externalId
                     if (effectiveTmdbId > 0) {
                         val isMovie = mediaType == MediaType.Movie
-                        TmdbApiClient().fetchRecommendations(effectiveTmdbId, isMovie)
+                        TmdbApiClient().fetchRecommendations(effectiveTmdbId, isMovie).map { it.copy(source = "tmdb") }
                     } else emptyList()
                 }
                 "jikan", "mal" -> {

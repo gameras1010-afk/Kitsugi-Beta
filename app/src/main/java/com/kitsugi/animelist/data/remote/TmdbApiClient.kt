@@ -113,6 +113,11 @@ class TmdbApiClient(
         TmdbCreditsClient.fetchCredits(tmdbId, isMovie, apiKey, ::executeGet)
     }
 
+    suspend fun fetchRelations(tmdbId: Int, isMovie: Boolean): List<KitsugiRelation> = withContext(Dispatchers.IO) {
+        if (!isTmdbEnabled()) return@withContext emptyList()
+        TmdbCreditsClient.fetchRelations(tmdbId, isMovie, apiKey, ::executeGet)
+    }
+
     suspend fun fetchRecommendations(tmdbId: Int, isMovie: Boolean): List<KitsugiRelation> = withContext(Dispatchers.IO) {
         if (!isTmdbEnabled()) return@withContext emptyList()
         TmdbCreditsClient.fetchRecommendations(tmdbId, isMovie, apiKey, ::executeGet)

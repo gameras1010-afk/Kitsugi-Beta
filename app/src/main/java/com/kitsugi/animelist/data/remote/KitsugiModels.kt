@@ -372,3 +372,24 @@ fun MediaEntry.matches(mediaId: Int, mediaSource: String): Boolean {
     return false
 }
 
+fun List<MediaEntry>.firstMatching(result: JikanSearchResult): MediaEntry? {
+    val src = result.source.lowercase()
+    return this.firstOrNull { entry ->
+        val entrySrc = entry.source.lowercase()
+        (entrySrc == src || (entrySrc == "mal" && src == "jikan") || (entrySrc == "jikan" && src == "mal")) && entry.matches(result)
+    } ?: this.firstOrNull { entry ->
+        entry.matches(result)
+    }
+}
+
+fun List<MediaEntry>.firstMatching(mediaId: Int, mediaSource: String): MediaEntry? {
+    val src = mediaSource.lowercase()
+    return this.firstOrNull { entry ->
+        val entrySrc = entry.source.lowercase()
+        (entrySrc == src || (entrySrc == "mal" && src == "jikan") || (entrySrc == "jikan" && src == "mal")) && entry.matches(mediaId, mediaSource)
+    } ?: this.firstOrNull { entry ->
+        entry.matches(mediaId, mediaSource)
+    }
+}
+
+

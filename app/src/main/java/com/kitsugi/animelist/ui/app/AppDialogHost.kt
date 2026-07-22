@@ -90,14 +90,18 @@ fun AppDialogHost(
     editingEntry?.let { entry ->
         val isAniListConnected = androidx.compose.runtime.remember { com.kitsugi.animelist.data.auth.ExternalAuthManager.getAniListToken(context) != null }
         val isMalConnected = androidx.compose.runtime.remember { com.kitsugi.animelist.data.auth.ExternalAuthManager.getMalToken(context) != null }
+        val isSimklConnected = androidx.compose.runtime.remember { com.kitsugi.animelist.data.auth.ExternalAuthManager.getSimklToken(context) != null }
 
         val resolvedSource = when (entry.source.lowercase()) {
-            "anilist" -> "anilist"
+            "anilist" -> if (!isAniListConnected && isMalConnected) "mal" else "anilist"
+            "mal" -> if (!isMalConnected && isAniListConnected) "anilist" else "mal"
             "simkl" -> "simkl"
-            "mal" -> "mal"
             "jikan" -> if (isAniListConnected && !isMalConnected) "anilist" else "mal"
             else -> {
                 when {
+                    entry.aniListEntryId != null && isAniListConnected -> "anilist"
+                    entry.malId != null && isMalConnected -> "mal"
+                    entry.simklId != null && isSimklConnected -> "simkl"
                     entry.aniListEntryId != null -> "anilist"
                     entry.simklId != null -> "simkl"
                     entry.malId != null -> "mal"

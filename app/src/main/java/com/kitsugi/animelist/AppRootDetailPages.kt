@@ -11,6 +11,7 @@ import com.kitsugi.animelist.model.MediaType
 import com.kitsugi.animelist.data.remote.JikanSearchResult
 import com.kitsugi.animelist.data.remote.ApiSearchSelection
 import com.kitsugi.animelist.data.remote.matches
+import com.kitsugi.animelist.data.remote.firstMatching
 import com.kitsugi.animelist.data.settings.AppSettings
 import com.kitsugi.animelist.data.local.MediaEntryRepository
 import com.kitsugi.animelist.data.local.MangaMappingEntity
@@ -57,9 +58,7 @@ fun AppRootDetailPages(
                     source = key.source,
                     onBackClick = { navState.popDetailStack() },
                     onMediaClick = { mediaId, mediaType, mediaSource ->
-                        val existingEntry = mediaEntries.firstOrNull {
-                            it.matches(mediaId, mediaSource)
-                        }
+                        val existingEntry = mediaEntries.firstMatching(mediaId, mediaSource)
                         if (existingEntry != null) {
                             navState.navigateToDetail(DetailScreen.MediaDetail(existingEntry.id))
                         } else {
@@ -96,9 +95,7 @@ fun AppRootDetailPages(
                         navState.navigateToDetail(DetailScreen.CharacterDetail(charId, charSource, charName, charImageUrl))
                     },
                     onMediaClick = { mediaId, mediaType, mediaSource ->
-                        val existingEntry = mediaEntries.firstOrNull {
-                            it.matches(mediaId, mediaSource)
-                        }
+                        val existingEntry = mediaEntries.firstMatching(mediaId, mediaSource)
                         if (existingEntry != null) {
                             navState.navigateToDetail(DetailScreen.MediaDetail(existingEntry.id))
                         } else {
@@ -136,9 +133,7 @@ fun AppRootDetailPages(
                         navState.navigateToDetail(DetailScreen.StaffDetail(staffId, staffSource, staffName, staffImageUrl))
                     },
                     onMediaClick = { mediaId, mediaType, mediaSource ->
-                        val existingEntry = mediaEntries.firstOrNull {
-                            it.matches(mediaId, mediaSource)
-                        }
+                        val existingEntry = mediaEntries.firstMatching(mediaId, mediaSource)
                         if (existingEntry != null) {
                             navState.navigateToDetail(DetailScreen.MediaDetail(existingEntry.id))
                         } else {
@@ -168,9 +163,7 @@ fun AppRootDetailPages(
 
         is AppStateKey.ApiResultDetail -> {
             navState.stateHolder.SaveableStateProvider(key = "api_${key.depth}_${key.result.source}_${key.result.malId}") {
-                val existingApiEntry = mediaEntries.firstOrNull {
-                    it.matches(key.result)
-                }
+                val existingApiEntry = mediaEntries.firstMatching(key.result)
                 ApiResultDetailPage(
                     result = key.result,
                     existingEntry = existingApiEntry,
@@ -182,7 +175,7 @@ fun AppRootDetailPages(
                         onEditEntry(entry)
                     },
                     onRelationClick = { result ->
-                        val existingEntry = mediaEntries.firstOrNull { it.matches(result) }
+                        val existingEntry = mediaEntries.firstMatching(result)
                         if (existingEntry != null) {
                             navState.navigateToDetail(DetailScreen.MediaDetail(existingEntry.id))
                         } else {
@@ -268,7 +261,7 @@ fun AppRootDetailPages(
                             onDeleteEntry(entry)
                         },
                         onRelationClick = { result ->
-                            val existingEntry = mediaEntries.firstOrNull { it.matches(result) }
+                            val existingEntry = mediaEntries.firstMatching(result)
                             if (existingEntry != null) {
                                 navState.navigateToDetail(DetailScreen.MediaDetail(existingEntry.id))
                             } else {
@@ -307,7 +300,7 @@ fun AppRootDetailPages(
                     titleLanguage = appSettings.titleLanguage,
                     onOpenAiringEntry = { airingEntry ->
                         val result = airingEntry.toJikanSearchResult()
-                        val existingEntry = mediaEntries.firstOrNull { it.matches(result) }
+                        val existingEntry = mediaEntries.firstMatching(result)
                         if (existingEntry != null) {
                             navState.navigateToDetail(DetailScreen.MediaDetail(existingEntry.id))
                         } else {
@@ -395,7 +388,7 @@ fun AppRootDetailPages(
                             year = null,
                             source = source
                         )
-                        val existingEntry = mediaEntries.firstOrNull { it.matches(searchResult) }
+                        val existingEntry = mediaEntries.firstMatching(searchResult)
                         if (existingEntry != null) {
                             navState.navigateToDetail(DetailScreen.MediaDetail(existingEntry.id))
                         } else {

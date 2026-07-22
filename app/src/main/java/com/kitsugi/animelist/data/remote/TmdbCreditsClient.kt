@@ -82,6 +82,88 @@ internal object TmdbCreditsClient {
         }
     }
 
+    suspend fun fetchRelations(
+        tmdbId: Int,
+        isMovie: Boolean,
+        apiKey: String,
+        executeGet: suspend (String) -> String?
+    ): List<KitsugiRelation> = withContext(Dispatchers.IO) {
+        val list = mutableListOf<KitsugiRelation>()
+        if (isMovie) {
+            val movieUrl = "https://api.themoviedb.org/3/movie/$tmdbId?api_key=$apiKey&language=tr-TR"
+            try {
+                val movieResp = executeGet(movieUrl)
+                if (movieResp != null) {
+                    val movieJson = JSONObject(movieResp)
+                    val belongsToCollection = movieJson.optJSONObject("belongs_to_collection")
+                    if (belongsToCollection != null) {
+                        val collectionId = belongsToCollection.optInt("id")
+                        if (collectionId > 0) {
+                            val collectionUrl = "https://api.themoviedb.org/3/collection/$collectionId?api_key=$apiKey&language=tr-TR"
+                            val collectionResp = executeGet(collectionUrl)
+                            if (collectionResp != null) {
+                                val collJson = JSONObject(collectionResp)
+                                val parts = collJson.optJSONArray("parts")
+                                if (parts != null) {
+                                    for (i in 0 until parts.length()) {
+                                        val part = parts.getJSONObject(i)
+                                        val partId = part.optInt("id")
+                                        if (partId == tmdbId) continue
+                                        val partTitle = part.optString("title", "Bilinmeyen")
+                                        val posterPath = part.optNullableString("poster_path") ?: ""
+                                        val imageUrl = if (posterPath.isNotEmpty()) "$IMG_W185$posterPath" else null
+                                        list.add(
+                                            KitsugiRelation(
+                                                malId = partId, title = partTitle, relationType = "Seri",
+                                                imageUrl = imageUrl,
+                                                mediaType = MediaType.Movie,
+                                                source = "tmdb"
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching collection for movie $tmdbId: ${e.message}", e)
+            }
+        }
+
+        if (list.isEmpty()) {
+            val typePath = if (isMovie) "movie" else "tv"
+            val url = "https://api.themoviedb.org/3/$typePath/$tmdbId/similar?api_key=$apiKey&language=tr-TR"
+            try {
+                val responseText = executeGet(url)
+                if (responseText != null) {
+                    val root = JSONObject(responseText)
+                    val results = root.optJSONArray("results")
+                    if (results != null) {
+                        for (i in 0 until minOf(results.length(), 20)) {
+                            val item = results.getJSONObject(i)
+                            val id = item.optInt("id")
+                            val title = if (isMovie) item.optString("title", "Bilinmeyen") else item.optString("name", "Bilinmeyen")
+                            val posterPath = item.optNullableString("poster_path") ?: ""
+                            val imageUrl = if (posterPath.isNotEmpty()) "$IMG_W185$posterPath" else null
+                            list.add(
+                                KitsugiRelation(
+                                    malId = id, title = title, relationType = "Benzer",
+                                    imageUrl = imageUrl,
+                                    mediaType = if (isMovie) MediaType.Movie else MediaType.TvShow,
+                                    source = "tmdb"
+                                )
+                            )
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching TMDB similar: ${e.message}", e)
+            }
+        }
+        list
+    }
+
     suspend fun fetchRecommendations(
         tmdbId: Int,
         isMovie: Boolean,

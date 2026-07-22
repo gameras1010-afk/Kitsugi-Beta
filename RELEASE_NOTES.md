@@ -4,6 +4,12 @@
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
+### 🎬 TMDB İlişkiler ve Öneriler Sekmesi Ayrımı
+- **Benzersiz İçerik**: TMDB kaynaklı film ve dizilerde "İlişkiler" (Relations) ve "Öneriler" (Recommendations) sekmelerindeki veri çakışması giderildi. Artık İlişkiler sekmesinde doğrudan ilgili koleksiyon parçaları (seriler) veya benzer yapımlar listelenirken, Öneriler sekmesinde ise TMDB tavsiyeleri listelenmektedir.
+
+### ✎ Akıllı Liste Kaydı Düzenleme Kaynağı Seçimi
+- **Birebir Düzenleme Kaynağı Eşleşmesi**: Kütüphanede hem AniList hem de MyAnimeList bağlantısı olan kullanıcılar için, detay sayfasından veya aramadan düzenleme butonuna basıldığında açılan düzenleme penceresinin kaynağı (MAL veya AniList) akıllıca tespit edilerek doğru platformda düzenleme yapılması sağlandı. Sadece tek hesap bağlı olduğunda da otomatik olarak o hesaba yönlendirme yapılır.
+
 ### 🔍 Keşfet Ekranı Kategorileri & Görünüm Senkronizasyonu
 - **Açılır-Kapanır Kategoriler**: Keşfet ekranında ayrı olan Anime ve Manga kategori satırları tek bir açılır-kapanır **"Kategoriler"** kartı altında birleştirildi. Manga kategorileri, Anime kategorilerinin altına konumlandırılarak görsel düzen sadeleştirildi.
 - **Scroll Senkronizasyonu**: Grid ve Liste görünümleri arasında geçiş yapıldığında kullanıcının kaydırma pozisyonu (scroll) kaybolmadan birebir senkronize edilerek geçiş yapılması sağlandı.
@@ -26,6 +32,12 @@
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
+
+### 🎬 TMDB Relations & Recommendations Tab Separation
+- **Unique Content Delivery**: Separated recommendations and relations API calls for TMDB movies/shows. The relations tab now exclusively renders series collections and similar franchises, while the recommendations tab delivers TMDB-curated suggestions.
+
+### ✎ Intelligent Media Entry Edit Source Resolution
+- **Precise Platform Targeting**: The edit dialog launcher now dynamically resolves to MyAnimeList or AniList based on the user's active screen context and account connectivity, preventing unintended cross-platform editing sheets.
 
 ### 🔍 Explore Screen Categories & View Synchronization
 - **Collapsible Categories**: Merged separate Anime and Manga category rows on the Explore Screen into a single collapsible **"Kategoriler"** container. Manga categories are nested directly below Anime categories to reduce screen clutter.

@@ -102,6 +102,7 @@ import com.kitsugi.animelist.data.local.MediaEntryRepository
 import com.kitsugi.animelist.data.local.KitsugiDatabase
 import com.kitsugi.animelist.model.WatchStatus
 import com.kitsugi.animelist.data.remote.matches
+import com.kitsugi.animelist.data.remote.firstMatching
 import com.kitsugi.animelist.ui.app.AppDialogHost
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
@@ -439,7 +440,7 @@ fun TvRootScreen(
                 when (detail) {
                     is TvDetailTarget.Media -> {
                         val mediaResult = detail.result
-                        val existingApiEntry = mediaEntries.firstOrNull { it.matches(mediaResult) }
+                        val existingApiEntry = mediaEntries.firstMatching(mediaResult)
 
                         TvDetailScreen(
                             result = mediaResult,
