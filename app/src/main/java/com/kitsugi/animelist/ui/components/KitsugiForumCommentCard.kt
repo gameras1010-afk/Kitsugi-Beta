@@ -57,8 +57,7 @@ internal fun KitsugiForumCommentCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(KitsugiColors.SurfaceStrong, RoundedCornerShape(12.dp))
-            .padding(12.dp)
+            .padding(horizontal = 4.dp, vertical = 8.dp)
     ) {
         // Author row
         Row(
@@ -102,15 +101,15 @@ internal fun KitsugiForumCommentCard(
                 Text(
                     text = comment.username,
                     color = KitsugiColors.TextPrimary,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = getRelativeTime(comment.createdAt, comment.dateText),
                 color = KitsugiColors.TextSecondary,
-                fontSize = 10.sp
+                fontSize = 12.sp
             )
         }
 
@@ -145,8 +144,7 @@ internal fun KitsugiForumCommentCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 IconButton(
                     onClick = { context.openTranslator(comment.comment) },
@@ -174,24 +172,11 @@ internal fun KitsugiForumCommentCard(
                         modifier = Modifier.size(16.dp)
                     )
                 }
-                if (onReplyClick != null) {
-                    IconButton(
-                        onClick = { onReplyClick(comment) },
-                        modifier = Modifier.size(28.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.Reply,
-                            contentDescription = "Yanıtla",
-                            tint = KitsugiColors.TextSecondary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
             }
 
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 if (comment.childComments.isNotEmpty()) {
                     Row(
@@ -205,13 +190,13 @@ internal fun KitsugiForumCommentCard(
                             imageVector = if (isRepliesExpanded) Icons.Rounded.ChatBubble else Icons.Rounded.ChatBubbleOutline,
                             contentDescription = "Yanıtlar",
                             tint = accentColor,
-                            modifier = Modifier.size(15.dp)
+                            modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = comment.childComments.size.toString(),
                             color = KitsugiColors.TextSecondary,
-                            fontSize = 12.sp,
+                            fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -219,17 +204,20 @@ internal fun KitsugiForumCommentCard(
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.tvClickable(shape = RoundedCornerShape(8.dp)) {
-                        coroutineScope.launch {
-                            val success = apiClient.toggleLike(comment.id, "THREAD_COMMENT")
-                            if (success) {
-                                isLikedState = !isLikedState
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable {
+                            coroutineScope.launch {
+                                val success = apiClient.toggleLike(comment.id, "THREAD_COMMENT")
+                                if (success) {
+                                    isLikedState = !isLikedState
                                     likeCountState = if (isLikedState) likeCountState + 1 else likeCountState - 1
-                            } else {
-                                Toast.makeText(context, "Lütfen önce giriş yapın", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Toast.makeText(context, "Lütfen önce giriş yapın", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         }
-                    }
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Icon(
                         imageVector = if (isLikedState) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
@@ -241,8 +229,22 @@ internal fun KitsugiForumCommentCard(
                     Text(
                         text = likeCountState.toString(),
                         color = KitsugiColors.TextSecondary,
-                        fontSize = 12.sp
+                        fontSize = 13.sp
                     )
+                }
+
+                if (onReplyClick != null) {
+                    IconButton(
+                        onClick = { onReplyClick(comment) },
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.Reply,
+                            contentDescription = "Yanıtla",
+                            tint = KitsugiColors.TextSecondary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
         }
@@ -252,7 +254,7 @@ internal fun KitsugiForumCommentCard(
             comment.childComments.forEach { child ->
                 KitsugiForumChildCommentRow(
                     comment = child,
-                    level = 1,
+                    modifier = Modifier.padding(start = 16.dp),
                     apiClient = apiClient,
                     coroutineScope = coroutineScope,
                     selectedLanguage = selectedLanguage,
@@ -268,7 +270,7 @@ internal fun KitsugiForumCommentCard(
 @Composable
 private fun KitsugiForumChildCommentRow(
     comment: KitsugiForumReply,
-    level: Int,
+    modifier: Modifier = Modifier,
     apiClient: JikanApiClient,
     coroutineScope: CoroutineScope,
     selectedLanguage: String,
@@ -283,27 +285,16 @@ private fun KitsugiForumChildCommentRow(
     var isRepliesExpanded by remember { mutableStateOf(false) }
 
     Row(
-        modifier = Modifier
+        modifier = modifier
+            .padding(top = 10.dp)
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
-            .padding(top = 10.dp)
     ) {
         // Indentation line
-        for (i in 0 until level) {
-            Box(
-                modifier = Modifier
-                    .width(16.dp)
-                    .fillMaxHeight(),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                Box(
-                    modifier = Modifier
-                        .width(1.5.dp)
-                        .fillMaxHeight()
-                        .background(KitsugiColors.SurfaceSoft)
-                )
-            }
-        }
+        androidx.compose.material3.VerticalDivider(
+            modifier = Modifier.padding(end = 16.dp),
+            color = KitsugiColors.SurfaceSoft
+        )
 
         Column(
             modifier = Modifier.weight(1f)
@@ -350,15 +341,15 @@ private fun KitsugiForumChildCommentRow(
                     Text(
                         text = comment.username,
                         color = KitsugiColors.TextPrimary,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
                     text = getRelativeTime(comment.createdAt, comment.dateText),
                     color = KitsugiColors.TextSecondary,
-                    fontSize = 10.sp
+                    fontSize = 11.sp
                 )
             }
 
@@ -400,8 +391,7 @@ private fun KitsugiForumChildCommentRow(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     IconButton(
                         onClick = { context.openTranslator(comment.comment) },
@@ -429,24 +419,11 @@ private fun KitsugiForumChildCommentRow(
                             modifier = Modifier.size(14.dp)
                         )
                     }
-                    if (onReplyClick != null) {
-                        IconButton(
-                            onClick = { onReplyClick(comment) },
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.Reply,
-                                contentDescription = "Yanıtla",
-                                tint = KitsugiColors.TextSecondary,
-                                modifier = Modifier.size(14.dp)
-                            )
-                        }
-                    }
                 }
 
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     if (comment.childComments.isNotEmpty()) {
                         Row(
@@ -456,19 +433,19 @@ private fun KitsugiForumChildCommentRow(
                                 .clickable { isRepliesExpanded = !isRepliesExpanded }
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
-                            Icon(
-                                imageVector = if (isRepliesExpanded) Icons.Rounded.ChatBubble else Icons.Rounded.ChatBubbleOutline,
-                                contentDescription = "Yanıtlar",
-                                tint = accentColor,
-                                modifier = Modifier.size(13.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = comment.childComments.size.toString(),
-                                color = KitsugiColors.TextSecondary,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                          Icon(
+                              imageVector = if (isRepliesExpanded) Icons.Rounded.ChatBubble else Icons.Rounded.ChatBubbleOutline,
+                              contentDescription = "Yanıtlar",
+                              tint = accentColor,
+                              modifier = Modifier.size(14.dp)
+                          )
+                          Spacer(modifier = Modifier.width(4.dp))
+                          Text(
+                              text = comment.childComments.size.toString(),
+                              color = KitsugiColors.TextSecondary,
+                              fontSize = 12.sp,
+                              fontWeight = FontWeight.Bold
+                          )
                         }
                     }
 
@@ -493,32 +470,46 @@ private fun KitsugiForumChildCommentRow(
                             imageVector = if (isLikedState) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
                             contentDescription = "Beğen",
                             tint = if (isLikedState) accentColor else KitsugiColors.TextSecondary,
-                            modifier = Modifier.size(13.dp)
+                            modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = likeCountState.toString(),
                             color = KitsugiColors.TextSecondary,
-                            fontSize = 11.sp
+                            fontSize = 12.sp
                         )
+                    }
+
+                    if (onReplyClick != null) {
+                        IconButton(
+                            onClick = { onReplyClick(comment) },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.Reply,
+                                contentDescription = "Yanıtla",
+                                tint = KitsugiColors.TextSecondary,
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
                     }
                 }
             }
+        }
+    }
 
-            if (isRepliesExpanded && comment.childComments.isNotEmpty()) {
-                comment.childComments.forEach { child ->
-                    KitsugiForumChildCommentRow(
-                        comment = child,
-                        level = level + 1,
-                        apiClient = apiClient,
-                        coroutineScope = coroutineScope,
-                        selectedLanguage = selectedLanguage,
-                        translatedComments = translatedComments,
-                        onUserProfileClick = onUserProfileClick,
-                        onReplyClick = onReplyClick
-                    )
-                }
-            }
+    if (isRepliesExpanded && comment.childComments.isNotEmpty()) {
+        comment.childComments.forEach { child ->
+            KitsugiForumChildCommentRow(
+                comment = child,
+                modifier = Modifier.padding(start = 16.dp),
+                apiClient = apiClient,
+                coroutineScope = coroutineScope,
+                selectedLanguage = selectedLanguage,
+                translatedComments = translatedComments,
+                onUserProfileClick = onUserProfileClick,
+                onReplyClick = onReplyClick
+            )
         }
     }
 }

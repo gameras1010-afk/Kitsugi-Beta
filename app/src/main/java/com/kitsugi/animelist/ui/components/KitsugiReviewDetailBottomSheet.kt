@@ -15,7 +15,9 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.ThumbUp
+import androidx.compose.material.icons.rounded.ThumbDown
 import androidx.compose.material.icons.rounded.Translate
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -59,6 +61,47 @@ fun KitsugiReviewDetailBottomSheet(
 
     var userRatingState by remember(review.id) { mutableStateOf(review.userRating) }
     var helpfulCountState by remember(review.id) { mutableStateOf(review.helpfulCount ?: 0) }
+    var ratingAmountState by remember(review.id) { mutableStateOf(review.ratingAmount ?: 0) }
+
+    val onRateClick: (String) -> Unit = { newRating ->
+        if (review.id == null) {
+            Toast.makeText(context, "Beğeni özelliği MAL kaynağı için desteklenmemektedir.", Toast.LENGTH_SHORT).show()
+        } else {
+            coroutineScope.launch {
+                val success = apiClient.rateReview(review.id, newRating)
+                if (success) {
+                    val oldRating = userRatingState
+                    userRatingState = newRating
+                    
+                    // Adjust helpfulCountState and ratingAmountState based on transition
+                    when {
+                        oldRating == "UP_VOTE" && newRating == "NO_RATING" -> {
+                            helpfulCountState = (helpfulCountState - 1).coerceAtLeast(0)
+                            ratingAmountState = (ratingAmountState - 1).coerceAtLeast(0)
+                        }
+                        oldRating == "DOWN_VOTE" && newRating == "NO_RATING" -> {
+                            ratingAmountState = (ratingAmountState - 1).coerceAtLeast(0)
+                        }
+                        oldRating == "NO_RATING" && newRating == "UP_VOTE" -> {
+                            helpfulCountState = helpfulCountState + 1
+                            ratingAmountState = ratingAmountState + 1
+                        }
+                        oldRating == "NO_RATING" && newRating == "DOWN_VOTE" -> {
+                            ratingAmountState = ratingAmountState + 1
+                        }
+                        oldRating == "UP_VOTE" && newRating == "DOWN_VOTE" -> {
+                            helpfulCountState = (helpfulCountState - 1).coerceAtLeast(0)
+                        }
+                        oldRating == "DOWN_VOTE" && newRating == "UP_VOTE" -> {
+                            helpfulCountState = helpfulCountState + 1
+                        }
+                    }
+                } else {
+                    Toast.makeText(context, "Lütfen önce giriş yapın", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 
     LaunchedEffect(selectedLanguage) {
         if (selectedLanguage == "turkish" && translatedText == null) {
@@ -136,38 +179,11 @@ fun KitsugiReviewDetailBottomSheet(
                                     .padding(horizontal = 4.dp, vertical = 2.dp)
                             } else Modifier
                         )
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.tvClickable(enabled = review.id != null, shape = RoundedCornerShape(8.dp)) {
-                                coroutineScope.launch {
-                                    val newRating = if (userRatingState == "UP_VOTE") "NO_RATING" else "UP_VOTE"
-                                    val success = apiClient.rateReview(review.id ?: 0, newRating)
-                                    if (success) {
-                                        val diff = if (newRating == "UP_VOTE") 1 else -1
-                                        userRatingState = newRating
-                                        helpfulCountState = (helpfulCountState + diff).coerceAtLeast(0)
-                                    } else {
-                                        Toast.makeText(context, "Lütfen önce giriş yapın", Toast.LENGTH_SHORT).show()
-                                    }
-                                }
-                            }
-                        ) {
-                            if (review.id != null) {
-                                Icon(
-                                    imageVector = Icons.Rounded.ThumbUp,
-                                    contentDescription = "Faydalı",
-                                    tint = if (userRatingState == "UP_VOTE") accentColor else KitsugiColors.TextSecondary,
-                                    modifier = Modifier.size(12.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                            }
-                            val helpfulText = if (helpfulCountState > 0) "$helpfulCountState kişi faydalı buldu" else "Faydalı buldun mu?"
-                            Text(
-                                text = if (review.id != null) helpfulText else (review.dateText ?: ""),
-                                color = if (userRatingState == "UP_VOTE") accentColor else KitsugiColors.TextSecondary,
-                                fontSize = 12.sp
-                            )
-                        }
+                        Text(
+                            text = review.dateText ?: "",
+                            color = KitsugiColors.TextSecondary,
+                            fontSize = 12.sp
+                        )
                     }
                 }
 
@@ -175,22 +191,6 @@ fun KitsugiReviewDetailBottomSheet(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    if (review.score != null) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(accentColor.copy(alpha = 0.15f))
-                                .padding(horizontal = 10.dp, vertical = 6.dp)
-                        ) {
-                            Text(
-                                text = "★ ${review.score}",
-                                color = accentColor,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Black
-                            )
-                        }
-                    }
-
                     IconButton(
                         onClick = { context.openTranslator(review.fullText) },
                         modifier = Modifier.size(36.dp)
@@ -231,6 +231,25 @@ fun KitsugiReviewDetailBottomSheet(
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Title/Summary
+            Text(
+                text = review.summary,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .fillMaxWidth(),
+                fontSize = 20.sp,
+                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                color = KitsugiColors.TextPrimary
+            )
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                color = KitsugiColors.Border.copy(alpha = 0.3f)
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -306,6 +325,80 @@ fun KitsugiReviewDetailBottomSheet(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Score and ratings
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (review.score != null) {
+                    TextSubtitleVertical(
+                        text = "${review.score}/100",
+                        subtitle = "Skor"
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val acceptancePercent = if (ratingAmountState > 0) {
+                        (helpfulCountState * 100) / ratingAmountState
+                    } else 0
+                    val ratingsStr = if (ratingAmountState > 0) {
+                        "$acceptancePercent% ($helpfulCountState/$ratingAmountState)"
+                    } else {
+                        "$helpfulCountState"
+                    }
+
+                    TextSubtitleVertical(
+                        text = ratingsStr,
+                        subtitle = "Kullanıcı Beğenileri"
+                    )
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Upvote Button
+                        val isUpvote = userRatingState == "UP_VOTE"
+                        IconButton(
+                            onClick = {
+                                val newRating = if (isUpvote) "NO_RATING" else "UP_VOTE"
+                                onRateClick(newRating)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.ThumbUp,
+                                contentDescription = "Upvote",
+                                tint = if (isUpvote) accentColor else KitsugiColors.TextSecondary
+                            )
+                        }
+
+                        // Downvote Button
+                        val isDownvote = userRatingState == "DOWN_VOTE"
+                        IconButton(
+                            onClick = {
+                                val newRating = if (isDownvote) "NO_RATING" else "DOWN_VOTE"
+                                onRateClick(newRating)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.ThumbDown,
+                                contentDescription = "Downvote",
+                                tint = if (isDownvote) KitsugiColors.AccentRed else KitsugiColors.TextSecondary
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             // Footer Actions
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -365,6 +458,33 @@ fun KitsugiReviewDetailBottomSheet(
             initialIndex = idx,
             title = "${review.username} Yorum Görseli",
             onDismiss = { activeGalleryImages = null }
+        )
+    }
+}
+
+@Composable
+private fun TextSubtitleVertical(
+    text: String?,
+    subtitle: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.padding(horizontal = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = text ?: "Bilinmiyor",
+            color = KitsugiColors.TextPrimary,
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center
+        )
+        Text(
+            text = subtitle,
+            color = KitsugiColors.TextSecondary,
+            fontSize = 12.sp,
+            textAlign = TextAlign.Center,
+            lineHeight = 14.sp
         )
     }
 }

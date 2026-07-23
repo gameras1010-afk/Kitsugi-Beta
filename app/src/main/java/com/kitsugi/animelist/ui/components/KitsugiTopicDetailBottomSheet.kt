@@ -307,21 +307,41 @@ fun KitsugiTopicDetailBottomSheet(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(KitsugiColors.SurfaceStrong, RoundedCornerShape(12.dp))
-                            .padding(14.dp)
+                            .padding(horizontal = 4.dp, vertical = 8.dp)
                     ) {
-                        // Header block: Author row first
+                        val displayTitle = if (selectedLanguage == "turkish") translatedTitle ?: topic.title else topic.title
+                        Text(
+                            text = displayTitle,
+                            color = KitsugiColors.TextPrimary,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            lineHeight = 24.sp
+                        )
+                        if (!topic.dateText.isNullOrBlank()) {
+                            Text(
+                                text = topic.dateText,
+                                color = KitsugiColors.TextSecondary,
+                                fontSize = 15.sp,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+                        HorizontalDivider(color = KitsugiColors.Border.copy(alpha = 0.3f))
+                        Spacer(modifier = Modifier.height(12.dp))
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Row(
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.weight(1f)
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(30.dp)
+                                        .size(36.dp)
                                         .clip(CircleShape)
                                         .background(KitsugiColors.SurfaceSoft)
                                         .then(
@@ -343,81 +363,80 @@ fun KitsugiTopicDetailBottomSheet(
                                                 text = topic.username.take(1).uppercase(),
                                                 color = KitsugiColors.TextMuted,
                                                 fontWeight = FontWeight.Bold,
-                                                fontSize = 13.sp
+                                                fontSize = 14.sp
                                             )
                                         }
                                     }
                                 }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Column {
-                                    Text(
-                                        text = topic.username,
-                                        color = KitsugiColors.TextPrimary,
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = if (onUserProfileClick != null) {
-                                            Modifier
-                                                .clip(RoundedCornerShape(4.dp))
-                                                .clickable { onUserProfileClick(topic.userId, topic.username, topic.avatarUrl) }
-                                                .padding(horizontal = 4.dp, vertical = 2.dp)
-                                        } else Modifier
-                                    )
-                                    if (!topic.dateText.isNullOrBlank()) {
-                                        Text(
-                                            text = topic.dateText,
-                                            color = KitsugiColors.TextSecondary,
-                                            fontSize = 11.sp
-                                        )
-                                    }
-                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = topic.username,
+                                    color = KitsugiColors.TextPrimary,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = if (onUserProfileClick != null) {
+                                        Modifier
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .clickable { onUserProfileClick(topic.userId, topic.username, topic.avatarUrl) }
+                                            .padding(horizontal = 4.dp, vertical = 2.dp)
+                                    } else Modifier
+                                )
                             }
 
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.tvClickable(shape = RoundedCornerShape(8.dp)) {
-                                    coroutineScope.launch {
-                                        val success = apiClient.toggleLike(topic.id, "THREAD")
-                                        if (success) {
-                                            isTopicLikedState = !isTopicLikedState
-                                            topicLikeCountState = if (isTopicLikedState) topicLikeCountState + 1 else topicLikeCountState - 1
-                                        } else {
-                                            Toast.makeText(context, "Lütfen önce giriş yapın", Toast.LENGTH_SHORT).show()
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                // Like/Favorite
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .tvClickable {
+                                            coroutineScope.launch {
+                                                val success = apiClient.toggleLike(topic.id, "THREAD")
+                                                if (success) {
+                                                    isTopicLikedState = !isTopicLikedState
+                                                    topicLikeCountState = if (isTopicLikedState) topicLikeCountState + 1 else topicLikeCountState - 1
+                                                } else {
+                                                    Toast.makeText(context, "Lütfen önce giriş yapın", Toast.LENGTH_SHORT).show()
+                                                }
+                                            }
                                         }
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = if (isTopicLikedState) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                                        contentDescription = "Beğen",
+                                        tint = if (isTopicLikedState) accentColor else KitsugiColors.TextSecondary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = topicLikeCountState.toString(),
+                                        color = KitsugiColors.TextSecondary,
+                                        fontSize = 14.sp
+                                    )
+                                }
+
+                                // Reply
+                                if (source.lowercase() != "jikan" && source.lowercase() != "mal") {
+                                    IconButton(
+                                        onClick = { showReplyEditor = true }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Rounded.Reply,
+                                            contentDescription = "Yanıtla",
+                                            tint = KitsugiColors.TextSecondary,
+                                            modifier = Modifier.size(20.dp)
+                                        )
                                     }
                                 }
-                            ) {
-                                Icon(
-                                    imageVector = if (isTopicLikedState) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                                    contentDescription = "Beğen",
-                                    tint = if (isTopicLikedState) accentColor else KitsugiColors.TextSecondary,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = topicLikeCountState.toString(),
-                                    color = KitsugiColors.TextSecondary,
-                                    fontSize = 12.sp
-                                )
                             }
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))
-
-                        // Middle block: Title box in a separate dark background container
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(KitsugiColors.Surface, RoundedCornerShape(8.dp))
-                                .padding(12.dp)
-                        ) {
-                            val displayTitle = if (selectedLanguage == "turkish") translatedTitle ?: topic.title else topic.title
-                            Text(
-                                text = displayTitle,
-                                color = KitsugiColors.TextPrimary,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                        HorizontalDivider(color = KitsugiColors.Border.copy(alpha = 0.3f))
                     }
                 }
 

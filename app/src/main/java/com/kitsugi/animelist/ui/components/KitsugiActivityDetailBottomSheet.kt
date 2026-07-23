@@ -250,7 +250,9 @@ fun KitsugiActivityDetailBottomSheet(
                     // Item 1: User Header & Text Content Card
                     item {
                         Column(
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 4.dp, vertical = 8.dp)
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -303,79 +305,96 @@ fun KitsugiActivityDetailBottomSheet(
                                         Text(
                                             text = act.dateText,
                                             color = KitsugiColors.TextSecondary,
-                                            fontSize = 11.sp
+                                            fontSize = 12.sp
+                                        )
+                                    }
+                                }
+                            }
+
+                            val localizedTitle = when (titleLanguage) {
+                                "ENGLISH" -> act.mediaTitleEnglish?.takeIf { it.isNotBlank() }
+                                    ?: act.mediaTitleRomaji
+                                    ?: act.mediaTitleNative
+                                    ?: act.mediaTitle
+                                "NATIVE", "JAPANESE_STAFF" -> act.mediaTitleNative?.takeIf { it.isNotBlank() }
+                                    ?: act.mediaTitleRomaji
+                                    ?: act.mediaTitleEnglish
+                                    ?: act.mediaTitle
+                                else -> act.mediaTitleRomaji
+                                    ?: act.mediaTitleEnglish
+                                    ?: act.mediaTitleNative
+                                    ?: act.mediaTitle
+                            }
+                            val localizedDisplayText = if (act.mediaTitle != null && localizedTitle != null && localizedTitle != act.mediaTitle) {
+                                act.text.replace("**${act.mediaTitle}**", "**$localizedTitle**")
+                            } else act.text
+                            val displayText = if (selectedLanguage == "turkish") translatedText ?: localizedDisplayText else localizedDisplayText
+
+                            KitsugiMarkdownText(
+                                text = displayText,
+                                onImageGalleryRequest = { urls, index ->
+                                    activeGalleryImages = urls
+                                    activeGalleryIndex = index
+                                },
+                                modifier = Modifier.padding(vertical = 12.dp)
+                            )
+
+                            if (act.mediaId != null) {
+                                val isMediaClickable = onMediaClick != null
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(KitsugiColors.SurfaceStrong)
+                                        .then(
+                                            if (isMediaClickable) {
+                                                Modifier.clickable {
+                                                    val mType = when (act.mediaType?.uppercase()) {
+                                                        "MANGA" -> com.kitsugi.animelist.model.MediaType.Manga
+                                                        "MOVIE" -> com.kitsugi.animelist.model.MediaType.Movie
+                                                        "TV", "TV_SHOW" -> com.kitsugi.animelist.model.MediaType.TvShow
+                                                        else -> com.kitsugi.animelist.model.MediaType.Anime
+                                                    }
+                                                    onMediaClick?.invoke(act.mediaId!!, mType, "anilist")
+                                                    onDismiss()
+                                                }
+                                            } else Modifier
+                                        )
+                                        .padding(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    if (!act.mediaCoverUrl.isNullOrBlank()) {
+                                        AsyncImage(
+                                            model = act.mediaCoverUrl,
+                                            contentDescription = act.mediaTitle,
+                                            modifier = Modifier
+                                                .size(width = 40.dp, height = 56.dp)
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .then(if (blurAdultMedia && act.isAdult) Modifier.blur(24.dp) else Modifier),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                    }
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = localizedTitle ?: "",
+                                            color = KitsugiColors.TextPrimary,
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Text(
+                                            text = act.mediaType ?: "",
+                                            color = KitsugiColors.TextSecondary,
+                                            fontSize = 12.sp
                                         )
                                     }
                                 }
                             }
 
                             Spacer(modifier = Modifier.height(12.dp))
-
-                            val isMediaClickable = act.mediaId != null && onMediaClick != null
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(KitsugiColors.SurfaceStrong)
-                                    .then(
-                                        if (isMediaClickable) {
-                                            Modifier.clickable {
-                                                val mType = when (act.mediaType?.uppercase()) {
-                                                    "MANGA" -> com.kitsugi.animelist.model.MediaType.Manga
-                                                    "MOVIE" -> com.kitsugi.animelist.model.MediaType.Movie
-                                                    "TV", "TV_SHOW" -> com.kitsugi.animelist.model.MediaType.TvShow
-                                                    else -> com.kitsugi.animelist.model.MediaType.Anime
-                                                }
-                                                onMediaClick?.invoke(act.mediaId!!, mType, "anilist")
-                                                onDismiss()
-                                            }
-                                        } else Modifier
-                                    )
-                                    .padding(14.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(modifier = Modifier.weight(1f)) {
-                                    // Resolve localized title for ListActivity entries
-                                    val localizedTitle = when (titleLanguage) {
-                                        "ENGLISH" -> act.mediaTitleEnglish?.takeIf { it.isNotBlank() }
-                                            ?: act.mediaTitleRomaji
-                                            ?: act.mediaTitleNative
-                                            ?: act.mediaTitle
-                                        "NATIVE", "JAPANESE_STAFF" -> act.mediaTitleNative?.takeIf { it.isNotBlank() }
-                                            ?: act.mediaTitleRomaji
-                                            ?: act.mediaTitleEnglish
-                                            ?: act.mediaTitle
-                                        else -> act.mediaTitleRomaji
-                                            ?: act.mediaTitleEnglish
-                                            ?: act.mediaTitleNative
-                                            ?: act.mediaTitle
-                                    }
-                                    val localizedDisplayText = if (act.mediaTitle != null && localizedTitle != null && localizedTitle != act.mediaTitle) {
-                                        act.text.replace("**${act.mediaTitle}**", "**$localizedTitle**")
-                                    } else act.text
-                                    val displayText = if (selectedLanguage == "turkish") translatedText ?: localizedDisplayText else localizedDisplayText
-                                    KitsugiMarkdownText(
-                                        text = displayText,
-                                        onImageGalleryRequest = { urls, index ->
-                                            activeGalleryImages = urls
-                                            activeGalleryIndex = index
-                                        }
-                                    )
-                                }
-                                if (!act.mediaCoverUrl.isNullOrBlank()) {
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    AsyncImage(
-                                        model = act.mediaCoverUrl,
-                                        contentDescription = act.mediaTitle,
-                                        modifier = Modifier
-                                            .size(width = 40.dp, height = 56.dp)
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .then(if (blurAdultMedia && act.isAdult) Modifier.blur(24.dp) else Modifier),
-                                        contentScale = ContentScale.Crop
-                                    )
-                                }
-                            }
+                            HorizontalDivider(color = KitsugiColors.Border.copy(alpha = 0.3f))
                         }
                     }
 
@@ -407,8 +426,7 @@ fun KitsugiActivityDetailBottomSheet(
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(KitsugiColors.SurfaceStrong, RoundedCornerShape(12.dp))
-                                    .padding(12.dp)
+                                    .padding(horizontal = 4.dp, vertical = 8.dp)
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
@@ -447,8 +465,8 @@ fun KitsugiActivityDetailBottomSheet(
                                     Text(
                                         text = reply.username,
                                         color = KitsugiColors.TextPrimary,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.SemiBold,
                                         modifier = if (onUserProfileClick != null) {
                                             Modifier
                                                 .clip(RoundedCornerShape(4.dp))
@@ -461,7 +479,7 @@ fun KitsugiActivityDetailBottomSheet(
                                         Text(
                                             text = reply.dateText,
                                             color = KitsugiColors.TextSecondary,
-                                            fontSize = 10.sp
+                                            fontSize = 12.sp
                                         )
                                     }
                                 }
@@ -485,8 +503,7 @@ fun KitsugiActivityDetailBottomSheet(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Row(
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                        verticalAlignment = Alignment.CenterVertically
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
                                         IconButton(
                                             onClick = { context.openTranslator(reply.text) },
@@ -521,17 +538,20 @@ fun KitsugiActivityDetailBottomSheet(
 
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.tvClickable(shape = RoundedCornerShape(8.dp)) {
-                                            coroutineScope.launch {
-                                                val success = apiClient.toggleLike(reply.id, "ACTIVITY_REPLY")
-                                                if (success) {
-                                                    repLikedState = !repLikedState
-                                                    repLikesState = if (repLikedState) repLikesState + 1 else repLikesState - 1
-                                                } else {
-                                                    Toast.makeText(context, "Lütfen önce giriş yapın", Toast.LENGTH_SHORT).show()
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .clickable {
+                                                coroutineScope.launch {
+                                                    val success = apiClient.toggleLike(reply.id, "ACTIVITY_REPLY")
+                                                    if (success) {
+                                                        repLikedState = !repLikedState
+                                                        repLikesState = if (repLikedState) repLikesState + 1 else repLikesState - 1
+                                                    } else {
+                                                        Toast.makeText(context, "Lütfen önce giriş yapın", Toast.LENGTH_SHORT).show()
+                                                    }
                                                 }
                                             }
-                                        }
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
                                     ) {
                                         Icon(
                                             imageVector = if (repLikedState) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
@@ -543,10 +563,13 @@ fun KitsugiActivityDetailBottomSheet(
                                         Text(
                                             text = repLikesState.toString(),
                                             color = KitsugiColors.TextSecondary,
-                                            fontSize = 12.sp
+                                            fontSize = 13.sp
                                         )
                                     }
                                 }
+
+                                Spacer(modifier = Modifier.height(8.dp))
+                                HorizontalDivider(color = KitsugiColors.Border.copy(alpha = 0.2f))
                             }
                         }
                     }
