@@ -31,6 +31,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -124,8 +126,13 @@ fun KitsugiAiringCalendarScreen(
     titleLanguage: String = "ROMAJI",
     onOpenAiringEntry: (AiringEntry) -> Unit = {},
     onBackClick: () -> Unit = {},
+    preferredSource: String = "anilist",
     viewModel: KitsugiAiringCalendarViewModel = viewModel()
 ) {
+    LaunchedEffect(preferredSource) {
+        viewModel.loadSchedule(preferredSource = preferredSource)
+    }
+
     val accentColor = KitsugiColors.Accent
     var showOnlyMyList by rememberSaveable { mutableStateOf(false) }
     var isGridView by rememberSaveable { mutableStateOf(true) }
@@ -136,12 +143,35 @@ fun KitsugiAiringCalendarScreen(
                 entries.filter { entry ->
                     currentEntries.any { me ->
                         (entry.malId != null && me.malId == entry.malId) ||
-                                me.malId == entry.aniListId
+                                me.malId == entry.aniListId ||
+                                me.tmdbId == entry.aniListId
                     }
                 }
             }
         } else {
             viewModel.weekSchedule
+        }
+    }
+
+    val initialPage = remember { DAYS_ORDERED.indexOf(viewModel.selectedDay).coerceAtLeast(0) }
+    val pagerState = rememberPagerState(
+        initialPage = initialPage,
+        pageCount = { DAYS_ORDERED.size }
+    )
+
+    // Pager swipe -> ViewModel update
+    LaunchedEffect(pagerState.currentPage) {
+        val targetDay = DAYS_ORDERED[pagerState.currentPage]
+        if (viewModel.selectedDay != targetDay) {
+            viewModel.selectDay(targetDay)
+        }
+    }
+
+    // ViewModel update -> Pager animate
+    LaunchedEffect(viewModel.selectedDay) {
+        val targetPage = DAYS_ORDERED.indexOf(viewModel.selectedDay).coerceAtLeast(0)
+        if (pagerState.currentPage != targetPage) {
+            pagerState.animateScrollToPage(targetPage)
         }
     }
 
@@ -158,7 +188,7 @@ fun KitsugiAiringCalendarScreen(
             onShowOnlyMyListChange = { showOnlyMyList = it },
             isGridView = isGridView,
             onGridViewChange = { isGridView = it },
-            onRefresh = { viewModel.loadSchedule() },
+            onRefresh = { viewModel.loadSchedule(preferredSource = preferredSource, force = true) },
             onBackClick = onBackClick
         )
 
@@ -187,15 +217,13 @@ fun KitsugiAiringCalendarScreen(
                 )
             }
             else -> {
-                AnimatedContent(
-                    targetState = viewModel.selectedDay,
-                    transitionSpec = {
-                        val dir = if (targetState > initialState) 1 else -1
-                        slideInHorizontally { it * dir } + fadeIn() togetherWith
-                                slideOutHorizontally { -it * dir } + fadeOut()
-                    },
-                    label = "day_anim"
-                ) { day ->
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) { page ->
+                    val day = DAYS_ORDERED[page]
                     val entries = filteredScheduleMap[day] ?: emptyList()
                     if (isGridView) {
                         AiringEntryGridList(
@@ -342,7 +370,17 @@ private fun AiringDayTabRow(
     onDaySelected: (Int) -> Unit
 ) {
     val today = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(selectedDay) {
+        val index = days.indexOf(selectedDay)
+        if (index >= 0) {
+            listState.animateScrollToItem(index)
+        }
+    }
+
     LazyRow(
+        state = listState,
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)

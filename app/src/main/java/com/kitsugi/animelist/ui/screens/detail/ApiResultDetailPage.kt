@@ -175,7 +175,7 @@ fun ApiResultDetailPage(
     mdbListShowTrakt: Boolean = false,
     settingsDataStore: SettingsDataStore? = null,
     onUserProfileClick: (userId: Int, username: String, avatarUrl: String?) -> Unit = { _, _, _ -> },
-    onToggleFavoriteClick: (() -> Unit)? = null
+    onToggleFavoriteClick: ((ApiSearchSelection) -> Unit)? = null
 ) {
     val accentColor = LocalKitsugiAccent.current
     val isTv = LocalIsTv.current
@@ -241,7 +241,8 @@ fun ApiResultDetailPage(
     }
     val isConnected = if (isSourceAniList) isAniListConnected else isMalConnected
 
-    val showFavouriteButton = existingEntry != null && (isSourceAniList || isAniListConnected)
+    val showFavouriteButton = isSourceAniList || isAniListConnected
+    val isFavorite = existingEntry?.isFavorite ?: (detailState?.isFavourite ?: false)
 
     // State for tabs
     val isAnime = result.type == MediaType.Anime
@@ -404,9 +405,11 @@ fun ApiResultDetailPage(
                                 },
                                 scoreLabel = if (!hideScores) displayResult.getDisplayScore(scoreFormat, hideScores) else null,
                                 alreadyInList = existingEntry != null,
-                                isFavorite = existingEntry?.isFavorite ?: false,
+                                isFavorite = isFavorite,
                                 showFavoriteButton = showFavouriteButton,
-                                onToggleFavoriteClick = onToggleFavoriteClick,
+                                onToggleFavoriteClick = if (onToggleFavoriteClick != null) {
+                                    { onToggleFavoriteClick(ApiSearchSelection(result = displayResult, synopsis = synopsisForSave)) }
+                                } else null,
                                 totalEpisodes = displayResult.total,
                                 nextAiring = detailState?.nextAiringEpisode
                             )
@@ -802,9 +805,11 @@ fun ApiResultDetailPage(
                             alreadyInList = existingEntry != null,
                             totalEpisodes = displayResult.total,
                             nextAiring = detailState?.nextAiringEpisode,
-                            isFavorite = existingEntry?.isFavorite ?: false,
+                            isFavorite = isFavorite,
                             showFavoriteButton = showFavouriteButton,
-                            onToggleFavoriteClick = onToggleFavoriteClick
+                            onToggleFavoriteClick = if (onToggleFavoriteClick != null) {{
+                                onToggleFavoriteClick(ApiSearchSelection(result = displayResult, synopsis = synopsisForSave))
+                            }} else null
                         )
                     }
 
@@ -1022,8 +1027,9 @@ fun ApiResultDetailPage(
                                         )
                                     }
                                     if (showFavouriteButton && onToggleFavoriteClick != null) {
-                                        val isFavorite = existingEntry?.isFavorite ?: false
-                                        IconButton(onClick = onToggleFavoriteClick) {
+                                        IconButton(onClick = {
+                                            onToggleFavoriteClick(ApiSearchSelection(result = displayResult, synopsis = synopsisForSave))
+                                        }) {
                                             Icon(
                                                 imageVector = if (isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
                                                 contentDescription = if (isFavorite) "Favoriden Çıkar" else "Favori Yap",

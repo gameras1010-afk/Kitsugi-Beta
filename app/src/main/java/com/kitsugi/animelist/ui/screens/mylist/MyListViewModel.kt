@@ -144,9 +144,9 @@ class MyListViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun updateEntry(entry: MediaEntry) {
+    fun updateEntry(entry: MediaEntry, advancedScores: List<Double>? = null) {
         viewModelScope.launch {
-            repository.update(entry)
+            repository.update(entry, advancedScores = advancedScores)
         }
     }
 

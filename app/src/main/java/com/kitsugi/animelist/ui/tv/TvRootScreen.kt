@@ -869,7 +869,7 @@ fun TvRootScreen(
         onDeleteEditingEntry = { entry ->
             deletingEntry = entry
         },
-        onConfirmEdit = { title, subtitle, type, status, isAdult, progress, total, score, isFavorite, startDate, endDate, notes, tags, priority, isRepeating, repeatCount, repeatValue, volumeProgress, isPrivate, isHiddenFromStatusLists ->
+        onConfirmEdit = { title, subtitle, type, status, isAdult, progress, total, score, isFavorite, startDate, endDate, notes, tags, priority, isRepeating, repeatCount, repeatValue, volumeProgress, isPrivate, isHiddenFromStatusLists, advancedScores ->
             val entry = editingEntry ?: return@AppDialogHost
             val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
             val resolvedStartDate = if (startDate.isNullOrBlank() &&
@@ -900,7 +900,7 @@ fun TvRootScreen(
                 isPrivate = isPrivate,
                 isHiddenFromStatusLists = isHiddenFromStatusLists
             )
-            coroutineScope.launch { mediaRepository.update(updatedEntry) }
+            coroutineScope.launch { mediaRepository.update(updatedEntry, advancedScores = advancedScores) }
             editingEntry = null
         },
 

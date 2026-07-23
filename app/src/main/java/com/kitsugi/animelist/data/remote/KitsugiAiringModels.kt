@@ -41,20 +41,30 @@ data class AiringEntry(
     fun hasAired(): Boolean = airingAt * 1000L < System.currentTimeMillis()
 
     fun toJikanSearchResult(preferredSource: String? = null): JikanSearchResult {
-        val finalSource = if (preferredSource == "jikan" && malId != null) "jikan" else "anilist"
-        val finalId = if (finalSource == "jikan") malId!! else (malId ?: aniListId)
+        val finalSource = when (preferredSource) {
+            "jikan" -> if (malId != null) "jikan" else "anilist"
+            "tmdb" -> "tmdb"
+            else -> "anilist"
+        }
+        val finalId = if (finalSource == "tmdb") aniListId else if (finalSource == "jikan") malId!! else (malId ?: aniListId)
+        val finalType = if (finalSource == "tmdb") {
+            if (episode == 0) com.kitsugi.animelist.model.MediaType.Movie else com.kitsugi.animelist.model.MediaType.TvShow
+        } else {
+            com.kitsugi.animelist.model.MediaType.Anime
+        }
         return JikanSearchResult(
             malId = finalId,
             title = title,
             subtitle = titleEnglish ?: "",
-            type = com.kitsugi.animelist.model.MediaType.Anime,
+            type = finalType,
             total = null,
             score = averageScore,
             isAdult = false,
             imageUrl = coverUrl,
             year = null,
             source = finalSource,
-            nextAiringEpisode = "$episode|$airingAt"
+            nextAiringEpisode = "$episode|$airingAt",
+            tmdbId = if (finalSource == "tmdb") finalId else null
         )
     }
 }

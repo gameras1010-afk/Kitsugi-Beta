@@ -348,7 +348,7 @@ internal object TmdbDiscoverClient {
             for (i in 0 until minOf(results.length(), 20)) {
                 val item = results.getJSONObject(i)
                 val tmdbId = item.optInt("id", 0).takeIf { it > 0 } ?: continue
-                val isMovie = mediaType == MediaType.Movie
+                val isMovie = url.contains("/movie") || mediaType == MediaType.Movie
                 val title = if (isMovie) item.optString("title", "") else item.optString("name", "")
                 if (title.isBlank()) continue
                 val posterPath = item.optNullableString("poster_path") ?: ""

@@ -19,6 +19,18 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+enum class AniListFilter(
+    val labelResId: Int,
+    val group: KitsugiAniListNotificationClient.NotificationGroup
+) {
+    ALL(R.string.notif_filter_all, KitsugiAniListNotificationClient.NotificationGroup.ALL),
+    AIRING(R.string.notif_filter_airing, KitsugiAniListNotificationClient.NotificationGroup.AIRING),
+    ACTIVITY(R.string.notif_filter_activity, KitsugiAniListNotificationClient.NotificationGroup.ACTIVITY),
+    FORUM(R.string.notif_filter_forum, KitsugiAniListNotificationClient.NotificationGroup.FORUM),
+    FOLLOWS(R.string.notif_filter_follows, KitsugiAniListNotificationClient.NotificationGroup.FOLLOWS),
+    MEDIA(R.string.notif_filter_media, KitsugiAniListNotificationClient.NotificationGroup.MEDIA)
+}
+
 // ─── Veri Modeli ─────────────────────────────────────────────────────────────
 
 data class NotifItem(
@@ -30,7 +42,10 @@ data class NotifItem(
     val isUnread: Boolean = false,
     val mediaId: Int? = null,
     val activityId: Int? = null,
-    val mediaType: String? = null
+    val mediaType: String? = null,
+    val userId: Int? = null,
+    val userName: String? = null,
+    val userAvatarUrl: String? = null
 )
 
 // ─── UI State ─────────────────────────────────────────────────────────────────
@@ -50,10 +65,10 @@ class KitsugiNotificationsViewModel(application: Application) : AndroidViewModel
     private val ctx: Context get() = getApplication<Application>().applicationContext
 
     // ── AniList ──
-    private val _aniList = MutableStateFlow(NotifUiState())
-    val aniList: StateFlow<NotifUiState> = _aniList.asStateFlow()
+    private val _aniListStates = AniListFilter.entries.associateWith { MutableStateFlow(NotifUiState()) }
+    val aniListStates: Map<AniListFilter, StateFlow<NotifUiState>> = _aniListStates.mapValues { it.value.asStateFlow() }
 
-    private var currentAniListGroup = KitsugiAniListNotificationClient.NotificationGroup.ALL
+    fun getAniListState(filter: AniListFilter): StateFlow<NotifUiState> = _aniListStates[filter]!!.asStateFlow()
 
     // ── MAL ──
     private val _mal = MutableStateFlow(NotifUiState())
@@ -66,22 +81,19 @@ class KitsugiNotificationsViewModel(application: Application) : AndroidViewModel
     // ─── AniList Yükleyici ────────────────────────────────────────────────────
 
     fun loadAniList(
-        group: KitsugiAniListNotificationClient.NotificationGroup,
+        filter: AniListFilter,
         resetPage: Boolean = false,
         mediaEntries: List<MediaEntry> = emptyList()
     ) {
-        // Filtre değiştiyse her zaman sıfırla
-        val shouldReset = resetPage || group != currentAniListGroup
-        currentAniListGroup = group
-
-        val current = _aniList.value
-        if (!shouldReset && !current.hasMore) return
+        val stateFlow = _aniListStates[filter] ?: return
+        val current = stateFlow.value
+        if (!resetPage && !current.hasMore) return
         if (current.isLoading) return
 
-        val page = if (shouldReset) 1 else current.page
+        val page = if (resetPage) 1 else current.page
 
         viewModelScope.launch {
-            _aniList.value = if (shouldReset) {
+            stateFlow.value = if (resetPage) {
                 NotifUiState(isLoading = true)
             } else {
                 current.copy(isLoading = true, error = null)
@@ -90,7 +102,7 @@ class KitsugiNotificationsViewModel(application: Application) : AndroidViewModel
             try {
                 val token = ExternalAuthManager.getAniListToken(ctx)
                     ?: run {
-                        _aniList.value = _aniList.value.copy(
+                        stateFlow.value = stateFlow.value.copy(
                             isLoading = false,
                             error = ctx.getString(R.string.notif_login_required_anilist)
                         )
@@ -102,7 +114,7 @@ class KitsugiNotificationsViewModel(application: Application) : AndroidViewModel
                     accessToken = token,
                     page = page,
                     perPage = 25,
-                    group = group,
+                    group = filter.group,
                     resetCount = page == 1
                 )
 
@@ -141,12 +153,15 @@ class KitsugiNotificationsViewModel(application: Application) : AndroidViewModel
                         dateText = n.dateText,
                         mediaId = n.mediaId,
                         activityId = n.activityId,
-                        mediaType = n.mediaType?.lowercase()
+                        mediaType = n.mediaType?.lowercase(),
+                        userId = n.userId,
+                        userName = n.userName,
+                        userAvatarUrl = n.userAvatarUrl
                     )
                 }
 
-                val existingItems = if (shouldReset) emptyList() else _aniList.value.items
-                _aniList.value = NotifUiState(
+                val existingItems = if (resetPage) emptyList() else stateFlow.value.items
+                stateFlow.value = NotifUiState(
                     items = existingItems + mapped,
                     isLoading = false,
                     error = null,
@@ -154,7 +169,7 @@ class KitsugiNotificationsViewModel(application: Application) : AndroidViewModel
                     page = if (result.hasNextPage) page + 1 else page
                 )
             } catch (e: Exception) {
-                _aniList.value = _aniList.value.copy(
+                stateFlow.value = stateFlow.value.copy(
                     isLoading = false,
                     error = ctx.getString(R.string.notif_error_load, e.message ?: "")
                 )

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -49,7 +50,16 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import com.kitsugi.animelist.data.auth.AniListSyncManager
+import com.kitsugi.animelist.data.auth.ExternalAuthManager
+import androidx.compose.material.icons.rounded.List
+import kotlin.math.roundToInt
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -109,7 +119,8 @@ fun KitsugiEditMediaSheet(
         repeatValue: Int,
         volumeProgress: Int,
         isPrivate: Boolean,
-        isHiddenFromStatusLists: Boolean
+        isHiddenFromStatusLists: Boolean,
+        advancedScores: List<Double>?
     ) -> Unit
 ) {
     val isEditing    = initialEntry != null
@@ -167,15 +178,87 @@ fun KitsugiEditMediaSheet(
     var isPrivate      by rememberSaveable(initialEntry?.id) { mutableStateOf(initialEntry?.isPrivate ?: false) }
     var isHiddenFromStatusLists by rememberSaveable(initialEntry?.id) { mutableStateOf(initialEntry?.isHiddenFromStatusLists ?: false) }
 
+    // AniList Metadata / Advanced Scoring / Custom Lists
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val aniListToken = androidx.compose.runtime.remember { ExternalAuthManager.getAniListToken(context) }
+    var showCustomListsDialog by androidx.compose.runtime.remember { mutableStateOf(false) }
+    var isLoadingMetadata by androidx.compose.runtime.remember { mutableStateOf(false) }
+    var viewerCustomLists by androidx.compose.runtime.remember { mutableStateOf<List<String>>(emptyList()) }
+    var customListsMap by androidx.compose.runtime.remember { mutableStateOf<Map<String, Boolean>>(emptyMap()) }
+    var advancedScoresEnabled by androidx.compose.runtime.remember { mutableStateOf(false) }
+    var advancedScoresCategories by androidx.compose.runtime.remember { mutableStateOf<List<String>>(emptyList()) }
+    var advancedScoresMap by androidx.compose.runtime.remember { mutableStateOf<Map<String, Double>>(emptyMap()) }
+
+    LaunchedEffect(initialEntry?.id, isAniList, selectedType) {
+        if (isAniList && aniListToken != null) {
+            isLoadingMetadata = true
+            withContext(Dispatchers.IO) {
+                val userId = runCatching { AniListSyncManager.fetchAniListUserId(aniListToken) }.getOrNull()
+                val viewerOptions = AniListSyncManager.getViewerOptions(aniListToken)
+                val isManga = selectedType == MediaType.Manga
+                val userLists = AniListSyncManager.getViewerCustomLists(aniListToken, isManga).orEmpty()
+                
+                var entryCustomLists: Map<String, Boolean>? = null
+                var entryAdvancedScores: Map<String, Double>? = null
+                
+                val entryId = initialEntry?.aniListEntryId
+                if (entryId != null && entryId > 0 && userId != null) {
+                    val metadata = AniListSyncManager.getMediaListMetadata(aniListToken, entryId, userId)
+                    if (metadata != null) {
+                        entryCustomLists = metadata.customLists
+                        entryAdvancedScores = metadata.advancedScores
+                    }
+                }
+                
+                withContext(Dispatchers.Main) {
+                    viewerCustomLists = userLists
+                    if (entryCustomLists != null) {
+                        customListsMap = entryCustomLists
+                    } else {
+                        customListsMap = userLists.associateWith { false }
+                    }
+                    
+                    if (viewerOptions != null) {
+                        val enabled = if (isManga) viewerOptions.mangaEnabled else viewerOptions.animeEnabled
+                        val categories = if (isManga) viewerOptions.mangaCategories else viewerOptions.animeCategories
+                        advancedScoresEnabled = enabled
+                        advancedScoresCategories = categories
+                        
+                        val newScoresMap = categories.associateWith { 0.0 }.toMutableMap()
+                        if (entryAdvancedScores != null) {
+                            entryAdvancedScores.forEach { (cat, valScore) ->
+                                if (newScoresMap.containsKey(cat)) {
+                                    newScoresMap[cat] = valScore
+                                }
+                            }
+                        }
+                        advancedScoresMap = newScoresMap
+                    }
+                    isLoadingMetadata = false
+                }
+            }
+        }
+    }
+
     // ── Computed ───────────────────────────────────────────────────────────
     val parsedProgress = progressText.toIntOrNull()?.coerceAtLeast(0) ?: 0
     val parsedTotal    = totalText.toIntOrNull()?.takeIf { it > 0 }
-    val parsedScore: Int? = if (scoreRaw <= 0) null else when (scoreFormat) {
-        "POINT_100"      -> (scoreRaw / 10).coerceIn(0, 10)
-        "POINT_10_DECIMAL" -> scoreRaw.coerceIn(0, 10)
-        "POINT_5"        -> (scoreRaw * 2).coerceIn(0, 10)
-        "POINT_3"        -> when (scoreRaw) { 3 -> 10; 2 -> 5; else -> 1 }
-        else             -> scoreRaw.coerceIn(0, 10)
+    
+    val activeAdvancedScores = advancedScoresMap.values.filter { it > 0.0 }
+    val advancedAverage = if (activeAdvancedScores.isNotEmpty()) activeAdvancedScores.average() else 0.0
+    val effectiveScoreRaw = if (advancedScoresEnabled && advancedScoresCategories.isNotEmpty()) {
+        advancedAverage.roundToInt()
+    } else {
+        scoreRaw
+    }
+
+    val parsedScore: Int? = if (effectiveScoreRaw <= 0) null else when (scoreFormat) {
+        "POINT_100"      -> (effectiveScoreRaw / 10).coerceIn(0, 10)
+        "POINT_10_DECIMAL" -> effectiveScoreRaw.coerceIn(0, 10)
+        "POINT_5"        -> (effectiveScoreRaw * 2).coerceIn(0, 10)
+        "POINT_3"        -> when (effectiveScoreRaw) { 3 -> 10; 2 -> 5; else -> 1 }
+        else             -> effectiveScoreRaw.coerceIn(0, 10)
     }
     val normalizedStart = startDateText.trim().takeIf { it.isValidDateOrBlank() }
     val normalizedEnd   = endDateText.trim().takeIf { it.isValidDateOrBlank() }
@@ -200,7 +283,6 @@ fun KitsugiEditMediaSheet(
         else      -> KitsugiColors.TextMuted
     }
 
-    val context = LocalContext.current
     fun selectDate(current: String, onSelected: (String) -> Unit) {
         val cal = java.util.Calendar.getInstance()
         val p   = current.split("-")
@@ -266,6 +348,9 @@ fun KitsugiEditMediaSheet(
                 TextButton(
                     enabled = canSave,
                     onClick = {
+                        val advancedScoresList: List<Double>? = if (advancedScoresEnabled && advancedScoresCategories.isNotEmpty()) {
+                            advancedScoresCategories.map { advancedScoresMap[it] ?: 0.0 }
+                        } else null
                         onConfirm(
                             if (isManual) title.trim() else initialEntry?.title.orEmpty(),
                             if (isManual) subtitle.trim() else initialEntry?.subtitle.orEmpty(),
@@ -277,7 +362,8 @@ fun KitsugiEditMediaSheet(
                             notes.trim().takeIf { it.isNotBlank() },
                             tags.trim().takeIf { it.isNotBlank() },
                             priority, isRepeating, repeatCount, repeatValue, volumeProgress,
-                            isPrivate, isHiddenFromStatusLists
+                            isPrivate, isHiddenFromStatusLists,
+                            advancedScoresList
                         )
                     }
                 ) {
@@ -415,11 +501,11 @@ fun KitsugiEditMediaSheet(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     val scoreColor by animateColorAsState(
-                        targetValue = scoreColor(scoreRaw),
+                        targetValue = scoreColor(effectiveScoreRaw),
                         animationSpec = tween(300), label = "scoreColor"
                     )
                     Text(
-                        text = if (scoreRaw <= 0) "Puanlanmadı" else "$scoreRaw / $scoreMax",
+                        text = if (effectiveScoreRaw <= 0) "Puanlanmadı" else "$effectiveScoreRaw / $scoreMax" + (if (advancedScoresEnabled) " (Ortalama)" else ""),
                         color = scoreColor,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
@@ -430,23 +516,73 @@ fun KitsugiEditMediaSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         for (i in 1..starCount) {
-                            val filled = i <= scoreRaw
+                            val filled = i <= effectiveScoreRaw
                             val starScale by animateFloatAsState(
                                 targetValue = if (filled) 1.15f else 1f,
                                 animationSpec = tween(150), label = "starScale$i"
                             )
+                            val starModifier = Modifier
+                                .size(28.dp)
+                                .scale(starScale)
+                            
+                            val clickableModifier = if (!advancedScoresEnabled) {
+                                starModifier.tvClickable(shape = CircleShape) {
+                                    scoreRaw = if (scoreRaw == i) 0 else i
+                                }
+                            } else {
+                                starModifier
+                            }
+                            
                             Icon(
                                 imageVector = if (filled) Icons.Rounded.Star else Icons.Rounded.StarBorder,
                                 contentDescription = "Puan $i",
                                 tint = if (filled) scoreColor else KitsugiColors.TextMuted,
-                                modifier = Modifier
-                                    .size(28.dp)
-                                    .scale(starScale)
-                                    .tvClickable(shape = CircleShape) {
-                                        scoreRaw = if (scoreRaw == i) 0 else i
-                                    }
+                                modifier = clickableModifier
                             )
                         }
+                    }
+                }
+
+                // ── Advanced Scoring categories ─────────────────────────────
+                if (advancedScoresEnabled && advancedScoresCategories.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Detaylı Puanlama",
+                        color = KitsugiColors.TextSecondary,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                    )
+                    advancedScoresCategories.forEach { category ->
+                        val currentVal = advancedScoresMap[category] ?: 0.0
+                        
+                        val (step, maxVal) = when (scoreFormat) {
+                            "POINT_100" -> 1.0 to 100.0
+                            "POINT_10_DECIMAL" -> 0.1 to 10.0
+                            "POINT_5" -> 1.0 to 5.0
+                            "POINT_3" -> 1.0 to 3.0
+                            else -> 1.0 to 10.0
+                        }
+                        
+                        val formattedValue = if (scoreFormat == "POINT_10_DECIMAL") {
+                            String.format(java.util.Locale.US, "%.1f", currentVal)
+                        } else {
+                            currentVal.toInt().toString()
+                        }
+                        
+                        SheetRow(
+                            icon = Icons.Rounded.Star,
+                            label = category,
+                            value = formattedValue,
+                            onDecrement = {
+                                val newVal = (currentVal - step).coerceAtLeast(0.0)
+                                advancedScoresMap = advancedScoresMap.toMutableMap().apply { put(category, newVal) }
+                            },
+                            onIncrement = {
+                                val newVal = (currentVal + step).coerceAtMost(maxVal)
+                                advancedScoresMap = advancedScoresMap.toMutableMap().apply { put(category, newVal) }
+                            }
+                        )
                     }
                 }
 
@@ -513,12 +649,14 @@ fun KitsugiEditMediaSheet(
                 SheetRow(
                     icon = Icons.Rounded.CalendarToday, label = "Başlangıç Tarihi",
                     value = startDateText.ifBlank { "Tarih Seçilmemiş" },
-                    onClick = { selectDate(startDateText) { startDateText = it } }
+                    onClick = { selectDate(startDateText) { startDateText = it } },
+                    onClearClick = if (startDateText.isNotBlank()) { { startDateText = "" } } else null
                 )
                 SheetRow(
                     icon = Icons.Rounded.EventAvailable, label = "Bitiş Tarihi",
                     value = endDateText.ifBlank { "Tarih Seçilmemiş" },
-                    onClick = { selectDate(endDateText) { endDateText = it } }
+                    onClick = { selectDate(endDateText) { endDateText = it } },
+                    onClearClick = if (endDateText.isNotBlank()) { { endDateText = "" } } else null
                 )
 
                 HorizontalDivider(color = KitsugiColors.Border, modifier = Modifier.padding(horizontal = 16.dp))
@@ -526,6 +664,16 @@ fun KitsugiEditMediaSheet(
                 // ── Platform-specific fields ───────────────────────────────
                 // AniList only
                 if (isAniList) {
+                    if (viewerCustomLists.isNotEmpty()) {
+                        val activeLists = customListsMap.filter { it.value }.keys.toList()
+                        val listsValue = if (activeLists.isEmpty()) "Hiçbiri" else activeLists.joinToString(", ")
+                        SheetRow(
+                            icon = Icons.Rounded.List,
+                            label = "Özel Listeler",
+                            value = listsValue,
+                            onClick = { showCustomListsDialog = true }
+                        )
+                    }
                     SheetRow(
                         icon = Icons.Rounded.Star, label = "Favori",
                         switchChecked = isFavorite, onSwitchCheckedChange = { isFavorite = it }
@@ -722,4 +870,173 @@ fun KitsugiEditMediaSheet(
             }
         }
     }
+
+    if (showCustomListsDialog && viewerCustomLists.isNotEmpty()) {
+        KitsugiCustomListsSelectionDialog(
+            viewerCustomLists = viewerCustomLists,
+            customListsMap = customListsMap,
+            onDismiss = { showCustomListsDialog = false },
+            onConfirm = { updatedMap ->
+                customListsMap = updatedMap
+                showCustomListsDialog = false
+                if (aniListToken != null) {
+                    coroutineScope.launch(Dispatchers.IO) {
+                        val entryId = initialEntry?.aniListEntryId
+                        val resolvedMediaId = if (entryId == null || entryId <= 0) {
+                            initialEntry?.let { AniListSyncManager.resolveAniListMediaId(aniListToken, it) }
+                        } else null
+                        
+                        val activeLists = updatedMap.filter { it.value }.keys.toList()
+                        AniListSyncManager.updateEntryCustomLists(
+                            token = aniListToken,
+                            mediaId = resolvedMediaId,
+                            entryId = entryId,
+                            customLists = activeLists
+                        )
+                    }
+                }
+            }
+        )
+    }
 }
+
+@Composable
+fun KitsugiCustomListsSelectionDialog(
+    viewerCustomLists: List<String>,
+    customListsMap: Map<String, Boolean>,
+    onDismiss: () -> Unit,
+    onConfirm: (Map<String, Boolean>) -> Unit
+) {
+    val accentColor = LocalKitsugiAccent.current
+    var tempMap by androidx.compose.runtime.remember { mutableStateOf(customListsMap) }
+    val isTvDevice = com.kitsugi.animelist.ui.theme.LocalIsTvDevice.current
+
+    val dialogContent = @Composable {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "Özel Listeler",
+                color = KitsugiColors.TextPrimary,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(250.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                viewerCustomLists.forEach { listName ->
+                    val checked = tempMap[listName] ?: false
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (checked) accentColor.copy(alpha = 0.1f) else KitsugiColors.SurfaceSoft)
+                            .border(
+                                width = 1.dp,
+                                color = if (checked) accentColor else Color.Transparent,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .tvClickable(shape = RoundedCornerShape(12.dp)) {
+                                tempMap = tempMap.toMutableMap().apply { put(listName, !checked) }
+                            }
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = listName,
+                            color = KitsugiColors.TextPrimary,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = if (checked) FontWeight.Bold else FontWeight.Normal
+                        )
+                        if (checked) {
+                            Icon(
+                                imageVector = Icons.Rounded.Check,
+                                contentDescription = "Seçili",
+                                tint = accentColor,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(onClick = onDismiss) {
+                    Text(
+                        text = "İptal",
+                        color = KitsugiColors.TextSecondary,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                TextButton(onClick = { onConfirm(tempMap) }) {
+                    Text(
+                        text = "Kaydet",
+                        color = accentColor,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+
+    if (isTvDevice) {
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = onDismiss,
+            properties = androidx.compose.ui.window.DialogProperties(
+                usePlatformDefaultWidth = false,
+                dismissOnBackPress = true,
+                dismissOnClickOutside = true
+            )
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.7f)),
+                contentAlignment = Alignment.Center
+            ) {
+                androidx.compose.material3.Card(
+                    colors = androidx.compose.material3.CardDefaults.cardColors(
+                        containerColor = KitsugiColors.Surface
+                    ),
+                    shape = RoundedCornerShape(28.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, KitsugiColors.Border),
+                    modifier = Modifier
+                        .width(420.dp)
+                        .padding(24.dp)
+                ) {
+                    dialogContent()
+                }
+            }
+        }
+    } else {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = onDismiss,
+            containerColor = KitsugiColors.Surface,
+            titleContentColor = KitsugiColors.TextPrimary,
+            textContentColor = KitsugiColors.TextSecondary,
+            shape = RoundedCornerShape(26.dp),
+            confirmButton = {},
+            dismissButton = {},
+            text = {
+                dialogContent()
+            }
+        )
+    }
+}
+

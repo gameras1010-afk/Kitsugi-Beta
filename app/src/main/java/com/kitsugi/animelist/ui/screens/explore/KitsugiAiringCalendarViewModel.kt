@@ -29,16 +29,20 @@ class KitsugiAiringCalendarViewModel : ViewModel() {
     var selectedDay by mutableIntStateOf(Calendar.getInstance().get(Calendar.DAY_OF_WEEK))
         private set
 
+    private var lastLoadedSource: String? = null
+
     init {
         loadSchedule()
     }
 
-    fun loadSchedule(accessToken: String? = null) {
+    fun loadSchedule(accessToken: String? = null, preferredSource: String? = null, force: Boolean = false) {
+        if (!force && lastLoadedSource == preferredSource && weekSchedule.isNotEmpty()) return
+        lastLoadedSource = preferredSource
         viewModelScope.launch {
             isLoading = true
             errorMessage = null
             try {
-                val schedule = client.fetchWeeklySchedule(accessToken)
+                val schedule = client.fetchWeeklySchedule(accessToken, preferredSource)
                 weekSchedule.clear()
                 weekSchedule.putAll(schedule)
             } catch (e: Exception) {

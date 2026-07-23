@@ -104,6 +104,10 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
     var newlyAddedManga by mutableStateOf<List<JikanSearchResult>>(initialPayload?.newlyAddedManga ?: emptyList())
         private set
 
+    /** TMDB'ye özgü "Yakında Yayında" animeleri — ExploreCategoryType.UPCOMING_ANIME_TMDB ile sayfalanır */
+    var upcomingAnimeTmdb by mutableStateOf<List<JikanSearchResult>>(initialPayload?.upcomingAnimeTmdb ?: emptyList())
+        private set
+
     var heroIndex by mutableIntStateOf(0)
 
     // ── Simkl Kullanıcı Listeleri (NyanTV HomeSections.kt referans) ──────────────
@@ -213,6 +217,7 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         trendingManga = payload.trendingManga
         newlyAddedAnime = payload.newlyAddedAnime
         newlyAddedManga = payload.newlyAddedManga
+        upcomingAnimeTmdb = payload.upcomingAnimeTmdb
         heroIndex = 0
 
         simklContinueMovies = payload.simklContinueMovies
@@ -235,6 +240,7 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         trendingManga = emptyList()
         newlyAddedAnime = emptyList()
         newlyAddedManga = emptyList()
+        upcomingAnimeTmdb = emptyList()
         // Simkl kullanıcı şeritlerini temizleme — platform değişiminde de gözüksün
         heroIndex = 0
         errorMessage = null
@@ -438,16 +444,17 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         simklPlannedSeries   = plannedSeries
 
         ExplorePayload(
-            topAnime      = allTrending,    // Trend Her Şey (film + dizi karışık)
-            airingAnime   = showsList,      // Trend Diziler
-            upcomingAnime = popularMovies,  // Popüler Filmler
-            topManga      = popularShows,   // Popüler Diziler
-            publishingManga = topRatedMovies, // En Yüksek Puanlı Filmler
-            trendingAnime = trendingAnimeList, // Trend Animeler
-            movieAnime    = moviesList,     // Trend Filmler
-            seasonalAnime = topRatedShows,  // En Yüksek Puanlı Diziler
-            newlyAddedAnime = popularAnimeList, // Popüler Animeler (reused field)
-            trendingManga = upcomingAnimeList, // Yakında Yayında (Anime) (reused field)
+            topAnime      = allTrending,       // Trend Her Şey (film + dizi karışık)
+            airingAnime   = showsList,          // Trend Diziler
+            upcomingAnime = popularMovies,      // Popüler Filmler
+            topManga      = popularShows,       // Popüler Diziler
+            publishingManga = topRatedMovies,   // En Yüksek Puanlı Filmler
+            trendingAnime = trendingAnimeList,  // Trend Animeler
+            movieAnime    = moviesList,         // Trend Filmler
+            seasonalAnime = topRatedShows,      // En Yüksek Puanlı Diziler
+            newlyAddedAnime = popularAnimeList, // Popüler Animeler
+            trendingManga = emptyList(),        // MAL/AniList manga — TMDB'de kullanılmaz
+            upcomingAnimeTmdb = upcomingAnimeList, // Yakında Yayında (Anime) — ayrı field
             simklContinueMovies = continueMovies,
             simklPlannedMovies = plannedMovies,
             simklContinueSeries = continueSeries,
@@ -632,6 +639,9 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
                             val popularShowsDeferred   = async { runCatching { tmdbApiClient.getPopularShows() }.getOrDefault(emptyList()) }
                             val topRatedMoviesDeferred = async { runCatching { tmdbApiClient.getTopRatedMovies() }.getOrDefault(emptyList()) }
                             val topRatedShowsDeferred  = async { runCatching { tmdbApiClient.getTopRatedShows() }.getOrDefault(emptyList()) }
+                            val trendingAnimeDeferred  = async { runCatching { tmdbApiClient.getTrendingAnime() }.getOrDefault(emptyList()) }
+                            val popularAnimeDeferred   = async { runCatching { tmdbApiClient.getPopularAnime() }.getOrDefault(emptyList()) }
+                            val upcomingAnimeDeferred  = async { runCatching { tmdbApiClient.getUpcomingAnime() }.getOrDefault(emptyList()) }
 
                             val moviesList    = trendingMoviesDeferred.await()
                             val showsList     = trendingShowsDeferred.await()
@@ -640,6 +650,9 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
                             val popularShows  = popularShowsDeferred.await()
                             val topRatedMovies = topRatedMoviesDeferred.await()
                             val topRatedShows  = topRatedShowsDeferred.await()
+                            val trendingAnimeList = trendingAnimeDeferred.await()
+                            val popularAnimeList  = popularAnimeDeferred.await()
+                            val upcomingAnimeList = upcomingAnimeDeferred.await()
 
                             val userMoviesDeferred = if (!simklToken.isNullOrBlank()) {
                                 async { SimklSyncManager.fetchSimklWatchlist(app, "movies") }
@@ -747,9 +760,12 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
                                 upcomingAnime = popularMovies,
                                 topManga      = popularShows,
                                 publishingManga = topRatedMovies,
-                                trendingAnime = allTrending,
+                                trendingAnime = trendingAnimeList,
                                 movieAnime    = moviesList,
                                 seasonalAnime = topRatedShows,
+                                newlyAddedAnime = popularAnimeList,
+                                trendingManga = emptyList(),        // TMDB'de manga yok
+                                upcomingAnimeTmdb = upcomingAnimeList, // Yakında Yayında (Anime)
                                 simklContinueMovies = continueMovies,
                                 simklPlannedMovies = plannedMovies,
                                 simklContinueSeries = continueSeries,
@@ -787,5 +803,8 @@ data class ExplorePayload(
     val airingSoonAnime: List<JikanSearchResult> = emptyList(),
     val trendingManga: List<JikanSearchResult> = emptyList(),
     val newlyAddedAnime: List<JikanSearchResult> = emptyList(),
-    val newlyAddedManga: List<JikanSearchResult> = emptyList()
+    val newlyAddedManga: List<JikanSearchResult> = emptyList(),
+    /** TMDB'ye özgü upcoming anime listesi — trendingManga'dan bağımsız */
+    val upcomingAnimeTmdb: List<JikanSearchResult> = emptyList()
 )
+

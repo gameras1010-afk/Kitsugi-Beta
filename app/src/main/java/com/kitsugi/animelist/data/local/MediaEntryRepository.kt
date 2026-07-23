@@ -36,13 +36,13 @@ class MediaEntryRepository(
         dao.updateAll(entries.map { it.toEntity() })
     }
 
-    suspend fun update(entry: MediaEntry, syncExternal: Boolean = true) {
+    suspend fun update(entry: MediaEntry, syncExternal: Boolean = true, advancedScores: List<Double>? = null) {
         dao.update(
             entry.toEntity()
         )
 
         if (syncExternal) {
-            syncEntryIfPossible(entry)
+            syncEntryIfPossible(entry, advancedScores)
         }
     }
 
@@ -83,7 +83,7 @@ class MediaEntryRepository(
     // Private Sync Helpers
     // ────────────────────────────────────────────────
 
-    private suspend fun syncEntryIfPossible(entry: MediaEntry) {
+    private suspend fun syncEntryIfPossible(entry: MediaEntry, advancedScores: List<Double>? = null) {
         val appContext = context ?: return
         // Simkl kaydı (simklId var) veya MAL/AniList kaydı (malId var) ise sync yap
         if (entry.malId == null && (entry.simklId == null || entry.simklId <= 0)) return
@@ -91,7 +91,8 @@ class MediaEntryRepository(
         val result = runCatching {
             ExternalListSyncManager.syncEntry(
                 context = appContext,
-                entry = entry
+                entry = entry,
+                advancedScores = advancedScores
             )
         }
 

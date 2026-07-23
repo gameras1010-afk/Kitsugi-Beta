@@ -10,7 +10,8 @@ object ExternalListSyncManager {
 
     suspend fun syncEntry(
         context: Context,
-        entry: MediaEntry
+        entry: MediaEntry,
+        advancedScores: List<Double>? = null
     ): SyncResult {
         return withContext(Dispatchers.IO) {
             val messages = mutableListOf<String>()
@@ -31,7 +32,8 @@ object ExternalListSyncManager {
                 runCatching {
                     AniListSyncManager.updateAniListEntry(
                         token = aniListToken!!,
-                        entry = entry
+                        entry = entry,
+                        advancedScores = advancedScores
                     )
                 }.onSuccess { remoteId ->
                     if (remoteId != null) resolvedAniListEntryId = remoteId

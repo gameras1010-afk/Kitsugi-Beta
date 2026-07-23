@@ -209,7 +209,7 @@ fun KitsugiExploreMediaCard(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(width = 160.dp, height = 100.dp)
+                        .size(width = 90.dp, height = 130.dp)
                         .clip(RoundedCornerShape(16.dp))
                         .background(KitsugiColors.SurfaceSoft),
                     contentAlignment = Alignment.Center

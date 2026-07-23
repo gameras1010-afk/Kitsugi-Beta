@@ -12,6 +12,7 @@ import com.kitsugi.animelist.data.remote.JikanSearchResult
 import com.kitsugi.animelist.data.remote.ApiSearchSelection
 import com.kitsugi.animelist.data.remote.matches
 import com.kitsugi.animelist.data.remote.firstMatching
+import com.kitsugi.animelist.model.WatchStatus
 import com.kitsugi.animelist.data.settings.AppSettings
 import com.kitsugi.animelist.data.local.MediaEntryRepository
 import com.kitsugi.animelist.data.local.MangaMappingEntity
@@ -228,13 +229,36 @@ fun AppRootDetailPages(
                     mdbListShowTmdb = appSettings.mdbListShowTmdb,
                     mdbListShowTrakt = appSettings.mdbListShowTrakt,
                     settingsDataStore = settingsDataStore,
-                    onToggleFavoriteClick = {
-                        existingApiEntry?.let { entry ->
-                            val updatedEntry = entry.copy(
-                                isFavorite = !entry.isFavorite
-                            )
+                    onToggleFavoriteClick = { selection ->
+                        val entry = mediaEntries.firstMatching(selection.result)
+                        if (entry != null) {
+                            // Toggle existing entry
+                            val updatedEntry = entry.copy(isFavorite = !entry.isFavorite)
                             coroutineScope.launch {
                                 mediaRepository.update(updatedEntry)
+                            }
+                        } else {
+                            // Auto-insert as Planned + favorited for non-library entries
+                            val result = selection.result
+                            val newEntry = com.kitsugi.animelist.model.MediaEntry(
+                                id = 0,
+                                title = result.title,
+                                subtitle = result.subtitle,
+                                type = result.type,
+                                status = WatchStatus.Planned,
+                                score = result.score,
+                                progress = 0,
+                                total = result.total,
+                                isFavorite = true,
+                                isAdult = result.isAdult,
+                                source = result.source,
+                                malId = result.malId,
+                                imageUrl = result.imageUrl,
+                                year = result.year,
+                                synopsis = selection.synopsis
+                            )
+                            coroutineScope.launch {
+                                mediaRepository.insert(newEntry)
                             }
                         }
                     }
@@ -314,10 +338,11 @@ fun AppRootDetailPages(
             }
         }
         is AppStateKey.AiringCalendar -> {
-            navState.stateHolder.SaveableStateProvider(key = "airing_calendar_${key.depth}") {
+            navState.stateHolder.SaveableStateProvider(key = "airing_calendar_${key.depth}_${key.preferredSource}") {
                 com.kitsugi.animelist.ui.screens.explore.KitsugiAiringCalendarScreen(
                     currentEntries = mediaEntries,
                     titleLanguage = appSettings.titleLanguage,
+                    preferredSource = key.preferredSource ?: "anilist",
                     onOpenAiringEntry = { airingEntry ->
                         val result = airingEntry.toJikanSearchResult(preferredSource = key.preferredSource)
                         val existingEntry = mediaEntries.firstMatching(result)
@@ -463,6 +488,9 @@ fun AppRootDetailPages(
                     isMalConnected = authViewModel.isMalConnected,
                     isSimklConnected = authViewModel.isSimklConnected,
                     onBack = { navState.popDetailStack() },
+                    onUserProfileClick = { userId, username, avatarUrl ->
+                        navState.navigateToDetail(DetailScreen.UserProfile(userId, username, avatarUrl))
+                    },
                     onOpenApiDetail = { mediaId, source, mediaTypeStr ->
                         val stableId = if (source.equals("anilist", ignoreCase = true) && mediaId < 100_000_000) {
                             mediaId + 100_000_000

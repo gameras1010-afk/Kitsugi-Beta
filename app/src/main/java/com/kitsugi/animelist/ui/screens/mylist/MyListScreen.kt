@@ -8,6 +8,8 @@ package com.kitsugi.animelist.ui.screens.mylist
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import com.kitsugi.animelist.ui.utils.tvClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -151,21 +153,14 @@ fun MyListScreen(
 
     val entries by viewModel.entriesFlow.collectAsState()
 
-    val lazyListState = rememberLazyListState(
-        initialFirstVisibleItemIndex = initialScrollIndex,
-        initialFirstVisibleItemScrollOffset = initialScrollOffset
-    )
-
     var isScrollRestored by rememberSaveable(initialScrollIndex, initialScrollOffset) {
         mutableStateOf(initialScrollIndex == 0 && initialScrollOffset == 0)
     }
 
     var isFabVisible by rememberSaveable { mutableStateOf(true) }
-    val showScrollToTop by remember {
-        derivedStateOf {
-            lazyListState.firstVisibleItemIndex > 3
-        }
-    }
+    // showHeader and showScrollToTop are driven by active tab scroll — updated in LaunchedEffect below
+    var showHeader by remember { mutableStateOf(true) }
+    var showScrollToTopState by remember { mutableStateOf(false) }
     var prevIndex by remember { mutableIntStateOf(0) }
     var prevOffset by remember { mutableIntStateOf(0) }
     var showSearchField by rememberSaveable { mutableStateOf(false) }
@@ -177,27 +172,27 @@ fun MyListScreen(
     var activeZoomImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
     var activeZoomTitle by rememberSaveable { mutableStateOf("") }
 
-    // Birleştirilmiş scroll tracking — tek snapshotFlow ile FAB görünürlüğü
-    // ve scroll pozisyonu kaydetme birlikte yönetilir
-    LaunchedEffect(lazyListState) {
-        snapshotFlow { lazyListState.firstVisibleItemIndex to lazyListState.firstVisibleItemScrollOffset }
-            .collect { (index, offset) ->
-                // Scroll pozisyonu kaydetme
-                if (isScrollRestored && entries.isNotEmpty()) {
-                    onScrollPositionChange(index, offset)
-                }
-                // FAB görünürlüğü
-                if (index == 0 && offset < 40) {
-                    isFabVisible = true
-                } else if (index > prevIndex || (index == prevIndex && offset > prevOffset + 15)) {
-                    isFabVisible = false
-                } else if (index < prevIndex || (index == prevIndex && offset < prevOffset - 15)) {
-                    isFabVisible = true
-                }
-                prevIndex = index
-                prevOffset = offset
-            }
+    // Pager state for AniList / MAL / Simkl tabs (3 tabs)
+    val tabPagerState = rememberPagerState(
+        initialPage = selectedTabIndex.coerceIn(0, 2),
+        pageCount = { 3 }
+    )
+
+    // Pager page change -> notify parent
+    LaunchedEffect(tabPagerState.currentPage) {
+        if (tabPagerState.currentPage != selectedTabIndex) {
+            onTabIndexChange(tabPagerState.currentPage)
+        }
     }
+
+    // Parent tab change (chip click) -> animate pager
+    LaunchedEffect(selectedTabIndex) {
+        if (tabPagerState.currentPage != selectedTabIndex) {
+            tabPagerState.animateScrollToPage(selectedTabIndex.coerceIn(0, 2))
+        }
+    }
+
+    // Scroll tracking is handled per-tab inside the HorizontalPager LaunchedEffect below.
 
     var duplicateMessage by rememberSaveable {
         mutableStateOf<String?>(null)
@@ -354,8 +349,9 @@ fun MyListScreen(
     val isTvDevice = com.kitsugi.animelist.ui.theme.LocalIsTvDevice.current
     val accentColor = com.kitsugi.animelist.ui.theme.LocalKitsugiAccent.current
 
-    var isListRefreshing by remember { mutableStateOf(false) }
-    val pullRefreshState = rememberPullToRefreshState()
+
+    // Per-tab scroll states — declared at top level so FAB can reference them
+    val tabScrollStates = remember { List(3) { androidx.compose.foundation.lazy.LazyListState() } }
 
     Column(
         modifier = Modifier
@@ -377,40 +373,47 @@ fun MyListScreen(
             shadowElevation = 0.dp
         ) {
             Column {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = horizontalPadding, end = 4.dp, top = 8.dp, bottom = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                // Başlık satırı — scroll aşağı gidince kaybolur
+                AnimatedVisibility(
+                    visible = showHeader,
+                    enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(animationSpec = tween(200)),
+                    exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut(animationSpec = tween(150))
                 ) {
-                    Text(
-                        text = "Listem",
-                        color = KitsugiColors.textPrimary,
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(0.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = horizontalPadding, end = 4.dp, top = 8.dp, bottom = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        IconButton(onClick = { showSearchField = !showSearchField }) {
-                            Icon(
-                                imageVector = Icons.Rounded.Search,
-                                contentDescription = "Arama",
-                                tint = if (showSearchField || searchQuery.isNotBlank()) accentColor else KitsugiColors.textSecondary
-                            )
-                        }
+                        Text(
+                            text = "Listem",
+                            color = KitsugiColors.textPrimary,
+                            style = MaterialTheme.typography.headlineLarge,
+                            fontWeight = FontWeight.Bold
+                        )
 
-                        // Filtrele ve Sırala Üst Bar Butonu (Sağ Üst Buton)
-                        Box {
-                            IconButton(onClick = { showFilterPanel = !showFilterPanel }) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(0.dp)
+                        ) {
+                            IconButton(onClick = { showSearchField = !showSearchField }) {
                                 Icon(
-                                    imageVector = Icons.Rounded.FilterList,
-                                    contentDescription = "Filtrele ve Sırala",
-                                    tint = if (showFilterPanel || hasActiveFilters) accentColor else KitsugiColors.textSecondary
+                                    imageVector = Icons.Rounded.Search,
+                                    contentDescription = "Arama",
+                                    tint = if (showSearchField || searchQuery.isNotBlank()) accentColor else KitsugiColors.textSecondary
                                 )
+                            }
+
+                            // Filtrele ve Sırala Üst Bar Butonu (Sağ Üst Buton)
+                            Box {
+                                IconButton(onClick = { showFilterPanel = !showFilterPanel }) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.FilterList,
+                                        contentDescription = "Filtrele ve Sırala",
+                                        tint = if (showFilterPanel || hasActiveFilters) accentColor else KitsugiColors.textSecondary
+                                    )
+                                }
                             }
                         }
                     }
@@ -574,211 +577,285 @@ fun MyListScreen(
             }
         }
 
+        // ── Sabit platform tab bar (AniList / MAL / Simkl) ──────────────────────
+        val tabs = listOf("AniList", "MAL", "Simkl")
+        androidx.compose.material3.Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = horizontalPadding, vertical = 0.dp),
+            color = KitsugiColors.background
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp, bottom = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(22.dp))
+                        .background(KitsugiColors.surface),
+                    horizontalArrangement = Arrangement.spacedBy(0.dp)
+                ) {
+                    tabs.forEachIndexed { index, label ->
+                        val isSelected = selectedTabIndex == index
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(22.dp))
+                                .background(if (isSelected) accentColor else KitsugiColors.surface)
+                                .tvClickable(shape = RoundedCornerShape(22.dp), onClick = {
+                                    onTabIndexChange(index)
+                                    coroutineScope.launch {
+                                        tabPagerState.animateScrollToPage(index)
+                                    }
+                                })
+                                .padding(vertical = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = label,
+                                color = if (isSelected) KitsugiColors.background else KitsugiColors.textMuted,
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = if (isSelected) FontWeight.Black else FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+                // 🎲 Rastgele buton
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(KitsugiColors.surface)
+                        .tvClickable(shape = RoundedCornerShape(14.dp)) {
+                            if (visibleEntries.isNotEmpty()) {
+                                onEntryClick(visibleEntries.random())
+                            } else {
+                                onExternalSyncMessage("Gösterilecek bir öğe yok")
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "🎲", style = MaterialTheme.typography.bodyLarge)
+                }
+            }
+        }
+
+        // ── HorizontalPager: her sekme kendi scroll alanı ──────────────────────
+        // tabScrollStates declared at composable top level
+
+        // Aktif tab'ın scroll state'ini lazyListState ile senkronize et
+        // (başlık gizleme ve FAB için)
+        val activeTabScrollState = tabScrollStates[selectedTabIndex.coerceIn(0, 2)]
+
+        LaunchedEffect(activeTabScrollState) {
+            snapshotFlow {
+                activeTabScrollState.firstVisibleItemIndex to activeTabScrollState.firstVisibleItemScrollOffset
+            }.collect { (index, offset) ->
+                if (isScrollRestored && entries.isNotEmpty()) {
+                    onScrollPositionChange(index, offset)
+                }
+                val scrollingDown = index > prevIndex || (index == prevIndex && offset > prevOffset + 15)
+                val scrollingUp   = index < prevIndex || (index == prevIndex && offset < prevOffset - 15)
+                // Header collapse
+                showHeader = (index == 0 && offset < 100)
+                // Scroll-to-top FAB
+                showScrollToTopState = index > 3
+                // FAB (Tümü) görünürlüğü
+                if (index == 0 && offset < 40) {
+                    isFabVisible = true
+                } else if (scrollingDown) {
+                    isFabVisible = false
+                } else if (scrollingUp) {
+                    isFabVisible = true
+                }
+                // Hızlı aşağı scroll'da panel/arama otomatik kapat
+                if (scrollingDown && index >= 1) {
+                    if (showFilterPanel) showFilterPanel = false
+                    if (showSearchField) showSearchField = false
+                }
+                prevIndex = index
+                prevOffset = offset
+            }
+        }
+
         val tvSpec = KitsugiScrollDefaults.rememberTvCenteredSpec()
         CompositionLocalProvider(
             LocalBringIntoViewSpec provides if (isTvDevice) tvSpec else LocalBringIntoViewSpec.current
         ) {
-            PullToRefreshBox(
-                isRefreshing = isListRefreshing,
-                onRefresh = {
-                    coroutineScope.launch {
-                        isListRefreshing = true
-                        when (selectedTabIndex) {
-                            0 -> onSyncAniList()
-                            1 -> onSyncMal()
-                            else -> onSyncSimkl()
-                        }
-                        isListRefreshing = false
-                    }
-                },
+            HorizontalPager(
+                state = tabPagerState,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
-                state = pullRefreshState,
-                indicator = {
-                    PullToRefreshDefaults.Indicator(
-                        state = pullRefreshState,
-                        isRefreshing = isListRefreshing,
-                        modifier = Modifier.align(Alignment.TopCenter),
-                        containerColor = KitsugiColors.surface,
-                        color = accentColor
-                    )
+                userScrollEnabled = !isTvDevice
+            ) { page ->
+                val pageTabIndex = page
+                val pageIsConnected = when (pageTabIndex) {
+                    0 -> isAniListConnected
+                    1 -> isMalConnected
+                    else -> isSimklConnected
                 }
-            ) {
-                LazyColumn(
-                    state = lazyListState,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = horizontalPadding)
-                        .then(if (isTvDevice) Modifier.dpadVerticalFastScroll(lazyListState) else Modifier),
-                    verticalArrangement = Arrangement.Top
+                val pageScrollState = tabScrollStates[pageTabIndex]
+                val pageRefreshState = rememberPullToRefreshState()
+                var pageIsRefreshing by remember { mutableStateOf(false) }
+
+                PullToRefreshBox(
+                    isRefreshing = pageIsRefreshing,
+                    onRefresh = {
+                        coroutineScope.launch {
+                            pageIsRefreshing = true
+                            when (pageTabIndex) {
+                                0 -> onSyncAniList()
+                                1 -> onSyncMal()
+                                else -> onSyncSimkl()
+                            }
+                            pageIsRefreshing = false
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize(),
+                    state = pageRefreshState,
+                    indicator = {
+                        PullToRefreshDefaults.Indicator(
+                            state = pageRefreshState,
+                            isRefreshing = pageIsRefreshing,
+                            modifier = Modifier.align(Alignment.TopCenter),
+                            containerColor = KitsugiColors.surface,
+                            color = accentColor
+                        )
+                    }
                 ) {
-        item {
-            Spacer(modifier = Modifier.height(12.dp))
-        }
-
-
-        stickyHeader(key = "platform_tabs") {
-            val tabs = listOf("AniList", "MAL", "Simkl")
-
-            androidx.compose.material3.Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = KitsugiColors.background
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(22.dp))
-                            .background(KitsugiColors.surface),
-                        horizontalArrangement = Arrangement.spacedBy(0.dp)
-                    ) {
-                        tabs.forEachIndexed { index, label ->
-                            val isSelected = selectedTabIndex == index
-
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(22.dp))
-                                    .background(
-                                        if (isSelected) accentColor else KitsugiColors.surface
-                                    )
-                                    .tvClickable(shape = RoundedCornerShape(22.dp), onClick = { onTabIndexChange(index) })
-                                    .padding(vertical = 12.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = label,
-                                    color = if (isSelected) KitsugiColors.background else KitsugiColors.textMuted,
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = if (isSelected) FontWeight.Black else FontWeight.Medium
-                                )
+                    // Sayfa içeriği: selectedTabIndex == page olduğunda asıl filtrelenmiş veriyi göster
+                    // Diğer sayfalar için kendi içeriklerini göster (basit filtered view)
+                    val pageEntries = remember(entriesAfterAdultFilter, pageTabIndex) {
+                        entriesAfterAdultFilter.filter { entry ->
+                            val src = entry.source.lowercase()
+                            when (pageTabIndex) {
+                                0 -> src == "anilist"
+                                1 -> src == "mal" || src == "jikan" || src == "myanimelist"
+                                else -> src == "simkl"
                             }
                         }
                     }
 
-                    // 🎲 Rastgele buton — tab sırası sağ köşe
-                    Box(
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(KitsugiColors.surface)
-                            .tvClickable(shape = RoundedCornerShape(14.dp)) {
-                                if (visibleEntries.isNotEmpty()) {
-                                    val randomEntry = visibleEntries.random()
-                                    onEntryClick(randomEntry)
-                                } else {
-                                    onExternalSyncMessage("Gösterilecek bir öğe yok")
+                    if (!pageIsConnected) {
+                        LazyColumn(
+                            state = pageScrollState,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = horizontalPadding)
+                        ) {
+                            item {
+                                MyListNotConnectedState(
+                                    selectedTabIndex = pageTabIndex,
+                                    isSimklSessionExpired = isSimklSessionExpired,
+                                    onLogin = {
+                                        when (pageTabIndex) {
+                                            0 -> onLoginAniList()
+                                            1 -> onLoginMal()
+                                            else -> onLoginSimkl()
+                                        }
+                                    }
+                                )
+                                Spacer(modifier = Modifier.height(90.dp))
+                            }
+                        }
+                    } else if (pageEntries.isEmpty()) {
+                        LazyColumn(
+                            state = pageScrollState,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = horizontalPadding)
+                        ) {
+                            item { MyListSyncPromptState() }
+                        }
+                    } else {
+                        // Aktif sayfaysa filtreli listeyi, değilse ham listeyi göster
+                        val displayEntries = if (pageTabIndex == selectedTabIndex) visibleEntries else pageEntries
+                        val displayGrouped = if (pageTabIndex == selectedTabIndex) {
+                            groupedVisibleEntries
+                        } else {
+                            val statusOrder = listOf(
+                                WatchStatus.Watching, WatchStatus.Repeating, WatchStatus.Planned,
+                                WatchStatus.Paused, WatchStatus.Dropped, WatchStatus.Completed
+                            )
+                            statusOrder.map { status ->
+                                status to pageEntries.filter { it.status == status }
+                            }.filter { it.second.isNotEmpty() }
+                        }
+
+                        LazyColumn(
+                            state = pageScrollState,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = horizontalPadding)
+                                .then(if (isTvDevice) Modifier.dpadVerticalFastScroll(pageScrollState) else Modifier),
+                            verticalArrangement = Arrangement.Top
+                        ) {
+                            item {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "${displayEntries.size} sonuç",
+                                    color = KitsugiColors.textMuted,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(start = 4.dp, bottom = 10.dp)
+                                )
+                            }
+                            if (displayEntries.isEmpty()) {
+                                item {
+                                    EmptyListResultCard(
+                                        searchQuery = if (pageTabIndex == selectedTabIndex) searchQuery else "",
+                                        selectedStatusFilterId = if (pageTabIndex == selectedTabIndex) selectedStatusFilterId else "all",
+                                        selectedTypeFilterId = "all",
+                                        selectedFavoriteFilterId = "all",
+                                        selectedScoreFilterId = "all",
+                                        selectedYearFilterId = "all",
+                                        selectedExtraFilterId = "all",
+                                        selectedSortId = "newest"
+                                    )
+                                    Spacer(modifier = Modifier.height(90.dp))
                                 }
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "🎲",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                }
-            }
-        }
-
-        val isConnected = when (selectedTabIndex) {
-            0 -> isAniListConnected
-            1 -> isMalConnected
-            else -> isSimklConnected
-        }
-
-        if (!isConnected) {
-            item {
-                MyListNotConnectedState(
-                    selectedTabIndex = selectedTabIndex,
-                    isSimklSessionExpired = isSimklSessionExpired,
-                    onLogin = {
-                        when (selectedTabIndex) {
-                            0 -> onLoginAniList()
-                            1 -> onLoginMal()
-                            else -> onLoginSimkl()
+                            } else if (selectedStatusFilterId == "completed" && pageTabIndex == selectedTabIndex) {
+                                MyListFlatContent(
+                                    visibleEntries = displayEntries,
+                                    selectedListLayoutId = selectedListLayoutId,
+                                    titleLanguage = appSettings.titleLanguage,
+                                    scoreFormat = appSettings.scoreFormat,
+                                    hideScores = appSettings.hideScores,
+                                    blurAdultMedia = appSettings.blurAdultMedia,
+                                    onEntryClick = onEntryClick,
+                                    onIncrementProgress = { incrementEntryProgress(it) },
+                                    onPosterLongClick = { imageUrl ->
+                                        activeZoomImageUrl = imageUrl
+                                        activeZoomTitle = displayEntries.find { it.imageUrl == imageUrl }?.title ?: ""
+                                    }
+                                )
+                            } else {
+                                MyListGroupedContent(
+                                    groupedEntries = displayGrouped,
+                                    selectedListLayoutId = selectedListLayoutId,
+                                    titleLanguage = appSettings.titleLanguage,
+                                    scoreFormat = appSettings.scoreFormat,
+                                    hideScores = appSettings.hideScores,
+                                    blurAdultMedia = appSettings.blurAdultMedia,
+                                    onEntryClick = onEntryClick,
+                                    onIncrementProgress = { incrementEntryProgress(it) },
+                                    onPosterLongClick = { imageUrl ->
+                                        activeZoomImageUrl = imageUrl
+                                        activeZoomTitle = displayEntries.find { it.imageUrl == imageUrl }?.title ?: ""
+                                    }
+                                )
+                            }
+                            item { Spacer(modifier = Modifier.height(90.dp)) }
                         }
                     }
-                )
-                Spacer(modifier = Modifier.height(90.dp))
-            }
-        } else {
-            // Arama kutusu artık sabit üst barda, burada gösterilmiyor
-
-
-
-            if (selectedTabEntries.isEmpty()) {
-                item {
-                    MyListSyncPromptState()
-                }
-            } else if (visibleEntries.isEmpty()) {
-                item {
-                    EmptyListResultCard(
-                        searchQuery = searchQuery,
-                        selectedStatusFilterId = selectedStatusFilterId,
-                        selectedTypeFilterId = selectedTypeFilterId,
-                        selectedFavoriteFilterId = selectedFavoriteFilterId,
-                        selectedScoreFilterId = selectedScoreFilterId,
-                        selectedYearFilterId = selectedYearFilterId,
-                        selectedExtraFilterId = selectedExtraFilterId,
-                        selectedSortId = selectedSortId
-                    )
-                    Spacer(modifier = Modifier.height(90.dp))
-                }
-            } else {
-                item {
-                    Text(
-                        text = "${visibleEntries.size} sonuç",
-                        color = KitsugiColors.textMuted,
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 4.dp, bottom = 10.dp)
-                    )
-                }
-
-                if (selectedStatusFilterId == "completed") {
-                    MyListFlatContent(
-                        visibleEntries = visibleEntries,
-                        selectedListLayoutId = selectedListLayoutId,
-                        titleLanguage = appSettings.titleLanguage,
-                        scoreFormat = appSettings.scoreFormat,
-                        hideScores = appSettings.hideScores,
-                        blurAdultMedia = appSettings.blurAdultMedia,
-                        onEntryClick = onEntryClick,
-                        onIncrementProgress = { incrementEntryProgress(it) },
-                        onPosterLongClick = { imageUrl ->
-                            activeZoomImageUrl = imageUrl
-                            activeZoomTitle = visibleEntries.find { it.imageUrl == imageUrl }?.title ?: ""
-                        }
-                    )
-                } else {
-                    MyListGroupedContent(
-                        groupedEntries = groupedVisibleEntries,
-                        selectedListLayoutId = selectedListLayoutId,
-                        titleLanguage = appSettings.titleLanguage,
-                        scoreFormat = appSettings.scoreFormat,
-                        hideScores = appSettings.hideScores,
-                        blurAdultMedia = appSettings.blurAdultMedia,
-                        onEntryClick = onEntryClick,
-                        onIncrementProgress = { incrementEntryProgress(it) },
-                        onPosterLongClick = { imageUrl ->
-                            activeZoomImageUrl = imageUrl
-                            activeZoomTitle = visibleEntries.find { it.imageUrl == imageUrl }?.title ?: ""
-                        }
-                    )
                 }
             }
         }
-    } // end LazyColumn
-        }
-    } // end PullToRefreshBox + CompositionLocalProvider
 
     } // end Column
 
@@ -838,7 +915,7 @@ fun MyListScreen(
 
             // Scroll to Top button on the Bottom-End (Bottom-Right)
             AnimatedVisibility(
-                visible = showScrollToTop,
+                visible = showScrollToTopState,
                 enter = fadeIn() + scaleIn(),
                 exit = fadeOut() + scaleOut(),
                 modifier = Modifier
@@ -860,7 +937,8 @@ fun MyListScreen(
                         .background(accentColor)
                         .tvClickable(shape = RoundedCornerShape(16.dp)) {
                             coroutineScope.launch {
-                                lazyListState.animateScrollToItem(0)
+                                val activeState = tabScrollStates[selectedTabIndex.coerceIn(0, 2)]
+                                activeState.animateScrollToItem(0)
                             }
                         },
                     contentAlignment = Alignment.Center
@@ -902,7 +980,7 @@ fun MyListScreen(
             onDismiss = {
                 showAddDialog = false
             },
-            onConfirm = { title, subtitle, type, status, isAdult, progress, total, score, isFavorite, startDate, endDate, notes, tags, priority, isRepeating, repeatCount, repeatValue, volumeProgress, isPrivate, isHiddenFromStatusLists ->
+            onConfirm = { title, subtitle, type, status, isAdult, progress, total, score, isFavorite, startDate, endDate, notes, tags, priority, isRepeating, repeatCount, repeatValue, volumeProgress, isPrivate, isHiddenFromStatusLists, _ ->
                 val newEntry = MediaEntry(
                     id = 0,
                     title = title,
@@ -1021,7 +1099,7 @@ fun MyListScreen(
                 editingEntry = null
                 viewModel.deleteEntryById(entry.id)
             },
-            onConfirm = { title, subtitle, type, status, isAdult, progress, total, score, isFavorite, startDate, endDate, notes, tags, priority, isRepeating, repeatCount, repeatValue, volumeProgress, isPrivate, isHiddenFromStatusLists ->
+            onConfirm = { title, subtitle, type, status, isAdult, progress, total, score, isFavorite, startDate, endDate, notes, tags, priority, isRepeating, repeatCount, repeatValue, volumeProgress, isPrivate, isHiddenFromStatusLists, advancedScores ->
                 val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
 
                 // Kullanıcı tarihleri boş bıraktıysa durum değişimine göre otomatik doldur
@@ -1062,7 +1140,7 @@ fun MyListScreen(
                     isHiddenFromStatusLists = isHiddenFromStatusLists
                 )
 
-                viewModel.updateEntry(updatedEntry)
+                viewModel.updateEntry(updatedEntry, advancedScores = advancedScores)
 
                 editingEntry = null
             }

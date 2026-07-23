@@ -16,15 +16,50 @@ class ExampleUnitTest {
     }
 
     @Test
-    fun testStaffFetch() = kotlinx.coroutines.runBlocking {
-        val client = com.kitsugi.animelist.data.remote.KitsugiStaffClient()
-        val result = client.fetchStaffDetail("jikan", 43814)
-        println("Fetched staff: ${result?.name}")
-        println("Character roles count: ${result?.characterRoles?.size}")
-        result?.characterRoles?.take(5)?.forEach { role ->
-            println(" - Char: ${role.characterName}, Media: ${role.mediaTitle}")
+    fun testTmdbUpcomingAnime() = kotlinx.coroutines.runBlocking {
+        val apiKey = "8265bd1679663a7ea12ac168da84d2e8"
+        val language = "tr-TR"
+        val client = okhttp3.OkHttpClient()
+        val executeGet: suspend (String) -> String? = { url ->
+            val req = okhttp3.Request.Builder().url(url).build()
+            kotlin.runCatching {
+                client.newCall(req).execute().use { resp ->
+                    resp.body?.string()
+                }
+            }.getOrNull()
         }
-        assertNotNull(result)
-        assertTrue(result!!.characterRoles.isNotEmpty())
+
+        println("Fetching page 1...")
+        val page1 = com.kitsugi.animelist.data.remote.TmdbDiscoverClient.getUpcomingAnime(
+            page = 1, apiKey = apiKey, language = language, executeGet = executeGet
+        )
+        println("Page 1 count: ${page1.size}")
+        page1.forEach { item ->
+            println(" - [${item.subtitle}] ${item.title} (Adult: ${item.isAdult})")
+        }
+
+        println("Fetching page 2...")
+        val page2 = com.kitsugi.animelist.data.remote.TmdbDiscoverClient.getUpcomingAnime(
+            page = 2, apiKey = apiKey, language = language, executeGet = executeGet
+        )
+        println("Page 2 count: ${page2.size}")
+        page2.forEach { item ->
+            println(" - [${item.subtitle}] ${item.title} (Adult: ${item.isAdult})")
+        }
+    }
+
+    @Test
+    fun testNewlyAddedAnime() = kotlinx.coroutines.runBlocking {
+        val client = com.kitsugi.animelist.data.remote.JikanSearchClient()
+        try {
+            val results = client.newlyAddedAnime(page = 1, showAdultContent = false)
+            println("NewlyAddedAnime count: ${results.size}")
+            results.forEach { item ->
+                println(" - [${item.source}] ID: ${item.malId}, Title: ${item.title}")
+            }
+        } catch (e: Exception) {
+            println("Exception: ${e.message}")
+            e.printStackTrace()
+        }
     }
 }

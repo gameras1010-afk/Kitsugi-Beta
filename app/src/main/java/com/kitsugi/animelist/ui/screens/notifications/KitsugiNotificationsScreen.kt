@@ -55,20 +55,6 @@ private enum class NotifPlatform(val label: String) {
     TMDB_SIMKL("TMDB & Simkl")
 }
 
-// ─── AniList alt filtre ───────────────────────────────────────────────────────
-
-private enum class AniListFilter(
-    val labelResId: Int,
-    val group: KitsugiAniListNotificationClient.NotificationGroup
-) {
-    ALL(R.string.notif_filter_all, KitsugiAniListNotificationClient.NotificationGroup.ALL),
-    AIRING(R.string.notif_filter_airing, KitsugiAniListNotificationClient.NotificationGroup.AIRING),
-    ACTIVITY(R.string.notif_filter_activity, KitsugiAniListNotificationClient.NotificationGroup.ACTIVITY),
-    FORUM(R.string.notif_filter_forum, KitsugiAniListNotificationClient.NotificationGroup.FORUM),
-    FOLLOWS(R.string.notif_filter_follows, KitsugiAniListNotificationClient.NotificationGroup.FOLLOWS),
-    MEDIA(R.string.notif_filter_media, KitsugiAniListNotificationClient.NotificationGroup.MEDIA)
-}
-
 // ─── Ana Ekran ────────────────────────────────────────────────────────────────
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -80,13 +66,13 @@ fun KitsugiNotificationsScreen(
     isSimklConnected: Boolean,
     onBack: () -> Unit,
     onOpenApiDetail: ((mediaId: Int, source: String, mediaType: String?) -> Unit)? = null,
+    onUserProfileClick: ((userId: Int, username: String, avatarUrl: String?) -> Unit)? = null,
     viewModel: KitsugiNotificationsViewModel = viewModel()
 ) {
     val accentColor = LocalKitsugiAccent.current
     val scope = rememberCoroutineScope()
 
     // ── ViewModel state'lerini topla ──
-    val aniListState by viewModel.aniList.collectAsState()
     val malState    by viewModel.mal.collectAsState()
     val simklState  by viewModel.tmdbSimkl.collectAsState()
 
@@ -100,13 +86,18 @@ fun KitsugiNotificationsScreen(
         },
         pageCount = { 3 }
     )
-    var aniListFilter by remember { mutableStateOf(AniListFilter.ALL) }
+
+    val aniListPagerState = rememberPagerState(
+        initialPage = 0,
+        pageCount = { AniListFilter.entries.size }
+    )
+    val currentAniListFilter = AniListFilter.entries[aniListPagerState.currentPage]
 
     // ── İlk yükleme — sayfa veya filtre değiştiğinde ──
-    LaunchedEffect(pagerState.currentPage, aniListFilter) {
+    LaunchedEffect(pagerState.currentPage, currentAniListFilter) {
         when (pagerState.currentPage) {
             0 -> if (isAniListConnected) viewModel.loadAniList(
-                group = aniListFilter.group,
+                filter = currentAniListFilter,
                 resetPage = true,
                 mediaEntries = mediaEntries
             )
@@ -115,32 +106,8 @@ fun KitsugiNotificationsScreen(
         }
     }
 
-    val aniListListState  = rememberLazyListState()
     val malListState      = rememberLazyListState()
     val tmdbSimklListState = rememberLazyListState()
-
-    // ── Infinite scroll (AniList) — sadece scroll sonunda tetikle ──
-    val shouldLoadMore by remember {
-        derivedStateOf {
-            val total = aniListListState.layoutInfo.totalItemsCount
-            val last  = aniListListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-            last >= total - 5 && total > 0
-        }
-    }
-    LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore && pagerState.currentPage == 0 && !aniListState.isLoading && aniListState.hasMore) {
-            viewModel.loadAniList(
-                group = aniListFilter.group,
-                resetPage = false,
-                mediaEntries = mediaEntries
-            )
-        }
-    }
-
-    // ── Filtre değişince liste başa dönsün ──
-    LaunchedEffect(aniListFilter) {
-        aniListListState.scrollToItem(0)
-    }
 
     val configuration = LocalConfiguration.current
     val isLandscape   = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -181,7 +148,7 @@ fun KitsugiNotificationsScreen(
             )
             IconButton(onClick = {
                 when (pagerState.currentPage) {
-                    0 -> viewModel.loadAniList(aniListFilter.group, resetPage = true, mediaEntries)
+                    0 -> viewModel.loadAniList(currentAniListFilter, resetPage = true, mediaEntries)
                     1 -> viewModel.loadMal(mediaEntries)
                     2 -> viewModel.loadTmdbSimkl(mediaEntries)
                 }
@@ -264,6 +231,7 @@ fun KitsugiNotificationsScreen(
         // ── Pager ──
         HorizontalPager(
             state = pagerState,
+            userScrollEnabled = false,
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
@@ -274,52 +242,89 @@ fun KitsugiNotificationsScreen(
                     if (!isAniListConnected) {
                         CenteredEmptyState(stringResource(R.string.notif_login_required_anilist))
                     } else {
-                        LazyColumn(
-                            state = aniListListState,
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = 80.dp)
-                        ) {
-                            // Alt filtreler
-                            item(key = "al_filters") {
-                                AniListFilterHeader(
-                                    activeFilter = aniListFilter,
-                                    onFilterSelected = { aniListFilter = it },
-                                    isWideScreen = isWideScreen,
-                                    accentColor = accentColor
-                                )
-                            }
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            AniListFilterHeader(
+                                activeFilter = currentAniListFilter,
+                                onFilterSelected = { filter ->
+                                    scope.launch {
+                                        aniListPagerState.animateScrollToPage(filter.ordinal)
+                                    }
+                                },
+                                isWideScreen = isWideScreen,
+                                accentColor = accentColor
+                            )
 
-                            when {
-                                aniListState.isLoading && aniListState.items.isEmpty() -> {
-                                    item { LoadingState(accentColor) }
+                            HorizontalPager(
+                                state = aniListPagerState,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f)
+                            ) { filterPage ->
+                                val filter = AniListFilter.entries[filterPage]
+                                val filterState by viewModel.getAniListState(filter).collectAsState()
+                                val listState = rememberLazyListState()
+
+                                // Infinite scroll for this specific filter list
+                                val shouldLoadMore by remember {
+                                    derivedStateOf {
+                                        val total = listState.layoutInfo.totalItemsCount
+                                        val last  = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+                                        last >= total - 5 && total > 0
+                                    }
                                 }
-                                aniListState.error != null && aniListState.items.isEmpty() -> {
-                                    item { CenteredEmptyState(aniListState.error!!) }
-                                }
-                                aniListState.items.isEmpty() -> {
-                                    item { CenteredEmptyState(stringResource(R.string.notif_empty_no_notifications)) }
-                                }
-                                else -> {
-                                    items(aniListState.items, key = { it.id }) { notif ->
-                                        NotifItemRow(
-                                            notif = notif,
-                                            accentColor = accentColor,
-                                            onClick = {
-                                                notif.mediaId?.let { id -> onOpenApiDetail?.invoke(id, "anilist", notif.mediaType) }
-                                            }
+                                LaunchedEffect(shouldLoadMore) {
+                                    if (shouldLoadMore && !filterState.isLoading && filterState.hasMore) {
+                                        viewModel.loadAniList(
+                                            filter = filter,
+                                            resetPage = false,
+                                            mediaEntries = mediaEntries
                                         )
                                     }
-                                    // Sayfa sonu yükleyici
-                                    if (aniListState.isLoading) {
-                                        item {
-                                            Box(
-                                                Modifier.fillMaxWidth().padding(16.dp),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                CircularProgressIndicator(
-                                                    color = accentColor,
-                                                    modifier = Modifier.size(24.dp)
+                                }
+
+                                LazyColumn(
+                                    state = listState,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentPadding = PaddingValues(bottom = 80.dp)
+                                ) {
+                                    when {
+                                        filterState.isLoading && filterState.items.isEmpty() -> {
+                                            item { LoadingState(accentColor) }
+                                        }
+                                        filterState.error != null && filterState.items.isEmpty() -> {
+                                            item { CenteredEmptyState(filterState.error!!) }
+                                        }
+                                        filterState.items.isEmpty() -> {
+                                            item { CenteredEmptyState(stringResource(R.string.notif_empty_no_notifications)) }
+                                        }
+                                        else -> {
+                                            items(filterState.items, key = { it.id }) { notif ->
+                                                NotifItemRow(
+                                                    notif = notif,
+                                                    accentColor = accentColor,
+                                                    onUserProfileClick = onUserProfileClick,
+                                                    onClick = {
+                                                        if (notif.mediaId != null) {
+                                                            onOpenApiDetail?.invoke(notif.mediaId, "anilist", notif.mediaType)
+                                                        } else if (notif.userId != null && notif.userName != null) {
+                                                            onUserProfileClick?.invoke(notif.userId, notif.userName, notif.userAvatarUrl)
+                                                        }
+                                                    }
                                                 )
+                                            }
+                                            // Sayfa sonu yükleyici
+                                            if (filterState.isLoading) {
+                                                item {
+                                                    Box(
+                                                        Modifier.fillMaxWidth().padding(16.dp),
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        CircularProgressIndicator(
+                                                            color = accentColor,
+                                                            modifier = Modifier.size(24.dp)
+                                                        )
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -354,6 +359,7 @@ fun KitsugiNotificationsScreen(
                                         NotifItemRow(
                                             notif = notif,
                                             accentColor = accentColor,
+                                            onUserProfileClick = onUserProfileClick,
                                             onClick = {
                                                 notif.mediaId?.let { id -> onOpenApiDetail?.invoke(id, "jikan", notif.mediaType) }
                                             }
@@ -390,6 +396,7 @@ fun KitsugiNotificationsScreen(
                                         NotifItemRow(
                                             notif = notif,
                                             accentColor = accentColor,
+                                            onUserProfileClick = onUserProfileClick,
                                             onClick = {
                                                 notif.mediaId?.let { id -> onOpenApiDetail?.invoke(id, "simkl", notif.mediaType) }
                                             }
@@ -479,6 +486,7 @@ private fun AniListFilterHeader(
 private fun NotifItemRow(
     notif: NotifItem,
     accentColor: Color,
+    onUserProfileClick: ((userId: Int, username: String, avatarUrl: String?) -> Unit)? = null,
     onClick: () -> Unit
 ) {
     Row(
@@ -492,8 +500,15 @@ private fun NotifItemRow(
         Box(
             modifier = Modifier
                 .size(52.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(KitsugiColors.SurfaceStrong),
+                .clip(if (notif.userId != null) CircleShape else RoundedCornerShape(10.dp))
+                .background(KitsugiColors.SurfaceStrong)
+                .then(
+                    if (notif.userId != null && notif.userName != null && onUserProfileClick != null) {
+                        Modifier.tvClickable(shape = CircleShape) {
+                            onUserProfileClick(notif.userId, notif.userName, notif.userAvatarUrl)
+                        }
+                    } else Modifier
+                ),
             contentAlignment = Alignment.Center
         ) {
             if (!notif.imageUrl.isNullOrBlank()) {

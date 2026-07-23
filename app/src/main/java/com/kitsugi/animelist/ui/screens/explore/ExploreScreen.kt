@@ -139,6 +139,8 @@ fun ExploreScreen(
     val filteredTrendingManga = remember(viewModel.trendingManga, showAdultContent) { viewModel.trendingManga.filter { showAdultContent || !it.isAdult } }
     val filteredNewlyAddedAnime = remember(viewModel.newlyAddedAnime, showAdultContent) { viewModel.newlyAddedAnime.filter { showAdultContent || !it.isAdult } }
     val filteredNewlyAddedManga = remember(viewModel.newlyAddedManga, showAdultContent) { viewModel.newlyAddedManga.filter { showAdultContent || !it.isAdult } }
+    val filteredUpcomingAnimeTmdb = remember(viewModel.upcomingAnimeTmdb, showAdultContent) { viewModel.upcomingAnimeTmdb.filter { showAdultContent || !it.isAdult } }
+
 
     val heroItems = remember(viewModel.selectedPlatform, filteredTopAnime, filteredAiringAnime, filteredMovieAnime) {
         if (viewModel.selectedPlatform == ExplorePlatform.TMDB) {
@@ -304,7 +306,9 @@ fun ExploreScreen(
         filteredPublishingManga.isEmpty() && filteredTrendingAnime.isEmpty() &&
         filteredMovieAnime.isEmpty() && filteredSeasonalAnime.isEmpty() &&
         viewModel.simklContinueSeries.isEmpty() && viewModel.simklContinueMovies.isEmpty() &&
-        viewModel.simklPlannedSeries.isEmpty() && viewModel.simklPlannedMovies.isEmpty()
+        viewModel.simklPlannedSeries.isEmpty() && viewModel.simklPlannedMovies.isEmpty() &&
+        filteredNewlyAddedAnime.isEmpty() && filteredNewlyAddedManga.isEmpty() &&
+        viewModel.airingSoonAnime.isEmpty() && filteredUpcomingAnimeTmdb.isEmpty()
 
     Row(
         modifier = Modifier
@@ -628,7 +632,7 @@ fun ExploreScreen(
                                                 item {
                                                     ExploreCategoryChip(
                                                         label = "Yakında Yayında (Anime)",
-                                                        onClick = { onSeeAllSection("Yakında Yayında (Anime)", ExploreCategoryType.TRENDING_MANGA, filteredTrendingManga) }
+                                                        onClick = { onSeeAllSection("Yakında Yayında (Anime)", ExploreCategoryType.UPCOMING_ANIME_TMDB, filteredUpcomingAnimeTmdb) }
                                                     )
                                                 }
                                                 item {
@@ -644,59 +648,65 @@ fun ExploreScreen(
                                 }
                             }
 
-                            // ─── TMDB YAKINDA YAYINDA (Airing Soon) ───
-                            if (viewModel.airingSoonAnime.isNotEmpty()) {
+                            // ─── TMDB YAKINDA YAYINDA (Upcoming Anime) ───
+                            if (filteredUpcomingAnimeTmdb.isNotEmpty()) {
                                 item {
-                                    Column(
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(horizontal = 20.dp),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.SpaceBetween
-                                        ) {
-                                            Text(
-                                                text = stringResource(R.string.explore_airing_soon),
-                                                color = KitsugiColors.TextPrimary,
-                                                style = MaterialTheme.typography.titleLarge,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                            IconButton(onClick = onOpenAiringCalendar) {
-                                                Icon(
-                                                    imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
-                                                    contentDescription = "Yayın Takvimi",
-                                                    tint = accentColor
-                                                )
-                                            }
-                                        }
+                                    KitsugiHorizontalMediaSection(
+                                        title = "Yakında Yayında (Anime)",
+                                        results = filteredUpcomingAnimeTmdb,
+                                        isLoading = viewModel.isLoading,
+                                        alreadyInList = isAlreadyInList,
+                                        getMediaEntry = getMediaEntry,
+                                        onItemClick = onOpenApiDetail,
+                                        onLongClickItem = onLongClickItem,
+                                        onSeeAllClick = { onSeeAllSection("Yakında Yayında (Anime)", ExploreCategoryType.UPCOMING_ANIME_TMDB, filteredUpcomingAnimeTmdb) },
+                                        titleLanguage = titleLanguage,
+                                        scoreFormat = scoreFormat,
+                                        hideScores = hideScores,
+                                        blurAdultMedia = blurAdultMedia
+                                    )
+                                    Spacer(modifier = Modifier.height(26.dp))
+                                }
+                            }
 
-                                        Spacer(modifier = Modifier.height(10.dp))
+                            // ─── TMDB TREND ANİMELER ───
+                            if (filteredTrendingAnime.isNotEmpty()) {
+                                item {
+                                    KitsugiHorizontalMediaSection(
+                                        title = "Trend Animeler",
+                                        results = filteredTrendingAnime,
+                                        isLoading = viewModel.isLoading,
+                                        alreadyInList = isAlreadyInList,
+                                        getMediaEntry = getMediaEntry,
+                                        onItemClick = onOpenApiDetail,
+                                        onLongClickItem = onLongClickItem,
+                                        onSeeAllClick = { onSeeAllSection("Trend Animeler", ExploreCategoryType.TRENDING_ANIME, filteredTrendingAnime) },
+                                        titleLanguage = titleLanguage,
+                                        scoreFormat = scoreFormat,
+                                        hideScores = hideScores,
+                                        blurAdultMedia = blurAdultMedia
+                                    )
+                                    Spacer(modifier = Modifier.height(26.dp))
+                                }
+                            }
 
-                                        val lazyListState = remember { androidx.compose.foundation.lazy.LazyListState() }
-                                        LazyRow(
-                                            state = lazyListState,
-                                            contentPadding = PaddingValues(horizontal = 20.dp),
-                                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                            flingBehavior = androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior(
-                                                lazyListState = lazyListState,
-                                                snapPosition = androidx.compose.foundation.gestures.snapping.SnapPosition.Start
-                                            ),
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            items(viewModel.airingSoonAnime.size) { index ->
-                                                val result = viewModel.airingSoonAnime[index]
-                                                AiringSoonHorizontalCard(
-                                                    result = result,
-                                                    alreadyInList = isAlreadyInList(result),
-                                                    onItemClick = { onOpenApiDetail(result) },
-                                                    onLongClick = { onLongClickItem(result) },
-                                                    titleLanguage = titleLanguage
-                                                )
-                                            }
-                                        }
-                                    }
+                            // ─── TMDB POPÜLER ANİMELER ───
+                            if (filteredNewlyAddedAnime.isNotEmpty()) {
+                                item {
+                                    KitsugiHorizontalMediaSection(
+                                        title = "Popüler Animeler",
+                                        results = filteredNewlyAddedAnime,
+                                        isLoading = viewModel.isLoading,
+                                        alreadyInList = isAlreadyInList,
+                                        getMediaEntry = getMediaEntry,
+                                        onItemClick = onOpenApiDetail,
+                                        onLongClickItem = onLongClickItem,
+                                        onSeeAllClick = { onSeeAllSection("Popüler Animeler", ExploreCategoryType.NEWLY_ADDED_ANIME, filteredNewlyAddedAnime) },
+                                        titleLanguage = titleLanguage,
+                                        scoreFormat = scoreFormat,
+                                        hideScores = hideScores,
+                                        blurAdultMedia = blurAdultMedia
+                                    )
                                     Spacer(modifier = Modifier.height(26.dp))
                                 }
                             }

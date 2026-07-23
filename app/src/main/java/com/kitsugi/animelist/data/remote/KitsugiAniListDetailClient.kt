@@ -44,6 +44,7 @@ internal object KitsugiAniListDetailClient {
                     averageScore
                     popularity
                     favourites
+                    isFavourite
                     episodes
                     chapters
                     isAdult
@@ -213,6 +214,7 @@ internal object KitsugiAniListDetailClient {
             val averageScore = media.optionalPositiveInt("averageScore")
             val popularity = media.optionalPositiveInt("popularity")
             val favorites = media.optionalPositiveInt("favourites")
+            val isFavourite = media.optBoolean("isFavourite", false)
 
             val nextAiringObj = media.optJSONObject("nextAiringEpisode")
             val nextAiringEpisode = if (nextAiringObj != null) {
@@ -391,7 +393,8 @@ internal object KitsugiAniListDetailClient {
                 rank = parsedRank,
                 popularityRank = parsedPopularityRank,
                 scoredBy = totalScoredBy,
-                members = totalMembers ?: popularity
+                members = totalMembers ?: popularity,
+                isFavourite = isFavourite
             )
         }.getOrNull()
     }

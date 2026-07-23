@@ -4,26 +4,36 @@
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI — Yeni Güncelleme
 
-### 🎨 AniHyou Tasarım Dilinde Sosyal Kartlar
-- **Yeni PostItem Tasarım Paritesi**: Tartışma Konuları (`TopicCard`), Aktiviteler (`ActivityCard`) ve İncelemeler (`KitsugiReviewCard`) kartları, AniHyou uygulamasının premium `PostItem` düzenine göre tamamen yeniden tasarlandı.
-- **Ortalanmış İtalik Metin Gösterimi**: Kart gövdelerinde artık kafa karıştırıcı markdown sembollerinden arındırılmış, ortalanmış, italik ve yarı kalın (semi-bold) özet metinleri yer alıyor.
-- **Standart Boyutlar**: Sosyal sekmesindeki tüm kartların boyutları yatay LazyRow listelerinde hizalamayı bozmayacak şekilde `280.dp` genişlik ve `144.dp` yükseklik olarak eşitlendi.
-- **Alt Bilgi ve İstatistik Satırı**: Kartların alt kısmında sol tarafta istatistikler (beğeni, yorum, puan ve görüntülenme sayıları) yer alırken, sağ tarafta tıklanabilir premium yuvarlak profil resmi ve kullanıcı adı bulunuyor.
-- **Sadeleştirilmiş Arayüz**: Çeviri ve kopyalama gibi ikincil fonksiyon butonları detay sayfalarına taşınarak ana sosyal kart listelerinin sade ve şık kalması sağlandı.
+### 🔍 Keşfet Modülü — MAL / AniList Veri Akışı Düzeltmeleri
+- **"Yeni Eklenen Anime" Bölümü Geri Döndü**: Jikan API'sinin 504/503 hatası vermesi durumunda devreye giren AniList GraphQL yedek mekanizması artık Keşfet ekranına düzgün yansıyor; bölüm artık boş görünmüyor.
+- **Boş Ekran Hatasının Giderilmesi**: Bazı Jikan uç noktaları başarısız olsa bile diğer listeler (filteredNewlyAddedAnime, filteredNewlyAddedManga, airingSoonAnime, filteredUpcomingAnimeTmdb) veri taşıyorsa "İçerik Yok" ekranı bir daha yanlışlıkla gösterilmiyor.
+- **Temiz Boş Bölüm Mantığı**: Yükleme tamamlandığında içerik gelmeyen medya bölümleri (başlık ve "Tümünü Gör" butonu dahil) artık tamamen gizleniyor; boşa kayan boş alanlar arayüzden temizlendi.
 
-### 🖼️ Biyografi ve Sosyal Detaylar İçin Görsel Galeri Paritesi
-- **Etkileşimli Görsel Galerisi**: Gerek kullanıcı biyografilerindeki (AniList & Simkl) resimler, gerekse de detay sayfalarında açılan yorum/aktivite akışlarındaki tüm görseller ve hareketli GIF'ler tıklandığında premium, tam ekran görsel galerisi ile açılıyor.
+### 📱 Keşfet Ekranı — Yatay Mod Kart Tasarımı
+- **Daha Dikine Poster Görselleri**: Yatay ekranda Keşfet kartlarındaki resimler artık `160×100 dp` (yatay thumbnail) yerine `90×130 dp` (dikine poster oranı) boyutunda; görseller çok daha net ve tanınabilir.
+- **Optimize Kart Genişliği**: Landscape modda kart genişliği `320 dp`'den `260 dp`'ye indirildi; poster ile yazı alanı artık dengeli — ne resim ezilir ne de metin sıkışır.
+
+### 🎨 Kullanıcı Arayüzü — Genel İyileştirmeler
+- **AniList Favori Butonu Parity**: Kütüphaneye eklenmemiş medyalarda da Favori butonu görünür ve çalışır hâle getirildi; otomatik "Planlanıyor" girişi oluşturularak uzak sunucuyla senkronize ediliyor.
+- **TMDB Yakında Yayında Sayfalama**: "Yakında Yayında" bölümü artık bağımsız bir kategori türüyle yönetildiği için sonsuz kaydırma ve sayfalama düzgün çalışıyor.
+- **AniList Medya Editörü Geliştirmeleri**: Özel listeler (customLists) ve gelişmiş puanlama (advancedScores) desteği tam olarak entegre edildi; tarih sıfırlama ve dinamik puan girişi eklendi.
+- **Sosyal Kullanıcı Profili Navigasyonu**: Forum konuları, aktivite kartları ve yorum bölümlerindeki yazar avatarları ve kullanıcı adlarına tıklayınca artık ilgili kullanıcının profiline gidiliyor.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES — Latest Update
 
-### 🎨 AniHyou-Style Social Cards Refactoring
-- **PostItem Layout Parity**: Redesigned all social feed components—Forum Topics (`TopicCard`), Activities (`ActivityCard`), and Reviews (`KitsugiReviewCard`)—to match the premium AniHyou `PostItem` design language.
-- **Centered Italic Typography**: Features clean, centered, italicized, and semi-bold body text stripped of raw markdown symbols for a clean feed appearance.
-- **Uniform Card Dimensions**: Bounded card dimensions to `width(280.dp)` and `height(144.dp)` to ensure perfect horizontal alignment inside lazy list layouts.
-- **Bottom Status & Stats Row**: Positioned ratings, likes, comments, and views counters on the bottom-left, and interactive, clickable author details (avatar + username) on the bottom-right.
-- **Decluttered Card Interface**: Moved secondary actions (such as translate and copy buttons) into the detailed sheet overlays to keep the main lists minimal.
+### 🔍 Explore Module — MAL / AniList Data Feed Fixes
+- **"Newly Added Anime" Section Restored**: The AniList GraphQL fallback that activates upon Jikan 504/503 errors now correctly surfaces in the Explore screen; the section no longer appears empty.
+- **Empty Screen Bug Fixed**: Even if some Jikan endpoints fail, the "No Content" empty state is no longer shown when other lists (filteredNewlyAddedAnime, filteredNewlyAddedManga, airingSoonAnime, filteredUpcomingAnimeTmdb) still hold data.
+- **Clean Empty Section Logic**: Media sections with no results after loading now fully hide themselves (title and "See All" button included), removing dead blank space from the layout.
 
-### 🖼️ Comprehensive Media Gallery & Gesture Support
-- **Tap-to-Gallery Integration**: Fully verified that tapping any image or animated GIF in Simkl/AniList bios or post detail sheet contents successfully launches the interactive fullscreen gallery.
+### 📱 Explore Screen — Landscape Card Design
+- **Taller Poster Thumbnails**: Explore cards in landscape mode now show images at `90×130 dp` (portrait poster ratio) instead of `160×100 dp` (landscape thumbnail); visuals are significantly clearer and more recognizable.
+- **Optimized Card Width**: Landscape card width reduced from `320 dp` to `260 dp`, giving a balanced split between the poster and the text column — no more squished text or wasted space.
+
+### 🎨 UI — General Improvements
+- **AniList Favorite Button Parity**: Favorite button is now visible and functional for media not yet added to the local library; a "Planned" entry is auto-created and synced with the remote API.
+- **TMDB Upcoming Anime Pagination**: "Upcoming Anime" section now managed via a dedicated category type, ensuring correct infinite scroll and pagination behavior.
+- **AniList Media Editor Enhancements**: Full integration of custom lists (customLists) and advanced scoring (advancedScores); added date clearing and dynamic advanced score inputs.
+- **Social User Profile Navigation**: Tapping author avatars and usernames in forum topics, activity cards, and comment sections now navigates to the respective user profile.

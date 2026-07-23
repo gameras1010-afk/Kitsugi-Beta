@@ -32,7 +32,8 @@ fun KitsugiMediaEntryEditorDialog(
         repeatValue: Int,
         volumeProgress: Int,
         isPrivate: Boolean,
-        isHiddenFromStatusLists: Boolean
+        isHiddenFromStatusLists: Boolean,
+        advancedScores: List<Double>?
     ) -> Unit
 ) {
     KitsugiEditMediaSheet(

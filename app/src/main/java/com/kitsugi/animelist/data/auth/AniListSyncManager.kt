@@ -20,7 +20,8 @@ object AniListSyncManager {
 
     fun updateAniListEntry(
         token: String,
-        entry: MediaEntry
+        entry: MediaEntry,
+        advancedScores: List<Double>? = null
     ): Int? {
         val existingEntryId: Int? = entry.aniListEntryId
 
@@ -45,7 +46,8 @@ object AniListSyncManager {
                 ${'$'}private: Boolean,
                 ${'$'}notes: String,
                 ${'$'}repeat: Int,
-                ${'$'}hiddenFromStatusLists: Boolean
+                ${'$'}hiddenFromStatusLists: Boolean,
+                ${'$'}advancedScores: [Float]
             ) {
                 SaveMediaListEntry(
                     id: ${'$'}id,
@@ -59,7 +61,8 @@ object AniListSyncManager {
                     private: ${'$'}private,
                     notes: ${'$'}notes,
                     repeat: ${'$'}repeat,
-                    hiddenFromStatusLists: ${'$'}hiddenFromStatusLists
+                    hiddenFromStatusLists: ${'$'}hiddenFromStatusLists,
+                    advancedScores: ${'$'}advancedScores
                 ) {
                     id
                     status
@@ -93,6 +96,12 @@ object AniListSyncManager {
         val completedAt = entry.endDate.toAniListFuzzyDate()
         if (completedAt != null) {
             variables.put("completedAt", completedAt)
+        }
+
+        if (advancedScores != null) {
+            val jsonArray = org.json.JSONArray()
+            advancedScores.forEach { jsonArray.put(it) }
+            variables.put("advancedScores", jsonArray)
         }
 
         val response = postAniList(
@@ -235,7 +244,7 @@ object AniListSyncManager {
         )
     }
 
-    private fun resolveAniListMediaId(
+    fun resolveAniListMediaId(
         token: String,
         entry: MediaEntry
     ): Int? {
@@ -286,7 +295,7 @@ object AniListSyncManager {
             ?.takeIf { it > 0 }
     }
 
-    private fun fetchAniListUserId(
+    fun fetchAniListUserId(
         token: String
     ): Int {
         if (token == cachedAniListToken && cachedAniListUserId != null) {
@@ -317,6 +326,209 @@ object AniListSyncManager {
         cachedAniListToken = token
         cachedAniListUserId = userId
         return userId
+    }
+
+    data class ViewerOptions(
+        val scoreFormat: String,
+        val animeCategories: List<String>,
+        val animeEnabled: Boolean,
+        val mangaCategories: List<String>,
+        val mangaEnabled: Boolean
+    )
+
+    fun getViewerOptions(token: String): ViewerOptions? {
+        val query = """
+            query {
+                Viewer {
+                    mediaListOptions {
+                        scoreFormat
+                        animeList {
+                            advancedScoring
+                            advancedScoringEnabled
+                        }
+                        mangaList {
+                            advancedScoring
+                            advancedScoringEnabled
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        return try {
+            val response = postAniList(token = token, query = query, variables = JSONObject())
+            val viewer = JSONObject(response)
+                .optJSONObject("data")
+                ?.optJSONObject("Viewer")
+            val mediaListOptions = viewer?.optJSONObject("mediaListOptions")
+            val scoreFormat = mediaListOptions?.optString("scoreFormat", "POINT_10") ?: "POINT_10"
+            
+            val animeList = mediaListOptions?.optJSONObject("animeList")
+            val animeEnabled = animeList?.optBoolean("advancedScoringEnabled", false) ?: false
+            val animeCatsArray = animeList?.optJSONArray("advancedScoring")
+            val animeCategories = mutableListOf<String>()
+            if (animeCatsArray != null) {
+                for (i in 0 until animeCatsArray.length()) {
+                    animeCategories.add(animeCatsArray.optString(i))
+                }
+            }
+
+            val mangaList = mediaListOptions?.optJSONObject("mangaList")
+            val mangaEnabled = mangaList?.optBoolean("advancedScoringEnabled", false) ?: false
+            val mangaCatsArray = mangaList?.optJSONArray("advancedScoring")
+            val mangaCategories = mutableListOf<String>()
+            if (mangaCatsArray != null) {
+                for (i in 0 until mangaCatsArray.length()) {
+                    mangaCategories.add(mangaCatsArray.optString(i))
+                }
+            }
+
+            ViewerOptions(
+                scoreFormat = scoreFormat,
+                animeCategories = animeCategories,
+                animeEnabled = animeEnabled,
+                mangaCategories = mangaCategories,
+                mangaEnabled = mangaEnabled
+            )
+        } catch (e: java.lang.Exception) {
+            null
+        }
+    }
+
+    data class MediaListMetadata(
+        val customLists: Map<String, Boolean>?,
+        val advancedScores: Map<String, Double>?
+    )
+
+    fun getMediaListMetadata(
+        token: String,
+        entryId: Int,
+        userId: Int
+    ): MediaListMetadata? {
+        val query = """
+            query (${'$'}id: Int, ${'$'}userId: Int) {
+                MediaList(id: ${'$'}id, userId: ${'$'}userId) {
+                    customLists
+                    advancedScores
+                }
+            }
+        """.trimIndent()
+
+        val variables = JSONObject()
+            .put("id", entryId)
+            .put("userId", userId)
+
+        return try {
+            val response = postAniList(token = token, query = query, variables = variables)
+            val mediaList = JSONObject(response)
+                .optJSONObject("data")
+                ?.optJSONObject("MediaList") ?: return null
+
+            val jsonCustomLists = mediaList.optJSONObject("customLists")
+            val customListsMap = mutableMapOf<String, Boolean>()
+            if (jsonCustomLists != null) {
+                val keys = jsonCustomLists.keys()
+                while (keys.hasNext()) {
+                    val key = keys.next()
+                    customListsMap[key] = jsonCustomLists.optBoolean(key, false)
+                }
+            }
+
+            val jsonAdvancedScores = mediaList.optJSONObject("advancedScores")
+            val advancedScoresMap = mutableMapOf<String, Double>()
+            if (jsonAdvancedScores != null) {
+                val keys = jsonAdvancedScores.keys()
+                while (keys.hasNext()) {
+                    val key = keys.next()
+                    advancedScoresMap[key] = jsonAdvancedScores.optDouble(key, 0.0)
+                }
+            }
+
+            MediaListMetadata(customLists = customListsMap, advancedScores = advancedScoresMap)
+        } catch (e: java.lang.Exception) {
+            null
+        }
+    }
+
+    fun getViewerCustomLists(
+        token: String,
+        isManga: Boolean
+    ): List<String>? {
+        val query = """
+            query {
+                Viewer {
+                    mediaListOptions {
+                        animeList {
+                            customLists
+                        }
+                        mangaList {
+                            customLists
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        return try {
+            val response = postAniList(token = token, query = query, variables = JSONObject())
+            val viewer = JSONObject(response)
+                .optJSONObject("data")
+                ?.optJSONObject("Viewer")
+            val listOptions = viewer?.optJSONObject("mediaListOptions")
+            val list = if (isManga) {
+                listOptions?.optJSONObject("mangaList")
+            } else {
+                listOptions?.optJSONObject("animeList")
+            }
+            val customListsArray = list?.optJSONArray("customLists")
+            val result = mutableListOf<String>()
+            if (customListsArray != null) {
+                for (i in 0 until customListsArray.length()) {
+                    val item = customListsArray.optString(i)
+                    if (!item.isNullOrBlank()) {
+                        result.add(item)
+                    }
+                }
+            }
+            result
+        } catch (e: java.lang.Exception) {
+            null
+        }
+    }
+
+    fun updateEntryCustomLists(
+        token: String,
+        mediaId: Int?,
+        entryId: Int?,
+        customLists: List<String>
+    ): Boolean {
+        val query = """
+            mutation (${'$'}id: Int, ${'$'}mediaId: Int, ${'$'}customLists: [String]) {
+                SaveMediaListEntry(id: ${'$'}id, mediaId: ${'$'}mediaId, customLists: ${'$'}customLists) {
+                    id
+                }
+            }
+        """.trimIndent()
+
+        val jsonArray = org.json.JSONArray()
+        customLists.forEach { jsonArray.put(it) }
+
+        val variables = JSONObject()
+        if (entryId != null && entryId > 0) {
+            variables.put("id", entryId)
+        } else if (mediaId != null) {
+            variables.put("mediaId", mediaId)
+        } else {
+            return false
+        }
+        variables.put("customLists", jsonArray)
+
+        return try {
+            postAniList(token = token, query = query, variables = variables)
+            true
+        } catch (e: java.lang.Exception) {
+            false
+        }
     }
 
     private fun postAniList(

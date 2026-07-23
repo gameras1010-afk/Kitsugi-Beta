@@ -11,14 +11,127 @@ import java.util.Calendar
  */
 class KitsugiAiringCalendarClient {
 
-    suspend fun fetchWeeklySchedule(accessToken: String? = null): Map<Int, List<AiringEntry>> {
+    suspend fun fetchWeeklySchedule(accessToken: String? = null, preferredSource: String? = null): Map<Int, List<AiringEntry>> {
         return withContext(Dispatchers.IO) {
-            val (weekStart, weekEnd) = currentWeekRange()
-            val rawEntries = fetchAiringSchedule(weekStart, weekEnd, accessToken)
-            rawEntries
-                .filter { it.airingAt in weekStart..weekEnd }
-                .groupBy { it.dayOfWeek }
-                .mapValues { (_, list) -> list.sortedBy { it.airingAt } }
+            if (preferredSource == "tmdb") {
+                fetchTmdbWeeklySchedule()
+            } else {
+                val (weekStart, weekEnd) = currentWeekRange()
+                val rawEntries = fetchAiringSchedule(weekStart, weekEnd, accessToken)
+                rawEntries
+                    .filter { it.airingAt in weekStart..weekEnd }
+                    .groupBy { it.dayOfWeek }
+                    .mapValues { (_, list) -> list.sortedBy { it.airingAt } }
+            }
+        }
+    }
+
+    private suspend fun fetchTmdbWeeklySchedule(): Map<Int, List<AiringEntry>> {
+        val apiKey = TmdbApiClient.getActiveApiKey()
+        val language = TmdbApiClient.getActiveLanguage()
+        val scheduleMap = mutableMapOf<Int, MutableList<AiringEntry>>()
+        for (day in 1..7) {
+            scheduleMap[day] = mutableListOf()
+        }
+
+        // Fetch TV Shows on the air
+        val tvUrl1 = "https://api.themoviedb.org/3/tv/on_the_air?api_key=$apiKey&language=$language&page=1"
+        val tvUrl2 = "https://api.themoviedb.org/3/tv/on_the_air?api_key=$apiKey&language=$language&page=2"
+        
+        // Fetch Upcoming Movies
+        val movieUrl = "https://api.themoviedb.org/3/movie/upcoming?api_key=$apiKey&language=$language&page=1"
+
+        parseTmdbList(tvUrl1, isMovie = false, scheduleMap)
+        parseTmdbList(tvUrl2, isMovie = false, scheduleMap)
+        parseTmdbList(movieUrl, isMovie = true, scheduleMap)
+
+        return scheduleMap.mapValues { (_, list) -> list.toList() }
+    }
+
+    private fun parseTmdbList(
+        urlStr: String,
+        isMovie: Boolean,
+        scheduleMap: MutableMap<Int, MutableList<AiringEntry>>
+    ) {
+        try {
+            val responseText = KitsugiApiBase.executeGetRequest(java.net.URL(urlStr)) ?: return
+            val root = JSONObject(responseText)
+            val results = root.optJSONArray("results") ?: return
+            for (i in 0 until results.length()) {
+                val item = results.getJSONObject(i)
+                val tmdbId = item.optInt("id", 0).takeIf { it > 0 } ?: continue
+                val title = if (isMovie) item.optString("title", "") else item.optString("name", "")
+                if (title.isBlank()) continue
+                val posterPath = item.optNullableString("poster_path") ?: ""
+                val releaseDate = if (isMovie) item.optString("release_date", "") else item.optString("first_air_date", "")
+                
+                val (airingAt, dayOfWeek) = parseDateToAiringAtAndDayOfWeek(releaseDate)
+                val coverUrl = if (posterPath.isNotEmpty()) "https://image.tmdb.org/t/p/w500$posterPath" else null
+                val rating = item.optDouble("vote_average", 0.0)
+                val score = if (rating > 0.0) (rating * 10).toInt().coerceIn(0, 100) else null
+
+                // Avoid duplicates
+                val existingList = scheduleMap[dayOfWeek] ?: continue
+                if (existingList.none { it.aniListId == tmdbId }) {
+                    existingList.add(
+                        AiringEntry(
+                            aniListId = tmdbId,
+                            malId = null,
+                            title = title,
+                            titleEnglish = title,
+                            titleNative = null,
+                            coverUrl = coverUrl,
+                            episode = if (isMovie) 0 else 1,
+                            airingAt = airingAt,
+                            dayOfWeek = dayOfWeek,
+                            averageScore = score
+                        )
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("AiringCalendarClient", "parseTmdbList error: ${e.message}", e)
+        }
+    }
+
+    private fun parseDateToAiringAtAndDayOfWeek(dateStr: String): Pair<Long, Int> {
+        if (dateStr.isBlank()) {
+            val now = System.currentTimeMillis()
+            val day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
+            return Pair(now / 1000L, day)
+        }
+        return try {
+            val parts = dateStr.split("-")
+            if (parts.size == 3) {
+                val year = parts[0].toInt()
+                val month = parts[1].toInt() - 1
+                val day = parts[2].toInt()
+                
+                val cal = Calendar.getInstance().apply {
+                    clear()
+                    set(year, month, day, 20, 0, 0)
+                }
+                val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
+                
+                val thisWeekCal = Calendar.getInstance()
+                val today = thisWeekCal.get(Calendar.DAY_OF_WEEK)
+                val diff = dayOfWeek - today
+                thisWeekCal.add(Calendar.DAY_OF_YEAR, diff)
+                thisWeekCal.set(Calendar.HOUR_OF_DAY, 20)
+                thisWeekCal.set(Calendar.MINUTE, 0)
+                thisWeekCal.set(Calendar.SECOND, 0)
+                thisWeekCal.set(Calendar.MILLISECOND, 0)
+                
+                Pair(thisWeekCal.timeInMillis / 1000L, dayOfWeek)
+            } else {
+                val now = System.currentTimeMillis()
+                val day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
+                Pair(now / 1000L, day)
+            }
+        } catch (e: Exception) {
+            val now = System.currentTimeMillis()
+            val day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
+            Pair(now / 1000L, day)
         }
     }
 

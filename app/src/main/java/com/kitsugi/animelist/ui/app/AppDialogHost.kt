@@ -53,7 +53,8 @@ fun AppDialogHost(
         repeatValue: Int,
         volumeProgress: Int,
         isPrivate: Boolean,
-        isHiddenFromStatusLists: Boolean
+        isHiddenFromStatusLists: Boolean,
+        advancedScores: List<Double>?
     ) -> Unit,
 
     // Entry deletion confirm
@@ -89,20 +90,20 @@ fun AppDialogHost(
     }
 
     editingEntry?.let { entry ->
-        val isAniListConnected = androidx.compose.runtime.remember { com.kitsugi.animelist.data.auth.ExternalAuthManager.getAniListToken(context) != null }
-        val isMalConnected = androidx.compose.runtime.remember { com.kitsugi.animelist.data.auth.ExternalAuthManager.getMalToken(context) != null }
-        val isSimklConnected = androidx.compose.runtime.remember { com.kitsugi.animelist.data.auth.ExternalAuthManager.getSimklToken(context) != null }
+        val isAniList = androidx.compose.runtime.remember { com.kitsugi.animelist.data.auth.ExternalAuthManager.getAniListToken(context) != null }
+        val isMal = androidx.compose.runtime.remember { com.kitsugi.animelist.data.auth.ExternalAuthManager.getMalToken(context) != null }
+        val isSimkl = androidx.compose.runtime.remember { com.kitsugi.animelist.data.auth.ExternalAuthManager.getSimklToken(context) != null }
 
         val resolvedSource = when (entry.source.lowercase()) {
-            "anilist" -> if (!isAniListConnected && isMalConnected) "mal" else "anilist"
-            "mal" -> if (!isMalConnected && isAniListConnected) "anilist" else "mal"
+            "anilist" -> if (!isAniList && isMal) "mal" else "anilist"
+            "mal" -> if (!isMal && isAniList) "anilist" else "mal"
             "simkl" -> "simkl"
-            "jikan" -> if (isAniListConnected && !isMalConnected) "anilist" else "mal"
+            "jikan" -> if (isAniList && !isMal) "anilist" else "mal"
             else -> {
                 when {
-                    entry.aniListEntryId != null && isAniListConnected -> "anilist"
-                    entry.malId != null && isMalConnected -> "mal"
-                    entry.simklId != null && isSimklConnected -> "simkl"
+                    entry.aniListEntryId != null && isAniList -> "anilist"
+                    entry.malId != null && isMal -> "mal"
+                    entry.simklId != null && isSimkl -> "simkl"
                     entry.aniListEntryId != null -> "anilist"
                     entry.simklId != null -> "simkl"
                     entry.malId != null -> "mal"
@@ -120,12 +121,12 @@ fun AppDialogHost(
                 onDismissEditing()
                 onDeleteEditingEntry(entry)
             },
-            onConfirm = { title, subtitle, type, status, isAdult, progress, total, score, isFavorite, startDate, endDate, notes, tags, priority, isRepeating, repeatCount, repeatValue, volumeProgress, isPrivate, isHiddenFromStatusLists ->
+            onConfirm = { title, subtitle, type, status, isAdult, progress, total, score, isFavorite, startDate, endDate, notes, tags, priority, isRepeating, repeatCount, repeatValue, volumeProgress, isPrivate, isHiddenFromStatusLists, advancedScores ->
                 onConfirmEdit(
                     title, subtitle, type, status, isAdult, progress, total, score,
                     isFavorite, startDate, endDate, notes, tags, priority,
                     isRepeating, repeatCount, repeatValue, volumeProgress,
-                    isPrivate, isHiddenFromStatusLists
+                    isPrivate, isHiddenFromStatusLists, advancedScores
                 )
             }
         )

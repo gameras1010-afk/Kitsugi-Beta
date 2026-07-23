@@ -195,7 +195,7 @@ private fun ExploreTabPage(ctx: TabPagesContext) {
             val preferredSource = when (ctx.exploreViewModel.selectedPlatform) {
                 com.kitsugi.animelist.ui.screens.explore.ExplorePlatform.MAL -> "jikan"
                 com.kitsugi.animelist.ui.screens.explore.ExplorePlatform.AniList -> "anilist"
-                else -> "anilist"
+                com.kitsugi.animelist.ui.screens.explore.ExplorePlatform.TMDB -> "tmdb"
             }
             ctx.navState.navigateToDetail(DetailScreen.AiringCalendar(preferredSource))
         },

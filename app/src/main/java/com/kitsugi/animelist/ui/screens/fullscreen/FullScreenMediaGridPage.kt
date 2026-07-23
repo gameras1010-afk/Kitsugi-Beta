@@ -157,6 +157,7 @@ fun FullScreenMediaGridPage(
                         ExploreCategoryType.TRENDING_MANGA -> apiClient.trendingManga(np)
                         ExploreCategoryType.NEWLY_ADDED_ANIME -> apiClient.newlyAddedAnime(np)
                         ExploreCategoryType.NEWLY_ADDED_MANGA -> apiClient.newlyAddedManga(np)
+                        ExploreCategoryType.UPCOMING_ANIME_TMDB -> emptyList()
                     }
                     ExplorePlatform.AniList -> when (categoryType) {
                         ExploreCategoryType.TOP_ANIME -> apiClient.aniListTopAnime(np)
@@ -170,6 +171,7 @@ fun FullScreenMediaGridPage(
                         ExploreCategoryType.TRENDING_MANGA -> apiClient.aniListTrendingManga(np)
                         ExploreCategoryType.NEWLY_ADDED_ANIME -> apiClient.aniListNewlyAddedAnime(np)
                         ExploreCategoryType.NEWLY_ADDED_MANGA -> apiClient.aniListNewlyAddedManga(np)
+                        ExploreCategoryType.UPCOMING_ANIME_TMDB -> emptyList()
                     }
                     ExplorePlatform.TMDB -> {
                         if (title.startsWith("İzlemeye Devam") || title.startsWith("Planladıklarım")) emptyList()
@@ -184,9 +186,11 @@ fun FullScreenMediaGridPage(
                             ExploreCategoryType.SEASONAL_ANIME -> tmdbApiClient.getTopRatedShows(np)
                             ExploreCategoryType.TRENDING_MANGA -> tmdbApiClient.getUpcomingAnime(np)
                             ExploreCategoryType.NEWLY_ADDED_ANIME -> tmdbApiClient.getPopularAnime(np)
+                            ExploreCategoryType.UPCOMING_ANIME_TMDB -> tmdbApiClient.getUpcomingAnime(np)
                             else -> emptyList()
                         }
                     }
+
 
                 }
                 if (newItems.isNotEmpty()) { loadedResults = loadedResults + newItems; currentPage = np }

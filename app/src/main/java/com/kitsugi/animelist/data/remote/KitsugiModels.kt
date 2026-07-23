@@ -96,7 +96,8 @@ data class KitsugiMediaDetail(
     val rank: Int? = null,
     val popularityRank: Int? = null,
     val scoredBy: Int? = null,
-    val members: Int? = null
+    val members: Int? = null,
+    val isFavourite: Boolean = false
 )
 
 data class KitsugiStreamingEpisode(

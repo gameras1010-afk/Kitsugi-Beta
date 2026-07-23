@@ -39,6 +39,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.input.KeyboardType
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Close
 
 // ---------------------------------------------------------------------------
 //  Paylaşılan Sheet Satır Bileşeni
@@ -56,6 +58,7 @@ internal fun SheetRow(
     onClick: (() -> Unit)? = null,
     switchChecked: Boolean? = null,
     onSwitchCheckedChange: ((Boolean) -> Unit)? = null,
+    onClearClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val accentColor = LocalKitsugiAccent.current
@@ -120,11 +123,34 @@ internal fun SheetRow(
                     }
                 }
             } else if (value.isNotEmpty()) {
-                Text(
-                    text = value,
-                    color = KitsugiColors.TextSecondary,
-                    style = MaterialTheme.typography.bodySmall
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = value,
+                        color = KitsugiColors.TextSecondary,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                    if (onClearClick != null) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(20.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(KitsugiColors.SurfaceSoft)
+                                .tvClickable(shape = RoundedCornerShape(6.dp)) { onClearClick() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            androidx.compose.material3.Icon(
+                                imageVector = Icons.Rounded.Close,
+                                contentDescription = "Temizle",
+                                tint = KitsugiColors.TextMuted,
+                                modifier = Modifier.size(12.dp)
+                            )
+                        }
+                    }
+                }
             }
         }
 
