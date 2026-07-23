@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -47,20 +48,85 @@ internal fun KitsugiReviewCard(
     onImageGalleryRequest: ((urls: List<String>, index: Int) -> Unit)? = null
 ) {
     val accentColor = LocalKitsugiAccent.current
-    val context = LocalContext.current
-    // İnceleme özeti: kullanıcı 🌐 butonuna basana kadar orijinal metin gösterilir
-    val displaySummary = rev.summary
+    val displaySummary = rev.summary ?: ""
 
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(20.dp))
             .background(backgroundColor)
             .tvClickable(shape = RoundedCornerShape(20.dp), onClick = onClick)
-            .padding(14.dp)
+            .padding(16.dp)
+            .height(144.dp),
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
+        // Center-aligned italic summary text
+        Text(
+            text = displaySummary.replace(Regex("[*_`~]"), ""),
+            color = KitsugiColors.TextPrimary,
+            fontSize = 13.sp,
+            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            maxLines = 3,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // Bottom stats & author row
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            // Stats (Rating, Helpful)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (rev.score != null) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Rounded.Star,
+                            contentDescription = "Puan",
+                            tint = accentColor,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(2.dp))
+                        Text(
+                            text = rev.score.toString(),
+                            color = KitsugiColors.TextPrimary,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                if ((rev.helpfulCount != null && rev.helpfulCount > 0) || rev.id != null) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { onHelpfulClick() }
+                            .padding(horizontal = 4.dp, vertical = 2.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.ThumbUp,
+                            contentDescription = "Faydalı",
+                            tint = if (rev.userRating == "UP_VOTE") accentColor else KitsugiColors.TextSecondary,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "${rev.helpfulCount ?: 0}",
+                            color = if (rev.userRating == "UP_VOTE") accentColor else KitsugiColors.TextSecondary,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            // Author Info
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = if (onUserProfileClick != null) {
@@ -68,12 +134,11 @@ internal fun KitsugiReviewCard(
                         .clip(RoundedCornerShape(8.dp))
                         .clickable { onUserProfileClick(rev.userId, rev.username, rev.avatarUrl) }
                         .padding(4.dp)
-                } else Modifier,
-                horizontalArrangement = Arrangement.Start
+                } else Modifier
             ) {
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(24.dp)
                         .clip(CircleShape)
                         .background(KitsugiColors.SurfaceSoft)
                 ) {
@@ -86,89 +151,25 @@ internal fun KitsugiReviewCard(
                         )
                     } else {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(rev.username.take(1).uppercase(), color = KitsugiColors.TextMuted, fontWeight = FontWeight.Bold)
+                            Text(
+                                text = rev.username.take(1).uppercase(),
+                                color = KitsugiColors.TextMuted,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp
+                            )
                         }
                     }
                 }
-                Spacer(modifier = Modifier.width(10.dp))
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = rev.username,
                     color = KitsugiColors.TextPrimary,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.widthIn(max = 100.dp)
                 )
-            }
-            Spacer(modifier = Modifier.weight(1f))
-            if (rev.score != null) {
-                Text(
-                    text = "★ ${rev.score}",
-                    color = accentColor,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Black
-                )
-            }
-
-            if (!rev.summary.isNullOrBlank()) {
-                Spacer(modifier = Modifier.width(4.dp))
-                IconButton(
-                    onClick = { context.openTranslator(rev.summary, preferredTranslator) },
-                    modifier = Modifier.size(28.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Translate,
-                        contentDescription = "Çevir",
-                        tint = accentColor,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(2.dp))
-                IconButton(
-                    onClick = {
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("review", displaySummary))
-                        Toast.makeText(context, "Panoya kopyalandı", Toast.LENGTH_SHORT).show()
-                    },
-                    modifier = Modifier.size(28.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.ContentCopy,
-                        contentDescription = "Kopyala",
-                        tint = KitsugiColors.TextSecondary,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(10.dp))
-        KitsugiMarkdownText(
-            text = displaySummary,
-            onImageGalleryRequest = onImageGalleryRequest
-        )
-
-        if ((rev.helpfulCount != null && rev.helpfulCount > 0) || rev.id != null) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.tvClickable(shape = RoundedCornerShape(8.dp), onClick = onHelpfulClick)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.ThumbUp,
-                        contentDescription = "Faydalı",
-                        tint = if (rev.userRating == "UP_VOTE") accentColor else KitsugiColors.TextSecondary,
-                        modifier = Modifier.size(12.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "${rev.helpfulCount ?: 0} oylama",
-                        color = if (rev.userRating == "UP_VOTE") accentColor else KitsugiColors.TextSecondary,
-                        fontSize = 11.sp
-                    )
-                }
             }
         }
     }

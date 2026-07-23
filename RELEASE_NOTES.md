@@ -4,38 +4,26 @@
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI — Yeni Güncelleme
 
-### 🖼️ Biyografi ve Yorumlar İçin Görsel Galeri Desteği
-- **Etkileşimli Görsel Galerisi**: Kullanıcı biyografilerindeki (AniList & Simkl) veya detaylı yorumlardaki (`KitsugiHtmlWebView` içinde render edilen) resimlere tıklandığında artık tam ekran, premium bir görsel galeri açılıyor.
-- **Kaydırma ve Yakınlaştırma (Pinch-to-Zoom)**: Resimler arasında kaydırma yapabilir, çift tıklayarak veya iki parmağınızla yakınlaştırıp resmi sürükleyebilirsiniz.
-- **İndirme ve Paylaşma**: Galeri üzerindeki butonlar ile resimleri doğrudan galerinize indirebilir veya arkadaşlarınızla paylaşabilirsiniz.
+### 🎨 AniHyou Tasarım Dilinde Sosyal Kartlar
+- **Yeni PostItem Tasarım Paritesi**: Tartışma Konuları (`TopicCard`), Aktiviteler (`ActivityCard`) ve İncelemeler (`KitsugiReviewCard`) kartları, AniHyou uygulamasının premium `PostItem` düzenine göre tamamen yeniden tasarlandı.
+- **Ortalanmış İtalik Metin Gösterimi**: Kart gövdelerinde artık kafa karıştırıcı markdown sembollerinden arındırılmış, ortalanmış, italik ve yarı kalın (semi-bold) özet metinleri yer alıyor.
+- **Standart Boyutlar**: Sosyal sekmesindeki tüm kartların boyutları yatay LazyRow listelerinde hizalamayı bozmayacak şekilde `280.dp` genişlik ve `144.dp` yükseklik olarak eşitlendi.
+- **Alt Bilgi ve İstatistik Satırı**: Kartların alt kısmında sol tarafta istatistikler (beğeni, yorum, puan ve görüntülenme sayıları) yer alırken, sağ tarafta tıklanabilir premium yuvarlak profil resmi ve kullanıcı adı bulunuyor.
+- **Sadeleştirilmiş Arayüz**: Çeviri ve kopyalama gibi ikincil fonksiyon butonları detay sayfalarına taşınarak ana sosyal kart listelerinin sade ve şık kalması sağlandı.
 
-### 🌐 Simkl Profil Biyografisi Tasarım Paritesi
-- **Birebir Görünüm**: Simkl profil sekmesindeki "Hakkında" kısmı, AniList sekmesiyle tamamen aynı premium kart tasarımına, çeviri (translate) ve panoya kopyalama butonlarına kavuşturuldu.
-- **Zengin Metin Desteği**: Düz metin yerine HTML/Markdown tabanlı web view mimarisine geçilerek spoiler ve resim render desteği Simkl kullanıcıları için de aktif edildi.
-
-### 🧭 Standartlaştırılmış Profil Navigasyonu
-- **Tek Noktadan Profil Erişimi**: Forum konuları, incelemeler, yorumlar ve tüm sosyal akışlardaki profil resimleri ile kullanıcı adları tıklanabilir hale getirilerek `onUserProfileClick` callback'i üzerinden sorunsuz ve kaynak-duyarlı (source-aware) profil geçişi sağlandı.
-
-### 📊 MDBList Puan Kartları Detay Sayfalarında
-- **Özel Puan Kartları**: TMDB, MAL ve AniList detay sayfalarında MDBList puan durumunu (IMDb, Metacritic, Rotten Tomatoes, TMDb puanları) gösteren özel kartlar entegre edildi.
-- **Çapraz ID Eşleme Düzeltildi**: Yerel veritabanı ID'leri yerine doğru kaynak ID'leri kullanılarak puanların her koşulda doğru yüklenmesi garanti altına alındı.
+### 🖼️ Biyografi ve Sosyal Detaylar İçin Görsel Galeri Paritesi
+- **Etkileşimli Görsel Galerisi**: Gerek kullanıcı biyografilerindeki (AniList & Simkl) resimler, gerekse de detay sayfalarında açılan yorum/aktivite akışlarındaki tüm görseller ve hareketli GIF'ler tıklandığında premium, tam ekran görsel galerisi ile açılıyor.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES — Latest Update
 
-### 🖼️ Interactive Image Gallery for Bios & Reviews
-- **Rich Media Gallery**: Tapping any image inside user biographies (AniList & Simkl) or review detail cards now launches a premium full-screen image viewer.
-- **Gestures & Zooming**: Supports smooth pinch-to-zoom, double-tap zoom, dragging, and swiping between multiple images in a responsive carousel.
-- **Save & Share**: Integrated direct download options to save images to local storage and share them via external apps.
+### 🎨 AniHyou-Style Social Cards Refactoring
+- **PostItem Layout Parity**: Redesigned all social feed components—Forum Topics (`TopicCard`), Activities (`ActivityCard`), and Reviews (`KitsugiReviewCard`)—to match the premium AniHyou `PostItem` design language.
+- **Centered Italic Typography**: Features clean, centered, italicized, and semi-bold body text stripped of raw markdown symbols for a clean feed appearance.
+- **Uniform Card Dimensions**: Bounded card dimensions to `width(280.dp)` and `height(144.dp)` to ensure perfect horizontal alignment inside lazy list layouts.
+- **Bottom Status & Stats Row**: Positioned ratings, likes, comments, and views counters on the bottom-left, and interactive, clickable author details (avatar + username) on the bottom-right.
+- **Decluttered Card Interface**: Moved secondary actions (such as translate and copy buttons) into the detailed sheet overlays to keep the main lists minimal.
 
-### 🌐 Simkl Profile Biography Parity
-- **Visual Design Parity**: Refactored the Simkl profile "About" card to perfectly match the AniList tab, integrating translate and copy button overlays.
-- **Rich Text Rendering**: Migrated Simkl bio rendering from static text to the custom HTML WebView wrapper, enabling spoiler reveals and interactive image galleries.
-
-### 🧭 Standardized Profile Navigation
-- **Unified Social Clicks**: Propagated the `onUserProfileClick` navigation callback across all social feeds, forum topics, review cards, and replies. Clicking any avatar or username now correctly resolves their profile.
-
-### 📊 MDBList Integration on Detail Pages
-- **Rating Cards**: MDBList rating cards (IMDb, Metacritic, Rotten Tomatoes, TMDb) are now successfully displayed on TMDB, MAL, and AniList media details.
-- **Precise ID Mapping**: Solved rating fetch issues by resolving exact external ID mappings rather than local primary keys.
+### 🖼️ Comprehensive Media Gallery & Gesture Support
+- **Tap-to-Gallery Integration**: Fully verified that tapping any image or animated GIF in Simkl/AniList bios or post detail sheet contents successfully launches the interactive fullscreen gallery.

@@ -479,173 +479,145 @@ private fun TopicCard(
     onLikeClick: (() -> Unit)? = null,
     backgroundColor: androidx.compose.ui.graphics.Color = KitsugiColors.Surface
 ) {
-    val context = LocalContext.current
     val accentColor = LocalKitsugiAccent.current
 
     Column(
         modifier = Modifier
-            .width(240.dp)
+            .width(280.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(backgroundColor)
             .tvClickable(shape = RoundedCornerShape(16.dp), onClick = onClick)
-            .padding(12.dp)
+            .padding(16.dp)
+            .height(144.dp),
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
+        // Center-aligned italicized title
         Text(
-            text = topic.title,
+            text = topic.title.replace(Regex("[*_`~]"), ""),
             color = KitsugiColors.TextPrimary,
             fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            maxLines = 2,
+            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            maxLines = 3,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.heightIn(min = 36.dp)
+            modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(10.dp))
-
+        // Bottom row containing stats & author profile info
         Row(
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = if (onUserProfileClick != null) {
-                Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable { onUserProfileClick(topic.userId, topic.username, topic.avatarUrl) }
-                    .padding(4.dp)
-            } else Modifier
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Box(
-                modifier = Modifier
-                    .size(20.dp)
-                    .clip(CircleShape)
-                    .background(KitsugiColors.SurfaceSoft)
+            // Stats (Likes, Comments, Views)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                if (!topic.avatarUrl.isNullOrBlank()) {
-                    AsyncImage(
-                        model = topic.avatarUrl,
-                        contentDescription = topic.username,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                if (onLikeClick != null) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(3.dp),
+                        modifier = Modifier.tvClickable(shape = RoundedCornerShape(8.dp), onClick = onLikeClick)
+                    ) {
+                        Icon(
+                            imageVector = if (topic.isLiked) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                            contentDescription = null,
+                            tint = if (topic.isLiked) accentColor else KitsugiColors.TextMuted,
+                            modifier = Modifier.size(12.dp)
+                        )
                         Text(
-                            text = topic.username.take(1).uppercase(),
-                            color = KitsugiColors.TextMuted,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 10.sp
+                            text = topic.likeCount.toString(),
+                            color = if (topic.isLiked) accentColor else KitsugiColors.TextMuted,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
-            }
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = topic.username,
-                color = KitsugiColors.TextSecondary,
-                fontSize = 11.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            if (onLikeClick != null) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(3.dp),
-                    modifier = Modifier.tvClickable(shape = RoundedCornerShape(8.dp), onClick = onLikeClick)
-                ) {
-                    Icon(
-                        imageVector = if (topic.isLiked) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                        contentDescription = null,
-                        tint = if (topic.isLiked) accentColor else KitsugiColors.TextMuted,
-                        modifier = Modifier.size(12.dp)
-                    )
-                    Text(
-                        text = topic.likeCount.toString(),
-                        color = if (topic.isLiked) accentColor else KitsugiColors.TextMuted,
-                        fontSize = 11.sp
-                    )
-                }
-            }
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(3.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.ChatBubbleOutline,
-                    contentDescription = null,
-                    tint = KitsugiColors.TextMuted,
-                    modifier = Modifier.size(12.dp)
-                )
-                Text(
-                    text = topic.commentCount.toString(),
-                    color = KitsugiColors.TextMuted,
-                    fontSize = 11.sp
-                )
-            }
-
-            if (topic.viewCount > 0) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(3.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.Visibility,
+                        imageVector = Icons.Rounded.ChatBubbleOutline,
                         contentDescription = null,
                         tint = KitsugiColors.TextMuted,
                         modifier = Modifier.size(12.dp)
                     )
                     Text(
-                        text = topic.viewCount.toString(),
+                        text = topic.commentCount.toString(),
                         color = KitsugiColors.TextMuted,
-                        fontSize = 11.sp
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
                     )
+                }
+
+                if (topic.viewCount > 0) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(3.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Visibility,
+                            contentDescription = null,
+                            tint = KitsugiColors.TextMuted,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Text(
+                            text = topic.viewCount.toString(),
+                            color = KitsugiColors.TextMuted,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
 
+            // Author Profile Clickable
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(3.dp)
+                modifier = if (onUserProfileClick != null) {
+                    Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onUserProfileClick(topic.userId, topic.username, topic.avatarUrl) }
+                        .padding(4.dp)
+                } else Modifier
             ) {
-                IconButton(
-                    onClick = { context.openTranslator(topic.title) },
-                    modifier = Modifier.size(24.dp)
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(CircleShape)
+                        .background(KitsugiColors.SurfaceSoft)
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Translate,
-                        contentDescription = "Çevir",
-                        tint = accentColor,
-                        modifier = Modifier.size(12.dp)
-                    )
+                    if (!topic.avatarUrl.isNullOrBlank()) {
+                        AsyncImage(
+                            model = topic.avatarUrl,
+                            contentDescription = topic.username,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(
+                                text = topic.username.take(1).uppercase(),
+                                color = KitsugiColors.TextMuted,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp
+                            )
+                        }
+                    }
                 }
-                IconButton(
-                    onClick = {
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("topic_title", topic.title))
-                        Toast.makeText(context, "Panoya kopyalandı", Toast.LENGTH_SHORT).show()
-                    },
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.ContentCopy,
-                        contentDescription = "Kopyala",
-                        tint = KitsugiColors.TextMuted,
-                        modifier = Modifier.size(12.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            if (!topic.dateText.isNullOrBlank()) {
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = topic.dateText,
-                    color = KitsugiColors.TextMuted,
-                    fontSize = 10.sp
+                    text = topic.username,
+                    color = KitsugiColors.TextPrimary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.widthIn(max = 80.dp)
                 )
             }
         }
@@ -661,96 +633,57 @@ private fun ActivityCard(
     onLikeClick: () -> Unit,
     backgroundColor: androidx.compose.ui.graphics.Color = KitsugiColors.Surface
 ) {
-    val context = LocalContext.current
     val accentColor = LocalKitsugiAccent.current
+
+    // Resolve localized title for ListActivity entries
+    val localizedTitle = when (titleLanguage) {
+        "ENGLISH" -> activity.mediaTitleEnglish?.takeIf { it.isNotBlank() }
+            ?: activity.mediaTitleRomaji
+            ?: activity.mediaTitleNative
+            ?: activity.mediaTitle
+        "NATIVE", "JAPANESE_STAFF" -> activity.mediaTitleNative?.takeIf { it.isNotBlank() }
+            ?: activity.mediaTitleRomaji
+            ?: activity.mediaTitleEnglish
+            ?: activity.mediaTitle
+        else -> activity.mediaTitleRomaji
+            ?: activity.mediaTitleEnglish
+            ?: activity.mediaTitleNative
+            ?: activity.mediaTitle
+    }
+    val displayText = if (activity.mediaTitle != null && localizedTitle != null && localizedTitle != activity.mediaTitle) {
+        activity.text.replace("**${activity.mediaTitle}**", localizedTitle)
+    } else activity.text
+
+    val cleanText = displayText.replace(Regex("[*_`~]"), "")
+
     Column(
         modifier = Modifier
-            .width(240.dp)
+            .width(280.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(backgroundColor)
             .tvClickable(shape = RoundedCornerShape(16.dp), onClick = onClick)
-            .padding(12.dp)
+            .padding(16.dp)
+            .height(144.dp),
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = if (onUserProfileClick != null) {
-                Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable { onUserProfileClick(activity.userId, activity.username, activity.avatarUrl) }
-                    .padding(4.dp)
-            } else Modifier
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .clip(CircleShape)
-                    .background(KitsugiColors.SurfaceSoft)
-            ) {
-                if (!activity.avatarUrl.isNullOrBlank()) {
-                    AsyncImage(
-                        model = activity.avatarUrl,
-                        contentDescription = activity.username,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = activity.username.take(1).uppercase(),
-                            color = KitsugiColors.TextMuted,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 11.sp
-                        )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = activity.username,
-                color = KitsugiColors.TextPrimary,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
+        // Centered italicized text body with media cover if present
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .heightIn(min = 48.dp, max = 70.dp)
-            ) {
-                // Resolve localized title for ListActivity entries
-                val localizedTitle = when (titleLanguage) {
-                    "ENGLISH" -> activity.mediaTitleEnglish?.takeIf { it.isNotBlank() }
-                        ?: activity.mediaTitleRomaji
-                        ?: activity.mediaTitleNative
-                        ?: activity.mediaTitle
-                    "NATIVE", "JAPANESE_STAFF" -> activity.mediaTitleNative?.takeIf { it.isNotBlank() }
-                        ?: activity.mediaTitleRomaji
-                        ?: activity.mediaTitleEnglish
-                        ?: activity.mediaTitle
-                    else -> activity.mediaTitleRomaji
-                        ?: activity.mediaTitleEnglish
-                        ?: activity.mediaTitleNative
-                        ?: activity.mediaTitle
-                }
-                val displayText = if (activity.mediaTitle != null && localizedTitle != null && localizedTitle != activity.mediaTitle) {
-                    activity.text.replace("**${activity.mediaTitle}**", "**$localizedTitle**")
-                } else activity.text
-                KitsugiMarkdownText(
-                    text = displayText,
-                    fontSize = 12.sp,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+            Text(
+                text = cleanText,
+                color = KitsugiColors.TextPrimary,
+                fontSize = 13.sp,
+                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
+            )
+
             if (!activity.mediaCoverUrl.isNullOrBlank()) {
                 Spacer(modifier = Modifier.width(8.dp))
                 AsyncImage(
@@ -764,16 +697,16 @@ private fun ActivityCard(
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
-
+        // Bottom row containing stats & author profile info
         Row(
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            // Stats (Likes, Date)
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -789,48 +722,64 @@ private fun ActivityCard(
                     Text(
                         text = activity.likeCount.toString(),
                         color = if (activity.isLiked) accentColor else KitsugiColors.TextMuted,
-                        fontSize = 11.sp
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(3.dp)
-                ) {
-                    IconButton(
-                        onClick = { context.openTranslator(activity.text) },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Translate,
-                            contentDescription = "Çevir",
-                            tint = accentColor,
-                            modifier = Modifier.size(12.dp)
-                        )
-                    }
-                    IconButton(
-                        onClick = {
-                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("activity_text", activity.text))
-                            Toast.makeText(context, "Panoya kopyalandı", Toast.LENGTH_SHORT).show()
-                        },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.ContentCopy,
-                            contentDescription = "Kopyala",
-                            tint = KitsugiColors.TextMuted,
-                            modifier = Modifier.size(12.dp)
-                        )
-                    }
+                if (!activity.dateText.isNullOrBlank()) {
+                    Text(
+                        text = activity.dateText.take(11),
+                        color = KitsugiColors.TextMuted,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
 
-            if (!activity.dateText.isNullOrBlank()) {
+            // Author Profile Clickable
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = if (onUserProfileClick != null) {
+                    Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onUserProfileClick(activity.userId, activity.username, activity.avatarUrl) }
+                        .padding(4.dp)
+                } else Modifier
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(CircleShape)
+                        .background(KitsugiColors.SurfaceSoft)
+                ) {
+                    if (!activity.avatarUrl.isNullOrBlank()) {
+                        AsyncImage(
+                            model = activity.avatarUrl,
+                            contentDescription = activity.username,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(
+                                text = activity.username.take(1).uppercase(),
+                                color = KitsugiColors.TextMuted,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = activity.dateText.take(11),
-                    color = KitsugiColors.TextMuted,
-                    fontSize = 10.sp
+                    text = activity.username,
+                    color = KitsugiColors.TextPrimary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.widthIn(max = 80.dp)
                 )
             }
         }
