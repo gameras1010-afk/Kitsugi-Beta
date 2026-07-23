@@ -362,28 +362,30 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         val upcomingAnimeDeferred  = async { runCatching { tmdbApiClient.getUpcomingAnime() }.getOrDefault(emptyList()) }
         val airingSoonDeferred = async {
             val calendarClient = com.kitsugi.animelist.data.remote.KitsugiAiringCalendarClient()
-            val upcoming = runCatching { calendarClient.fetchUpcomingSchedule(limit = 40) }.getOrNull() ?: emptyList()
+            val upcoming = runCatching { calendarClient.fetchUpcomingSchedule(limit = 40, preferredSource = "tmdb") }.getOrNull() ?: emptyList()
             val nowSeconds = System.currentTimeMillis() / 1000L
             upcoming
                 .filter { it.airingAt > nowSeconds }
                 .sortedBy { it.airingAt }
                 .take(15)
                 .map { entry ->
+                    val finalType = if (entry.episode == 0) MediaType.Movie else MediaType.TvShow
                     JikanSearchResult(
-                        malId = entry.malId ?: entry.aniListId,
+                        malId = entry.aniListId,
                         title = entry.title,
-                        subtitle = "${entry.episode}. Bölüm",
-                        type = MediaType.Anime,
+                        subtitle = if (entry.episode == 0) "Film" else "${entry.episode}. Bölüm",
+                        type = finalType,
                         total = null,
                         score = entry.averageScore,
                         isAdult = false,
                         imageUrl = entry.coverUrl,
                         year = null,
-                        source = "anilist",
-                        realMalId = entry.malId,
+                        source = "tmdb",
+                        realMalId = null,
                         titleEnglish = entry.titleEnglish,
                         titleJapanese = entry.titleNative,
-                        nextAiringEpisode = "${entry.episode}|${entry.airingAt}"
+                        nextAiringEpisode = "${entry.episode}|${entry.airingAt}",
+                        tmdbId = entry.aniListId
                     )
                 }
         }

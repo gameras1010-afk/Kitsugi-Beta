@@ -696,6 +696,9 @@ private fun TvReviewDetailDialog(
     val scrollState = rememberScrollState()
     var isScrollFocused by remember { mutableStateOf(false) }
 
+    var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
+    var activeGalleryIndex by remember { mutableStateOf(0) }
+
     LaunchedEffect(selectedLanguage) {
         if (selectedLanguage == "turkish" && translatedText == null) {
             isTranslating = true
@@ -935,11 +938,23 @@ private fun TvReviewDetailDialog(
                     } else {
                         val displayText = if (selectedLanguage == "turkish") (translatedText ?: review.fullText) else review.fullText
                         com.kitsugi.animelist.ui.components.KitsugiHtmlWebView(
-                            html = displayText
+                            html = displayText,
+                            onImageClick = { urls, index ->
+                                activeGalleryImages = urls
+                                activeGalleryIndex = index
+                            }
                         )
                     }
                 }
             }
+        }
+        if (activeGalleryImages.isNotEmpty()) {
+            KitsugiImageGalleryDialog(
+                imageUrls = activeGalleryImages,
+                initialIndex = activeGalleryIndex,
+                title = review.username,
+                onDismiss = { activeGalleryImages = emptyList() }
+            )
         }
     }
 }

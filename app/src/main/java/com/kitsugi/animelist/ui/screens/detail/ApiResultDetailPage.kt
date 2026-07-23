@@ -1534,6 +1534,15 @@ fun ApiResultDetailPage(
         )
     }
 
+    if (activeGalleryImages.isNotEmpty()) {
+        KitsugiImageGalleryDialog(
+            imageUrls = activeGalleryImages,
+            initialIndex = activeGalleryIndex,
+            title = displayResult.title,
+            onDismiss = { activeGalleryImages = emptyList() }
+        )
+    }
+
     } // KitsugiPageEnter
 } // ApiResultDetailPage
 

@@ -41,9 +41,9 @@ class KitsugiAiringCalendarClient {
         // Fetch Upcoming Movies
         val movieUrl = "https://api.themoviedb.org/3/movie/upcoming?api_key=$apiKey&language=$language&page=1"
 
-        parseTmdbList(tvUrl1, isMovie = false, scheduleMap)
-        parseTmdbList(tvUrl2, isMovie = false, scheduleMap)
-        parseTmdbList(movieUrl, isMovie = true, scheduleMap)
+        parseTmdbList(tvUrl1, isMovie = false, scheduleMap = scheduleMap)
+        parseTmdbList(tvUrl2, isMovie = false, scheduleMap = scheduleMap)
+        parseTmdbList(movieUrl, isMovie = true, scheduleMap = scheduleMap)
 
         return scheduleMap.mapValues { (_, list) -> list.toList() }
     }
@@ -51,7 +51,8 @@ class KitsugiAiringCalendarClient {
     private fun parseTmdbList(
         urlStr: String,
         isMovie: Boolean,
-        scheduleMap: MutableMap<Int, MutableList<AiringEntry>>
+        scheduleMap: MutableMap<Int, MutableList<AiringEntry>>? = null,
+        outList: MutableList<AiringEntry>? = null
     ) {
         try {
             val responseText = KitsugiApiBase.executeGetRequest(java.net.URL(urlStr)) ?: return
@@ -70,23 +71,29 @@ class KitsugiAiringCalendarClient {
                 val rating = item.optDouble("vote_average", 0.0)
                 val score = if (rating > 0.0) (rating * 10).toInt().coerceIn(0, 100) else null
 
-                // Avoid duplicates
-                val existingList = scheduleMap[dayOfWeek] ?: continue
-                if (existingList.none { it.aniListId == tmdbId }) {
-                    existingList.add(
-                        AiringEntry(
-                            aniListId = tmdbId,
-                            malId = null,
-                            title = title,
-                            titleEnglish = title,
-                            titleNative = null,
-                            coverUrl = coverUrl,
-                            episode = if (isMovie) 0 else 1,
-                            airingAt = airingAt,
-                            dayOfWeek = dayOfWeek,
-                            averageScore = score
-                        )
-                    )
+                val entry = AiringEntry(
+                    aniListId = tmdbId,
+                    malId = null,
+                    title = title,
+                    titleEnglish = title,
+                    titleNative = null,
+                    coverUrl = coverUrl,
+                    episode = if (isMovie) 0 else 1,
+                    airingAt = airingAt,
+                    dayOfWeek = dayOfWeek,
+                    averageScore = score
+                )
+
+                if (scheduleMap != null) {
+                    val existingList = scheduleMap[dayOfWeek] ?: continue
+                    if (existingList.none { it.aniListId == tmdbId }) {
+                        existingList.add(entry)
+                    }
+                }
+                if (outList != null) {
+                    if (outList.none { it.aniListId == tmdbId }) {
+                        outList.add(entry)
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -135,26 +142,49 @@ class KitsugiAiringCalendarClient {
         }
     }
 
-    suspend fun fetchUpcomingSchedule(limit: Int = 30, accessToken: String? = null): List<AiringEntry> {
+    suspend fun fetchUpcomingSchedule(limit: Int = 30, accessToken: String? = null, preferredSource: String? = null): List<AiringEntry> {
         return withContext(Dispatchers.IO) {
-            val nowSeconds = System.currentTimeMillis() / 1000L
-            val fourteenDaysLater = nowSeconds + 14 * 24 * 3600L
-            val variables = JSONObject()
-                .put("page", 1)
-                .put("perPage", 50)
-                .put("airingAt_greater", nowSeconds)
-                .put("airingAt_lesser", fourteenDaysLater)
-            val responseText = KitsugiApiBase.executeAniListQuery(
-                query = QUERY,
-                variables = variables,
-                accessToken = accessToken
-            ) ?: return@withContext emptyList<AiringEntry>()
-            val (entries, _) = parseResponse(responseText)
-            entries
-                .filter { it.airingAt > nowSeconds }
-                .sortedBy { it.airingAt }
-                .take(limit)
+            if (preferredSource == "tmdb") {
+                fetchTmdbUpcomingSchedule(limit)
+            } else {
+                val nowSeconds = System.currentTimeMillis() / 1000L
+                val fourteenDaysLater = nowSeconds + 14 * 24 * 3600L
+                val variables = JSONObject()
+                    .put("page", 1)
+                    .put("perPage", 50)
+                    .put("airingAt_greater", nowSeconds)
+                    .put("airingAt_lesser", fourteenDaysLater)
+                val responseText = KitsugiApiBase.executeAniListQuery(
+                    query = QUERY,
+                    variables = variables,
+                    accessToken = accessToken
+                ) ?: return@withContext emptyList<AiringEntry>()
+                val (entries, _) = parseResponse(responseText)
+                entries
+                    .filter { it.airingAt > nowSeconds }
+                    .sortedBy { it.airingAt }
+                    .take(limit)
+            }
         }
+    }
+
+    private suspend fun fetchTmdbUpcomingSchedule(limit: Int): List<AiringEntry> {
+        val apiKey = TmdbApiClient.getActiveApiKey()
+        val language = TmdbApiClient.getActiveLanguage()
+        val list = mutableListOf<AiringEntry>()
+        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
+
+        val tvUrl = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&first_air_date.gte=$today&sort_by=first_air_date.asc&page=1"
+        val movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&primary_release_date.gte=$today&sort_by=primary_release_date.asc&page=1"
+
+        parseTmdbList(tvUrl, isMovie = false, outList = list)
+        parseTmdbList(movieUrl, isMovie = true, outList = list)
+
+        val nowSeconds = System.currentTimeMillis() / 1000L
+        return list
+            .filter { it.airingAt > nowSeconds }
+            .sortedBy { it.airingAt }
+            .take(limit)
     }
 
     private suspend fun fetchAiringSchedule(

@@ -4,20 +4,22 @@
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI — Yeni Güncelleme
 
-### 📑 Detay Sayfaları Yeniden Tasarımı (AniHyou Paritesi)
-- **Düz Liste Tasarımı (Flat List Layout)**: Konu (Topic), Değerlendirme (Review) ve Aktivite (Activity) detay sayfalarındaki eski kutulu ve gölgeli kart yapıları tamamen kaldırılarak, AniHyou-Android standartlarına uygun düz, tam genişlikte ve modern bir LazyColumn liste görünümüne geçildi.
-- **İç İçe Yorum Desteği (Recursive Comments)**: Alt yorumlar ve yanıtlar (replies) için dikey kılavuz çizgileriyle belirginleştirilmiş kademeli girinti (indentation) yapısı entegre edildi. Çok katmanlı tartışmalar artık tıpatıp AniHyou'daki gibi okunaklı ve düzenli gösteriliyor.
-- **Dokunmatik Dostu Gelişmiş Etkileşimler**: Beğeni/Beğenmeme (Like/Unlike), Yanıtla (Reply), Çevir (Translate) ve Kopyala (Copy) butonları dokunmatik ekranlar için optimize edilerek modern tıklama efektleri ve hizalamalarla güncellendi.
-- **Aktivite ve Medya Paritesi**: Aktivite detay sayfasında kullanıcı bilgileri, aktivite metni ve ilişkili medya ögeleri sadeleştirilerek bütünlük korundu. Hassas içerik filtreleme (+18 blur) özellikleri bu alanda da eksiksiz şekilde çalışmaya devam ediyor.
-- **Performans ve Modülerlik**: Derin yorum ağaçları ve karmaşık Markdown içerikleri için yükleme ve kaydırma performansı optimize edildi, gereksiz yeniden çizimlerin (re-composition) önüne geçildi.
+### 📅 TMDB Yayın Takvimi Entegrasyonu ve Platform Senkronizasyonu
+- **TMDB Sekmesi ve Genel İçerik Desteği**: TMDB sekmesindeki "Yakında Yayında" (Airing Soon) ve Yayın Takvimi bölümleri artık sadece animeleri değil, TMDB üzerindeki tüm popüler/yaklaşan genel dizi ve filmleri (her şeyi) gösterecek şekilde güncellendi.
+- **Platform Akıllı Yönlendirme**: Yayın Takvimi, hangi sekmeden açıldığını tespit ederek dinamik yönlendirme gerçekleştirir:
+  - **TMDB Sekmesinde**: Tüm vizyondaki dizi/filmleri gösterir ve detayları TMDB üzerinden açar.
+  - **AniList Sekmesinde**: Animeleri gösterir ve AniList detay sayfasını açar.
+  - **MAL Sekmesinde**: Animeleri gösterir ve tıklandığında doğrudan MyAnimeList (MAL) detay sayfasını açar.
+- **Performans ve Kararlılık**: TMDB API keşif istekleri optimize edilerek sayfa yüklenme hızları artırıldı ve takvim sayfasındaki veri tutarsızlıkları tamamen giderildi.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES — Latest Update
 
-### 📑 Detail Sheets Refactoring (AniHyou Parity)
-- **Flat List Layout**: Replaced legacy boxed/card containers in Topic, Review, and Activity detail sheets with clean, full-width flat list layouts in alignment with AniHyou-Android design guidelines.
-- **Recursive Threaded Comments**: Implemented progressive indentation for nested comment replies using vertical guides. Deeply nested discussions are now significantly easier to follow, mirroring AniHyou's exact structure.
-- **Refined Touch Interactions**: Revamped action buttons (Like, Reply, Translate, Copy) with modern touch ripple states, consistent padding, and standard iconography.
-- **Activity & Media Harmonization**: Flattened user headers, status texts, and related media cards on Activity detail sheets while preserving +18 sensitive content blurring rules.
-- **Performance & Optimization**: Enhanced rendering efficiency and scroll smoothness for deep comment hierarchies and markdown bodies, reducing unnecessary re-compositions.
+### 📅 TMDB Airing Calendar Integration & Platform Sync
+- **TMDB Tab & General Content Support**: Updated the "Yakında Yayında" (Airing Soon) and Airing Calendar sections under the TMDB tab to display all general TV shows and movies on the air, not just anime.
+- **Smart Platform Routing**: The Airing Calendar dynamically adapts based on the active explore tab:
+  - **TMDB Tab**: Shows all general movies/TV shows and opens details via TMDB.
+  - **AniList Tab**: Shows airing anime and opens details via AniList.
+  - **MAL Tab**: Shows airing anime and routes details directly to MyAnimeList (MAL).
+  - **Performance & Stability**: Optimized TMDB API discovery requests to improve page load times and eliminated data inconsistencies in the calendar stream.
