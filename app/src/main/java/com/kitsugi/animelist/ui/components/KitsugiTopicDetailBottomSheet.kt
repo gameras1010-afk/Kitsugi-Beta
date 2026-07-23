@@ -58,6 +58,7 @@ fun KitsugiTopicDetailBottomSheet(
     var hasMore by remember { mutableStateOf(true) }
     var isSubscribed by remember { mutableStateOf(false) }
     var showReplyEditor by remember { mutableStateOf(false) }
+    var replyTargetComment by remember { mutableStateOf<KitsugiForumReply?>(null) }
     var isTopicLikedState by remember(topic.id) { mutableStateOf(topic.isLiked) }
     var topicLikeCountState by remember(topic.id) { mutableStateOf(topic.likeCount) }
 
@@ -124,8 +125,8 @@ fun KitsugiTopicDetailBottomSheet(
                     if (tr.isNotBlank()) translatedTitle = tr
                 }
             }
-            // Translate comments
-            commentsList.forEach { comment ->
+            // Recursive translation helper
+            fun translateRecursive(comment: KitsugiForumReply) {
                 if (!translatedComments.containsKey(comment.id)) {
                     coroutineScope.launch {
                         val tr = translationManager.translateToTurkish(comment.comment)
@@ -134,6 +135,13 @@ fun KitsugiTopicDetailBottomSheet(
                         }
                     }
                 }
+                comment.childComments.forEach { child ->
+                    translateRecursive(child)
+                }
+            }
+            // Translate comments recursively
+            commentsList.forEach { comment ->
+                translateRecursive(comment)
             }
         }
     }
@@ -302,16 +310,7 @@ fun KitsugiTopicDetailBottomSheet(
                             .background(KitsugiColors.SurfaceStrong, RoundedCornerShape(12.dp))
                             .padding(14.dp)
                     ) {
-                        val displayTitle = if (selectedLanguage == "turkish") translatedTitle ?: topic.title else topic.title
-                        Text(
-                            text = displayTitle,
-                            color = KitsugiColors.TextPrimary,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
+                        // Header block: Author row first
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -401,6 +400,24 @@ fun KitsugiTopicDetailBottomSheet(
                                 )
                             }
                         }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Middle block: Title box in a separate dark background container
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(KitsugiColors.Surface, RoundedCornerShape(8.dp))
+                                .padding(12.dp)
+                        ) {
+                            val displayTitle = if (selectedLanguage == "turkish") translatedTitle ?: topic.title else topic.title
+                            Text(
+                                text = displayTitle,
+                                color = KitsugiColors.TextPrimary,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
 
@@ -446,7 +463,13 @@ fun KitsugiTopicDetailBottomSheet(
                             displayText = displayComment,
                             apiClient = apiClient,
                             coroutineScope = coroutineScope,
-                            onUserProfileClick = onUserProfileClick
+                            selectedLanguage = selectedLanguage,
+                            translatedComments = translatedComments,
+                            onUserProfileClick = onUserProfileClick,
+                            onReplyClick = { target ->
+                                replyTargetComment = target
+                                showReplyEditor = true
+                            }
                         )
                     }
 
@@ -483,14 +506,30 @@ fun KitsugiTopicDetailBottomSheet(
     }
 
     if (showReplyEditor) {
+        val editorTitle = if (replyTargetComment != null) {
+            "${replyTargetComment?.username} Kullanıcısına Yanıt Ver"
+        } else {
+            "Konuyu Yanıtla"
+        }
+        val editorPlaceholder = if (replyTargetComment != null) {
+            "Yanıtınızı buraya yazın..."
+        } else {
+            "Mesajınızı buraya yazın..."
+        }
         KitsugiReplyEditorBottomSheet(
-            title = "Konuyu Yanıtla",
-            placeholder = "Mesajınızı buraya yazın...",
+            title = editorTitle,
+            placeholder = editorPlaceholder,
             onPublish = { text ->
-                apiClient.postReply(topic.id, isActivity = false, text = text)
+                apiClient.postReply(
+                    targetId = topic.id,
+                    isActivity = false,
+                    text = text,
+                    parentCommentId = replyTargetComment?.id
+                )
             },
             onDismiss = {
                 showReplyEditor = false
+                replyTargetComment = null
                 // Reload comments after posting
                 coroutineScope.launch {
                     isLoading = true

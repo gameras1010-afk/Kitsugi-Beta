@@ -41,6 +41,10 @@ fun KitsugiAccountConnectionsDialog(
     onSimklAuthClick: () -> Unit = {},
     isCrossSyncRunning: Boolean = false,
     onCrossSyncClick: () -> Unit = {},
+    syncEnabledAnilist: Boolean = false,
+    onSyncEnabledAnilistChanged: (Boolean) -> Unit = {},
+    syncEnabledMal: Boolean = false,
+    onSyncEnabledMalChanged: (Boolean) -> Unit = {},
     onDismiss: () -> Unit
 ) {
     val accentColor = LocalKitsugiAccent.current
@@ -98,6 +102,10 @@ fun KitsugiAccountConnectionsDialog(
                 onSimklAuthClick = onSimklAuthClick,
                 isCrossSyncRunning = isCrossSyncRunning,
                 onCrossSyncClick = onCrossSyncClick,
+                syncEnabledAnilist = syncEnabledAnilist,
+                onSyncEnabledAnilistChanged = onSyncEnabledAnilistChanged,
+                syncEnabledMal = syncEnabledMal,
+                onSyncEnabledMalChanged = onSyncEnabledMalChanged,
                 accentColor = accentColor
             )
         }
@@ -136,6 +144,10 @@ private fun AccountConnectionsTab(
     onSimklAuthClick: () -> Unit,
     isCrossSyncRunning: Boolean,
     onCrossSyncClick: () -> Unit,
+    syncEnabledAnilist: Boolean,
+    onSyncEnabledAnilistChanged: (Boolean) -> Unit,
+    syncEnabledMal: Boolean,
+    onSyncEnabledMalChanged: (Boolean) -> Unit,
     accentColor: Color
 ) {
     val scrollState = rememberScrollState()
@@ -163,6 +175,15 @@ private fun AccountConnectionsTab(
                         icon = Icons.Rounded.Sync,
                         iconColor = KitsugiColors.AccentGreen,
                         onClick = { if (!isAniListImportRunning) onAniListImportClick() }
+                    )
+                    KitsugiSettingsDivider()
+                    KitsugiSettingsSwitchItem(
+                        title = "Otomatik Eşitleme",
+                        description = "Kitsugi'deki değişiklikleri AniList'e otomatik yansıt",
+                        icon = Icons.Rounded.CloudSync,
+                        iconColor = KitsugiColors.AccentBlue,
+                        checked = syncEnabledAnilist,
+                        onCheckedChange = onSyncEnabledAnilistChanged
                     )
                     KitsugiSettingsDivider()
                     KitsugiSettingsItem(
@@ -201,6 +222,15 @@ private fun AccountConnectionsTab(
                         icon = Icons.Rounded.Sync,
                         iconColor = KitsugiColors.AccentGreen,
                         onClick = { if (!isMalImportRunning) onMalImportClick() }
+                    )
+                    KitsugiSettingsDivider()
+                    KitsugiSettingsSwitchItem(
+                        title = "Otomatik Eşitleme",
+                        description = "Kitsugi'deki değişiklikleri MyAnimeList'e otomatik yansıt",
+                        icon = Icons.Rounded.CloudSync,
+                        iconColor = KitsugiColors.AccentBlue,
+                        checked = syncEnabledMal,
+                        onCheckedChange = onSyncEnabledMalChanged
                     )
                     KitsugiSettingsDivider()
                     KitsugiSettingsItem(

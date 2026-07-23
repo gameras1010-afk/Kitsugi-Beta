@@ -4,6 +4,8 @@ import android.content.Context
 import com.kitsugi.animelist.model.MediaEntry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.first
+import com.kitsugi.animelist.data.settings.SettingsDataStore
 
 object ExternalListSyncManager {
     private const val ANILIST_SYNTHETIC_ID_OFFSET = 100_000_000
@@ -19,13 +21,19 @@ object ExternalListSyncManager {
             val syncedSources = mutableListOf<String>()
             var resolvedAniListEntryId: Int? = null
 
+            val settings = runCatching { SettingsDataStore(context).settingsFlow.first() }.getOrNull()
+            val syncEnabledAniList = settings?.syncEnabledAnilist ?: false
+            val syncEnabledMal = settings?.syncEnabledMal ?: false
+
             val aniListToken = ExternalAuthManager.getAniListToken(context)
             val malToken = ExternalAuthManager.getOrRefreshMalToken(context)
             val simklToken = ExternalAuthManager.getSimklToken(context)
 
-            // Her girdiyi yalnızca kendi kaynağına (source) göre senkronize et
-            val shouldSyncAniList = !aniListToken.isNullOrBlank() && entry.source == "anilist"
-            val shouldSyncMal = !malToken.isNullOrBlank() && (entry.source == "mal" || entry.source == "jikan")
+            val realMalId = entry.malId?.takeIf { it.isRealMalId() }
+
+            // Desteklenen platformlara göre senkronizasyon kararı ver
+            val shouldSyncAniList = syncEnabledAniList && !aniListToken.isNullOrBlank() && (entry.source == "anilist" || realMalId != null)
+            val shouldSyncMal = syncEnabledMal && !malToken.isNullOrBlank() && (entry.source == "mal" || entry.source == "jikan" || (entry.source == "anilist" && realMalId != null))
             val shouldSyncSimkl = !simklToken.isNullOrBlank() && entry.source == "simkl" && entry.simklId != null && entry.simklId > 0
 
             if (shouldSyncAniList) {
@@ -44,7 +52,7 @@ object ExternalListSyncManager {
             }
 
             // AniList bağlıysa favori durumunu senkronize et (Toggle-flip'i önlemek için güncel durumu kontrol ederiz)
-            if (!aniListToken.isNullOrBlank()) {
+            if (syncEnabledAniList && !aniListToken.isNullOrBlank()) {
                 val malIdVal = entry.malId
                 if (entry.source == "anilist" || (malIdVal != null && malIdVal.isRealMalId())) {
                     runCatching {
@@ -58,8 +66,6 @@ object ExternalListSyncManager {
                     }
                 }
             }
-
-            val realMalId = entry.malId?.takeIf { it.isRealMalId() }
 
             if (shouldSyncMal && realMalId != null) {
                 runCatching {
@@ -110,13 +116,19 @@ object ExternalListSyncManager {
             val errors = mutableListOf<String>()
             val deletedSources = mutableListOf<String>()
 
+            val settings = runCatching { SettingsDataStore(context).settingsFlow.first() }.getOrNull()
+            val syncEnabledAniList = settings?.syncEnabledAnilist ?: false
+            val syncEnabledMal = settings?.syncEnabledMal ?: false
+
             val aniListToken = ExternalAuthManager.getAniListToken(context)
             val malToken = ExternalAuthManager.getOrRefreshMalToken(context)
             val simklToken = ExternalAuthManager.getSimklToken(context)
 
-            // Her girdiyi yalnızca kendi kaynağına (source) göre sil
-            val shouldDeleteAniList = !aniListToken.isNullOrBlank() && entry.source == "anilist"
-            val shouldDeleteMal = !malToken.isNullOrBlank() && (entry.source == "mal" || entry.source == "jikan")
+            val realMalId = entry.malId?.takeIf { it.isRealMalId() }
+
+            // Desteklenen platformlara göre silme kararı ver
+            val shouldDeleteAniList = syncEnabledAniList && !aniListToken.isNullOrBlank() && (entry.source == "anilist" || realMalId != null)
+            val shouldDeleteMal = syncEnabledMal && !malToken.isNullOrBlank() && (entry.source == "mal" || entry.source == "jikan" || (entry.source == "anilist" && realMalId != null))
             val shouldDeleteSimkl = !simklToken.isNullOrBlank() && entry.source == "simkl" && entry.simklId != null && entry.simklId > 0
 
             if (shouldDeleteAniList) {
@@ -131,8 +143,6 @@ object ExternalListSyncManager {
                     errors.add("AniList silme: ${error.message}")
                 }
             }
-
-            val realMalId = entry.malId?.takeIf { it.isRealMalId() }
 
             if (shouldDeleteMal && realMalId != null) {
                 runCatching {

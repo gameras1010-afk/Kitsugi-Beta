@@ -591,6 +591,12 @@ fun ExploreScreen(
                                                 }
                                                 item {
                                                     ExploreCategoryChip(
+                                                        label = "Yakında Yayında",
+                                                        onClick = { onSeeAllSection("Yakında Yayında", ExploreCategoryType.UPCOMING_ANIME_TMDB, filteredUpcomingAnimeTmdb) }
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
                                                         label = "En Yüksek Puanlı Diziler",
                                                         onClick = { onSeeAllSection("En Yüksek Puanlı Diziler", ExploreCategoryType.SEASONAL_ANIME, filteredSeasonalAnime) }
                                                     )
@@ -631,12 +637,6 @@ fun ExploreScreen(
                                                 }
                                                 item {
                                                     ExploreCategoryChip(
-                                                        label = "Yakında Yayında (Anime)",
-                                                        onClick = { onSeeAllSection("Yakında Yayında (Anime)", ExploreCategoryType.UPCOMING_ANIME_TMDB, filteredUpcomingAnimeTmdb) }
-                                                    )
-                                                }
-                                                item {
-                                                    ExploreCategoryChip(
                                                         label = "Yayın Takvimi",
                                                         onClick = onOpenAiringCalendar
                                                     )
@@ -648,23 +648,59 @@ fun ExploreScreen(
                                 }
                             }
 
-                            // ─── TMDB YAKINDA YAYINDA (Upcoming Anime) ───
+                            // ─── TMDB YAKINDA YAYINDA (Upcoming TV/Movies/Anime) ───
                             if (filteredUpcomingAnimeTmdb.isNotEmpty()) {
                                 item {
-                                    KitsugiHorizontalMediaSection(
-                                        title = "Yakında Yayında (Anime)",
-                                        results = filteredUpcomingAnimeTmdb,
-                                        isLoading = viewModel.isLoading,
-                                        alreadyInList = isAlreadyInList,
-                                        getMediaEntry = getMediaEntry,
-                                        onItemClick = onOpenApiDetail,
-                                        onLongClickItem = onLongClickItem,
-                                        onSeeAllClick = { onSeeAllSection("Yakında Yayında (Anime)", ExploreCategoryType.UPCOMING_ANIME_TMDB, filteredUpcomingAnimeTmdb) },
-                                        titleLanguage = titleLanguage,
-                                        scoreFormat = scoreFormat,
-                                        hideScores = hideScores,
-                                        blurAdultMedia = blurAdultMedia
-                                    )
+                                    Column(
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 20.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                text = "Yakında Yayında",
+                                                color = KitsugiColors.TextPrimary,
+                                                style = MaterialTheme.typography.titleLarge,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                            IconButton(onClick = { onSeeAllSection("Yakında Yayında", ExploreCategoryType.UPCOMING_ANIME_TMDB, filteredUpcomingAnimeTmdb) }) {
+                                                Icon(
+                                                    imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                                                    contentDescription = "Tümünü Gör",
+                                                    tint = accentColor
+                                                )
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.height(10.dp))
+
+                                        val lazyListState = remember { androidx.compose.foundation.lazy.LazyListState() }
+                                        LazyRow(
+                                            state = lazyListState,
+                                            contentPadding = PaddingValues(horizontal = 20.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                            flingBehavior = androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior(
+                                                lazyListState = lazyListState,
+                                                snapPosition = androidx.compose.foundation.gestures.snapping.SnapPosition.Start
+                                            ),
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            items(filteredUpcomingAnimeTmdb.size) { index ->
+                                                val result = filteredUpcomingAnimeTmdb[index]
+                                                AiringSoonHorizontalCard(
+                                                    result = result,
+                                                    alreadyInList = isAlreadyInList(result),
+                                                    onItemClick = { onOpenApiDetail(result) },
+                                                    onLongClick = { onLongClickItem(result) },
+                                                    titleLanguage = titleLanguage
+                                                )
+                                            }
+                                        }
+                                    }
                                     Spacer(modifier = Modifier.height(26.dp))
                                 }
                             }
@@ -1348,7 +1384,7 @@ fun AiringSoonCountdownText(
             val now = System.currentTimeMillis() / 1000L
             val remaining = targetEpoch - now
             countdownText = when {
-                remaining <= 0L -> "Bölüm $episode yayınlandı"
+                remaining <= 0L -> if (episode > 0) "Bölüm $episode yayınlandı" else "Yayınlandı"
                 remaining < 3600L -> {
                     val mins = (remaining / 60).toInt()
                     "${mins} dk sonra yayınlanacak"

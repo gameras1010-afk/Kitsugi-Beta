@@ -119,7 +119,11 @@ internal fun SettingsContext.buildSettingsParams() =
             isCrossSyncRunning = authViewModel.isCrossSyncRunning,
             onCrossSyncClick = { onCrossSyncClick() },
             onImportModeChange = { appViewModel.updateImportMode(it) },
-            onImportTextChange = { appViewModel.updateImportText(it) }
+            onImportTextChange = { appViewModel.updateImportText(it) },
+            syncEnabledAnilist = appSettings.syncEnabledAnilist,
+            syncEnabledMal = appSettings.syncEnabledMal,
+            onSyncEnabledAnilistChanged = { onSyncEnabledAnilistChanged(it) },
+            onSyncEnabledMalChanged = { onSyncEnabledMalChanged(it) }
         ),
         player = com.kitsugi.animelist.ui.screens.settings.PlayerSettings(
             playerPreference = appSettings.playerPreference,
@@ -808,6 +812,20 @@ internal fun SettingsContext.onCustomImageDownloadUriChanged(uri: String) {
     coroutineScope.launch {
         settingsDataStore.setCustomImageDownloadUri(uri)
         appViewModel.showSnackbarMessage(if (uri.isNotBlank()) "İndirme klasörü güncellendi" else "İndirme klasörü varsayılana sıfırlandı")
+    }
+}
+
+internal fun SettingsContext.onSyncEnabledAnilistChanged(enabled: Boolean) {
+    coroutineScope.launch {
+        settingsDataStore.setSyncEnabledAnilist(enabled)
+        appViewModel.showSnackbarMessage(if (enabled) "AniList eşitlemesi açıldı" else "AniList eşitlemesi kapatıldı")
+    }
+}
+
+internal fun SettingsContext.onSyncEnabledMalChanged(enabled: Boolean) {
+    coroutineScope.launch {
+        settingsDataStore.setSyncEnabledMal(enabled)
+        appViewModel.showSnackbarMessage(if (enabled) "MyAnimeList eşitlemesi açıldı" else "MyAnimeList eşitlemesi kapatıldı")
     }
 }
 

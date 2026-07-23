@@ -332,36 +332,24 @@ class JikanSearchClient {
 
     suspend fun newlyAddedManga(page: Int = 1, showAdultContent: Boolean = false): List<JikanSearchResult> {
         return withContext(Dispatchers.IO) {
-            // Önce Jikan dene — başarısız olursa MAL Official API, sonra AniList
             val url = URL("https://api.jikan.moe/v4/manga?order_by=start_date&sort=desc&limit=20&sfw=${!showAdultContent}&page=$page")
-            val jikanResults = runCatching {
-                requestAndParseWithFallback(
-                    url = url,
-                    mediaType = MediaType.Manga,
-                    fallback = { emptyList() }
-                )
-            }.getOrDefault(emptyList())
-
-            if (jikanResults.isNotEmpty()) return@withContext jikanResults
-
-            // Jikan boş döndü — MAL Official API fallback
-            val offset = (page - 1) * 20
-            val malFields = "id,title,main_picture,alternative_titles,start_date,mean,num_chapters,media_type,genres,nsfw"
-            val malUrl = "https://api.myanimelist.net/v2/manga/ranking?ranking_type=bypopularity&limit=20&offset=$offset&fields=$malFields"
-            val malResults = runCatching { getOfficialMalRankingOrSeason(malUrl, MediaType.Manga) }.getOrDefault(emptyList())
-            if (malResults.isNotEmpty()) return@withContext malResults
-
-            // Son çare: AniList'ten yeni eklenen mangalar
-            runCatching {
-                aniListSearchClient.requestAniList(
-                    mediaType = MediaType.Manga,
-                    search = null,
-                    status = null,
-                    sort = listOf("START_DATE_DESC"),
-                    perPage = 20,
-                    showAdultContent = showAdultContent
-                )
-            }.getOrDefault(emptyList())
+            requestAndParseWithFallback(
+                url = url,
+                mediaType = MediaType.Manga,
+                fallback = {
+                    // Jikan rate-limit/hata — AniList'ten yeni eklenenler çek
+                    runCatching {
+                        aniListSearchClient.requestAniList(
+                            mediaType = MediaType.Manga,
+                            search = null,
+                            status = null,
+                            sort = listOf("START_DATE_DESC"),
+                            perPage = 20,
+                            showAdultContent = showAdultContent
+                        )
+                    }.getOrDefault(emptyList())
+                }
+            )
         }
     }
 

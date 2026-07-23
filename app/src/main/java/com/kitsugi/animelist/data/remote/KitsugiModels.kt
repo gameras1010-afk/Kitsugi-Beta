@@ -290,7 +290,9 @@ data class KitsugiForumReply(
     val avatarUrl: String?,
     val likeCount: Int,
     val isLiked: Boolean,
-    val userId: Int? = null
+    val userId: Int? = null,
+    val createdAt: Int? = null,
+    val childComments: List<KitsugiForumReply> = emptyList()
 )
 
 data class KitsugiActivity(

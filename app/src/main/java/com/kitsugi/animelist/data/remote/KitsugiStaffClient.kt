@@ -23,6 +23,9 @@ class KitsugiStaffClient {
             }
 
             when (source.lowercase()) {
+                "shikimori" -> {
+                    return@withContext KitsugiShikimoriClient.fetchStaff(mediaType, externalId)
+                }
                 "simkl" -> {
                     if (mediaType == MediaType.Anime) {
                         val malId = realMalId ?: DetailCache.getMediaDetail("simkl", externalId)?.realMalId
@@ -58,7 +61,7 @@ class KitsugiStaffClient {
                         MediaType.Manga -> "manga"
                     }
                     val url = URL("https://api.jikan.moe/v4/$endpoint/$jikanId/staff")
-                    runCatching {
+                    val jikanList = runCatching {
                         KitsugiApiBase.runWithRateLimit {
                             val response = KitsugiApiBase.executeGetRequest(url) ?: return@runWithRateLimit emptyList()
                             val root = JSONObject(response)
@@ -84,6 +87,13 @@ class KitsugiStaffClient {
                             list
                         }
                     }.getOrElse { emptyList() }
+
+                    if (jikanList.isNotEmpty()) {
+                        jikanList
+                    } else {
+                        android.util.Log.w("KitsugiStaffClient", "Jikan ekip listesi boş veya başarısız oldu. Shikimori fallback devreye giriyor...")
+                        KitsugiShikimoriClient.fetchStaff(mediaType, jikanId)
+                    }
                 }
 
                 "anilist" -> {
@@ -141,6 +151,9 @@ class KitsugiStaffClient {
         return withContext(Dispatchers.IO) {
             if (staffId <= 0) return@withContext null
             when (source.lowercase()) {
+                "shikimori" -> {
+                    KitsugiShikimoriClient.fetchStaffDetail(staffId)
+                }
                 "jikan", "mal" -> {
                     val url = URL("https://api.jikan.moe/v4/people/$staffId/full")
                     val jikanRes = runCatching {
@@ -246,10 +259,16 @@ class KitsugiStaffClient {
 
                     val detail = if (jikanRes != null) {
                         jikanRes
-                    } else if (!name.isNullOrBlank()) {
-                        fetchAniListStaffByName(name)
                     } else {
-                        null
+                        android.util.Log.w("KitsugiStaffClient", "Jikan ekip detayları başarısız oldu. Shikimori fallback devralıyor...")
+                        val shikiDetail = KitsugiShikimoriClient.fetchStaffDetail(staffId)
+                        if (shikiDetail != null) {
+                            shikiDetail
+                        } else if (!name.isNullOrBlank()) {
+                            fetchAniListStaffByName(name)
+                        } else {
+                            null
+                        }
                     }
 
                     if (detail != null && KitsugiApplication.getInstance()?.let { com.kitsugi.animelist.data.auth.ExternalAuthManager.getAniListToken(it) } != null) {

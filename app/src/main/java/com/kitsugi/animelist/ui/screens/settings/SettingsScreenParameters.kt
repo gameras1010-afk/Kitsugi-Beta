@@ -121,7 +121,11 @@ data class ProfileSettings(
     val isCrossSyncRunning: Boolean = false,
     val onCrossSyncClick: () -> Unit = {},
     val onImportModeChange: (BackupImportMode) -> Unit,
-    val onImportTextChange: (String) -> Unit
+    val onImportTextChange: (String) -> Unit,
+    val syncEnabledAnilist: Boolean = false,
+    val syncEnabledMal: Boolean = false,
+    val onSyncEnabledAnilistChanged: (Boolean) -> Unit = {},
+    val onSyncEnabledMalChanged: (Boolean) -> Unit = {}
 )
 
 data class PlayerSettings(

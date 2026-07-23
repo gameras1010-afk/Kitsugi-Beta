@@ -239,7 +239,23 @@ fun ApiResultDetailPage(
     val isSourceAniList = remember(displayResult) {
         displayResult.source.equals("anilist", ignoreCase = true)
     }
-    val isConnected = if (isSourceAniList) isAniListConnected else isMalConnected
+    val isConnected = remember(displayResult, isAniListConnected, isMalConnected, isSimklConnected) {
+        val src = displayResult.source.lowercase()
+        val hasRealMalId = displayResult.realMalId != null || (displayResult.malId != null && displayResult.malId > 0 && displayResult.malId < 100_000_000)
+        when {
+            displayResult.type == MediaType.TvShow || displayResult.type == MediaType.Movie -> isSimklConnected
+            src == "anilist" -> {
+                isAniListConnected || (isMalConnected && hasRealMalId)
+            }
+            src == "mal" || src == "jikan" -> {
+                isMalConnected || isAniListConnected
+            }
+            src == "simkl" -> {
+                isSimklConnected
+            }
+            else -> true
+        }
+    }
 
     val showFavouriteButton = isSourceAniList || isAniListConnected
     val isFavorite = existingEntry?.isFavorite ?: (detailState?.isFavourite ?: false)

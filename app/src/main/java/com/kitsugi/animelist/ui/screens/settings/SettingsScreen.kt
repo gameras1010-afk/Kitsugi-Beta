@@ -213,6 +213,10 @@ fun SettingsScreen(
                 onSimklAuthClick = profile.onSimklAuthClick,
                 isCrossSyncRunning = profile.isCrossSyncRunning,
                 onCrossSyncClick = profile.onCrossSyncClick,
+                syncEnabledAnilist = profile.syncEnabledAnilist,
+                onSyncEnabledAnilistChanged = profile.onSyncEnabledAnilistChanged,
+                syncEnabledMal = profile.syncEnabledMal,
+                onSyncEnabledMalChanged = profile.onSyncEnabledMalChanged,
                 onDismiss = {
                     activeDialog = null
                 }

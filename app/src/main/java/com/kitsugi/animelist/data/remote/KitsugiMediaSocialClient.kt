@@ -579,6 +579,7 @@ class KitsugiMediaSocialClient {
                         threadComments(threadId: ${'$'}threadId) {
                             id comment createdAt likeCount isLiked
                             user { id name avatar { medium } }
+                            childComments
                         }
                     }
                 }
@@ -601,12 +602,38 @@ class KitsugiMediaSocialClient {
                         username = userObj?.optNullableString("name") ?: "Kullanıcı",
                         avatarUrl = userObj?.optJSONObject("avatar")?.optNullableString("medium"),
                         likeCount = item.optInt("likeCount", 0), isLiked = item.optBoolean("isLiked", false),
-                        userId = userObj?.optInt("id")
+                        userId = userObj?.optInt("id"),
+                        createdAt = createdAt,
+                        childComments = parseChildComments(item.optJSONArray("childComments"))
                     ))
                 }
                 list
             }.getOrElse { emptyList() }
         }
+    }
+
+    private fun parseChildComments(arr: org.json.JSONArray?): List<KitsugiForumReply> {
+        if (arr == null) return emptyList()
+        val list = mutableListOf<KitsugiForumReply>()
+        for (i in 0 until arr.length()) {
+            val item = arr.optJSONObject(i) ?: continue
+            val createdAt = item.optInt("createdAt")
+            val dateText = if (createdAt > 0) {
+                try { java.text.SimpleDateFormat("dd MMM yyyy HH:mm", java.util.Locale.getDefault()).format(java.util.Date(createdAt * 1000L)) } catch (_: Exception) { null }
+            } else null
+            val userObj = item.optJSONObject("user")
+            list.add(KitsugiForumReply(
+                id = item.optInt("id"), comment = item.optString("comment").cleanApiText(),
+                dateText = dateText,
+                username = userObj?.optNullableString("name") ?: "Kullanıcı",
+                avatarUrl = userObj?.optJSONObject("avatar")?.optNullableString("medium"),
+                likeCount = item.optInt("likeCount", 0), isLiked = item.optBoolean("isLiked", false),
+                userId = userObj?.optInt("id"),
+                createdAt = createdAt,
+                childComments = parseChildComments(item.optJSONArray("childComments"))
+            ))
+        }
+        return list
     }
 
     // ─────────────────────────────────────────────────────────────────────────

@@ -30,6 +30,8 @@ import com.kitsugi.animelist.ui.screens.mylist.MyListScreen
 import com.kitsugi.animelist.ui.screens.search.SearchScreen
 import com.kitsugi.animelist.ui.components.BackupImportMode
 import kotlinx.coroutines.CoroutineScope
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 import com.kitsugi.animelist.ui.app.KitsugiProfileViewModel
 
@@ -88,6 +90,8 @@ fun AppRootTabPages(
             ctx.navState.stateHolder.SaveableStateProvider(key = "root_tab_mylist") {
                 MyListTabPageWrapper(
                     appSettings = ctx.appSettings,
+                    settingsDataStore = ctx.settingsDataStore,
+                    coroutineScope = ctx.coroutineScope,
                     mediaEntries = ctx.mediaEntries,
                     mediaRepository = ctx.mediaRepository,
                     appViewModel = ctx.appViewModel,
@@ -269,6 +273,8 @@ private fun SettingsTabPage(
 @Composable
 private fun MyListTabPageWrapper(
     appSettings: AppSettings,
+    settingsDataStore: SettingsDataStore,
+    coroutineScope: CoroutineScope,
     mediaEntries: List<MediaEntry>,
     mediaRepository: MediaEntryRepository,
     appViewModel: AppViewModel,
@@ -278,6 +284,11 @@ private fun MyListTabPageWrapper(
 ) {
     MyListScreen(
         selectedListLayoutId = appSettings.selectedListLayoutId,
+        onListLayoutChange = { layoutId ->
+            coroutineScope.launch {
+                settingsDataStore.setSelectedListLayoutId(layoutId)
+            }
+        },
         showAdultContent = appSettings.showAdultContent,
         appSettings = appSettings,
         searchQuery = appViewModel.myListSearchQuery,

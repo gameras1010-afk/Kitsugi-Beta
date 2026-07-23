@@ -269,19 +269,19 @@ internal object TmdbDiscoverClient {
 
         val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
 
-        val tvUrl = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&with_genres=16&with_original_language=ja&first_air_date.gte=$today&sort_by=first_air_date.asc&page=$page"
-        val tvResult = parseTmdbDiscoverList(tvUrl, MediaType.Anime, executeGet)
+        val tvUrl = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&first_air_date.gte=$today&sort_by=first_air_date.asc&page=$page"
+        val tvResult = parseTmdbDiscoverList(tvUrl, MediaType.TvShow, executeGet)
 
-        val movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&with_genres=16&with_original_language=ja&primary_release_date.gte=$today&sort_by=primary_release_date.asc&page=$page"
-        val movieResult = parseTmdbDiscoverList(movieUrl, MediaType.Anime, executeGet)
+        val movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&primary_release_date.gte=$today&sort_by=primary_release_date.asc&page=$page"
+        val movieResult = parseTmdbDiscoverList(movieUrl, MediaType.Movie, executeGet)
 
         val merged = mutableListOf<JikanSearchResult>()
-        val maxSize = maxOf(tvResult.size, movieResult.size)
-        for (i in 0 until maxSize) {
-            if (i < tvResult.size) merged.add(tvResult[i])
-            if (i < movieResult.size) merged.add(movieResult[i])
-        }
-        val result = merged.take(20)
+        merged.addAll(tvResult)
+        merged.addAll(movieResult)
+
+        val result = merged.sortedBy { item ->
+            item.nextAiringEpisode?.split("|")?.getOrNull(1)?.toLongOrNull() ?: Long.MAX_VALUE
+        }.take(20)
 
         if (result.isNotEmpty()) put(cacheKey, result)
         result
@@ -363,6 +363,20 @@ internal object TmdbDiscoverClient {
                     add(if (isMovie) "Film" else "Dizi")
                     if (year != null && year > 0) add(year.toString())
                 }
+                val nextAiringEpisode = try {
+                    if (releaseDate.isNotEmpty()) {
+                        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+                        sdf.timeZone = java.util.TimeZone.getTimeZone("UTC")
+                        val date = sdf.parse(releaseDate)
+                        val epoch = date?.time?.div(1000L)
+                        val nowSeconds = System.currentTimeMillis() / 1000L
+                        if (epoch != null && epoch > nowSeconds) {
+                            "-1|$epoch"
+                        } else null
+                    } else null
+                } catch (e: Exception) {
+                    null
+                }
                 list.add(
                     JikanSearchResult(
                         malId = tmdbId, title = title,
@@ -371,7 +385,8 @@ internal object TmdbDiscoverClient {
                         isAdult = item.optBoolean("adult", false),
                         imageUrl = imageUrl, year = year, source = "tmdb",
                         realMalId = null, titleEnglish = title, titleJapanese = null,
-                        tmdbId = tmdbId, backdropUrl = backdropUrl
+                        tmdbId = tmdbId, backdropUrl = backdropUrl,
+                        nextAiringEpisode = nextAiringEpisode
                     )
                 )
             }
@@ -411,6 +426,20 @@ internal object TmdbDiscoverClient {
                     add(if (isMovie) "Film" else "Dizi")
                     if (year != null && year > 0) add(year.toString())
                 }
+                val nextAiringEpisode = try {
+                    if (releaseDate.isNotEmpty()) {
+                        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+                        sdf.timeZone = java.util.TimeZone.getTimeZone("UTC")
+                        val date = sdf.parse(releaseDate)
+                        val epoch = date?.time?.div(1000L)
+                        val nowSeconds = System.currentTimeMillis() / 1000L
+                        if (epoch != null && epoch > nowSeconds) {
+                            "-1|$epoch"
+                        } else null
+                    } else null
+                } catch (e: Exception) {
+                    null
+                }
                 list.add(
                     JikanSearchResult(
                         malId = tmdbId, title = title,
@@ -419,7 +448,8 @@ internal object TmdbDiscoverClient {
                         isAdult = item.optBoolean("adult", false),
                         imageUrl = imageUrl, year = year, source = "tmdb",
                         realMalId = null, titleEnglish = title, titleJapanese = null,
-                        tmdbId = tmdbId, backdropUrl = backdropUrl
+                        tmdbId = tmdbId, backdropUrl = backdropUrl,
+                        nextAiringEpisode = nextAiringEpisode
                     )
                 )
             }

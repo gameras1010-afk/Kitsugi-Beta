@@ -100,8 +100,23 @@ fun FullScreenMediaGridPage(
     val tmdbApiClient = remember { TmdbApiClient() }
 
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp
     val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-    val columnCount = if (isLandscape) 3 else 2
+    val columnCount = remember(isLandscape, screenWidthDp) {
+        if (isLandscape) {
+            when {
+                screenWidthDp >= 1200 -> 3
+                screenWidthDp >= 800 -> 2
+                else -> 2
+            }
+        } else {
+            when {
+                screenWidthDp >= 900 -> 4
+                screenWidthDp >= 600 -> 3
+                else -> 2
+            }
+        }
+    }
 
     // false = Liste görünümü (varsayılan), true = Grid görünümü
     var isGridView by rememberSaveable { mutableStateOf(false) }
@@ -353,7 +368,7 @@ fun FullScreenMediaGridPage(
                             scoreFormat = scoreFormat,
                             hideScores = hideScores,
                             blurAdultMedia = blurAdultMedia,
-                            forceVertical = true
+                            forceVertical = !isLandscape
                         )
                     }
                 }

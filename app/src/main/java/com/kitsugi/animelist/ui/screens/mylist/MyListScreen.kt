@@ -36,6 +36,11 @@ import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Sort
+import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.rounded.DensityMedium
+import androidx.compose.material.icons.rounded.ViewStream
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
@@ -101,6 +106,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun MyListScreen(
     selectedListLayoutId: String,
+    onListLayoutChange: (String) -> Unit,
     showAdultContent: Boolean,
     appSettings: com.kitsugi.animelist.data.settings.AppSettings,
     searchQuery: String,
@@ -352,6 +358,7 @@ fun MyListScreen(
 
     // Per-tab scroll states — declared at top level so FAB can reference them
     val tabScrollStates = remember { List(3) { androidx.compose.foundation.lazy.LazyListState() } }
+    val activeTabScrollState = tabScrollStates[selectedTabIndex.coerceIn(0, 2)]
 
     Column(
         modifier = Modifier
@@ -373,16 +380,30 @@ fun MyListScreen(
             shadowElevation = 0.dp
         ) {
             Column {
-                // Başlık satırı — scroll aşağı gidince kaybolur
-                AnimatedVisibility(
-                    visible = showHeader,
-                    enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(animationSpec = tween(200)),
-                    exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut(animationSpec = tween(150))
+                // Başlık satırı — scroll aşağı gidince yumuşak şekilde daralır ve kaybolur
+                val rawOffset = activeTabScrollState.firstVisibleItemScrollOffset
+                val firstVisibleIndex = activeTabScrollState.firstVisibleItemIndex
+                val collapseProgress = remember(firstVisibleIndex, rawOffset) {
+                    if (firstVisibleIndex > 0) 1f
+                    else (rawOffset.toFloat() / 100f).coerceIn(0f, 1f)
+                }
+                val headerHeight = 60.dp * (1f - collapseProgress)
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(headerHeight)
+                        .graphicsLayer {
+                            alpha = 1f - collapseProgress
+                            translationY = -20.dp.toPx() * collapseProgress
+                        }
+                        .clipToBounds()
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(start = horizontalPadding, end = 4.dp, top = 8.dp, bottom = 4.dp),
+                            .height(60.dp)
+                            .padding(start = horizontalPadding, end = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -397,6 +418,33 @@ fun MyListScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(0.dp)
                         ) {
+                            // Görünüm değiştirme butonu
+                            IconButton(
+                                onClick = {
+                                    val nextLayoutId = when (selectedListLayoutId) {
+                                        "compact" -> "comfortable"
+                                        "comfortable" -> "large"
+                                        "large" -> "grid_2col"
+                                        "grid_2col" -> "compact"
+                                        else -> "comfortable"
+                                    }
+                                    onListLayoutChange(nextLayoutId)
+                                }
+                            ) {
+                                val layoutIcon = when (selectedListLayoutId) {
+                                    "compact" -> Icons.Rounded.DensityMedium
+                                    "comfortable" -> Icons.Rounded.FormatListBulleted
+                                    "large" -> Icons.Rounded.ViewStream
+                                    "grid_2col" -> Icons.Rounded.GridView
+                                    else -> Icons.Rounded.FormatListBulleted
+                                }
+                                Icon(
+                                    imageVector = layoutIcon,
+                                    contentDescription = "Görünüm Değiştir",
+                                    tint = KitsugiColors.textSecondary
+                                )
+                            }
+
                             IconButton(onClick = { showSearchField = !showSearchField }) {
                                 Icon(
                                     imageVector = Icons.Rounded.Search,

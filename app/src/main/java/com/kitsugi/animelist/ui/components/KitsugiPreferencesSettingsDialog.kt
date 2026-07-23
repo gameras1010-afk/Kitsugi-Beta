@@ -737,73 +737,7 @@ private fun ListScoreTab(
             .padding(vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        // LİSTE GÖRÜNÜMÜ & DÜZEN
         KitsugiSettingsSection(title = "Liste Görünümü") {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.settings_list_layout),
-                    color = KitsugiColors.textPrimary,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = stringResource(R.string.settings_list_layout_desc),
-                    color = KitsugiColors.textSecondary,
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    maxItemsInEachRow = 2
-                ) {
-                    listLayoutOptions.forEach { layoutOpt ->
-                        val isSelected = layoutOpt.id == selectedListLayoutId
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(14.dp))
-                                .background(
-                                    if (isSelected) accentColor.copy(alpha = 0.15f)
-                                    else KitsugiColors.surfaceSoft
-                                )
-                                .border(
-                                    width = if (isSelected) 2.dp else 1.dp,
-                                    color = if (isSelected) accentColor else KitsugiColors.surfaceSoft,
-                                    shape = RoundedCornerShape(14.dp)
-                                )
-                                .tvClickable(shape = RoundedCornerShape(14.dp)) { onListLayoutSelected(layoutOpt.id) }
-                                .padding(12.dp)
-                        ) {
-                            Column {
-                                Text(
-                                    text = layoutOpt.title,
-                                    color = if (isSelected) accentColor else KitsugiColors.textPrimary,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = if (isSelected) FontWeight.Black else FontWeight.SemiBold
-                                )
-                                if (layoutOpt.description.isNotBlank()) {
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Text(
-                                        text = layoutOpt.description,
-                                        color = KitsugiColors.textMuted,
-                                        style = MaterialTheme.typography.labelSmall
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            KitsugiSettingsDivider()
-
             Box {
                 KitsugiSettingsListItem(
                     title = stringResource(R.string.settings_title_language),

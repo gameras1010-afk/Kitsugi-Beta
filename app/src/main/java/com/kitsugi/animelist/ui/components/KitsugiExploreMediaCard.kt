@@ -207,9 +207,24 @@ fun KitsugiExploreMediaCard(
                 modifier = Modifier.padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val screenWidthDp = LocalConfiguration.current.screenWidthDp
+                val posterWidth = remember(screenWidthDp) {
+                    when {
+                        screenWidthDp >= 1200 -> 110.dp
+                        screenWidthDp >= 800 -> 100.dp
+                        else -> 90.dp
+                    }
+                }
+                val posterHeight = remember(screenWidthDp) {
+                    when {
+                        screenWidthDp >= 1200 -> 160.dp
+                        screenWidthDp >= 800 -> 145.dp
+                        else -> 130.dp
+                    }
+                }
                 Box(
                     modifier = Modifier
-                        .size(width = 90.dp, height = 130.dp)
+                        .size(width = posterWidth, height = posterHeight)
                         .clip(RoundedCornerShape(16.dp))
                         .background(KitsugiColors.SurfaceSoft),
                     contentAlignment = Alignment.Center
@@ -329,10 +344,18 @@ fun KitsugiExploreMediaCard(
             Column(
                 modifier = Modifier.padding(14.dp)
             ) {
+                val screenWidthDp = LocalConfiguration.current.screenWidthDp
+                val posterHeight = remember(screenWidthDp) {
+                    when {
+                        screenWidthDp >= 1200 -> 240.dp
+                        screenWidthDp >= 800 -> 225.dp
+                        else -> 210.dp
+                    }
+                }
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(210.dp)
+                        .height(posterHeight)
                         .clip(RoundedCornerShape(20.dp))
                         .background(KitsugiColors.SurfaceSoft),
                     contentAlignment = Alignment.Center

@@ -160,8 +160,8 @@ class JikanApiClient(
     suspend fun toggleLike(id: Int, type: String) =
         mediaMutationsClient.toggleLike(id, type)
 
-    suspend fun postReply(targetId: Int, isActivity: Boolean, text: String) =
-        mediaMutationsClient.postReply(targetId, isActivity, text)
+    suspend fun postReply(targetId: Int, isActivity: Boolean, text: String, parentCommentId: Int? = null) =
+        mediaMutationsClient.postReply(targetId, isActivity, text, parentCommentId)
 
     suspend fun toggleThreadSubscription(threadId: Int) =
         mediaMutationsClient.toggleThreadSubscription(threadId)

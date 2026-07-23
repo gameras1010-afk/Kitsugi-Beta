@@ -36,6 +36,9 @@ class KitsugiCharacterClient {
             Log.d(TAG, "fetchCharacters başladı: source=$source, externalId=$externalId, realMalId=$realMalId, mediaType=$mediaType, tmdbId=$tmdbId")
 
             when (srcLower) {
+                "shikimori" -> {
+                    return@withContext KitsugiShikimoriClient.fetchCharacters(mediaType, externalId)
+                }
                 "simkl" -> {
                     if (mediaType == MediaType.Anime) {
                         val malId = realMalId ?: DetailCache.getMediaDetail("simkl", externalId)?.realMalId
@@ -72,14 +75,13 @@ class KitsugiCharacterClient {
                     }
                     val url = URL("https://api.jikan.moe/v4/$endpoint/$jikanId/characters")
                     Log.d(TAG, "Jikan isteği: $url")
-                    runCatching {
+                    val jikanList = runCatching {
                         KitsugiApiBase.runWithRateLimit {
                             val response = KitsugiApiBase.executeGetRequest(url)
                             if (response == null) {
                                 Log.w(TAG, "Jikan yanıt null: $url")
                                 return@runWithRateLimit emptyList()
                             }
-                            // Cloudflare/HTML yanıtı kontrolü
                             if (!response.trimStart().startsWith('{')) {
                                 Log.e(TAG, "Jikan HTML/CF yanıtı (ilk 200 char): ${response.take(200)}")
                                 return@runWithRateLimit emptyList()
@@ -120,6 +122,13 @@ class KitsugiCharacterClient {
                     }.getOrElse { err ->
                         Log.e(TAG, "Jikan fetch exception: ${err.javaClass.simpleName}: ${err.message}", err)
                         emptyList()
+                    }
+
+                    if (jikanList.isNotEmpty()) {
+                        jikanList
+                    } else {
+                        Log.w(TAG, "Jikan karakter listesi boş veya başarısız oldu. Shikimori fallback devreye giriyor...")
+                        KitsugiShikimoriClient.fetchCharacters(mediaType, jikanId)
                     }
                 }
 
@@ -233,6 +242,9 @@ class KitsugiCharacterClient {
         return withContext(Dispatchers.IO) {
             if (characterId <= 0) return@withContext null
             when (source.lowercase()) {
+                "shikimori" -> {
+                    KitsugiShikimoriClient.fetchCharacterDetail(characterId)
+                }
                 "jikan", "mal" -> {
                     val url = URL("https://api.jikan.moe/v4/characters/$characterId/full")
                     val jikanRes = runCatching {
@@ -333,10 +345,16 @@ class KitsugiCharacterClient {
 
                     val detail = if (jikanRes != null) {
                         jikanRes
-                    } else if (!name.isNullOrBlank()) {
-                        fetchAniListCharacterByName(name)
                     } else {
-                        null
+                        Log.w(TAG, "Jikan karakter detayları başarısız oldu. Shikimori fallback devralıyor...")
+                        val shikiDetail = KitsugiShikimoriClient.fetchCharacterDetail(characterId)
+                        if (shikiDetail != null) {
+                            shikiDetail
+                        } else if (!name.isNullOrBlank()) {
+                            fetchAniListCharacterByName(name)
+                        } else {
+                            null
+                        }
                     }
 
                     if (detail != null && KitsugiApplication.getInstance()?.let { com.kitsugi.animelist.data.auth.ExternalAuthManager.getAniListToken(it) } != null) {

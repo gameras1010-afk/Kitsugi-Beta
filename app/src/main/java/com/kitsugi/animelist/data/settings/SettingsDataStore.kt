@@ -165,6 +165,8 @@ class SettingsDataStore(
         val EnableAssExtractor = booleanPreferencesKey("enable_ass_extractor")
         val AutoUpdateCheckEnabled = booleanPreferencesKey("auto_update_check_enabled")
         val CustomImageDownloadUri = stringPreferencesKey("custom_image_download_uri")
+        val SyncEnabledAnilist = booleanPreferencesKey("sync_enabled_anilist")
+        val SyncEnabledMal = booleanPreferencesKey("sync_enabled_mal")
     }
 
     val settingsFlow: Flow<AppSettings> = kotlinx.coroutines.flow.flow {
@@ -304,7 +306,9 @@ class SettingsDataStore(
                     liveHelperEnabled = preferences[Keys.LiveHelperEnabled] ?: false,
                     enableAssExtractor = preferences[Keys.EnableAssExtractor] ?: false,
                     autoUpdateCheckEnabled = preferences[Keys.AutoUpdateCheckEnabled] ?: true,
-                    customImageDownloadUri = preferences[Keys.CustomImageDownloadUri] ?: ""
+                    customImageDownloadUri = preferences[Keys.CustomImageDownloadUri] ?: "",
+                    syncEnabledAnilist = preferences[Keys.SyncEnabledAnilist] ?: false,
+                    syncEnabledMal = preferences[Keys.SyncEnabledMal] ?: false
                 )
             )
         }
@@ -975,6 +979,14 @@ class SettingsDataStore(
 
     suspend fun setEnableAssExtractor(enabled: Boolean) {
         context.settingsDataStore.edit { it[Keys.EnableAssExtractor] = enabled }
+    }
+
+    suspend fun setSyncEnabledAnilist(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.SyncEnabledAnilist] = enabled }
+    }
+
+    suspend fun setSyncEnabledMal(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.SyncEnabledMal] = enabled }
     }
 }
 

@@ -42,7 +42,7 @@ class KitsugiMediaMutationsClient {
         }
     }
 
-    suspend fun postReply(targetId: Int, isActivity: Boolean, text: String): Boolean {
+    suspend fun postReply(targetId: Int, isActivity: Boolean, text: String, parentCommentId: Int? = null): Boolean {
         return withContext(Dispatchers.IO) {
             if (isActivity) {
                 val query = """
@@ -56,12 +56,23 @@ class KitsugiMediaMutationsClient {
                     response != null && !response.contains("errors")
                 }.getOrElse { false }
             } else {
-                val query = """
-                    mutation (${'$'}threadId: Int, ${'$'}comment: String) {
-                        SaveThreadComment(threadId: ${'$'}threadId, comment: ${'$'}comment) { id }
-                    }
-                """.trimIndent()
+                val query = if (parentCommentId != null) {
+                    """
+                        mutation (${'$'}threadId: Int, ${'$'}comment: String, ${'$'}parentCommentId: Int) {
+                            SaveThreadComment(threadId: ${'$'}threadId, comment: ${'$'}comment, parentCommentId: ${'$'}parentCommentId) { id }
+                        }
+                    """.trimIndent()
+                } else {
+                    """
+                        mutation (${'$'}threadId: Int, ${'$'}comment: String) {
+                            SaveThreadComment(threadId: ${'$'}threadId, comment: ${'$'}comment) { id }
+                        }
+                    """.trimIndent()
+                }
                 val variables = JSONObject().put("threadId", targetId).put("comment", text)
+                if (parentCommentId != null) {
+                    variables.put("parentCommentId", parentCommentId)
+                }
                 runCatching {
                     val response = KitsugiApiBase.executeAniListQuery(query, variables)
                     response != null && !response.contains("errors")

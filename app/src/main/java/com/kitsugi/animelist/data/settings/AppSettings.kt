@@ -159,7 +159,9 @@ data class AppSettings(
     val splashAnimationEnabled: Boolean = true,
     val splashSoundEnabled: Boolean = true,
     val autoUpdateCheckEnabled: Boolean = true,
-    val customImageDownloadUri: String = ""
+    val customImageDownloadUri: String = "",
+    val syncEnabledAnilist: Boolean = false,
+    val syncEnabledMal: Boolean = false
 )
 
 enum class FrameRateMatchingMode {

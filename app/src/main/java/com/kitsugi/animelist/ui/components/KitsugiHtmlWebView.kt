@@ -296,6 +296,8 @@ private fun formatCompatibleHtml(html: String): String {
         }
         .replace(Regex("\\[([^]]+)]\\(([^)]+)\\)"), "<a href=\"$2\">$1</a>")
         .replace(Regex("__(.+)__"), "<b>$1</b>")
+        .replace(Regex("\\*\\*(.+?)\\*\\*"), "<b>$1</b>")
+        .replace(Regex("\\*(.+?)\\*"), "<i>$1</i>")
         .replace(Regex("~~~(.*?)~~~", RegexOption.DOT_MATCHES_ALL)) { match ->
             "<div style=\"text-align: center;\">${match.groupValues[1]}</div>"
         }
