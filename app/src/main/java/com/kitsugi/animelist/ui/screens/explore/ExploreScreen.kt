@@ -63,6 +63,7 @@ import com.kitsugi.animelist.model.MediaType
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -696,7 +697,8 @@ fun ExploreScreen(
                                                     alreadyInList = isAlreadyInList(result),
                                                     onItemClick = { onOpenApiDetail(result) },
                                                     onLongClick = { onLongClickItem(result) },
-                                                    titleLanguage = titleLanguage
+                                                    titleLanguage = titleLanguage,
+                                                    blurAdultMedia = blurAdultMedia
                                                 )
                                             }
                                         }
@@ -1153,7 +1155,8 @@ fun ExploreScreen(
                                                     alreadyInList = isAlreadyInList(result),
                                                     onItemClick = { onOpenApiDetail(result) },
                                                     onLongClick = { onLongClickItem(result) },
-                                                    titleLanguage = titleLanguage
+                                                    titleLanguage = titleLanguage,
+                                                    blurAdultMedia = blurAdultMedia
                                                 )
                                             }
                                         }
@@ -1436,6 +1439,7 @@ fun AiringSoonHorizontalCard(
     onItemClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
     titleLanguage: String = "ROMAJI",
+    blurAdultMedia: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val displayTitle = when (titleLanguage) {
@@ -1482,7 +1486,12 @@ fun AiringSoonHorizontalCard(
                 model = result.imageUrl,
                 contentDescription = displayTitle,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(
+                        if (blurAdultMedia && result.isAdult) Modifier.blur(24.dp)
+                        else Modifier
+                    )
             )
         }
 
