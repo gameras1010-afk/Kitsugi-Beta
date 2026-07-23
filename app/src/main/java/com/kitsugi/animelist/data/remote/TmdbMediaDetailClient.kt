@@ -24,10 +24,11 @@ internal object TmdbMediaDetailClient {
         tmdbId: Int,
         isMovie: Boolean,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): KitsugiMediaDetail? {
         val typePath = if (isMovie) "movie" else "tv"
-        val lang = "tr-TR"
+        val lang = language
 
         val trUrl = "https://api.themoviedb.org/3/$typePath/$tmdbId?api_key=$apiKey&language=$lang"
         val enUrl = "https://api.themoviedb.org/3/$typePath/$tmdbId?api_key=$apiKey&language=en-US"
@@ -112,7 +113,7 @@ internal object TmdbMediaDetailClient {
 
             val watchProviders = fetchWatchProviders(tmdbId, isMovie, apiKey, executeGet)
             val mediaImages = fetchMediaImages(tmdbId, isMovie, apiKey, executeGet)
-            val (trailer, videoThemes) = fetchVideos(tmdbId, isMovie, apiKey, executeGet)
+            val (trailer, videoThemes) = fetchVideos(tmdbId, isMovie, apiKey, language, executeGet)
 
             val score100 = (rating * 10).toInt().coerceIn(0, 100)
 
@@ -240,10 +241,11 @@ internal object TmdbMediaDetailClient {
         tmdbId: Int,
         isMovie: Boolean,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): Pair<String?, List<KitsugiTheme>> = withContext(Dispatchers.IO) {
         val typePath = if (isMovie) "movie" else "tv"
-        val trUrl = "https://api.themoviedb.org/3/$typePath/$tmdbId/videos?api_key=$apiKey&language=tr-TR"
+        val trUrl = "https://api.themoviedb.org/3/$typePath/$tmdbId/videos?api_key=$apiKey&language=$language"
         val enUrl = "https://api.themoviedb.org/3/$typePath/$tmdbId/videos?api_key=$apiKey&language=en-US"
 
         try {

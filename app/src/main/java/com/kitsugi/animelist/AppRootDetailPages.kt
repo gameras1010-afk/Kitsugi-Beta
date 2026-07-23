@@ -194,6 +194,9 @@ fun AppRootDetailPages(
                     onStudioClick = { studioId, studioSource, studioName, studioImageUrl ->
                         navState.navigateToDetail(DetailScreen.StudioDetail(studioId, studioSource, studioName, studioImageUrl))
                     },
+                    onUserProfileClick = { userId, username, avatarUrl ->
+                        navState.navigateToDetail(DetailScreen.UserProfile(userId, username, avatarUrl))
+                    },
                     onSearchQuery = triggerSearch,
                     onSearchByGenre = triggerSearchByGenre,
                     onSearchByTag = triggerSearchByTag,
@@ -245,6 +248,7 @@ fun AppRootDetailPages(
                 navState.stateHolder.SaveableStateProvider(key = "media_${key.depth}_${key.entryId}") {
                     MediaEntryDetailPage(
                         entry = entry,
+                        settingsDataStore = settingsDataStore,
                         onBackClick = { navState.popDetailStack() },
                         onIncrementProgressClick = {
                             onIncrementEntryProgress(entry)
@@ -289,6 +293,9 @@ fun AppRootDetailPages(
                         },
                         onStudioClick = { studioId, studioSource, studioName, studioImageUrl ->
                             navState.navigateToDetail(DetailScreen.StudioDetail(studioId, studioSource, studioName, studioImageUrl))
+                        },
+                        onUserProfileClick = { userId, username, avatarUrl ->
+                            navState.navigateToDetail(DetailScreen.UserProfile(userId, username, avatarUrl))
                         },
                         onSearchQuery = triggerSearch,
                         onSearchByGenre = triggerSearchByGenre,
@@ -456,16 +463,27 @@ fun AppRootDetailPages(
                     isMalConnected = authViewModel.isMalConnected,
                     isSimklConnected = authViewModel.isSimklConnected,
                     onBack = { navState.popDetailStack() },
-                    onOpenApiDetail = { mediaId, source ->
-                        val existingEntry = mediaEntries.firstMatching(mediaId, source)
+                    onOpenApiDetail = { mediaId, source, mediaTypeStr ->
+                        val stableId = if (source.equals("anilist", ignoreCase = true) && mediaId < 100_000_000) {
+                            mediaId + 100_000_000
+                        } else {
+                            mediaId
+                        }
+                        val existingEntry = mediaEntries.firstMatching(stableId, source)
                         if (existingEntry != null) {
                             navState.navigateToDetail(DetailScreen.MediaDetail(existingEntry.id))
                         } else {
+                            val mediaType = when (mediaTypeStr?.lowercase()) {
+                                "manga" -> MediaType.Manga
+                                "movie" -> MediaType.Movie
+                                "tv" -> MediaType.TvShow
+                                else -> MediaType.Anime
+                            }
                             val searchResult = JikanSearchResult(
-                                malId = mediaId,
+                                malId = stableId,
                                 title = "Yükleniyor...",
                                 subtitle = "",
-                                type = MediaType.Anime,
+                                type = mediaType,
                                 total = null,
                                 score = null,
                                 isAdult = false,

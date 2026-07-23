@@ -637,7 +637,7 @@ fun AiringEntryGridCard(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
-            // Yayınlandı overlay
+            // Yayında overlay
             if (hasAired) {
                 Box(
                     modifier = Modifier
@@ -650,7 +650,7 @@ fun AiringEntryGridCard(
                 )
                 Icon(
                     imageVector = Icons.Rounded.CheckCircle,
-                    contentDescription = "Yayınlandı",
+                    contentDescription = "Yayında",
                     tint = KitsugiColors.AccentGreen,
                     modifier = Modifier
                         .size(24.dp)
@@ -755,7 +755,7 @@ fun AiringEntryCard(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
-            // Yayınlandı overlay
+            // Yayında overlay
             if (hasAired) {
                 Box(
                     modifier = Modifier
@@ -768,7 +768,7 @@ fun AiringEntryCard(
                 )
                 Icon(
                     imageVector = Icons.Rounded.CheckCircle,
-                    contentDescription = "Yayınlandı",
+                    contentDescription = "Yayında",
                     tint = KitsugiColors.AccentGreen,
                     modifier = Modifier
                         .size(18.dp)
@@ -846,28 +846,28 @@ private fun Long.secondsToLegibleText(): String {
     return when {
         days > 30 -> {
             val months = days / 30
-            "$months ay sonra"
+            "$months ay sonra yayında"
         }
         days > 7 -> {
             val weeks = days / 7
-            "$weeks hafta sonra"
+            "$weeks hafta sonra yayında"
         }
         days >= 1 -> {
             if (hours > 0) {
-                "$days gün $hours saat sonra"
+                "$days gün $hours saat sonra yayında"
             } else {
-                "$days gün sonra"
+                "$days gün sonra yayında"
             }
         }
         hours >= 1 -> {
             if (minutes > 0) {
-                "$hours saat $minutes dakika sonra"
+                "$hours saat $minutes dakika sonra yayında"
             } else {
-                "$hours saat sonra"
+                "$hours saat sonra yayında"
             }
         }
         else -> {
-            if (minutes > 0) "$minutes dakika sonra" else "Az sonra"
+            if (minutes > 0) "$minutes dakika sonra yayında" else "Az sonra yayında"
         }
     }
 }
@@ -881,7 +881,7 @@ private fun AiringTimeText(entry: AiringEntry, episode: Int? = null) {
             while (true) {
                 val remaining = entry.airingAt - System.currentTimeMillis() / 1000L
                 if (remaining <= 0) {
-                    text = "${entry.formattedTime()} • Yayınlandı"
+                    text = "${entry.formattedTime()} • Yayında"
                     break
                 }
                 text = "${entry.formattedTime()} • ${remaining.secondsToLegibleText()}"
@@ -890,7 +890,7 @@ private fun AiringTimeText(entry: AiringEntry, episode: Int? = null) {
             }
         }
     } else {
-        text = "${entry.formattedTime()} • Yayınlandı"
+        text = "${entry.formattedTime()} • Yayında"
     }
 
     val displayText = if (episode != null) "$episode. Bölüm • $text" else text

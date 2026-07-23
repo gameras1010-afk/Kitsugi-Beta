@@ -156,7 +156,7 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                         Viewer {
                             id
                             name
-                            about(asHtml: false)
+                            about(asHtml: true)
                             avatar {
                                 large
                             }
@@ -476,6 +476,7 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                                     replyCount
                                     isLiked
                                     user {
+                                        id
                                         name
                                         avatar {
                                             large
@@ -491,6 +492,7 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                                     replyCount
                                     isLiked
                                     user {
+                                        id
                                         name
                                         avatar {
                                             large
@@ -531,6 +533,7 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                     val act = activityArray.getJSONObject(i)
                     val typename = act.optString("__typename")
                     val user = act.optJSONObject("user")
+                    val actUserId = user?.optInt("id")
                     val userName = user?.optNullableString("name") ?: "Bilinmeyen"
                     val userAvatar = user?.optJSONObject("avatar")?.optNullableString("large")
                     val createdAt = act.optLong("createdAt", 0L)
@@ -542,6 +545,7 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                         list.add(
                             ProfileActivityItem.TextActivity(
                                 id = act.getInt("id").toString(),
+                                userId = actUserId,
                                 userName = userName,
                                 userAvatar = userAvatar,
                                 text = act.optNullableString("text") ?: "",
@@ -564,6 +568,7 @@ class KitsugiProfileViewModel(application: Application) : AndroidViewModel(appli
                         list.add(
                             ProfileActivityItem.ListActivity(
                                 id = act.getInt("id").toString(),
+                                userId = actUserId,
                                 userName = userName,
                                 userAvatar = userAvatar,
                                 mediaTitle = mediaTitle,
@@ -1610,6 +1615,7 @@ data class ProfileFavoriteItem(
 
 sealed class ProfileActivityItem {
     abstract val id: String
+    abstract val userId: Int?
     abstract val userName: String
     abstract val userAvatar: String?
     abstract val createdAt: Long
@@ -1619,6 +1625,7 @@ sealed class ProfileActivityItem {
 
     data class TextActivity(
         override val id: String,
+        override val userId: Int?,
         override val userName: String,
         override val userAvatar: String?,
         val text: String,
@@ -1630,6 +1637,7 @@ sealed class ProfileActivityItem {
 
     data class ListActivity(
         override val id: String,
+        override val userId: Int?,
         override val userName: String,
         override val userAvatar: String?,
         val mediaTitle: String,

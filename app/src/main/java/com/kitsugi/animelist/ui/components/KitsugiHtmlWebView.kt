@@ -29,7 +29,8 @@ import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 fun KitsugiHtmlWebView(
     html: String,
     modifier: Modifier = Modifier,
-    hardwareEnabled: Boolean = true
+    hardwareEnabled: Boolean = true,
+    onImageClick: ((urls: List<String>, index: Int) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val accentColor = LocalKitsugiAccent.current
@@ -85,6 +86,23 @@ fun KitsugiHtmlWebView(
             webView.settings.useWideViewPort = true
             webView.settings.loadWithOverviewMode = true
             webView.settings.javaScriptEnabled = true
+            if (onImageClick != null) {
+                webView.addJavascriptInterface(object {
+                    @android.webkit.JavascriptInterface
+                    fun onImageClick(urlsJson: String, index: Int) {
+                        runCatching {
+                            val jsonArray = org.json.JSONArray(urlsJson)
+                            val urls = mutableListOf<String>()
+                            for (i in 0 until jsonArray.length()) {
+                                urls.add(jsonArray.getString(i))
+                            }
+                            webView.post {
+                                onImageClick(urls, index)
+                            }
+                        }
+                    }
+                }, "AndroidInterface")
+            }
         },
         client = webClient
     )
@@ -191,9 +209,14 @@ private fun generateHtml(
                 cursor: pointer;
                 transition: background-color 0.2s;
             }
+            .markdown_spoiler:hover, .markdown_spoiler:focus, .markdown_spoiler:active {
+                background-color: transparent;
+            }
             .markdown_spoiler.revealed {
-                background-color: rgba(255, 255, 255, 0.1);
-                color: $fontHex;
+                background-color: transparent;
+            }
+            .markdown_spoiler:not(.revealed) a {
+                color: $fontHex !important;
             }
             blockquote {
                 margin: 12px 0;
@@ -240,6 +263,26 @@ private fun generateHtml(
         </head>
         <BODY>
         <div id="kitsugi-container">${formatCompatibleHtml(html)}</div>
+        <script type="text/javascript">
+            document.addEventListener("DOMContentLoaded", function() {
+                var spoilers = document.querySelectorAll(".markdown_spoiler");
+                spoilers.forEach(function(el) {
+                    el.addEventListener("click", function() {
+                        el.classList.toggle("revealed");
+                    });
+                });
+                
+                var images = document.querySelectorAll("img");
+                var imageUrls = Array.from(images).map(function(img) { return img.src; });
+                images.forEach(function(img, index) {
+                    img.addEventListener("click", function() {
+                        if (window.AndroidInterface) {
+                            window.AndroidInterface.onImageClick(JSON.stringify(imageUrls), index);
+                        }
+                    });
+                });
+            });
+        </script>
         </BODY>
         </HTML>
     """.trimIndent()

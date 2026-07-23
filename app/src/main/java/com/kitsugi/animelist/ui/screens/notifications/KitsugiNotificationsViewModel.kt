@@ -29,7 +29,8 @@ data class NotifItem(
     val dateText: String?,
     val isUnread: Boolean = false,
     val mediaId: Int? = null,
-    val activityId: Int? = null
+    val activityId: Int? = null,
+    val mediaType: String? = null
 )
 
 // ─── UI State ─────────────────────────────────────────────────────────────────
@@ -139,7 +140,8 @@ class KitsugiNotificationsViewModel(application: Application) : AndroidViewModel
                         body = body,
                         dateText = n.dateText,
                         mediaId = n.mediaId,
-                        activityId = n.activityId
+                        activityId = n.activityId,
+                        mediaType = n.mediaType?.lowercase()
                     )
                 }
 
@@ -190,7 +192,8 @@ class KitsugiNotificationsViewModel(application: Application) : AndroidViewModel
                         title = entry.title,
                         body = ctx.getString(R.string.notif_mal_episode_released, entry.episode),
                         dateText = dateText,
-                        mediaId = entry.malId
+                        mediaId = entry.malId,
+                        mediaType = "anime"
                     )
                 }.sortedByDescending { it.id }
 
@@ -229,13 +232,19 @@ class KitsugiNotificationsViewModel(application: Application) : AndroidViewModel
                     }
                 }
                 val items = matched.map { item ->
+                    val mType = when (item.type) {
+                        com.kitsugi.animelist.model.MediaType.Movie -> "movie"
+                        com.kitsugi.animelist.model.MediaType.TvShow -> "tv"
+                        else -> "anime"
+                    }
                     NotifItem(
                         id = "simkl_${item.malId}",
                         imageUrl = item.imageUrl,
                         title = item.title,
                         body = ctx.getString(R.string.notif_simkl_new_content),
                         dateText = null,
-                        mediaId = item.malId
+                        mediaId = item.malId,
+                        mediaType = mType
                     )
                 }
                 _tmdbSimkl.value = NotifUiState(items = items, isLoading = false, hasMore = false)

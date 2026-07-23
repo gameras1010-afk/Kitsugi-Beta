@@ -35,6 +35,8 @@ import com.kitsugi.animelist.utils.PreferenceHelpers
 import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
 import kotlinx.coroutines.launch
 
+import androidx.compose.foundation.clickable
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KitsugiAllActivitiesBottomSheet(
@@ -43,6 +45,7 @@ fun KitsugiAllActivitiesBottomSheet(
     mediaType: MediaType = MediaType.Anime,
     apiClient: JikanApiClient,
     titleLanguage: String = "ROMAJI",
+    onUserProfileClick: ((userId: Int?, username: String, avatarUrl: String?) -> Unit)? = null,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
@@ -264,41 +267,52 @@ fun KitsugiAllActivitiesBottomSheet(
                                 .padding(14.dp)
                         ) {
                             Row(
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .clip(CircleShape)
-                                        .background(KitsugiColors.SurfaceSoft)
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = if (onUserProfileClick != null) {
+                                        Modifier
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .clickable { onUserProfileClick(act.userId, act.username, act.avatarUrl) }
+                                            .padding(4.dp)
+                                    } else Modifier
                                 ) {
-                                    if (!act.avatarUrl.isNullOrBlank()) {
-                                        AsyncImage(
-                                            model = act.avatarUrl,
-                                            contentDescription = act.username,
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentScale = ContentScale.Crop
-                                        )
-                                    } else {
-                                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                            Text(
-                                                text = act.username.take(1).uppercase(),
-                                                color = KitsugiColors.TextMuted,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 11.sp
+                                    Box(
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                            .clip(CircleShape)
+                                            .background(KitsugiColors.SurfaceSoft)
+                                    ) {
+                                        if (!act.avatarUrl.isNullOrBlank()) {
+                                            AsyncImage(
+                                                model = act.avatarUrl,
+                                                contentDescription = act.username,
+                                                modifier = Modifier.fillMaxSize(),
+                                                contentScale = ContentScale.Crop
                                             )
+                                        } else {
+                                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                                Text(
+                                                    text = act.username.take(1).uppercase(),
+                                                    color = KitsugiColors.TextMuted,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 11.sp
+                                                )
+                                            }
                                         }
                                     }
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    Text(
+                                        text = act.username,
+                                        color = KitsugiColors.TextPrimary,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
                                 }
-
-                                Spacer(modifier = Modifier.width(8.dp))
-
-                                Text(
-                                    text = act.username,
-                                    color = KitsugiColors.TextPrimary,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
 
                                 Spacer(modifier = Modifier.weight(1f))
 
@@ -451,6 +465,7 @@ fun KitsugiAllActivitiesBottomSheet(
             activityId = activeActivityIdForDetail!!,
             apiClient = apiClient,
             titleLanguage = titleLanguage,
+            onUserProfileClick = onUserProfileClick,
             onDismiss = { activeActivityIdForDetail = null }
         )
     }

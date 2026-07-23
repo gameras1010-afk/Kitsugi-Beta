@@ -44,6 +44,8 @@ import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+import androidx.compose.foundation.clickable
+
 /**
  * A single forum comment/reply card used inside topic detail sheets.
  *
@@ -57,7 +59,8 @@ internal fun KitsugiForumCommentCard(
     comment: KitsugiForumReply,
     displayText: String,
     apiClient: JikanApiClient,
-    coroutineScope: CoroutineScope
+    coroutineScope: CoroutineScope,
+    onUserProfileClick: ((userId: Int?, username: String, avatarUrl: String?) -> Unit)? = null
 ) {
     val accentColor = LocalKitsugiAccent.current
     val context = LocalContext.current
@@ -72,38 +75,51 @@ internal fun KitsugiForumCommentCard(
             .padding(12.dp)
     ) {
         // Author row
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .clip(CircleShape)
-                    .background(KitsugiColors.SurfaceSoft)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = if (onUserProfileClick != null) {
+                    Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onUserProfileClick(comment.userId, comment.username, comment.avatarUrl) }
+                        .padding(4.dp)
+                } else Modifier
             ) {
-                if (!comment.avatarUrl.isNullOrBlank()) {
-                    AsyncImage(
-                        model = comment.avatarUrl,
-                        contentDescription = comment.username,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = comment.username.take(1).uppercase(),
-                            color = KitsugiColors.TextMuted,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 11.sp
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(CircleShape)
+                        .background(KitsugiColors.SurfaceSoft)
+                ) {
+                    if (!comment.avatarUrl.isNullOrBlank()) {
+                        AsyncImage(
+                            model = comment.avatarUrl,
+                            contentDescription = comment.username,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
                         )
+                    } else {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(
+                                text = comment.username.take(1).uppercase(),
+                                color = KitsugiColors.TextMuted,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp
+                            )
+                        }
                     }
                 }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = comment.username,
+                    color = KitsugiColors.TextPrimary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = comment.username,
-                color = KitsugiColors.TextPrimary,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
-            )
             Spacer(modifier = Modifier.weight(1f))
             if (!comment.dateText.isNullOrBlank()) {
                 Text(

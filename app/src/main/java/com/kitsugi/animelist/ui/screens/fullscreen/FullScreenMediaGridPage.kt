@@ -175,18 +175,19 @@ fun FullScreenMediaGridPage(
                         if (title.startsWith("İzlemeye Devam") || title.startsWith("Planladıklarım")) emptyList()
                         else when (categoryType) {
                             ExploreCategoryType.TOP_ANIME -> tmdbApiClient.getTrendingAll(np)
-                            ExploreCategoryType.TRENDING_ANIME -> tmdbApiClient.getTrendingAll(np)
+                            ExploreCategoryType.TRENDING_ANIME -> tmdbApiClient.getTrendingAnime(np)
                             ExploreCategoryType.AIRING_ANIME -> tmdbApiClient.getTrendingShows(np)
                             ExploreCategoryType.MOVIE_ANIME -> tmdbApiClient.getTrendingMovies(np)
                             ExploreCategoryType.UPCOMING_ANIME -> tmdbApiClient.getPopularMovies(np)
-                            ExploreCategoryType.TOP_MANGA -> tmdbApiClient.getTopRatedMovies(np)
+                            ExploreCategoryType.TOP_MANGA -> tmdbApiClient.getPopularShows(np)
                             ExploreCategoryType.PUBLISHING_MANGA -> tmdbApiClient.getTopRatedMovies(np)
                             ExploreCategoryType.SEASONAL_ANIME -> tmdbApiClient.getTopRatedShows(np)
-                            ExploreCategoryType.TRENDING_MANGA -> emptyList()
-                            ExploreCategoryType.NEWLY_ADDED_ANIME -> emptyList()
-                            ExploreCategoryType.NEWLY_ADDED_MANGA -> emptyList()
+                            ExploreCategoryType.TRENDING_MANGA -> tmdbApiClient.getUpcomingAnime(np)
+                            ExploreCategoryType.NEWLY_ADDED_ANIME -> tmdbApiClient.getPopularAnime(np)
+                            else -> emptyList()
                         }
                     }
+
                 }
                 if (newItems.isNotEmpty()) { loadedResults = loadedResults + newItems; currentPage = np }
                 else hasMorePages = false

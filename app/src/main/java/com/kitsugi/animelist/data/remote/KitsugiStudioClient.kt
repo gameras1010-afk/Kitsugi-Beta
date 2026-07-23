@@ -53,9 +53,10 @@ class KitsugiStudioClient {
 
     private suspend fun fetchTmdbStudioDetail(studioId: Int): KitsugiStudioDetail? {
         val apiKey = TmdbApiClient.getActiveApiKey()
+        val lang = TmdbApiClient.getActiveLanguage()
         val infoUrl = URL("https://api.themoviedb.org/3/company/$studioId?api_key=$apiKey")
-        val moviesUrl = URL("https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&with_companies=$studioId&language=tr-TR&sort_by=popularity.desc")
-        val tvUrl = URL("https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&with_companies=$studioId&language=tr-TR&sort_by=popularity.desc")
+        val moviesUrl = URL("https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&with_companies=$studioId&language=$lang&sort_by=popularity.desc")
+        val tvUrl = URL("https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&with_companies=$studioId&language=$lang&sort_by=popularity.desc")
 
         return runCatching {
             val detailResponse = KitsugiApiBase.executeGetRequest(infoUrl) ?: return@runCatching null

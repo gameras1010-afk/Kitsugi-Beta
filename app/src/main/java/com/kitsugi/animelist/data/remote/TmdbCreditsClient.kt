@@ -23,10 +23,11 @@ internal object TmdbCreditsClient {
         tmdbId: Int,
         isMovie: Boolean,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): Pair<List<KitsugiCharacter>, List<KitsugiStaff>> = withContext(Dispatchers.IO) {
         val typePath = if (isMovie) "movie" else "tv"
-        val url = "https://api.themoviedb.org/3/$typePath/$tmdbId/credits?api_key=$apiKey&language=tr-TR"
+        val url = "https://api.themoviedb.org/3/$typePath/$tmdbId/credits?api_key=$apiKey&language=$language"
         try {
             val responseText = executeGet(url) ?: return@withContext Pair(emptyList(), emptyList())
             val root = JSONObject(responseText)
@@ -86,11 +87,12 @@ internal object TmdbCreditsClient {
         tmdbId: Int,
         isMovie: Boolean,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): List<KitsugiRelation> = withContext(Dispatchers.IO) {
         val list = mutableListOf<KitsugiRelation>()
         if (isMovie) {
-            val movieUrl = "https://api.themoviedb.org/3/movie/$tmdbId?api_key=$apiKey&language=tr-TR"
+            val movieUrl = "https://api.themoviedb.org/3/movie/$tmdbId?api_key=$apiKey&language=$language"
             try {
                 val movieResp = executeGet(movieUrl)
                 if (movieResp != null) {
@@ -99,7 +101,7 @@ internal object TmdbCreditsClient {
                     if (belongsToCollection != null) {
                         val collectionId = belongsToCollection.optInt("id")
                         if (collectionId > 0) {
-                            val collectionUrl = "https://api.themoviedb.org/3/collection/$collectionId?api_key=$apiKey&language=tr-TR"
+                            val collectionUrl = "https://api.themoviedb.org/3/collection/$collectionId?api_key=$apiKey&language=$language"
                             val collectionResp = executeGet(collectionUrl)
                             if (collectionResp != null) {
                                 val collJson = JSONObject(collectionResp)
@@ -133,7 +135,7 @@ internal object TmdbCreditsClient {
 
         if (list.isEmpty()) {
             val typePath = if (isMovie) "movie" else "tv"
-            val url = "https://api.themoviedb.org/3/$typePath/$tmdbId/similar?api_key=$apiKey&language=tr-TR"
+            val url = "https://api.themoviedb.org/3/$typePath/$tmdbId/similar?api_key=$apiKey&language=$language"
             try {
                 val responseText = executeGet(url)
                 if (responseText != null) {
@@ -168,10 +170,11 @@ internal object TmdbCreditsClient {
         tmdbId: Int,
         isMovie: Boolean,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): List<KitsugiRelation> = withContext(Dispatchers.IO) {
         val typePath = if (isMovie) "movie" else "tv"
-        val url = "https://api.themoviedb.org/3/$typePath/$tmdbId/recommendations?api_key=$apiKey&language=tr-TR"
+        val url = "https://api.themoviedb.org/3/$typePath/$tmdbId/recommendations?api_key=$apiKey&language=$language"
         try {
             val responseText = executeGet(url) ?: return@withContext emptyList()
             val root = JSONObject(responseText)
@@ -203,10 +206,11 @@ internal object TmdbCreditsClient {
         tmdbId: Int,
         isMovie: Boolean,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): List<KitsugiReview> = withContext(Dispatchers.IO) {
         val typePath = if (isMovie) "movie" else "tv"
-        val url = "https://api.themoviedb.org/3/$typePath/$tmdbId/reviews?api_key=$apiKey"
+        val url = "https://api.themoviedb.org/3/$typePath/$tmdbId/reviews?api_key=$apiKey&language=$language"
         try {
             val responseText = executeGet(url) ?: return@withContext emptyList()
             val root = JSONObject(responseText)
@@ -251,9 +255,10 @@ internal object TmdbCreditsClient {
     suspend fun fetchPersonCharacterDetail(
         personId: Int,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): KitsugiCharacterDetail? = withContext(Dispatchers.IO) {
-        val url = "https://api.themoviedb.org/3/person/$personId?api_key=$apiKey&language=tr-TR"
+        val url = "https://api.themoviedb.org/3/person/$personId?api_key=$apiKey&language=$language"
         try {
             val responseText = executeGet(url) ?: return@withContext null
             val root = JSONObject(responseText)
@@ -273,7 +278,7 @@ internal object TmdbCreditsClient {
                     if (nameStr.isNotBlank()) alternativeNames.add(nameStr)
                 }
             }
-            val appearances = fetchPersonMediaAppearances(personId, apiKey, executeGet)
+            val appearances = fetchPersonMediaAppearances(personId, apiKey, language, executeGet)
             KitsugiCharacterDetail(
                 id = personId, name = name, nativeName = null,
                 alternativeNames = alternativeNames, imageUrl = imageUrl,
@@ -289,9 +294,10 @@ internal object TmdbCreditsClient {
     private suspend fun fetchPersonMediaAppearances(
         personId: Int,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): List<KitsugiCharacterMediaAppearance> {
-        val url = "https://api.themoviedb.org/3/person/$personId/combined_credits?api_key=$apiKey&language=tr-TR"
+        val url = "https://api.themoviedb.org/3/person/$personId/combined_credits?api_key=$apiKey&language=$language"
         return try {
             val responseText = executeGet(url) ?: return emptyList()
             val root = JSONObject(responseText)
@@ -323,9 +329,10 @@ internal object TmdbCreditsClient {
     suspend fun fetchPersonStaffDetail(
         personId: Int,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): KitsugiStaffDetail? = withContext(Dispatchers.IO) {
-        val url = "https://api.themoviedb.org/3/person/$personId?api_key=$apiKey&language=tr-TR"
+        val url = "https://api.themoviedb.org/3/person/$personId?api_key=$apiKey&language=$language"
         try {
             val responseText = executeGet(url) ?: return@withContext null
             val root = JSONObject(responseText)
@@ -347,8 +354,8 @@ internal object TmdbCreditsClient {
             }
             val department = root.optString("known_for_department", "Ekip Üyesi")
                 .takeIf { it.isNotBlank() }?.toTurkishStaffRole()
-            val works = fetchPersonMediaWorks(personId, apiKey, executeGet)
-            val characterRoles = fetchPersonCharacterRoles(personId, apiKey, executeGet)
+            val works = fetchPersonMediaWorks(personId, apiKey, language, executeGet)
+            val characterRoles = fetchPersonCharacterRoles(personId, apiKey, language, executeGet)
             KitsugiStaffDetail(
                 id = personId, name = name, nativeName = null,
                 alternativeNames = alternativeNames, imageUrl = imageUrl,
@@ -365,9 +372,10 @@ internal object TmdbCreditsClient {
     private suspend fun fetchPersonMediaWorks(
         personId: Int,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): List<KitsugiStaffMediaWork> {
-        val url = "https://api.themoviedb.org/3/person/$personId/combined_credits?api_key=$apiKey&language=tr-TR"
+        val url = "https://api.themoviedb.org/3/person/$personId/combined_credits?api_key=$apiKey&language=$language"
         return try {
             val responseText = executeGet(url) ?: return emptyList()
             val root = JSONObject(responseText)
@@ -399,9 +407,10 @@ internal object TmdbCreditsClient {
     private suspend fun fetchPersonCharacterRoles(
         personId: Int,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): List<KitsugiStaffCharacterRole> {
-        val url = "https://api.themoviedb.org/3/person/$personId/combined_credits?api_key=$apiKey&language=tr-TR"
+        val url = "https://api.themoviedb.org/3/person/$personId/combined_credits?api_key=$apiKey&language=$language"
         return try {
             val responseText = executeGet(url) ?: return emptyList()
             val root = JSONObject(responseText)
@@ -446,10 +455,11 @@ internal object TmdbCreditsClient {
         tmdbId: Int,
         isMovie: Boolean,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): KitsugiStats? = withContext(Dispatchers.IO) {
         val typePath = if (isMovie) "movie" else "tv"
-        val url = "https://api.themoviedb.org/3/$typePath/$tmdbId?api_key=$apiKey&language=tr-TR"
+        val url = "https://api.themoviedb.org/3/$typePath/$tmdbId?api_key=$apiKey&language=$language"
         try {
             val responseText = executeGet(url) ?: return@withContext null
             val root = JSONObject(responseText)

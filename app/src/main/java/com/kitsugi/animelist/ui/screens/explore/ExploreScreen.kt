@@ -494,8 +494,216 @@ fun ExploreScreen(
                                 )
                             }
                         } else if (viewModel.selectedPlatform == ExplorePlatform.TMDB) {
+                            // ─── TMDB KATEGORİLER (Collapsible Section) ───
+                            item {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(KitsugiColors.Surface.copy(alpha = 0.4f))
+                                            .clickable { isCategoriesExpanded = !isCategoriesExpanded }
+                                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                imageVector = androidx.compose.material.icons.Icons.Rounded.GridView,
+                                                contentDescription = null,
+                                                tint = accentColor,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = "Kategoriler",
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                color = KitsugiColors.TextPrimary
+                                            )
+                                        }
+                                        Icon(
+                                            imageVector = if (isCategoriesExpanded) androidx.compose.material.icons.Icons.Rounded.KeyboardArrowUp else androidx.compose.material.icons.Icons.Rounded.KeyboardArrowDown,
+                                            contentDescription = "Genişlet/Daralt",
+                                            tint = KitsugiColors.TextSecondary
+                                        )
+                                    }
+                                    
+                                    AnimatedVisibility(
+                                        visible = isCategoriesExpanded,
+                                        enter = expandVertically() + fadeIn(),
+                                        exit = shrinkVertically() + fadeOut()
+                                    ) {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(top = 16.dp, start = 4.dp, end = 4.dp)
+                                        ) {
+                                            // ── Dizi ve Film Alt Kategorisi ──
+                                            Text(
+                                                text = "Dizi ve Film",
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = KitsugiColors.TextSecondary
+                                            )
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            LazyRow(
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = "Trend Her Şey",
+                                                        onClick = { onSeeAllSection("Trend Her Şey", ExploreCategoryType.TOP_ANIME, filteredTopAnime) }
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = "Trend Diziler",
+                                                        onClick = { onSeeAllSection("Trend Diziler", ExploreCategoryType.AIRING_ANIME, filteredAiringAnime) }
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = "Trend Filmler",
+                                                        onClick = { onSeeAllSection("Trend Filmler", ExploreCategoryType.MOVIE_ANIME, filteredMovieAnime) }
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = "Popüler Diziler",
+                                                        onClick = { onSeeAllSection("Popüler Diziler", ExploreCategoryType.TOP_MANGA, filteredTopManga) }
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = "Popüler Filmler",
+                                                        onClick = { onSeeAllSection("Popüler Filmler", ExploreCategoryType.UPCOMING_ANIME, filteredUpcomingAnime) }
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = "En Yüksek Puanlı Diziler",
+                                                        onClick = { onSeeAllSection("En Yüksek Puanlı Diziler", ExploreCategoryType.SEASONAL_ANIME, filteredSeasonalAnime) }
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = "En Yüksek Puanlı Filmler",
+                                                        onClick = { onSeeAllSection("En Yüksek Puanlı Filmler", ExploreCategoryType.PUBLISHING_MANGA, filteredPublishingManga) }
+                                                    )
+                                                }
+                                            }
+                                            
+                                            Spacer(modifier = Modifier.height(20.dp))
+                                            
+                                            // ── Anime Alt Kategorisi ──
+                                            Text(
+                                                text = "Anime",
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = KitsugiColors.TextSecondary
+                                            )
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            LazyRow(
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = "Trend Animeler",
+                                                        onClick = { onSeeAllSection("Trend Animeler", ExploreCategoryType.TRENDING_ANIME, filteredTrendingAnime) }
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = "Popüler Animeler",
+                                                        onClick = { onSeeAllSection("Popüler Animeler", ExploreCategoryType.NEWLY_ADDED_ANIME, filteredNewlyAddedAnime) }
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = "Yakında Yayında (Anime)",
+                                                        onClick = { onSeeAllSection("Yakında Yayında (Anime)", ExploreCategoryType.TRENDING_MANGA, filteredTrendingManga) }
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = "Yayın Takvimi",
+                                                        onClick = onOpenAiringCalendar
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(26.dp))
+                                }
+                            }
+
+                            // ─── TMDB YAKINDA YAYINDA (Airing Soon) ───
+                            if (viewModel.airingSoonAnime.isNotEmpty()) {
+                                item {
+                                    Column(
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 20.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                text = stringResource(R.string.explore_airing_soon),
+                                                color = KitsugiColors.TextPrimary,
+                                                style = MaterialTheme.typography.titleLarge,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                            IconButton(onClick = onOpenAiringCalendar) {
+                                                Icon(
+                                                    imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                                                    contentDescription = "Yayın Takvimi",
+                                                    tint = accentColor
+                                                )
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.height(10.dp))
+
+                                        val lazyListState = remember { androidx.compose.foundation.lazy.LazyListState() }
+                                        LazyRow(
+                                            state = lazyListState,
+                                            contentPadding = PaddingValues(horizontal = 20.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                            flingBehavior = androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior(
+                                                lazyListState = lazyListState,
+                                                snapPosition = androidx.compose.foundation.gestures.snapping.SnapPosition.Start
+                                            ),
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            items(viewModel.airingSoonAnime.size) { index ->
+                                                val result = viewModel.airingSoonAnime[index]
+                                                AiringSoonHorizontalCard(
+                                                    result = result,
+                                                    alreadyInList = isAlreadyInList(result),
+                                                    onItemClick = { onOpenApiDetail(result) },
+                                                    onLongClick = { onLongClickItem(result) },
+                                                    titleLanguage = titleLanguage
+                                                )
+                                            }
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(26.dp))
+                                }
+                            }
+
                             // ─── TMDB YATAY MEDYA LİSTELERİ ───
                             item {
+
                                 KitsugiHorizontalMediaSection(
                                     title = stringResource(R.string.explore_tmdb_trending_all),
                                     results = filteredTopAnime,

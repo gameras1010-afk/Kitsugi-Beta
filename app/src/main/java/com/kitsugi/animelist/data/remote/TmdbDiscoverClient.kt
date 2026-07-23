@@ -37,19 +37,20 @@ internal object TmdbDiscoverClient {
     suspend fun getTrendingMovies(
         page: Int = 1,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): List<JikanSearchResult> = withContext(Dispatchers.IO) {
         val cacheKey = "trending_movies_$page"
         get(cacheKey)?.let { return@withContext it }
 
         // Önce trending endpoint'i dene
-        val trendUrl = "https://api.themoviedb.org/3/trending/movie/week?api_key=$apiKey&language=tr-TR&page=$page"
+        val trendUrl = "https://api.themoviedb.org/3/trending/movie/week?api_key=$apiKey&language=$language&page=$page"
         var result = parseTmdbDiscoverList(trendUrl, MediaType.Movie, executeGet)
 
         // Trending boş döndüyse discover fallback kullan
         if (result.isEmpty()) {
             Log.w(TAG, "getTrendingMovies: trending empty, falling back to discover/popularity")
-            val fallbackUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=tr-TR&sort_by=popularity.desc&page=$page"
+            val fallbackUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&sort_by=popularity.desc&page=$page"
             result = parseTmdbDiscoverList(fallbackUrl, MediaType.Movie, executeGet)
         }
 
@@ -60,17 +61,18 @@ internal object TmdbDiscoverClient {
     suspend fun getTrendingShows(
         page: Int = 1,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): List<JikanSearchResult> = withContext(Dispatchers.IO) {
         val cacheKey = "trending_shows_$page"
         get(cacheKey)?.let { return@withContext it }
 
-        val trendUrl = "https://api.themoviedb.org/3/trending/tv/week?api_key=$apiKey&language=tr-TR&page=$page"
+        val trendUrl = "https://api.themoviedb.org/3/trending/tv/week?api_key=$apiKey&language=$language&page=$page"
         var result = parseTmdbDiscoverList(trendUrl, MediaType.TvShow, executeGet)
 
         if (result.isEmpty()) {
             Log.w(TAG, "getTrendingShows: trending empty, falling back to discover/popularity")
-            val fallbackUrl = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=tr-TR&sort_by=popularity.desc&page=$page"
+            val fallbackUrl = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&sort_by=popularity.desc&page=$page"
             result = parseTmdbDiscoverList(fallbackUrl, MediaType.TvShow, executeGet)
         }
 
@@ -85,18 +87,19 @@ internal object TmdbDiscoverClient {
     suspend fun getTrendingAll(
         page: Int = 1,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): List<JikanSearchResult> = withContext(Dispatchers.IO) {
         val cacheKey = "trending_all_$page"
         get(cacheKey)?.let { return@withContext it }
 
-        val trendUrl = "https://api.themoviedb.org/3/trending/all/week?api_key=$apiKey&language=tr-TR&page=$page"
+        val trendUrl = "https://api.themoviedb.org/3/trending/all/week?api_key=$apiKey&language=$language&page=$page"
         var result = parseTmdbDiscoverListAll(trendUrl, executeGet)
 
         if (result.isEmpty()) {
             Log.w(TAG, "getTrendingAll: trending empty, merging movie+tv popular fallback")
-            val moviesUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=tr-TR&sort_by=popularity.desc&page=$page"
-            val showsUrl  = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=tr-TR&sort_by=popularity.desc&page=$page"
+            val moviesUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&sort_by=popularity.desc&page=$page"
+            val showsUrl  = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&sort_by=popularity.desc&page=$page"
             val movies = parseTmdbDiscoverList(moviesUrl, MediaType.Movie, executeGet)
             val shows  = parseTmdbDiscoverList(showsUrl, MediaType.TvShow, executeGet)
             // Film ve dizileri interleave et: 1 film, 1 dizi sırayla
@@ -121,11 +124,12 @@ internal object TmdbDiscoverClient {
     suspend fun getPopularMovies(
         page: Int = 1,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): List<JikanSearchResult> = withContext(Dispatchers.IO) {
         val cacheKey = "popular_movies_$page"
         get(cacheKey)?.let { return@withContext it }
-        val url = "https://api.themoviedb.org/3/movie/popular?api_key=$apiKey&language=tr-TR&page=$page"
+        val url = "https://api.themoviedb.org/3/movie/popular?api_key=$apiKey&language=$language&page=$page"
         val result = parseTmdbDiscoverList(url, MediaType.Movie, executeGet)
         if (result.isNotEmpty()) put(cacheKey, result)
         result
@@ -135,11 +139,12 @@ internal object TmdbDiscoverClient {
     suspend fun getPopularShows(
         page: Int = 1,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): List<JikanSearchResult> = withContext(Dispatchers.IO) {
         val cacheKey = "popular_shows_$page"
         get(cacheKey)?.let { return@withContext it }
-        val url = "https://api.themoviedb.org/3/tv/popular?api_key=$apiKey&language=tr-TR&page=$page"
+        val url = "https://api.themoviedb.org/3/tv/popular?api_key=$apiKey&language=$language&page=$page"
         val result = parseTmdbDiscoverList(url, MediaType.TvShow, executeGet)
         if (result.isNotEmpty()) put(cacheKey, result)
         result
@@ -151,11 +156,12 @@ internal object TmdbDiscoverClient {
     suspend fun getTopRatedMovies(
         page: Int = 1,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): List<JikanSearchResult> = withContext(Dispatchers.IO) {
         val cacheKey = "top_rated_movies_$page"
         get(cacheKey)?.let { return@withContext it }
-        val url = "https://api.themoviedb.org/3/movie/top_rated?api_key=$apiKey&language=tr-TR&page=$page"
+        val url = "https://api.themoviedb.org/3/movie/top_rated?api_key=$apiKey&language=$language&page=$page"
         val result = parseTmdbDiscoverList(url, MediaType.Movie, executeGet)
         if (result.isNotEmpty()) put(cacheKey, result)
         result
@@ -165,11 +171,12 @@ internal object TmdbDiscoverClient {
     suspend fun getTopRatedShows(
         page: Int = 1,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): List<JikanSearchResult> = withContext(Dispatchers.IO) {
         val cacheKey = "top_rated_shows_$page"
         get(cacheKey)?.let { return@withContext it }
-        val url = "https://api.themoviedb.org/3/tv/top_rated?api_key=$apiKey&language=tr-TR&page=$page"
+        val url = "https://api.themoviedb.org/3/tv/top_rated?api_key=$apiKey&language=$language&page=$page"
         val result = parseTmdbDiscoverList(url, MediaType.TvShow, executeGet)
         if (result.isNotEmpty()) put(cacheKey, result)
         result
@@ -182,6 +189,7 @@ internal object TmdbDiscoverClient {
         genreId: Int,
         isMovie: Boolean,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): List<JikanSearchResult> = withContext(Dispatchers.IO) {
         val cacheKey = "discover_genre_${genreId}_${if (isMovie) "movie" else "tv"}"
@@ -189,12 +197,96 @@ internal object TmdbDiscoverClient {
 
         val endpoint = if (isMovie) "movie" else "tv"
         val mediaType = if (isMovie) MediaType.Movie else MediaType.TvShow
-        val url = "https://api.themoviedb.org/3/discover/$endpoint?api_key=$apiKey&language=tr-TR&with_genres=$genreId&sort_by=popularity.desc&page=1"
+        val url = "https://api.themoviedb.org/3/discover/$endpoint?api_key=$apiKey&language=$language&with_genres=$genreId&sort_by=popularity.desc&page=1"
         val result = parseTmdbDiscoverList(url, mediaType, executeGet)
 
         if (result.isNotEmpty()) put(cacheKey, result)
         result
     }
+
+    suspend fun getTrendingAnime(
+        page: Int = 1,
+        apiKey: String,
+        language: String,
+        executeGet: suspend (String) -> String?
+    ): List<JikanSearchResult> = withContext(Dispatchers.IO) {
+        val cacheKey = "trending_anime_$page"
+        get(cacheKey)?.let { return@withContext it }
+
+        val tvUrl = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&with_genres=16&with_original_language=ja&sort_by=popularity.desc&page=$page"
+        val tvResult = parseTmdbDiscoverList(tvUrl, MediaType.Anime, executeGet)
+
+        val movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&with_genres=16&with_original_language=ja&sort_by=popularity.desc&page=$page"
+        val movieResult = parseTmdbDiscoverList(movieUrl, MediaType.Anime, executeGet)
+
+        val merged = mutableListOf<JikanSearchResult>()
+        val maxSize = maxOf(tvResult.size, movieResult.size)
+        for (i in 0 until maxSize) {
+            if (i < tvResult.size) merged.add(tvResult[i])
+            if (i < movieResult.size) merged.add(movieResult[i])
+        }
+        val result = merged.take(20)
+
+        if (result.isNotEmpty()) put(cacheKey, result)
+        result
+    }
+
+    suspend fun getPopularAnime(
+        page: Int = 1,
+        apiKey: String,
+        language: String,
+        executeGet: suspend (String) -> String?
+    ): List<JikanSearchResult> = withContext(Dispatchers.IO) {
+        val cacheKey = "popular_anime_$page"
+        get(cacheKey)?.let { return@withContext it }
+
+        val tvUrl = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&with_genres=16&with_original_language=ja&sort_by=vote_count.desc&page=$page"
+        val tvResult = parseTmdbDiscoverList(tvUrl, MediaType.Anime, executeGet)
+
+        val movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&with_genres=16&with_original_language=ja&sort_by=vote_count.desc&page=$page"
+        val movieResult = parseTmdbDiscoverList(movieUrl, MediaType.Anime, executeGet)
+
+        val merged = mutableListOf<JikanSearchResult>()
+        val maxSize = maxOf(tvResult.size, movieResult.size)
+        for (i in 0 until maxSize) {
+            if (i < tvResult.size) merged.add(tvResult[i])
+            if (i < movieResult.size) merged.add(movieResult[i])
+        }
+        val result = merged.take(20)
+
+        if (result.isNotEmpty()) put(cacheKey, result)
+        result
+    }
+
+    suspend fun getUpcomingAnime(
+        page: Int = 1,
+        apiKey: String,
+        language: String,
+        executeGet: suspend (String) -> String?
+    ): List<JikanSearchResult> = withContext(Dispatchers.IO) {
+        val cacheKey = "upcoming_anime_$page"
+        get(cacheKey)?.let { return@withContext it }
+
+        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
+
+        val tvUrl = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&with_genres=16&with_original_language=ja&first_air_date.gte=$today&sort_by=first_air_date.asc&page=$page"
+        val tvResult = parseTmdbDiscoverList(tvUrl, MediaType.Anime, executeGet)
+
+        val movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&with_genres=16&with_original_language=ja&primary_release_date.gte=$today&sort_by=primary_release_date.asc&page=$page"
+        val movieResult = parseTmdbDiscoverList(movieUrl, MediaType.Anime, executeGet)
+
+        val merged = mutableListOf<JikanSearchResult>()
+        val maxSize = maxOf(tvResult.size, movieResult.size)
+        for (i in 0 until maxSize) {
+            if (i < tvResult.size) merged.add(tvResult[i])
+            if (i < movieResult.size) merged.add(movieResult[i])
+        }
+        val result = merged.take(20)
+
+        if (result.isNotEmpty()) put(cacheKey, result)
+        result
+    }
+
 
     // ── Backdrop by Title ───────────────────────────────────────────────────────
 
@@ -206,6 +298,7 @@ internal object TmdbDiscoverClient {
     suspend fun fetchBackdropByTitle(
         title: String,
         apiKey: String,
+        language: String,
         executeGet: suspend (String) -> String?
     ): String? = withContext(Dispatchers.IO) {
         val cacheKey = "backdrop_${title.lowercase().trim()}"
@@ -214,7 +307,7 @@ internal object TmdbDiscoverClient {
 
         return@withContext try {
             val encodedTitle = java.net.URLEncoder.encode(title.take(60), "UTF-8")
-            val url = "https://api.themoviedb.org/3/search/multi?api_key=$apiKey&language=tr-TR&query=$encodedTitle&page=1"
+            val url = "https://api.themoviedb.org/3/search/multi?api_key=$apiKey&language=$language&query=$encodedTitle&page=1"
             val responseText = executeGet(url) ?: return@withContext null
             val root = JSONObject(responseText)
             val results = root.optJSONArray("results") ?: return@withContext null

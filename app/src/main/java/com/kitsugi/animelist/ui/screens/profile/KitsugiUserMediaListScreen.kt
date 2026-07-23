@@ -51,6 +51,10 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.zIndex
@@ -63,6 +67,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -265,7 +270,7 @@ fun KitsugiUserMediaListScreen(
 ) {
     val viewModel: KitsugiUserMediaListViewModel = customViewModel ?: androidx.lifecycle.viewmodel.compose.viewModel(key = "user_media_list_${userId}_${initialMediaType.name}")
 
-    var selectedType by remember { mutableStateOf(initialMediaType) }
+    var selectedType by rememberSaveable { mutableStateOf(initialMediaType) }
 
     LaunchedEffect(userId, selectedType) {
         viewModel.loadUserMediaList(userId, selectedType)
@@ -275,16 +280,26 @@ fun KitsugiUserMediaListScreen(
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedStatusFilter by remember { mutableStateOf<WatchStatus?>(null) }
-    var isGridView by remember { mutableStateOf(true) }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+    var selectedStatusFilter by rememberSaveable { mutableStateOf<WatchStatus?>(null) }
+    var isGridView by rememberSaveable { mutableStateOf(true) }
 
-    var isFabVisible by remember { mutableStateOf(true) }
-    var prevIndex by remember { mutableStateOf(0) }
-    var prevOffset by remember { mutableStateOf(0) }
+    var isFabVisible by rememberSaveable { mutableStateOf(true) }
+    var prevIndex by rememberSaveable { mutableStateOf(0) }
+    var prevOffset by rememberSaveable { mutableStateOf(0) }
 
     val lazyGridState = rememberLazyGridState()
     val lazyListState = rememberLazyListState()
+
+    val showScrollToTop by remember {
+        derivedStateOf {
+            if (isGridView) {
+                lazyGridState.firstVisibleItemIndex > 3
+            } else {
+                lazyListState.firstVisibleItemIndex > 3
+            }
+        }
+    }
 
     LaunchedEffect(isGridView) {
         isFabVisible = true
@@ -323,7 +338,7 @@ fun KitsugiUserMediaListScreen(
     }
 
     // Sort: 0=Varsayılan, 1=A-Z, 2=Puan, 3=İlerleme
-    var sortId by remember { mutableStateOf(0) }
+    var sortId by rememberSaveable { mutableStateOf(0) }
     var showSortMenu by remember { mutableStateOf(false) }
     var showStatusBottomSheet by remember { mutableStateOf(false) }
 
@@ -685,15 +700,16 @@ fun KitsugiUserMediaListScreen(
     val isTv = LocalIsTvDevice.current
     if (!isTv && !state.isLoading && state.items.isNotEmpty()) {
         Box(
-            modifier = androidx.compose.ui.Modifier.fillMaxSize(),
-            contentAlignment = Alignment.BottomEnd
+            modifier = androidx.compose.ui.Modifier.fillMaxSize()
         ) {
+            // Tümü (Kategori) button on the Bottom-Start (Bottom-Left)
             AnimatedVisibility(
                 visible = isFabVisible,
                 enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
                 exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
                 modifier = Modifier
-                    .padding(bottom = 20.dp, end = 20.dp)
+                    .align(Alignment.BottomStart)
+                    .padding(bottom = 20.dp, start = 20.dp)
                     .zIndex(10f)
             ) {
                 val fabLabel = when (selectedStatusFilter) {
@@ -729,6 +745,41 @@ fun KitsugiUserMediaListScreen(
                             fontWeight = FontWeight.Black
                         )
                     }
+                }
+            }
+
+            // Scroll to Top button on the Bottom-End (Bottom-Right)
+            AnimatedVisibility(
+                visible = showScrollToTop,
+                enter = fadeIn() + scaleIn(),
+                exit = fadeOut() + scaleOut(),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(bottom = 20.dp, end = 20.dp)
+                    .zIndex(10f)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(accentColor)
+                        .tvClickable(shape = RoundedCornerShape(16.dp)) {
+                            coroutineScope.launch {
+                                if (isGridView) {
+                                    lazyGridState.animateScrollToItem(0)
+                                } else {
+                                    lazyListState.animateScrollToItem(0)
+                                }
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.KeyboardArrowUp,
+                        contentDescription = "Yukarı Git",
+                        tint = KitsugiColors.Background,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
             }
         }

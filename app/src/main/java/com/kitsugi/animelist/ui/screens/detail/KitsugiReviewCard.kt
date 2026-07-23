@@ -29,6 +29,8 @@ import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
 
+import androidx.compose.foundation.clickable
+
 /**
  * İnceleme (review) kart bileşeni.
  * ReviewsTab.kt dosyasından çıkarılmıştır.
@@ -39,6 +41,7 @@ internal fun KitsugiReviewCard(
     modifier: Modifier = Modifier.fillMaxWidth(),
     preferredTranslator: String = "DEFAULT",
     backgroundColor: androidx.compose.ui.graphics.Color = KitsugiColors.Surface,
+    onUserProfileClick: ((userId: Int?, username: String, avatarUrl: String?) -> Unit)? = null,
     onClick: () -> Unit,
     onHelpfulClick: () -> Unit,
     onImageGalleryRequest: ((urls: List<String>, index: Int) -> Unit)? = null
@@ -58,33 +61,44 @@ internal fun KitsugiReviewCard(
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(KitsugiColors.SurfaceSoft)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = if (onUserProfileClick != null) {
+                    Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onUserProfileClick(rev.userId, rev.username, rev.avatarUrl) }
+                        .padding(4.dp)
+                } else Modifier,
+                horizontalArrangement = Arrangement.Start
             ) {
-                if (!rev.avatarUrl.isNullOrBlank()) {
-                    AsyncImage(
-                        model = rev.avatarUrl,
-                        contentDescription = rev.username,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(rev.username.take(1).uppercase(), color = KitsugiColors.TextMuted, fontWeight = FontWeight.Bold)
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(KitsugiColors.SurfaceSoft)
+                ) {
+                    if (!rev.avatarUrl.isNullOrBlank()) {
+                        AsyncImage(
+                            model = rev.avatarUrl,
+                            contentDescription = rev.username,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(rev.username.take(1).uppercase(), color = KitsugiColors.TextMuted, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = rev.username,
+                    color = KitsugiColors.TextPrimary,
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Bold
+                )
             }
-            Spacer(modifier = Modifier.width(10.dp))
-            Text(
-                text = rev.username,
-                color = KitsugiColors.TextPrimary,
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f)
-            )
+            Spacer(modifier = Modifier.weight(1f))
             if (rev.score != null) {
                 Text(
                     text = "★ ${rev.score}",

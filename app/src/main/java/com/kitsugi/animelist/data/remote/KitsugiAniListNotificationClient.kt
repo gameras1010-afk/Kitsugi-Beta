@@ -56,7 +56,8 @@ class KitsugiAniListNotificationClient {
         val threadTitle: String?,
         // Medya silme
         val deletedMediaTitle: String?,
-        val reason: String?
+        val reason: String?,
+        val mediaType: String? = null
     )
 
     data class KitsugiNotificationPage(
@@ -124,7 +125,7 @@ class KitsugiAniListNotificationClient {
                         notifications(resetNotificationCount: ${'$'}resetCount$typeInArg) {
                             ... on AiringNotification {
                                 id contexts animeId episode
-                                media { title { userPreferred } coverImage { medium large } }
+                                media { type title { userPreferred } coverImage { medium large } }
                                 type createdAt
                             }
                             ... on FollowingNotification {
@@ -197,17 +198,17 @@ class KitsugiAniListNotificationClient {
                             }
                             ... on RelatedMediaAdditionNotification {
                                 id context mediaId
-                                media { title { userPreferred } coverImage { medium large } }
+                                media { type title { userPreferred } coverImage { medium large } }
                                 type createdAt
                             }
                             ... on MediaDataChangeNotification {
                                 id context mediaId reason
-                                media { title { userPreferred } coverImage { medium large } }
+                                media { type title { userPreferred } coverImage { medium large } }
                                 type createdAt
                             }
                             ... on MediaMergeNotification {
                                 id context reason mediaId
-                                media { title { userPreferred } coverImage { medium large } }
+                                media { type title { userPreferred } coverImage { medium large } }
                                 type createdAt
                             }
                             ... on MediaDeletionNotification {
@@ -311,7 +312,8 @@ class KitsugiAniListNotificationClient {
             threadId          = (item.optInt("threadId").takeIf { it > 0 }) ?: threadObj?.optInt("id")?.takeIf { it > 0 },
             threadTitle       = threadTitle,
             deletedMediaTitle = item.optNullableString("deletedMediaTitle"),
-            reason            = item.optNullableString("reason")
+            reason            = item.optNullableString("reason"),
+            mediaType         = mediaObj?.optNullableString("type")
         )
     }
 }

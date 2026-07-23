@@ -113,6 +113,9 @@ import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
 import com.kitsugi.animelist.data.local.MangaMappingEntity
+import com.kitsugi.animelist.data.settings.SettingsDataStore
+import com.kitsugi.animelist.data.settings.AppSettings
+import com.kitsugi.animelist.ui.components.KitsugiIntegrationsSettingsDialog
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -142,6 +145,7 @@ fun MediaEntryDetailPage(
     onCharacterClick: (KitsugiCharacter) -> Unit,
     onStaffClick: (Int, String, String?, String?) -> Unit,
     onStudioClick: (Int, String, String?, String?) -> Unit,
+    onUserProfileClick: (Int, String, String?) -> Unit = { _, _, _ -> },
     onSearchQuery: (String) -> Unit = {},
     onSearchByGenre: (String) -> Unit = {},
     onSearchByTag: (String) -> Unit = {},
@@ -151,7 +155,15 @@ fun MediaEntryDetailPage(
     showAnimeLogos: Boolean = false,
     blurAdultMedia: Boolean = false,
     onReadMangaClick: ((MangaMappingEntity?) -> Unit)? = null,
-    preferredTranslator: String = "DEFAULT"
+    preferredTranslator: String = "DEFAULT",
+    mdbListShowImdb: Boolean = true,
+    mdbListShowTomatoes: Boolean = true,
+    mdbListShowMetacritic: Boolean = true,
+    mdbListShowAudience: Boolean = false,
+    mdbListShowLetterboxd: Boolean = false,
+    mdbListShowTmdb: Boolean = false,
+    mdbListShowTrakt: Boolean = false,
+    settingsDataStore: SettingsDataStore? = null
 ) {
     val uriHandler = LocalUriHandler.current
     val context = LocalContext.current
@@ -168,6 +180,11 @@ fun MediaEntryDetailPage(
 
     // Obtain ViewModel
     val viewModel: MediaEntryDetailViewModel = viewModel(key = "entry_${entry.source}_${entry.id}")
+
+    val settingsState = settingsDataStore?.settingsFlow?.collectAsState(initial = AppSettings())?.value
+    val mdbListRatings by viewModel.mdbListRatings.collectAsState()
+    val mdbListLoading by viewModel.mdbListLoading.collectAsState()
+    var showIntegrationsDialog by remember { mutableStateOf(false) }
 
     // Load entry in ViewModel
     LaunchedEffect(entry.id, entry.source, entry.malId, showAnimeLogos) {
@@ -479,6 +496,18 @@ fun MediaEntryDetailPage(
                                                     onGenreClick = onSearchByGenre,
                                                     onTagClick = onSearchByTag,
                                                     preferredTranslator = preferredTranslator,
+                                                    mdbListRatings = mdbListRatings,
+                                                    mdbListLoading = mdbListLoading,
+                                                    mdbListShowImdb = settingsState?.mdbListShowImdb ?: mdbListShowImdb,
+                                                    mdbListShowTomatoes = settingsState?.mdbListShowTomatoes ?: mdbListShowTomatoes,
+                                                    mdbListShowMetacritic = settingsState?.mdbListShowMetacritic ?: mdbListShowMetacritic,
+                                                    mdbListShowAudience = settingsState?.mdbListShowAudience ?: mdbListShowAudience,
+                                                    mdbListShowLetterboxd = settingsState?.mdbListShowLetterboxd ?: mdbListShowLetterboxd,
+                                                    mdbListShowTmdb = settingsState?.mdbListShowTmdb ?: mdbListShowTmdb,
+                                                    mdbListShowTrakt = settingsState?.mdbListShowTrakt ?: mdbListShowTrakt,
+                                                    onSettingsClick = if (settingsDataStore != null) {
+                                                        { showIntegrationsDialog = true }
+                                                    } else null,
                                                     onImageGalleryRequest = { urls, index ->
                                                         activeGalleryImages = urls
                                                         activeGalleryIndex = index
@@ -543,6 +572,7 @@ fun MediaEntryDetailPage(
                                                 mediaType = entry.type,
                                                 apiClient = apiClient,
                                                 titleLanguage = titleLanguage,
+                                                onUserProfileClick = onUserProfileClick,
                                                 preferredTranslator = preferredTranslator
                                             )
                                             7 -> {
@@ -861,6 +891,18 @@ fun MediaEntryDetailPage(
                                             onGenreClick = onSearchByGenre,
                                             onTagClick = onSearchByTag,
                                             preferredTranslator = preferredTranslator,
+                                            mdbListRatings = mdbListRatings,
+                                            mdbListLoading = mdbListLoading,
+                                            mdbListShowImdb = settingsState?.mdbListShowImdb ?: mdbListShowImdb,
+                                            mdbListShowTomatoes = settingsState?.mdbListShowTomatoes ?: mdbListShowTomatoes,
+                                            mdbListShowMetacritic = settingsState?.mdbListShowMetacritic ?: mdbListShowMetacritic,
+                                            mdbListShowAudience = settingsState?.mdbListShowAudience ?: mdbListShowAudience,
+                                            mdbListShowLetterboxd = settingsState?.mdbListShowLetterboxd ?: mdbListShowLetterboxd,
+                                            mdbListShowTmdb = settingsState?.mdbListShowTmdb ?: mdbListShowTmdb,
+                                            mdbListShowTrakt = settingsState?.mdbListShowTrakt ?: mdbListShowTrakt,
+                                            onSettingsClick = if (settingsDataStore != null) {
+                                                { showIntegrationsDialog = true }
+                                            } else null,
                                             onImageGalleryRequest = { urls, index ->
                                                 activeGalleryImages = urls
                                                 activeGalleryIndex = index
@@ -925,7 +967,8 @@ fun MediaEntryDetailPage(
                                         mediaType = entry.type,
                                         apiClient = apiClient,
                                         titleLanguage = titleLanguage,
-                                                preferredTranslator = preferredTranslator
+                                        onUserProfileClick = onUserProfileClick,
+                                        preferredTranslator = preferredTranslator
                                     )
                                     7 -> {
                                         EntryDetailEpisodesTab(
@@ -1085,6 +1128,70 @@ fun MediaEntryDetailPage(
                         Text("İptal", color = KitsugiColors.TextSecondary)
                     }
                 }
+            )
+        }
+
+        if (showIntegrationsDialog && settingsDataStore != null && settingsState != null) {
+            KitsugiIntegrationsSettingsDialog(
+                tmdbEnabled = settingsState.tmdbEnabled,
+                onTmdbEnabledChanged = { coroutineScope.launch { settingsDataStore.setTmdbEnabled(it) } },
+                tmdbApiKey = settingsState.tmdbUserApiKey,
+                onTmdbApiKeyChanged = { coroutineScope.launch { settingsDataStore.setTmdbUserApiKey(it) } },
+                tmdbModernHomeEnabled = settingsState.tmdbModernHomeEnabled,
+                onTmdbModernHomeEnabledChanged = { coroutineScope.launch { settingsDataStore.setTmdbModernHomeEnabled(it) } },
+                tmdbEnrichContinueWatching = settingsState.tmdbEnrichContinueWatching,
+                onTmdbEnrichContinueWatchingChanged = { coroutineScope.launch { settingsDataStore.setTmdbEnrichContinueWatching(it) } },
+                tmdbLanguage = settingsState.tmdbLanguage,
+                onTmdbLanguageChanged = { coroutineScope.launch { settingsDataStore.setTmdbLanguage(it) } },
+                tmdbUseArtwork = settingsState.tmdbUseArtwork,
+                onTmdbUseArtworkChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseArtwork(it) } },
+                tmdbUseBasicInfo = settingsState.tmdbUseBasicInfo,
+                onTmdbUseBasicInfoChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseBasicInfo(it) } },
+                tmdbUseDetails = settingsState.tmdbUseDetails,
+                onTmdbUseDetailsChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseDetails(it) } },
+                tmdbUseReleaseDates = settingsState.tmdbUseReleaseDates,
+                onTmdbUseReleaseDatesChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseReleaseDates(it) } },
+                tmdbUseCredits = settingsState.tmdbUseCredits,
+                onTmdbUseCreditsChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseCredits(it) } },
+                tmdbUseProductions = settingsState.tmdbUseProductions,
+                onTmdbUseProductionsChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseProductions(it) } },
+                tmdbUseNetworks = settingsState.tmdbUseNetworks,
+                onTmdbUseNetworksChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseNetworks(it) } },
+                tmdbUseEpisodes = settingsState.tmdbUseEpisodes,
+                onTmdbUseEpisodesChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseEpisodes(it) } },
+                tmdbUseTrailers = settingsState.tmdbUseTrailers,
+                onTmdbUseTrailersChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseTrailers(it) } },
+                tmdbUseMoreLikeThis = settingsState.tmdbUseMoreLikeThis,
+                onTmdbUseMoreLikeThisChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseMoreLikeThis(it) } },
+                tmdbUseCollections = settingsState.tmdbUseCollections,
+                onTmdbUseCollectionsChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseCollections(it) } },
+                
+                mdbListEnabled = settingsState.mdbListEnabled,
+                onMdbListEnabledChanged = { coroutineScope.launch { settingsDataStore.setMdbListEnabled(it) } },
+                mdbListApiKey = settingsState.mdbListApiKey,
+                onMdbListApiKeyChanged = { coroutineScope.launch { settingsDataStore.setMdbListApiKey(it) } },
+                mdbListShowImdb = settingsState.mdbListShowImdb,
+                onMdbListShowImdbChanged = { coroutineScope.launch { settingsDataStore.setMdbListShowImdb(it) } },
+                mdbListShowTomatoes = settingsState.mdbListShowTomatoes,
+                onMdbListShowTomatoesChanged = { coroutineScope.launch { settingsDataStore.setMdbListShowTomatoes(it) } },
+                mdbListShowMetacritic = settingsState.mdbListShowMetacritic,
+                onMdbListShowMetacriticChanged = { coroutineScope.launch { settingsDataStore.setMdbListShowMetacritic(it) } },
+                mdbListShowAudience = settingsState.mdbListShowAudience,
+                onMdbListShowAudienceChanged = { coroutineScope.launch { settingsDataStore.setMdbListShowAudience(it) } },
+                mdbListShowLetterboxd = settingsState.mdbListShowLetterboxd,
+                onMdbListShowLetterboxdChanged = { coroutineScope.launch { settingsDataStore.setMdbListShowLetterboxd(it) } },
+                mdbListShowTmdb = settingsState.mdbListShowTmdb,
+                onMdbListShowTmdbChanged = { coroutineScope.launch { settingsDataStore.setMdbListShowTmdb(it) } },
+                mdbListShowTrakt = settingsState.mdbListShowTrakt,
+                onMdbListShowTraktChanged = { coroutineScope.launch { settingsDataStore.setMdbListShowTrakt(it) } },
+                
+                aniSkipEnabled = settingsState.aniSkipEnabled,
+                onAniSkipEnabledChanged = { coroutineScope.launch { settingsDataStore.setAniSkipEnabled(it) } },
+                aniSkipAutoSkip = settingsState.aniSkipAutoSkip,
+                onAniSkipAutoSkipChanged = { coroutineScope.launch { settingsDataStore.setAniSkipAutoSkip(it) } },
+                animeSkipClientId = settingsState.animeSkipClientId,
+                onAnimeSkipClientIdChanged = { coroutineScope.launch { settingsDataStore.setAnimeSkipClientId(it) } },
+                onDismiss = { showIntegrationsDialog = false }
             )
         }
 

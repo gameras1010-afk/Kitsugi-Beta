@@ -256,6 +256,7 @@ data class KitsugiStats(
 
 data class KitsugiReview(
     val id: Int? = null,
+    val userId: Int? = null,
     val username: String,
     val avatarUrl: String?,
     val score: Int?,
@@ -276,7 +277,8 @@ data class KitsugiForumTopic(
     val avatarUrl: String?,
     val dateText: String? = null,
     val likeCount: Int = 0,
-    val isLiked: Boolean = false
+    val isLiked: Boolean = false,
+    val userId: Int? = null
 )
 
 data class KitsugiForumReply(
@@ -286,7 +288,8 @@ data class KitsugiForumReply(
     val username: String,
     val avatarUrl: String?,
     val likeCount: Int,
-    val isLiked: Boolean
+    val isLiked: Boolean,
+    val userId: Int? = null
 )
 
 data class KitsugiActivity(
@@ -305,7 +308,8 @@ data class KitsugiActivity(
     val replies: List<KitsugiActivityReply> = emptyList(),
     val mediaId: Int? = null,
     val mediaType: String? = null,
-    val isAdult: Boolean = false
+    val isAdult: Boolean = false,
+    val userId: Int? = null
 )
 
 data class KitsugiActivityReply(
@@ -315,13 +319,22 @@ data class KitsugiActivityReply(
     val username: String,
     val avatarUrl: String?,
     val likeCount: Int,
-    val isLiked: Boolean
+    val isLiked: Boolean,
+    val userId: Int? = null
 )
 
 fun MediaEntry.matches(result: JikanSearchResult): Boolean {
-    // 1. Doğrudan kaynak + ID eşleşmesi
-    if (this.source.equals(result.source, ignoreCase = true) && this.malId == result.malId) {
-        return true
+    // 1. Doğrudan kaynak + ID eşleşmesi (AniList offset normalizasyonu dahil)
+    if (this.source.equals(result.source, ignoreCase = true)) {
+        if (this.source.equals("anilist", ignoreCase = true)) {
+            val rawEntryId = if (this.malId != null && this.malId >= 100_000_000) this.malId - 100_000_000 else this.malId
+            val rawResultId = if (result.malId >= 100_000_000) result.malId - 100_000_000 else result.malId
+            if (rawEntryId != null && rawEntryId == rawResultId) {
+                return true
+            }
+        } else if (this.malId == result.malId) {
+            return true
+        }
     }
 
     // 2. TMDB ID eşleşmesi (Çapraz eşleşme)
@@ -334,8 +347,8 @@ fun MediaEntry.matches(result: JikanSearchResult): Boolean {
     // 3. MAL ID / realMalId eşleşmesi
     val resultIsMal = result.source.equals("jikan", ignoreCase = true) || result.source.equals("mal", ignoreCase = true)
     val entryIsMal = this.source.equals("jikan", ignoreCase = true) || this.source.equals("mal", ignoreCase = true)
-    val rMal = if (resultIsMal) result.malId else result.realMalId
-    val eMal = if (entryIsMal) this.malId else null
+    val rMal = if (resultIsMal) result.malId else (result.realMalId ?: if (result.source.equals("anilist", ignoreCase = true) && result.malId < 100_000_000) result.malId else null)
+    val eMal = if (entryIsMal) this.malId else (if (this.malId != null && this.malId < 100_000_000) this.malId else null)
     if (rMal != null && eMal != null && rMal == eMal) {
         return true
     }
@@ -357,8 +370,16 @@ fun MediaEntry.matches(result: JikanSearchResult): Boolean {
 }
 
 fun MediaEntry.matches(mediaId: Int, mediaSource: String): Boolean {
-    if (this.source.equals(mediaSource, ignoreCase = true) && this.malId == mediaId) {
-        return true
+    if (this.source.equals(mediaSource, ignoreCase = true)) {
+        if (this.source.equals("anilist", ignoreCase = true)) {
+            val rawEntryId = if (this.malId != null && this.malId >= 100_000_000) this.malId - 100_000_000 else this.malId
+            val rawMediaId = if (mediaId >= 100_000_000) mediaId - 100_000_000 else mediaId
+            if (rawEntryId != null && rawEntryId == rawMediaId) {
+                return true
+            }
+        } else if (this.malId == mediaId) {
+            return true
+        }
     }
 
     // TMDB ID eşleşmesi
@@ -368,7 +389,9 @@ fun MediaEntry.matches(mediaId: Int, mediaSource: String): Boolean {
 
     val resultIsMal = mediaSource.equals("jikan", ignoreCase = true) || mediaSource.equals("mal", ignoreCase = true)
     val entryIsMal = this.source.equals("jikan", ignoreCase = true) || this.source.equals("mal", ignoreCase = true)
-    if (resultIsMal && entryIsMal && this.malId == mediaId) {
+    val rMal = mediaId
+    val eMal = if (entryIsMal) this.malId else (if (this.malId != null && this.malId < 100_000_000) this.malId else null)
+    if (resultIsMal && eMal != null && rMal == eMal) {
         return true
     }
 

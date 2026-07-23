@@ -322,7 +322,7 @@ class KitsugiMediaSocialClient {
                     reviews(page: ${'$'}page, perPage: 10, sort: RATING_DESC) {
                         nodes {
                             id summary body score rating ratingAmount userRating createdAt
-                            user { name avatar { medium } }
+                            user { id name avatar { medium } }
                         }
                     }
                 }
@@ -353,6 +353,7 @@ class KitsugiMediaSocialClient {
                 val userObj  = node.optJSONObject("user")
                 list.add(KitsugiReview(
                     id = node.optInt("id"),
+                    userId = userObj?.optInt("id"),
                     username = userObj?.optNullableString("name") ?: "Kullanıcı",
                     avatarUrl = userObj?.optJSONObject("avatar")?.optNullableString("medium"),
                     score = node.optionalPositiveInt("score"),
@@ -434,7 +435,7 @@ class KitsugiMediaSocialClient {
                 Page(page: ${'$'}page, perPage: 15) {
                     threads(mediaCategoryId: ${'$'}mediaId) {
                         id title replyCount viewCount likeCount isLiked createdAt
-                        user { name avatar { medium } }
+                        user { id name avatar { medium } }
                     }
                 }
             }
@@ -457,7 +458,8 @@ class KitsugiMediaSocialClient {
                     username = userObj?.optNullableString("name") ?: "Kullanıcı",
                     avatarUrl = userObj?.optJSONObject("avatar")?.optNullableString("medium"),
                     dateText = dateText, likeCount = item.optInt("likeCount", 0),
-                    isLiked = item.optBoolean("isLiked", false)
+                    isLiked = item.optBoolean("isLiked", false),
+                    userId = userObj?.optInt("id")
                 ))
             }
             list
@@ -491,12 +493,12 @@ class KitsugiMediaSocialClient {
                         activities(mediaId: ${'$'}mediaId, sort: [ID_DESC]) {
                             ... on ListActivity {
                                 id status progress createdAt likeCount isLiked
-                                user { name avatar { medium } }
+                                user { id name avatar { medium } }
                                 media { id type isAdult title { romaji english native } coverImage { large } }
                             }
                             ... on TextActivity {
                                 id text createdAt likeCount isLiked
-                                user { name avatar { medium } }
+                                user { id name avatar { medium } }
                             }
                         }
                     }
@@ -523,14 +525,14 @@ class KitsugiMediaSocialClient {
                     Activity(id: ${'$'}activityId) {
                         ... on ListActivity {
                             id status progress createdAt likeCount isLiked
-                            user { name avatar { medium } }
+                            user { id name avatar { medium } }
                             media { id type isAdult title { romaji english native } coverImage { large } }
-                            replies { id text createdAt likeCount isLiked user { name avatar { medium } } }
+                            replies { id text createdAt likeCount isLiked user { id name avatar { medium } } }
                         }
                         ... on TextActivity {
                             id text createdAt likeCount isLiked
-                            user { name avatar { medium } }
-                            replies { id text createdAt likeCount isLiked user { name avatar { medium } } }
+                            user { id name avatar { medium } }
+                            replies { id text createdAt likeCount isLiked user { id name avatar { medium } } }
                         }
                     }
                 }
@@ -555,7 +557,8 @@ class KitsugiMediaSocialClient {
                             dateText = rDateText,
                             username = rUser?.optNullableString("name") ?: "Kullanıcı",
                             avatarUrl = rUser?.optJSONObject("avatar")?.optNullableString("medium"),
-                            likeCount = rep.optInt("likeCount", 0), isLiked = rep.optBoolean("isLiked", false)
+                            likeCount = rep.optInt("likeCount", 0), isLiked = rep.optBoolean("isLiked", false),
+                            userId = rUser?.optInt("id")
                         ))
                     }
                 }
@@ -575,7 +578,7 @@ class KitsugiMediaSocialClient {
                     Page(page: ${'$'}page, perPage: 30) {
                         threadComments(threadId: ${'$'}threadId) {
                             id comment createdAt likeCount isLiked
-                            user { name avatar { medium } }
+                            user { id name avatar { medium } }
                         }
                     }
                 }
@@ -597,7 +600,8 @@ class KitsugiMediaSocialClient {
                         dateText = dateText,
                         username = userObj?.optNullableString("name") ?: "Kullanıcı",
                         avatarUrl = userObj?.optJSONObject("avatar")?.optNullableString("medium"),
-                        likeCount = item.optInt("likeCount", 0), isLiked = item.optBoolean("isLiked", false)
+                        likeCount = item.optInt("likeCount", 0), isLiked = item.optBoolean("isLiked", false),
+                        userId = userObj?.optInt("id")
                     ))
                 }
                 list
@@ -642,7 +646,8 @@ class KitsugiMediaSocialClient {
             mediaTitleEnglish = mediaTitleEnglish, mediaTitleNative = mediaTitleNative,
             mediaCoverUrl = mediaCoverUrl,
             likeCount = item.optInt("likeCount", 0), isLiked = item.optBoolean("isLiked", false),
-            mediaId = mediaId, mediaType = mediaType, isAdult = isAdult
+            mediaId = mediaId, mediaType = mediaType, isAdult = isAdult,
+            userId = userObj?.optInt("id")
         )
     }
 

@@ -42,6 +42,7 @@ fun KitsugiActivityDetailBottomSheet(
     apiClient: JikanApiClient,
     titleLanguage: String = "ROMAJI",
     blurAdultMedia: Boolean = false,
+    onUserProfileClick: ((userId: Int?, username: String, avatarUrl: String?) -> Unit)? = null,
     onMediaClick: ((mediaId: Int, mediaType: com.kitsugi.animelist.model.MediaType, source: String) -> Unit)? = null,
     onDismiss: () -> Unit
 ) {
@@ -260,6 +261,11 @@ fun KitsugiActivityDetailBottomSheet(
                                         .size(40.dp)
                                         .clip(CircleShape)
                                         .background(KitsugiColors.SurfaceSoft)
+                                        .then(
+                                            if (onUserProfileClick != null) {
+                                                Modifier.clickable { onUserProfileClick(act.userId, act.username, act.avatarUrl) }
+                                            } else Modifier
+                                        )
                                 ) {
                                     if (!act.avatarUrl.isNullOrBlank()) {
                                         AsyncImage(
@@ -285,7 +291,13 @@ fun KitsugiActivityDetailBottomSheet(
                                         text = act.username,
                                         color = KitsugiColors.TextPrimary,
                                         fontSize = 15.sp,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = if (onUserProfileClick != null) {
+                                            Modifier
+                                                .clip(RoundedCornerShape(4.dp))
+                                                .clickable { onUserProfileClick(act.userId, act.username, act.avatarUrl) }
+                                                .padding(horizontal = 4.dp, vertical = 2.dp)
+                                        } else Modifier
                                     )
                                     if (!act.dateText.isNullOrBlank()) {
                                         Text(
@@ -399,13 +411,19 @@ fun KitsugiActivityDetailBottomSheet(
                                     .padding(12.dp)
                             ) {
                                 Row(
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Box(
                                         modifier = Modifier
                                             .size(24.dp)
                                             .clip(CircleShape)
                                             .background(KitsugiColors.SurfaceSoft)
+                                            .then(
+                                                if (onUserProfileClick != null) {
+                                                    Modifier.clickable { onUserProfileClick(reply.userId, reply.username, reply.avatarUrl) }
+                                                } else Modifier
+                                            )
                                     ) {
                                         if (!reply.avatarUrl.isNullOrBlank()) {
                                             AsyncImage(
@@ -430,7 +448,13 @@ fun KitsugiActivityDetailBottomSheet(
                                         text = reply.username,
                                         color = KitsugiColors.TextPrimary,
                                         fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = if (onUserProfileClick != null) {
+                                            Modifier
+                                                .clip(RoundedCornerShape(4.dp))
+                                                .clickable { onUserProfileClick(reply.userId, reply.username, reply.avatarUrl) }
+                                                .padding(horizontal = 4.dp, vertical = 2.dp)
+                                        } else Modifier
                                     )
                                     Spacer(modifier = Modifier.weight(1f))
                                     if (!reply.dateText.isNullOrBlank()) {

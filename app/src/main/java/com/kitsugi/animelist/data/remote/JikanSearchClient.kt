@@ -314,7 +314,7 @@ class JikanSearchClient {
                 url = url,
                 mediaType = MediaType.Anime,
                 fallback = {
-                    runCatching { aniListSearchClient.aniListNewlyAddedAnime(page, showAdultContent) }.getOrDefault(emptyList())
+                    emptyList()
                 }
             )
         }
@@ -327,7 +327,7 @@ class JikanSearchClient {
                 url = url,
                 mediaType = MediaType.Manga,
                 fallback = {
-                    runCatching { aniListSearchClient.aniListNewlyAddedManga(page, showAdultContent) }.getOrDefault(emptyList())
+                    emptyList()
                 }
             )
         }

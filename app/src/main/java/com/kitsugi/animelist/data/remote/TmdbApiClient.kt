@@ -24,7 +24,8 @@ import java.util.concurrent.TimeUnit
  */
 class TmdbApiClient(
     /** Kullanıcı API anahtarı — boşsa dahili anahtar [BUILT_IN_API_KEY] devreye girer */
-    private val userApiKey: String = ""
+    private val userApiKey: String = "",
+    private val userLanguage: String = ""
 ) {
     /**
      * TMDB'ye özgü OkHttpClient — kısa timeout ile.
@@ -40,6 +41,7 @@ class TmdbApiClient(
         .followSslRedirects(true)
         .build()
     private val apiKey = resolveApiKey(userApiKey)
+    private val language = userLanguage.trim().ifBlank { getActiveLanguage() }
     private val TAG = "TmdbApiClient"
 
     companion object {
@@ -71,6 +73,27 @@ class TmdbApiClient(
             }.getOrDefault("")
             return resolveApiKey(userKey)
         }
+
+        fun getActiveLanguage(): String {
+            val context = com.kitsugi.animelist.KitsugiApplication.getInstance()?.applicationContext ?: return "tr-TR"
+            val lang = runCatching {
+                kotlinx.coroutines.runBlocking {
+                    com.kitsugi.animelist.data.settings.SettingsDataStore(context).settingsFlow.first().tmdbLanguage
+                }
+            }.getOrDefault("tr")
+            return when (lang.lowercase()) {
+                "tr" -> "tr-TR"
+                "en" -> "en-US"
+                "ja" -> "ja-JP"
+                "fr" -> "fr-FR"
+                "de" -> "de-DE"
+                "es" -> "es-ES"
+                "it" -> "it-IT"
+                "ru" -> "ru-RU"
+                "zh" -> "zh-CN"
+                else -> lang
+            }
+        }
     }
 
     private suspend fun isTmdbEnabled(): Boolean {
@@ -88,7 +111,7 @@ class TmdbApiClient(
 
     suspend fun fetchMediaDetail(tmdbId: Int, isMovie: Boolean): KitsugiMediaDetail? {
         if (!isTmdbEnabled()) return null
-        return TmdbMediaDetailClient.fetchMediaDetail(tmdbId, isMovie, apiKey, ::executeGet)
+        return TmdbMediaDetailClient.fetchMediaDetail(tmdbId, isMovie, apiKey, language, ::executeGet)
     }
 
     suspend fun fetchMediaImages(tmdbId: Int, isMovie: Boolean): List<String> = withContext(Dispatchers.IO) {
@@ -103,44 +126,44 @@ class TmdbApiClient(
 
     suspend fun fetchVideos(tmdbId: Int, isMovie: Boolean): Pair<String?, List<KitsugiTheme>> = withContext(Dispatchers.IO) {
         if (!isTmdbEnabled()) return@withContext Pair(null, emptyList())
-        TmdbMediaDetailClient.fetchVideos(tmdbId, isMovie, apiKey, ::executeGet)
+        TmdbMediaDetailClient.fetchVideos(tmdbId, isMovie, apiKey, language, ::executeGet)
     }
 
     // ── Oyuncu / Ekip / İçerik ─────────────────────────────────────────────────
 
     suspend fun fetchCredits(tmdbId: Int, isMovie: Boolean): Pair<List<KitsugiCharacter>, List<KitsugiStaff>> = withContext(Dispatchers.IO) {
         if (!isTmdbEnabled()) return@withContext Pair(emptyList(), emptyList())
-        TmdbCreditsClient.fetchCredits(tmdbId, isMovie, apiKey, ::executeGet)
+        TmdbCreditsClient.fetchCredits(tmdbId, isMovie, apiKey, language, ::executeGet)
     }
 
     suspend fun fetchRelations(tmdbId: Int, isMovie: Boolean): List<KitsugiRelation> = withContext(Dispatchers.IO) {
         if (!isTmdbEnabled()) return@withContext emptyList()
-        TmdbCreditsClient.fetchRelations(tmdbId, isMovie, apiKey, ::executeGet)
+        TmdbCreditsClient.fetchRelations(tmdbId, isMovie, apiKey, language, ::executeGet)
     }
 
     suspend fun fetchRecommendations(tmdbId: Int, isMovie: Boolean): List<KitsugiRelation> = withContext(Dispatchers.IO) {
         if (!isTmdbEnabled()) return@withContext emptyList()
-        TmdbCreditsClient.fetchRecommendations(tmdbId, isMovie, apiKey, ::executeGet)
+        TmdbCreditsClient.fetchRecommendations(tmdbId, isMovie, apiKey, language, ::executeGet)
     }
 
     suspend fun fetchReviews(tmdbId: Int, isMovie: Boolean): List<KitsugiReview> = withContext(Dispatchers.IO) {
         if (!isTmdbEnabled()) return@withContext emptyList()
-        TmdbCreditsClient.fetchReviews(tmdbId, isMovie, apiKey, ::executeGet)
+        TmdbCreditsClient.fetchReviews(tmdbId, isMovie, apiKey, language, ::executeGet)
     }
 
     suspend fun fetchPersonCharacterDetail(personId: Int): KitsugiCharacterDetail? = withContext(Dispatchers.IO) {
         if (!isTmdbEnabled()) return@withContext null
-        TmdbCreditsClient.fetchPersonCharacterDetail(personId, apiKey, ::executeGet)
+        TmdbCreditsClient.fetchPersonCharacterDetail(personId, apiKey, language, ::executeGet)
     }
 
     suspend fun fetchPersonStaffDetail(personId: Int): KitsugiStaffDetail? = withContext(Dispatchers.IO) {
         if (!isTmdbEnabled()) return@withContext null
-        TmdbCreditsClient.fetchPersonStaffDetail(personId, apiKey, ::executeGet)
+        TmdbCreditsClient.fetchPersonStaffDetail(personId, apiKey, language, ::executeGet)
     }
 
     suspend fun fetchStats(tmdbId: Int, isMovie: Boolean): KitsugiStats? = withContext(Dispatchers.IO) {
         if (!isTmdbEnabled()) return@withContext null
-        TmdbCreditsClient.fetchStats(tmdbId, isMovie, apiKey, ::executeGet)
+        TmdbCreditsClient.fetchStats(tmdbId, isMovie, apiKey, language, ::executeGet)
     }
 
     // ── Keşfet (Trending / Popular / Top Rated) ─────────────────────────────────
@@ -149,41 +172,53 @@ class TmdbApiClient(
         // isTmdbEnabled() burada kontrol edilmiyor — keşfet/discovery akışı
         // zaten ViewModel seviyesinde guard'landı; client başına DataStore okuma
         // race condition'a ve yavaşlamaya yol açıyordu.
-        TmdbDiscoverClient.getTrendingMovies(page, apiKey, ::executeGet)
+        TmdbDiscoverClient.getTrendingMovies(page, apiKey, language, ::executeGet)
     }
 
     suspend fun getTrendingShows(page: Int = 1): List<JikanSearchResult> = withContext(Dispatchers.IO) {
-        TmdbDiscoverClient.getTrendingShows(page, apiKey, ::executeGet)
+        TmdbDiscoverClient.getTrendingShows(page, apiKey, language, ::executeGet)
     }
 
     suspend fun getTrendingAll(page: Int = 1): List<JikanSearchResult> = withContext(Dispatchers.IO) {
-        TmdbDiscoverClient.getTrendingAll(page, apiKey, ::executeGet)
+        TmdbDiscoverClient.getTrendingAll(page, apiKey, language, ::executeGet)
     }
 
     suspend fun getPopularMovies(page: Int = 1): List<JikanSearchResult> = withContext(Dispatchers.IO) {
-        TmdbDiscoverClient.getPopularMovies(page, apiKey, ::executeGet)
+        TmdbDiscoverClient.getPopularMovies(page, apiKey, language, ::executeGet)
     }
 
     suspend fun getPopularShows(page: Int = 1): List<JikanSearchResult> = withContext(Dispatchers.IO) {
-        TmdbDiscoverClient.getPopularShows(page, apiKey, ::executeGet)
+        TmdbDiscoverClient.getPopularShows(page, apiKey, language, ::executeGet)
     }
 
     suspend fun getTopRatedMovies(page: Int = 1): List<JikanSearchResult> = withContext(Dispatchers.IO) {
-        TmdbDiscoverClient.getTopRatedMovies(page, apiKey, ::executeGet)
+        TmdbDiscoverClient.getTopRatedMovies(page, apiKey, language, ::executeGet)
     }
 
     suspend fun getTopRatedShows(page: Int = 1): List<JikanSearchResult> = withContext(Dispatchers.IO) {
-        TmdbDiscoverClient.getTopRatedShows(page, apiKey, ::executeGet)
+        TmdbDiscoverClient.getTopRatedShows(page, apiKey, language, ::executeGet)
+    }
+
+    suspend fun getTrendingAnime(page: Int = 1): List<JikanSearchResult> = withContext(Dispatchers.IO) {
+        TmdbDiscoverClient.getTrendingAnime(page, apiKey, language, ::executeGet)
+    }
+
+    suspend fun getPopularAnime(page: Int = 1): List<JikanSearchResult> = withContext(Dispatchers.IO) {
+        TmdbDiscoverClient.getPopularAnime(page, apiKey, language, ::executeGet)
+    }
+
+    suspend fun getUpcomingAnime(page: Int = 1): List<JikanSearchResult> = withContext(Dispatchers.IO) {
+        TmdbDiscoverClient.getUpcomingAnime(page, apiKey, language, ::executeGet)
     }
 
     suspend fun discoverByGenre(genreId: Int, isMovie: Boolean): List<JikanSearchResult> = withContext(Dispatchers.IO) {
         if (!isTmdbEnabled()) return@withContext emptyList()
-        TmdbDiscoverClient.discoverByGenre(genreId, isMovie, apiKey, ::executeGet)
+        TmdbDiscoverClient.discoverByGenre(genreId, isMovie, apiKey, language, ::executeGet)
     }
 
     suspend fun fetchBackdropByTitle(title: String): String? = withContext(Dispatchers.IO) {
         if (!isTmdbEnabled()) return@withContext null
-        TmdbDiscoverClient.fetchBackdropByTitle(title, apiKey, ::executeGet)
+        TmdbDiscoverClient.fetchBackdropByTitle(title, apiKey, language, ::executeGet)
     }
 
     // ── Arama ───────────────────────────────────────────────────────────────────
@@ -191,7 +226,7 @@ class TmdbApiClient(
     suspend fun search(query: String): List<JikanSearchResult> = withContext(Dispatchers.IO) {
         if (!isTmdbEnabled()) return@withContext emptyList()
         val encodedQuery = java.net.URLEncoder.encode(query, "UTF-8")
-        val url = "https://api.themoviedb.org/3/search/multi?api_key=$apiKey&language=tr-TR&query=$encodedQuery&page=1"
+        val url = "https://api.themoviedb.org/3/search/multi?api_key=$apiKey&language=$language&query=$encodedQuery&page=1"
         try {
             val responseText = executeGet(url) ?: return@withContext emptyList()
             val root = JSONObject(responseText)

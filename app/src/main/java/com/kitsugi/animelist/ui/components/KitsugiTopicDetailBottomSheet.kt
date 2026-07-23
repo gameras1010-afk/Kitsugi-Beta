@@ -35,12 +35,15 @@ import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
 import kotlinx.coroutines.launch
 
+import androidx.compose.foundation.clickable
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KitsugiTopicDetailBottomSheet(
     topic: KitsugiForumTopic,
     source: String,
     apiClient: JikanApiClient,
+    onUserProfileClick: ((userId: Int?, username: String, avatarUrl: String?) -> Unit)? = null,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
@@ -322,6 +325,11 @@ fun KitsugiTopicDetailBottomSheet(
                                         .size(30.dp)
                                         .clip(CircleShape)
                                         .background(KitsugiColors.SurfaceSoft)
+                                        .then(
+                                            if (onUserProfileClick != null) {
+                                                Modifier.clickable { onUserProfileClick(topic.userId, topic.username, topic.avatarUrl) }
+                                            } else Modifier
+                                        )
                                 ) {
                                     if (!topic.avatarUrl.isNullOrBlank()) {
                                         AsyncImage(
@@ -347,7 +355,13 @@ fun KitsugiTopicDetailBottomSheet(
                                         text = topic.username,
                                         color = KitsugiColors.TextPrimary,
                                         fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = if (onUserProfileClick != null) {
+                                            Modifier
+                                                .clip(RoundedCornerShape(4.dp))
+                                                .clickable { onUserProfileClick(topic.userId, topic.username, topic.avatarUrl) }
+                                                .padding(horizontal = 4.dp, vertical = 2.dp)
+                                        } else Modifier
                                     )
                                     if (!topic.dateText.isNullOrBlank()) {
                                         Text(
@@ -431,7 +445,8 @@ fun KitsugiTopicDetailBottomSheet(
                             comment = comment,
                             displayText = displayComment,
                             apiClient = apiClient,
-                            coroutineScope = coroutineScope
+                            coroutineScope = coroutineScope,
+                            onUserProfileClick = onUserProfileClick
                         )
                     }
 

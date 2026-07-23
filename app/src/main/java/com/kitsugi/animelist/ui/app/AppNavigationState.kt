@@ -61,21 +61,30 @@ class AppNavigationState(
     }
 
     fun clearPreviousScreens() {
-        val popped = previousBackStack.filter { it !in detailBackStack }
-        popped.forEach { screen ->
+        val poppedWithIndices = previousBackStack.mapIndexed { index, screen -> index to screen }
+            .filter { (_, screen) -> screen !in detailBackStack }
+
+        val baseOffset = (if (fullScreenGridState != null) 1 else 0) +
+                         (if (mangaBrowseOpen) 1 else 0) +
+                         (if (mangaDetailNavState != null) 1 else 0) +
+                         (if (mangaReaderNavState != null) 1 else 0) +
+                         (if (mangaSourceHealthOpen) 1 else 0)
+
+        poppedWithIndices.forEach { (idx, screen) ->
+            val depth = baseOffset + (idx + 1)
             val key = when (screen) {
-                is DetailScreen.MediaDetail -> "media_${screen.entryId}"
-                is DetailScreen.ApiResultDetail -> "api_${screen.result.source}_${screen.result.malId}"
-                is DetailScreen.CharacterDetail -> "character_${screen.source}_${screen.characterId}"
-                is DetailScreen.StaffDetail -> "staff_${screen.source}_${screen.staffId}"
-                is DetailScreen.StudioDetail -> "studio_${screen.source}_${screen.studioId}"
-                is DetailScreen.AiringCalendar -> "airing_calendar"
-                DetailScreen.Stats -> "stats"
-                DetailScreen.Favourites -> "favourites"
-                DetailScreen.About -> "about"
-                is DetailScreen.UserProfile -> "user_profile_${screen.userId}"
-                is DetailScreen.UserMediaList -> "user_media_list_${screen.userId}_${screen.initialMediaType.name}"
-                DetailScreen.Notifications -> "notifications"
+                is DetailScreen.MediaDetail -> "media_${depth}_${screen.entryId}"
+                is DetailScreen.ApiResultDetail -> "api_${depth}_${screen.result.source}_${screen.result.malId}"
+                is DetailScreen.CharacterDetail -> "char_${depth}_${screen.source}_${screen.characterId}"
+                is DetailScreen.StaffDetail -> "staff_${depth}_${screen.source}_${screen.staffId}"
+                is DetailScreen.StudioDetail -> "studio_${depth}_${screen.source}_${screen.studioId}"
+                is DetailScreen.AiringCalendar -> "airing_calendar_${depth}"
+                DetailScreen.Stats -> "stats_${depth}"
+                DetailScreen.Favourites -> "favourites_${depth}"
+                DetailScreen.About -> "about_${depth}"
+                is DetailScreen.UserProfile -> "user_profile_${depth}_${screen.userId}"
+                is DetailScreen.UserMediaList -> "user_media_list_${depth}_${screen.userId}_${screen.initialMediaType.name}"
+                DetailScreen.Notifications -> "notifications_${depth}"
             }
             stateHolder.removeState(key)
         }

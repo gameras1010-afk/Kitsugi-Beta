@@ -49,6 +49,8 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -159,6 +161,11 @@ fun MyListScreen(
     }
 
     var isFabVisible by rememberSaveable { mutableStateOf(true) }
+    val showScrollToTop by remember {
+        derivedStateOf {
+            lazyListState.firstVisibleItemIndex > 3
+        }
+    }
     var prevIndex by remember { mutableIntStateOf(0) }
     var prevOffset by remember { mutableIntStateOf(0) }
     var showSearchField by rememberSaveable { mutableStateOf(false) }
@@ -779,21 +786,22 @@ fun MyListScreen(
     val isTv = com.kitsugi.animelist.ui.theme.LocalIsTvDevice.current
     if (!isTv) {
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.BottomEnd
+            modifier = Modifier.fillMaxSize()
         ) {
+            // Tümü (Kategori) button on the Bottom-Start (Bottom-Left)
             AnimatedVisibility(
                 visible = isFabVisible,
                 enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
                 exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
                 modifier = Modifier
+                    .align(Alignment.BottomStart)
                     .padding(
                         bottom = if (isLandscape) {
                             16.dp
                         } else {
                             64.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
                         },
-                        end = 20.dp
+                        start = 20.dp
                     )
                     .zIndex(10f)
             ) {
@@ -825,6 +833,44 @@ fun MyListScreen(
                             fontWeight = FontWeight.Black
                         )
                     }
+                }
+            }
+
+            // Scroll to Top button on the Bottom-End (Bottom-Right)
+            AnimatedVisibility(
+                visible = showScrollToTop,
+                enter = fadeIn() + scaleIn(),
+                exit = fadeOut() + scaleOut(),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(
+                        bottom = if (isLandscape) {
+                            16.dp
+                        } else {
+                            64.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                        },
+                        end = 20.dp
+                    )
+                    .zIndex(10f)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(accentColor)
+                        .tvClickable(shape = RoundedCornerShape(16.dp)) {
+                            coroutineScope.launch {
+                                lazyListState.animateScrollToItem(0)
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.KeyboardArrowUp,
+                        contentDescription = "Yukarı Git",
+                        tint = KitsugiColors.background,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
             }
         }

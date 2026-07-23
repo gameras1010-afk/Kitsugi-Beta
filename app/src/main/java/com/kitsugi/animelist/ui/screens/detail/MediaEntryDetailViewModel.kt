@@ -612,7 +612,7 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
             val malId: Int? = when {
                 isAniList && stableId >= 100_000_000 -> null // no real MAL ID from stableId
                 isAniList -> stableId
-                else -> entry.id
+                else -> entry.malId
             }
             val aniListId: Int? = if (isAniList && stableId >= 100_000_000) stableId - 100_000_000 else null
             val tmdbId: Int? = entry.tmdbId ?: _detailState.value?.tmdbId ?: _resolvedTmdbId.value
@@ -627,7 +627,8 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
                     KitsugiIdResolver.resolveIds(
                         malId = malId,
                         aniListId = aniListId,
-                        tmdbId = tmdbId
+                        tmdbId = tmdbId,
+                        mediaType = entry.type
                     )
                 }
                 imdbId = resolved.imdbId

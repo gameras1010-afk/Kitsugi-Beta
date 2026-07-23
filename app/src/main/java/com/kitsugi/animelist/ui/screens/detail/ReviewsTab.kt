@@ -44,8 +44,11 @@ import com.kitsugi.animelist.ui.components.KitsugiTopicDetailBottomSheet
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.components.KitsugiShimmerSearchResultList
+import androidx.compose.foundation.clickable
+import com.kitsugi.animelist.utils.ShareUtils
 import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
 import kotlinx.coroutines.launch
+
 
 @Composable
 fun ReviewsTabContent(
@@ -56,6 +59,7 @@ fun ReviewsTabContent(
     apiClient: JikanApiClient,
     titleLanguage: String = "ROMAJI",
     preferredTranslator: String = "DEFAULT",
+    onUserProfileClick: (userId: Int, username: String, avatarUrl: String?) -> Unit,
     onImageGalleryRequest: ((urls: List<String>, index: Int) -> Unit)? = null
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -63,7 +67,21 @@ fun ReviewsTabContent(
     var activeReviewForDetail by remember { mutableStateOf<KitsugiReview?>(null) }
     var activeTopicForDetail by remember { mutableStateOf<KitsugiForumTopic?>(null) }
     var activeActivityIdForDetail by remember { mutableStateOf<Int?>(null) }
-    
+
+    val handleUserProfileClick: (userId: Int?, username: String, avatarUrl: String?) -> Unit = { userId, username, avatarUrl ->
+        if (source.lowercase() == "anilist" && userId != null) {
+            onUserProfileClick(userId, username, avatarUrl)
+        } else {
+            try {
+                val url = ShareUtils.buildProfileUrl(source, username)
+                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))
+                context.startActivity(intent)
+            } catch (e: Exception) {
+                Toast.makeText(context, "Profil linki açılamadı", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     var showAllTopicsSheet by remember { mutableStateOf(false) }
     var showAllActivitiesSheet by remember { mutableStateOf(false) }
     var showAllReviewsSheet by remember { mutableStateOf(false) }
@@ -153,6 +171,7 @@ fun ReviewsTabContent(
                     items(forumTopics) { topic ->
                         TopicCard(
                             topic = topic,
+                            onUserProfileClick = handleUserProfileClick,
                             onClick = {
                                 Toast.makeText(context, "Yükleniyor...", Toast.LENGTH_SHORT).show()
                                 activeTopicForDetail = topic
@@ -237,6 +256,7 @@ fun ReviewsTabContent(
                         ActivityCard(
                             activity = activity,
                             titleLanguage = titleLanguage,
+                            onUserProfileClick = handleUserProfileClick,
                             onClick = {
                                 Toast.makeText(context, "Yükleniyor...", Toast.LENGTH_SHORT).show()
                                 activeActivityIdForDetail = activity.id
@@ -347,6 +367,7 @@ fun ReviewsTabContent(
                                     modifier = Modifier.width(280.dp),
                                     preferredTranslator = preferredTranslator,
                                     backgroundColor = KitsugiColors.SurfaceSoft,
+                                    onUserProfileClick = handleUserProfileClick,
                                     onClick = { activeReviewForDetail = rev },
                                     onHelpfulClick = {
                                         if (rev.id == null) {
@@ -392,6 +413,7 @@ fun ReviewsTabContent(
             externalId = externalId,
             mediaType = mediaType,
             apiClient = apiClient,
+            onUserProfileClick = handleUserProfileClick,
             onDismiss = { showAllTopicsSheet = false }
         )
     }
@@ -403,6 +425,7 @@ fun ReviewsTabContent(
             mediaType = mediaType,
             apiClient = apiClient,
             titleLanguage = titleLanguage,
+            onUserProfileClick = handleUserProfileClick,
             onDismiss = { showAllActivitiesSheet = false }
         )
     }
@@ -413,6 +436,7 @@ fun ReviewsTabContent(
             externalId = externalId,
             mediaType = mediaType,
             apiClient = apiClient,
+            onUserProfileClick = handleUserProfileClick,
             onDismiss = { showAllReviewsSheet = false }
         )
     }
@@ -421,6 +445,7 @@ fun ReviewsTabContent(
         KitsugiReviewDetailBottomSheet(
             review = activeReviewForDetail!!,
             apiClient = apiClient,
+            onUserProfileClick = handleUserProfileClick,
             onDismiss = { activeReviewForDetail = null }
         )
     }
@@ -430,6 +455,7 @@ fun ReviewsTabContent(
             topic = activeTopicForDetail!!,
             source = source,
             apiClient = apiClient,
+            onUserProfileClick = handleUserProfileClick,
             onDismiss = { activeTopicForDetail = null }
         )
     }
@@ -439,6 +465,7 @@ fun ReviewsTabContent(
             activityId = activeActivityIdForDetail!!,
             apiClient = apiClient,
             titleLanguage = titleLanguage,
+            onUserProfileClick = handleUserProfileClick,
             onDismiss = { activeActivityIdForDetail = null }
         )
     }
@@ -447,6 +474,7 @@ fun ReviewsTabContent(
 @Composable
 private fun TopicCard(
     topic: KitsugiForumTopic,
+    onUserProfileClick: ((userId: Int?, username: String, avatarUrl: String?) -> Unit)? = null,
     onClick: () -> Unit,
     onLikeClick: (() -> Unit)? = null,
     backgroundColor: androidx.compose.ui.graphics.Color = KitsugiColors.Surface
@@ -475,7 +503,13 @@ private fun TopicCard(
         Spacer(modifier = Modifier.height(10.dp))
 
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = if (onUserProfileClick != null) {
+                Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { onUserProfileClick(topic.userId, topic.username, topic.avatarUrl) }
+                    .padding(4.dp)
+            } else Modifier
         ) {
             Box(
                 modifier = Modifier
@@ -507,8 +541,7 @@ private fun TopicCard(
                 color = KitsugiColors.TextSecondary,
                 fontSize = 11.sp,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f)
+                overflow = TextOverflow.Ellipsis
             )
         }
 
@@ -623,6 +656,7 @@ private fun TopicCard(
 private fun ActivityCard(
     activity: KitsugiActivity,
     titleLanguage: String = "ROMAJI",
+    onUserProfileClick: ((userId: Int?, username: String, avatarUrl: String?) -> Unit)? = null,
     onClick: () -> Unit,
     onLikeClick: () -> Unit,
     backgroundColor: androidx.compose.ui.graphics.Color = KitsugiColors.Surface
@@ -638,7 +672,13 @@ private fun ActivityCard(
             .padding(12.dp)
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = if (onUserProfileClick != null) {
+                Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { onUserProfileClick(activity.userId, activity.username, activity.avatarUrl) }
+                    .padding(4.dp)
+            } else Modifier
         ) {
             Box(
                 modifier = Modifier
@@ -671,8 +711,7 @@ private fun ActivityCard(
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f)
+                overflow = TextOverflow.Ellipsis
             )
         }
 

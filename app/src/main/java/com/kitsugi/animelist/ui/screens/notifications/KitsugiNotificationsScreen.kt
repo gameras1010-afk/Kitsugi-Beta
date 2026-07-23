@@ -79,7 +79,7 @@ fun KitsugiNotificationsScreen(
     isMalConnected: Boolean,
     isSimklConnected: Boolean,
     onBack: () -> Unit,
-    onOpenApiDetail: ((mediaId: Int, source: String) -> Unit)? = null,
+    onOpenApiDetail: ((mediaId: Int, source: String, mediaType: String?) -> Unit)? = null,
     viewModel: KitsugiNotificationsViewModel = viewModel()
 ) {
     val accentColor = LocalKitsugiAccent.current
@@ -279,8 +279,8 @@ fun KitsugiNotificationsScreen(
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(bottom = 80.dp)
                         ) {
-                            // Sticky header: AniList alt filtreleri
-                            stickyHeader(key = "al_filters") {
+                            // Alt filtreler
+                            item(key = "al_filters") {
                                 AniListFilterHeader(
                                     activeFilter = aniListFilter,
                                     onFilterSelected = { aniListFilter = it },
@@ -305,7 +305,7 @@ fun KitsugiNotificationsScreen(
                                             notif = notif,
                                             accentColor = accentColor,
                                             onClick = {
-                                                notif.mediaId?.let { id -> onOpenApiDetail?.invoke(id, "anilist") }
+                                                notif.mediaId?.let { id -> onOpenApiDetail?.invoke(id, "anilist", notif.mediaType) }
                                             }
                                         )
                                     }
@@ -355,7 +355,7 @@ fun KitsugiNotificationsScreen(
                                             notif = notif,
                                             accentColor = accentColor,
                                             onClick = {
-                                                notif.mediaId?.let { id -> onOpenApiDetail?.invoke(id, "jikan") }
+                                                notif.mediaId?.let { id -> onOpenApiDetail?.invoke(id, "jikan", notif.mediaType) }
                                             }
                                         )
                                     }
@@ -391,7 +391,7 @@ fun KitsugiNotificationsScreen(
                                             notif = notif,
                                             accentColor = accentColor,
                                             onClick = {
-                                                notif.mediaId?.let { id -> onOpenApiDetail?.invoke(id, "simkl") }
+                                                notif.mediaId?.let { id -> onOpenApiDetail?.invoke(id, "simkl", notif.mediaType) }
                                             }
                                         )
                                     }

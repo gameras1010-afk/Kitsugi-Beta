@@ -1081,7 +1081,7 @@ fun AniListProfileContent(
                         when (page) {
                             0 -> {
                                 // Info tab contents
-                                val displayAbout = remember(state.about) { state.about.cleanUserAboutText() }
+                                val displayAbout = state.about
                                 if (displayAbout.isNotBlank()) {
                                     Column(
                                         modifier = Modifier
@@ -1134,9 +1134,13 @@ fun AniListProfileContent(
                                             }
                                         }
                                         Spacer(modifier = Modifier.height(8.dp))
-                                        com.kitsugi.animelist.ui.components.KitsugiMarkdownText(
-                                             text = displayAbout, modifier = Modifier.fillMaxWidth(), onImageGalleryRequest = { urls, index -> onImageClick?.invoke(urls, index, "${state.name ?: "Kullanıcı"} Biyografi") }
-                                         )
+                                        com.kitsugi.animelist.ui.components.KitsugiHtmlWebView(
+                                            html = displayAbout,
+                                            modifier = Modifier.fillMaxWidth(),
+                                            onImageClick = { urls, idx ->
+                                                onImageClick?.invoke(urls, idx, "${state.name} Biyografisi")
+                                            }
+                                        )
                                     }
                                 }
 
@@ -2591,6 +2595,7 @@ fun SimklProfileContent(
     accentColor: Color,
     onImageClick: ((urls: List<String>, initialIndex: Int, title: String) -> Unit)? = null
 ) {
+    val context = LocalContext.current
     var activeTab by rememberSaveable { mutableIntStateOf(viewModel.simklActiveTab) }
     val coroutineScope = rememberCoroutineScope()
     val pagerState = androidx.compose.foundation.pager.rememberPagerState(
@@ -2812,17 +2817,56 @@ fun SimklProfileContent(
                                             .background(KitsugiColors.Surface)
                                             .padding(16.dp)
                                     ) {
-                                        Text(
-                                            text = "Hakkında",
-                                            color = KitsugiColors.TextPrimary,
-                                            style = MaterialTheme.typography.titleSmall,
-                                            fontWeight = FontWeight.Bold
-                                        )
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = "Hakkında",
+                                                color = KitsugiColors.TextPrimary,
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                            Row(
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                IconButton(
+                                                    onClick = { context.openTranslator(state.bio) },
+                                                    modifier = Modifier.size(28.dp)
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Rounded.Translate,
+                                                        contentDescription = "Çevir",
+                                                        tint = accentColor,
+                                                        modifier = Modifier.size(16.dp)
+                                                    )
+                                                }
+                                                IconButton(
+                                                    onClick = {
+                                                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("about", state.bio))
+                                                        Toast.makeText(context, "Panoya kopyalandı", Toast.LENGTH_SHORT).show()
+                                                    },
+                                                    modifier = Modifier.size(28.dp)
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Rounded.ContentCopy,
+                                                        contentDescription = "Kopyala",
+                                                        tint = KitsugiColors.TextSecondary,
+                                                        modifier = Modifier.size(16.dp)
+                                                    )
+                                                }
+                                            }
+                                        }
                                         Spacer(modifier = Modifier.height(8.dp))
-                                        Text(
-                                            text = state.bio,
-                                            color = KitsugiColors.TextSecondary,
-                                            style = MaterialTheme.typography.bodySmall
+                                        com.kitsugi.animelist.ui.components.KitsugiHtmlWebView(
+                                            html = state.bio,
+                                            modifier = Modifier.fillMaxWidth(),
+                                            onImageClick = { urls, idx ->
+                                                onImageClick?.invoke(urls, idx, "${state.name} Biyografisi")
+                                            }
                                         )
                                     }
                                 }

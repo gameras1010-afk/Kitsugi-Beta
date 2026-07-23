@@ -570,7 +570,8 @@ class ApiResultDetailViewModel(application: Application) : AndroidViewModel(appl
                 val resolved = KitsugiIdResolver.resolveIds(
                     malId = realMalId,
                     aniListId = aniListId,
-                    tmdbId = tmdbId
+                    tmdbId = tmdbId,
+                    mediaType = result.type
                 )
                 imdbId = resolved.imdbId
             }

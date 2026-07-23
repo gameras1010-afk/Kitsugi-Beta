@@ -351,6 +351,37 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         val topRatedMoviesDeferred = async { runCatching { tmdbApiClient.getTopRatedMovies() }.getOrDefault(emptyList()) }
         val topRatedShowsDeferred  = async { runCatching { tmdbApiClient.getTopRatedShows() }.getOrDefault(emptyList()) }
 
+        val trendingAnimeDeferred  = async { runCatching { tmdbApiClient.getTrendingAnime() }.getOrDefault(emptyList()) }
+        val popularAnimeDeferred   = async { runCatching { tmdbApiClient.getPopularAnime() }.getOrDefault(emptyList()) }
+        val upcomingAnimeDeferred  = async { runCatching { tmdbApiClient.getUpcomingAnime() }.getOrDefault(emptyList()) }
+        val airingSoonDeferred = async {
+            val calendarClient = com.kitsugi.animelist.data.remote.KitsugiAiringCalendarClient()
+            val upcoming = runCatching { calendarClient.fetchUpcomingSchedule(limit = 40) }.getOrNull() ?: emptyList()
+            val nowSeconds = System.currentTimeMillis() / 1000L
+            upcoming
+                .filter { it.airingAt > nowSeconds }
+                .sortedBy { it.airingAt }
+                .take(15)
+                .map { entry ->
+                    JikanSearchResult(
+                        malId = entry.malId ?: entry.aniListId,
+                        title = entry.title,
+                        subtitle = "${entry.episode}. Bölüm",
+                        type = MediaType.Anime,
+                        total = null,
+                        score = entry.averageScore,
+                        isAdult = false,
+                        imageUrl = entry.coverUrl,
+                        year = null,
+                        source = "anilist",
+                        realMalId = entry.malId,
+                        titleEnglish = entry.titleEnglish,
+                        titleJapanese = entry.titleNative,
+                        nextAiringEpisode = "${entry.episode}|${entry.airingAt}"
+                    )
+                }
+        }
+
         val moviesList    = trendingMoviesDeferred.await()
         val showsList     = trendingShowsDeferred.await()
         val popularMovies = popularMoviesDeferred.await()
@@ -358,6 +389,11 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         val popularShows  = popularShowsDeferred.await()
         val topRatedMovies = topRatedMoviesDeferred.await()
         val topRatedShows  = topRatedShowsDeferred.await()
+
+        val trendingAnimeList = trendingAnimeDeferred.await()
+        val popularAnimeList  = popularAnimeDeferred.await()
+        val upcomingAnimeList = upcomingAnimeDeferred.await()
+        val airingSoonList    = airingSoonDeferred.await()
 
         // ── Authenticated: Simkl watchlist (sadece giriş yapılmışsa) ────────────────
         val userMoviesDeferred = if (!simklToken.isNullOrBlank()) {
@@ -407,16 +443,19 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
             upcomingAnime = popularMovies,  // Popüler Filmler
             topManga      = popularShows,   // Popüler Diziler
             publishingManga = topRatedMovies, // En Yüksek Puanlı Filmler
-            trendingAnime = allTrending,
+            trendingAnime = trendingAnimeList, // Trend Animeler
             movieAnime    = moviesList,     // Trend Filmler
             seasonalAnime = topRatedShows,  // En Yüksek Puanlı Diziler
+            newlyAddedAnime = popularAnimeList, // Popüler Animeler (reused field)
+            trendingManga = upcomingAnimeList, // Yakında Yayında (Anime) (reused field)
             simklContinueMovies = continueMovies,
             simklPlannedMovies = plannedMovies,
             simklContinueSeries = continueSeries,
             simklPlannedSeries = plannedSeries,
-            airingSoonAnime = emptyList()
+            airingSoonAnime = airingSoonList
         )
     }
+
 
     private suspend fun loadMalData(): ExplorePayload = supervisorScope {
         val showAdult = showAdultContentState

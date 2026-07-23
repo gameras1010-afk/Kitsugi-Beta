@@ -174,6 +174,7 @@ fun ApiResultDetailPage(
     mdbListShowTmdb: Boolean = false,
     mdbListShowTrakt: Boolean = false,
     settingsDataStore: SettingsDataStore? = null,
+    onUserProfileClick: (userId: Int, username: String, avatarUrl: String?) -> Unit = { _, _, _ -> },
     onToggleFavoriteClick: (() -> Unit)? = null
 ) {
     val accentColor = LocalKitsugiAccent.current
@@ -728,7 +729,8 @@ fun ApiResultDetailPage(
                                                 mediaType = result.type,
                                                 apiClient = apiClient,
                                                 titleLanguage = titleLanguage,
-                                                 preferredTranslator = settingsState?.preferredTranslator ?: "DEFAULT"
+                                                onUserProfileClick = onUserProfileClick,
+                                                preferredTranslator = settingsState?.preferredTranslator ?: "DEFAULT"
                                             )
                                             7 -> {
                                                 ApiDetailEpisodesTab(
@@ -1231,7 +1233,8 @@ fun ApiResultDetailPage(
                                         mediaType = result.type,
                                         apiClient = apiClient,
                                         titleLanguage = titleLanguage,
-                                                 preferredTranslator = settingsState?.preferredTranslator ?: "DEFAULT"
+                                        onUserProfileClick = onUserProfileClick,
+                                        preferredTranslator = settingsState?.preferredTranslator ?: "DEFAULT"
                                     )
                                     7 -> {
                                         ApiDetailEpisodesTab(

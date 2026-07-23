@@ -37,11 +37,14 @@ import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
 import kotlinx.coroutines.launch
 
+import androidx.compose.foundation.clickable
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KitsugiReviewDetailBottomSheet(
     review: KitsugiReview,
     apiClient: JikanApiClient,
+    onUserProfileClick: ((userId: Int?, username: String, avatarUrl: String?) -> Unit)? = null,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
@@ -52,6 +55,7 @@ fun KitsugiReviewDetailBottomSheet(
     var selectedLanguage by remember { mutableStateOf("original") }
     var translatedText by remember { mutableStateOf<String?>(null) }
     var isTranslating by remember { mutableStateOf(false) }
+    var activeGalleryImages by remember { mutableStateOf<Pair<List<String>, Int>?>(null) }
 
     var userRatingState by remember(review.id) { mutableStateOf(review.userRating) }
     var helpfulCountState by remember(review.id) { mutableStateOf(review.helpfulCount ?: 0) }
@@ -92,6 +96,11 @@ fun KitsugiReviewDetailBottomSheet(
                             .size(40.dp)
                             .clip(CircleShape)
                             .background(KitsugiColors.SurfaceSoft)
+                            .then(
+                                if (onUserProfileClick != null) {
+                                    Modifier.clickable { onUserProfileClick(review.userId, review.username, review.avatarUrl) }
+                                } else Modifier
+                            )
                     ) {
                         if (!review.avatarUrl.isNullOrBlank()) {
                             AsyncImage(
@@ -119,7 +128,13 @@ fun KitsugiReviewDetailBottomSheet(
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = if (onUserProfileClick != null) {
+                                Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .clickable { onUserProfileClick(review.userId, review.username, review.avatarUrl) }
+                                    .padding(horizontal = 4.dp, vertical = 2.dp)
+                            } else Modifier
                         )
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -281,7 +296,10 @@ fun KitsugiReviewDetailBottomSheet(
                 } else {
                     val displayText = if (selectedLanguage == "turkish") (translatedText ?: review.fullText) else review.fullText
                     com.kitsugi.animelist.ui.components.KitsugiHtmlWebView(
-                        html = displayText
+                        html = displayText,
+                        onImageClick = { urls, idx ->
+                            activeGalleryImages = Pair(urls, idx)
+                        }
                     )
                 }
             }
@@ -338,5 +356,15 @@ fun KitsugiReviewDetailBottomSheet(
                 }
             }
         }
+    }
+
+    if (activeGalleryImages != null) {
+        val (urls, idx) = activeGalleryImages!!
+        KitsugiImageGalleryDialog(
+            imageUrls = urls,
+            initialIndex = idx,
+            title = "${review.username} Yorum Görseli",
+            onDismiss = { activeGalleryImages = null }
+        )
     }
 }

@@ -35,6 +35,8 @@ import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
 import kotlinx.coroutines.launch
 
+import androidx.compose.foundation.clickable
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KitsugiAllTopicsBottomSheet(
@@ -42,6 +44,7 @@ fun KitsugiAllTopicsBottomSheet(
     externalId: Int,
     mediaType: MediaType,
     apiClient: JikanApiClient,
+    onUserProfileClick: ((userId: Int?, username: String, avatarUrl: String?) -> Unit)? = null,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
@@ -295,39 +298,49 @@ fun KitsugiAllTopicsBottomSheet(
                             Row(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .clip(CircleShape)
-                                        .background(KitsugiColors.SurfaceSoft)
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = if (onUserProfileClick != null) {
+                                        Modifier
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .clickable { onUserProfileClick(topic.userId, topic.username, topic.avatarUrl) }
+                                            .padding(4.dp)
+                                    } else Modifier
                                 ) {
-                                    if (!topic.avatarUrl.isNullOrBlank()) {
-                                        AsyncImage(
-                                            model = topic.avatarUrl,
-                                            contentDescription = topic.username,
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentScale = ContentScale.Crop
-                                        )
-                                    } else {
-                                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                            Text(
-                                                text = topic.username.take(1).uppercase(),
-                                                color = KitsugiColors.TextMuted,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 11.sp
+                                    Box(
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                            .clip(CircleShape)
+                                            .background(KitsugiColors.SurfaceSoft)
+                                    ) {
+                                        if (!topic.avatarUrl.isNullOrBlank()) {
+                                            AsyncImage(
+                                                model = topic.avatarUrl,
+                                                contentDescription = topic.username,
+                                                modifier = Modifier.fillMaxSize(),
+                                                contentScale = ContentScale.Crop
                                             )
+                                        } else {
+                                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                                Text(
+                                                    text = topic.username.take(1).uppercase(),
+                                                    color = KitsugiColors.TextMuted,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 11.sp
+                                                )
+                                            }
                                         }
                                     }
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    Text(
+                                        text = topic.username,
+                                        color = KitsugiColors.TextPrimary,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
                                 }
-
-                                Spacer(modifier = Modifier.width(8.dp))
-
-                                Text(
-                                    text = topic.username,
-                                    color = KitsugiColors.TextPrimary,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
 
                                 Spacer(modifier = Modifier.weight(1f))
 
@@ -424,6 +437,7 @@ fun KitsugiAllTopicsBottomSheet(
             topic = activeTopicForDetail!!,
             source = source,
             apiClient = apiClient,
+            onUserProfileClick = onUserProfileClick,
             onDismiss = { activeTopicForDetail = null }
         )
     }

@@ -34,6 +34,8 @@ import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
 import kotlinx.coroutines.launch
 
+import androidx.compose.foundation.clickable
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KitsugiAllReviewsBottomSheet(
@@ -41,6 +43,7 @@ fun KitsugiAllReviewsBottomSheet(
     externalId: Int,
     mediaType: MediaType,
     apiClient: JikanApiClient,
+    onUserProfileClick: ((userId: Int?, username: String, avatarUrl: String?) -> Unit)? = null,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
@@ -243,48 +246,60 @@ fun KitsugiAllReviewsBottomSheet(
                                 .padding(14.dp)
                         ) {
                             Row(
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .clip(CircleShape)
-                                        .background(KitsugiColors.SurfaceSoft)
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = if (onUserProfileClick != null) {
+                                        Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .clickable { onUserProfileClick(rev.userId, rev.username, rev.avatarUrl) }
+                                            .padding(4.dp)
+                                    } else Modifier.weight(1f)
                                 ) {
-                                    if (!rev.avatarUrl.isNullOrBlank()) {
-                                        AsyncImage(
-                                            model = rev.avatarUrl,
-                                            contentDescription = rev.username,
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentScale = ContentScale.Crop
-                                        )
-                                    } else {
-                                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                            Text(
-                                                text = rev.username.take(1).uppercase(),
-                                                color = KitsugiColors.TextMuted,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 12.sp
+                                    Box(
+                                        modifier = Modifier
+                                            .size(32.dp)
+                                            .clip(CircleShape)
+                                            .background(KitsugiColors.SurfaceSoft)
+                                    ) {
+                                        if (!rev.avatarUrl.isNullOrBlank()) {
+                                            AsyncImage(
+                                                model = rev.avatarUrl,
+                                                contentDescription = rev.username,
+                                                modifier = Modifier.fillMaxSize(),
+                                                contentScale = ContentScale.Crop
                                             )
+                                        } else {
+                                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                                Text(
+                                                    text = rev.username.take(1).uppercase(),
+                                                    color = KitsugiColors.TextMuted,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 12.sp
+                                                )
+                                            }
                                         }
                                     }
-                                }
 
-                                Spacer(modifier = Modifier.width(8.dp))
+                                    Spacer(modifier = Modifier.width(8.dp))
 
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = rev.username,
-                                        color = KitsugiColors.TextPrimary,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    if (!rev.dateText.isNullOrBlank()) {
+                                    Column {
                                         Text(
-                                            text = rev.dateText,
-                                            color = KitsugiColors.TextSecondary,
-                                            fontSize = 10.sp
+                                            text = rev.username,
+                                            color = KitsugiColors.TextPrimary,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold
                                         )
+                                        if (!rev.dateText.isNullOrBlank()) {
+                                            Text(
+                                                text = rev.dateText,
+                                                color = KitsugiColors.TextSecondary,
+                                                fontSize = 10.sp
+                                            )
+                                        }
                                     }
                                 }
 
@@ -410,6 +425,7 @@ fun KitsugiAllReviewsBottomSheet(
         KitsugiReviewDetailBottomSheet(
             review = activeReviewForDetail!!,
             apiClient = apiClient,
+            onUserProfileClick = onUserProfileClick,
             onDismiss = { activeReviewForDetail = null }
         )
     }

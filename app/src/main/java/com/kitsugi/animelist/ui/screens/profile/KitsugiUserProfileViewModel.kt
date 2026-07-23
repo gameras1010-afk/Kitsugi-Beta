@@ -137,7 +137,7 @@ class KitsugiUserProfileViewModel(application: Application) : AndroidViewModel(a
                         User(id: ${'$'}userId) {
                             id
                             name
-                            about(asHtml: false)
+                            about(asHtml: true)
                             avatar { large }
                             bannerImage
                             isFollowing
@@ -355,11 +355,11 @@ class KitsugiUserProfileViewModel(application: Application) : AndroidViewModel(a
                                 __typename
                                 ... on TextActivity {
                                     id text createdAt likeCount replyCount isLiked
-                                    user { name avatar { large } }
+                                    user { id name avatar { large } }
                                 }
                                 ... on ListActivity {
                                     id status progress createdAt likeCount replyCount isLiked
-                                    user { name avatar { large } }
+                                    user { id name avatar { large } }
                                     media { id type isAdult title { romaji english } coverImage { large } }
                                 }
                             }
@@ -378,6 +378,7 @@ class KitsugiUserProfileViewModel(application: Application) : AndroidViewModel(a
                     val act = activityArray.getJSONObject(i)
                     val typename = act.optString("__typename")
                     val user = act.optJSONObject("user")
+                    val actUserId = user?.optInt("id")
                     val userName = user?.optNullableString("name") ?: "Kullanıcı"
                     val userAvatar = user?.optJSONObject("avatar")?.optNullableString("large")
                     val createdAt = act.optLong("createdAt", 0L)
@@ -389,6 +390,7 @@ class KitsugiUserProfileViewModel(application: Application) : AndroidViewModel(a
                         list.add(
                             ProfileActivityItem.TextActivity(
                                 id = act.getInt("id").toString(),
+                                userId = actUserId,
                                 userName = userName,
                                 userAvatar = userAvatar,
                                 text = act.optNullableString("text") ?: "",
@@ -411,6 +413,7 @@ class KitsugiUserProfileViewModel(application: Application) : AndroidViewModel(a
                         list.add(
                             ProfileActivityItem.ListActivity(
                                 id = act.getInt("id").toString(),
+                                userId = actUserId,
                                 userName = userName,
                                 userAvatar = userAvatar,
                                 mediaTitle = mediaTitle,

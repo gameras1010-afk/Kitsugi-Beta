@@ -237,6 +237,7 @@ fun KitsugiUserProfileScreen(
                     CircularProgressIndicator(color = accentColor)
                 }
             } else {
+                val username = state.name.ifBlank { fallbackUsername ?: "Kullanıcı" }
                 LazyColumn(
                     state = listState,
                     modifier = Modifier
@@ -249,7 +250,6 @@ fun KitsugiUserProfileScreen(
                         val avatarUrl = (state.avatarUrl ?: fallbackAvatar)?.takeIf { it.isNotBlank() }
                         val bannerUrl = state.bannerUrl?.takeIf { it.isNotBlank() }
                         val imageList = listOfNotNull(avatarUrl, bannerUrl)
-                        val username = state.name.ifBlank { fallbackUsername ?: "Kullan─▒c─▒" }
 
                         Box(
                             modifier = Modifier
@@ -594,7 +594,7 @@ fun KitsugiUserProfileScreen(
                                                     .padding(18.dp),
                                                 verticalArrangement = Arrangement.spacedBy(14.dp)
                                             ) {
-                                                val displayAbout = remember(state.about) { state.about.cleanUserAboutText() }
+                                                val displayAbout = state.about
                                                 Row(
                                                     modifier = Modifier.fillMaxWidth(),
                                                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -641,8 +641,12 @@ fun KitsugiUserProfileScreen(
                                                     }
                                                 }
                                                 if (displayAbout.isNotBlank()) {
-                                                    com.kitsugi.animelist.ui.components.KitsugiMarkdownText(
-                                                        text = displayAbout, modifier = Modifier.fillMaxWidth(), onImageGalleryRequest = { urls, index -> activeGalleryImages = Triple(urls, index, "${state.name ?: "Kullanıcı"} Biyografi") }
+                                                    com.kitsugi.animelist.ui.components.KitsugiHtmlWebView(
+                                                        html = displayAbout,
+                                                        modifier = Modifier.fillMaxWidth(),
+                                                        onImageClick = { urls, idx ->
+                                                            activeGalleryImages = Triple(urls, idx, "$username Biyografisi")
+                                                        }
                                                     )
                                                 } else {
                                                     Text(

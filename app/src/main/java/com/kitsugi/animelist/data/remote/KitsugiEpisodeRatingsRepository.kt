@@ -579,7 +579,7 @@ object KitsugiEpisodeRatingsRepository {
                 try {
                     val apiKey = TmdbApiClient.getActiveApiKey()
 
-                    val langTag = "tr-TR"
+                    val langTag = TmdbApiClient.getActiveLanguage()
 
                     val url = runCatching {
                         URL("https://api.themoviedb.org/3/tv/$tmdbId/season/$seasonNumber?api_key=$apiKey&language=$langTag")
