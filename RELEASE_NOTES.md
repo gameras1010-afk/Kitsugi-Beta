@@ -2,36 +2,24 @@
 
 ---
 
-## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI — v2.4.86
+## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### 🔍 Keşfet Ekranı — Metadata ve Görünüm İyileştirmeleri
-- **Metadata Tekrarı Giderildi**: Mobil kartlarda tip/yıl bilgisi (ör. "ANIME • 2024") artık sadece altyazı satırında gösteriliyor; meta satırında aynı bilgi ikinci kez çıkmıyor.
-- **Yıldız Puanı Formatı**: Tüm medya kartlarında puan artık `★ 8.1` formatında gösteriliyor, kaynak platforma bakılmaksızın (MAL, AniList, TMDB).
-- **TV Ekranları Korundu**: Büyük ekran (Android TV) görünümünde tip/yıl bilgisi meta satırında görünmeye devam ediyor.
+### 🔍 Keşfet Ekranı — Görünüm ve Düzen İyileştirmeleri
+- **Metadata Tekrarı Giderildi:** Mobil (dikey ve yatay) kart tasarımlarında, halihazırda alt başlıkta yer alan tip ve yıl bilgileri (örneğin "ANIME • 2024") meta satırından temizlenerek gereksiz görsel kalabalık kaldırıldı.
+- **TV Arayüzü Uyumluluğu:** Alt başlığı gösterilmeyen Android TV kart tasarımlarında tip ve yıl bilgilerinin meta satırında görünmeye devam etmesi sağlandı.
 
-### 📺 TMDB Keşfet Kategorileri
-- **"Trend Animeler"**: Popülerlik sırasına göre TMDB'den Japonca animasyon filmi ve dizisi (genre=16, lang=ja).
-- **"Popüler Animeler"**: Oy sayısına göre TMDB Japanca anime içerikleri.
-- **"En Yüksek Puanlı Animeler"**: Oy ortalamasına göre TMDB'den en beğenilen Japonca animeler (min. 200 oy).
-- **Prefetch Senkronizasyonu**: Uygulama açılışındaki ön yükleme (prefetch), çalışma zamanı verisiyle tam olarak eşleştirildi; "En Yüksek Puanlı Animeler" ve "Yakında Yayında" bölümleri artık soğuk başlatmada da dolu geliyor.
-
-### 🏷️ Kaynak Etiketleme
-- Tüm medya kartlarında `toFriendlySourceLabel()` fonksiyonu üzerinden kaynak adı gösteriliyor (ör. "MyAnimeList", "AniList", "TMDB").
+### ⚙️ Ön Yükleme Pipeline Senkronizasyonu
+- **Startup Caching Hizalaması:** Uygulama açılışındaki önbellekleme (prefetch) mekanizması, çalışma zamanındaki TMDB ve Airing Schedule akışlarıyla tam uyumlu hale getirildi. 
+- Bu sayede soğuk başlangıçlarda "En Yüksek Puanlı Animeler" ve "Yakında Yayında" şeritlerinin boş kalması engellendi.
 
 ---
 
-## 🇬🇧 ENGLISH RELEASE NOTES — v2.4.86
+## 🇬🇧 ENGLISH RELEASE NOTES
 
-### 🔍 Explore Screen — Metadata & Display Improvements
-- **No More Redundant Labels**: On mobile cards, type/year info (e.g. "ANIME • 2024") is now shown only in the subtitle row — no longer duplicated in the meta line below.
-- **Star Score Format**: Scores across all media cards now display as `★ 8.1`, regardless of platform (MAL, AniList, TMDB).
-- **TV Layout Preserved**: On large-screen / Android TV layouts, the type and year remain visible in the meta line as before.
+### 🔍 Explore Screen — Visual & Layout Cleanup
+- **Removed Metadata Redundancy:** On mobile layouts (portrait and landscape cards), type and year details (e.g. "ANIME • 2024") are no longer duplicated in the metadata line, keeping the interface clean and concise.
+- **Android TV Preserved:** On large-screen TV layouts where subtitles are hidden, type and year information remains visible in the metadata block.
 
-### 📺 TMDB Discovery Categories
-- **"Trend Animeler" (Trending Anime)**: Japanese animation (genre=16, lang=ja) sorted by popularity from TMDB.
-- **"Popüler Animeler" (Popular Anime)**: TMDB Japanese anime sorted by vote count.
-- **"En Yüksek Puanlı Animeler" (Top Rated Anime)**: Highest-rated TMDB Japanese anime (min. 200 votes).
-- **Prefetch Sync Fix**: Startup prefetch now fully mirrors the runtime data pipeline — "Top Rated Anime" and "Airing Soon" sections populate correctly on cold launch.
-
-### 🏷️ Source Labeling
-- All media cards now display friendly source labels via `toFriendlySourceLabel()` (e.g. "MyAnimeList", "AniList", "TMDB").
+### ⚙️ Prefetch Pipeline Alignment
+- **Startup Cache Synchronization:** The background prefetching pipeline was aligned with runtime TMDB and Airing Schedule data fetching.
+- This ensures sections like "Top Rated Anime" and "Airing Soon" populate immediately upon initial application launch.
