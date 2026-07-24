@@ -1,4 +1,4 @@
-# Kitsugi v2.4.97 Release Notes 🚀
+# Kitsugi v2.4.98 Release Notes 🚀
 
 ---
 

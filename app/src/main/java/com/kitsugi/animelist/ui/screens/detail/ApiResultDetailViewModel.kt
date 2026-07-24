@@ -18,6 +18,8 @@ import com.kitsugi.animelist.data.remote.KitsugiReview
 import com.kitsugi.animelist.data.remote.KitsugiStaff
 import com.kitsugi.animelist.data.remote.KitsugiStats
 import com.kitsugi.animelist.data.remote.KitsugiStreamingEpisode
+import com.kitsugi.animelist.data.remote.GalleryItem
+import com.kitsugi.animelist.data.remote.GalleryCategory
 import com.kitsugi.animelist.data.remote.KitsugiIdResolver
 import com.kitsugi.animelist.data.settings.SettingsDataStore
 import com.kitsugi.animelist.model.MediaType
@@ -88,6 +90,9 @@ class ApiResultDetailViewModel(application: Application) : AndroidViewModel(appl
     private val _targetSeason = MutableStateFlow<Int>(1)
     val targetSeason: StateFlow<Int> = _targetSeason.asStateFlow()
 
+    private val _galleryItems = MutableStateFlow<List<GalleryItem>>(emptyList())
+    val galleryItems: StateFlow<List<GalleryItem>> = _galleryItems.asStateFlow()
+
     // --- Cache / Lock Key ---
     private var currentFetchKey: String? = null
 
@@ -121,6 +126,7 @@ class ApiResultDetailViewModel(application: Application) : AndroidViewModel(appl
         _logoUrl.value = null
         _episodeRatings.value = emptyMap()
         _resolvedTmdbId.value = null
+        _galleryItems.value = emptyList()
 
         val cachedCharacters = DetailCache.getMediaCharacters(result.source, result.malId)
         if (cachedCharacters != null && cachedCharacters.isEmpty()) {
@@ -175,6 +181,11 @@ class ApiResultDetailViewModel(application: Application) : AndroidViewModel(appl
             } catch (e: Exception) {
                 Log.e(TAG, "Error fetching detail: ${e.message}", e)
                 _detailLoading.value = false
+            }
+            try {
+                fetchFanartGallery(result)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching Fanart gallery: ${e.message}", e)
             }
             try {
                 fetchMdbListRatings(result)
@@ -588,6 +599,89 @@ class ApiResultDetailViewModel(application: Application) : AndroidViewModel(appl
             _mdbListRatings.value = null
         } finally {
             _mdbListLoading.value = false
+        }
+    }
+
+    private suspend fun fetchFanartGallery(result: JikanSearchResult) {
+        val tmdbId = withContext(Dispatchers.IO) {
+            val stableId = result.malId
+            when {
+                result.tmdbId != null && result.tmdbId > 0 -> result.tmdbId
+                result.source.equals("tmdb", ignoreCase = true) -> if (stableId > 0) stableId else null
+                result.source.equals("anilist", ignoreCase = true) -> {
+                    if (stableId >= 100_000_000) {
+                        val aniListId = stableId - 100_000_000
+                        KitsugiEpisodeRatingsRepository.resolveTmdbIdFromAniList(aniListId)
+                    } else {
+                        KitsugiEpisodeRatingsRepository.resolveTmdbIdFromMal(stableId)
+                    }
+                }
+                stableId > 0 -> KitsugiEpisodeRatingsRepository.resolveTmdbIdFromMal(stableId)
+                else -> null
+            }
+        }
+
+        val isMovie = result.type == MediaType.Movie
+
+        val fanartItems = if (tmdbId != null && tmdbId > 0) {
+            withContext(Dispatchers.IO) {
+                KitsugiEpisodeRatingsRepository.getFanartGalleryItems(tmdbId, isMovie)
+            }
+        } else {
+            emptyList()
+        }
+
+        val currentDetail = _detailState.value
+        val existingItems = buildList {
+            val imageUrl = result.imageUrl
+            if (!imageUrl.isNullOrBlank()) {
+                val src = determineGallerySource(imageUrl, result.source)
+                val cat = determineGalleryCategory(imageUrl, GalleryCategory.POSTER)
+                add(GalleryItem(url = imageUrl, source = src, category = cat))
+            }
+            currentDetail?.pictures?.forEach { url ->
+                if (url.isNotBlank()) {
+                    val src = determineGallerySource(url, result.source)
+                    val cat = determineGalleryCategory(url, GalleryCategory.POSTER)
+                    add(GalleryItem(url = url, source = src, category = cat))
+                }
+            }
+        }
+
+        val merged = (fanartItems + existingItems).distinctBy { it.url }
+        _galleryItems.value = merged
+    }
+
+    private fun determineGallerySource(url: String, fallbackSource: String): String {
+        val lowerUrl = url.lowercase()
+        return when {
+            lowerUrl.contains("fanart.tv") -> "Fanart.tv"
+            lowerUrl.contains("image.tmdb.org") || lowerUrl.contains("tmdb.org") -> "TMDB"
+            lowerUrl.contains("anilist.co") -> "AniList"
+            lowerUrl.contains("simkl.in") || lowerUrl.contains("simkl.com") -> "Simkl"
+            lowerUrl.contains("myanimelist.net") || lowerUrl.contains("jikan.moe") -> "Jikan"
+            lowerUrl.contains("kitsu.io") -> "Kitsu"
+            else -> when (fallbackSource.lowercase()) {
+                "anilist" -> "AniList"
+                "tmdb" -> "TMDB"
+                "simkl" -> "Simkl"
+                "jikan", "mal" -> "Jikan"
+                "kitsu" -> "Kitsu"
+                else -> fallbackSource.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+            }
+        }
+    }
+
+    private fun determineGalleryCategory(url: String, defaultCategory: GalleryCategory): GalleryCategory {
+        val lowerUrl = url.lowercase()
+        return when {
+            lowerUrl.contains("logo") || lowerUrl.contains("clearart") -> GalleryCategory.LOGO
+            lowerUrl.contains("backdrop") || lowerUrl.contains("background") || lowerUrl.contains("/w1280") || lowerUrl.contains("showbackground") -> GalleryCategory.BACKDROP
+            lowerUrl.contains("poster") || lowerUrl.contains("/w780") || lowerUrl.contains("/w500") || lowerUrl.contains("/w342") || lowerUrl.contains("coverimage") || lowerUrl.contains("large_image_url") -> GalleryCategory.POSTER
+            lowerUrl.contains("character") || lowerUrl.contains("actor") -> GalleryCategory.CHARACTER
+            lowerUrl.contains("thumb") || lowerUrl.contains("still") || lowerUrl.contains("/w300") || lowerUrl.contains("/w185") -> GalleryCategory.THUMBNAIL
+            lowerUrl.contains("banner") -> GalleryCategory.BANNER
+            else -> defaultCategory
         }
     }
 }

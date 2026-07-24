@@ -110,6 +110,8 @@ import com.kitsugi.animelist.ui.components.KitsugiPageEnter
 import com.kitsugi.animelist.ui.components.KitsugiEpisodeOptionsDialog
 import com.kitsugi.animelist.ui.components.KitsugiCinematicLoadingScreen
 import com.kitsugi.animelist.ui.components.KitsugiImageGalleryDialog
+import com.kitsugi.animelist.data.remote.GalleryItem
+import com.kitsugi.animelist.data.remote.GalleryCategory
 import com.kitsugi.animelist.ui.components.KitsugiStreamSelectorBottomSheet
 import com.kitsugi.animelist.ui.screens.fullscreen.KitsugiFullscreenPlayerActivity
 import com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity
@@ -300,8 +302,9 @@ fun ApiResultDetailPage(
             detailState?.pictures?.let { addAll(it) }
         }.distinct()
     }
-    var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
+    var activeGalleryItems by remember { mutableStateOf<List<GalleryItem>>(emptyList()) }
     var activeGalleryIndex by remember { mutableStateOf(0) }
+    val galleryItems by viewModel.galleryItems.collectAsState()
 
     val listState = rememberLazyListState()
     val tabListState = rememberLazyListState()
@@ -414,11 +417,27 @@ fun ApiResultDetailPage(
                                 onBackClick = onBackClick,
                                 blurAdultMedia = blurAdultMedia,
                                 onPosterClick = {
-                                    val posterUrl = displayResult.imageUrl
-                                    val idx = if (posterUrl != null) allImages.indexOf(posterUrl).coerceAtLeast(0) else 0
-                                     activeGalleryImages = allImages
-                                     activeGalleryIndex = idx
+                                    if (galleryItems.isNotEmpty()) {
+                                        activeGalleryItems = galleryItems
+                                        activeGalleryIndex = 0
+                                    } else {
+                                        val posterUrl = displayResult.imageUrl
+                                        if (!posterUrl.isNullOrBlank()) {
+                                            activeGalleryItems = listOf(
+                                                GalleryItem(
+                                                    url = posterUrl,
+                                                    category = GalleryCategory.POSTER,
+                                                    source = displayResult.source
+                                                )
+                                            )
+                                            activeGalleryIndex = 0
+                                        }
+                                    }
                                 },
+                                onGalleryClick = if (galleryItems.isNotEmpty()) {{
+                                    activeGalleryItems = galleryItems
+                                    activeGalleryIndex = 0
+                                }} else null,
                                 scoreLabel = if (!hideScores) displayResult.getDisplayScore(scoreFormat, hideScores) else null,
                                 alreadyInList = existingEntry != null,
                                 isFavorite = isFavorite,
@@ -687,7 +706,13 @@ fun ApiResultDetailPage(
                                                         { showIntegrationsDialog = true }
                                                     } else null,
                                                     onImageGalleryRequest = { urls, index ->
-                                                        activeGalleryImages = urls
+                                                        activeGalleryItems = urls.map { url ->
+                                                            GalleryItem(
+                                                                url = url,
+                                                                category = GalleryCategory.POSTER,
+                                                                source = displayResult.source
+                                                            )
+                                                        }
                                                         activeGalleryIndex = index
                                                     }
                                                 )
@@ -812,11 +837,27 @@ fun ApiResultDetailPage(
                             onBackClick = onBackClick,
                             blurAdultMedia = blurAdultMedia,
                             onPosterClick = {
-                                val posterUrl = displayResult.imageUrl
-                                val idx = if (posterUrl != null) allImages.indexOf(posterUrl).coerceAtLeast(0) else 0
-                                activeGalleryImages = allImages
-                                activeGalleryIndex = idx
+                                if (galleryItems.isNotEmpty()) {
+                                    activeGalleryItems = galleryItems
+                                    activeGalleryIndex = 0
+                                } else {
+                                    val posterUrl = displayResult.imageUrl
+                                    if (!posterUrl.isNullOrBlank()) {
+                                        activeGalleryItems = listOf(
+                                            GalleryItem(
+                                                url = posterUrl,
+                                                category = GalleryCategory.POSTER,
+                                                source = displayResult.source
+                                            )
+                                        )
+                                        activeGalleryIndex = 0
+                                    }
+                                }
                             },
+                            onGalleryClick = if (galleryItems.isNotEmpty()) {{
+                                activeGalleryItems = galleryItems
+                                activeGalleryIndex = 0
+                            }} else null,
                             scoreLabel = if (!hideScores) displayResult.getDisplayScore(scoreFormat, hideScores) else null,
                             alreadyInList = existingEntry != null,
                             totalEpisodes = displayResult.total,
@@ -1194,7 +1235,13 @@ fun ApiResultDetailPage(
                                                 { showIntegrationsDialog = true }
                                             } else null,
                                             onImageGalleryRequest = { urls, index ->
-                                                activeGalleryImages = urls
+                                                activeGalleryItems = urls.map { url ->
+                                                    GalleryItem(
+                                                        url = url,
+                                                        category = GalleryCategory.POSTER,
+                                                        source = displayResult.source
+                                                    )
+                                                }
                                                 activeGalleryIndex = index
                                             }
                                         )
@@ -1461,12 +1508,12 @@ fun ApiResultDetailPage(
         )
     }
 
-    if (activeGalleryImages.isNotEmpty()) {
+    if (activeGalleryItems.isNotEmpty()) {
         KitsugiImageGalleryDialog(
-            imageUrls = activeGalleryImages,
+            galleryItems = activeGalleryItems,
             initialIndex = activeGalleryIndex,
             title = displayResult.title,
-            onDismiss = { activeGalleryImages = emptyList() }
+            onDismiss = { activeGalleryItems = emptyList() }
         )
     }
 
