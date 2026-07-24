@@ -1,3 +1,8 @@
+@file:OptIn(
+    androidx.compose.foundation.ExperimentalFoundationApi::class,
+    androidx.compose.material3.ExperimentalMaterial3Api::class
+)
+
 package com.kitsugi.animelist.ui.screens.detail
 
 import androidx.compose.foundation.background
@@ -27,6 +32,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,6 +54,7 @@ import coil3.compose.AsyncImage
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Translate
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
@@ -179,6 +188,23 @@ fun StaffDetailPage(
             }
             is StaffDetailState.Success -> {
                 val detail = currentState.detail
+                val isRefreshing by viewModel.isRefreshing.collectAsState()
+                val pullRefreshState = rememberPullToRefreshState()
+                PullToRefreshBox(
+                    isRefreshing = isRefreshing,
+                    onRefresh = { viewModel.forceRefresh() },
+                    modifier = Modifier.fillMaxSize(),
+                    state = pullRefreshState,
+                    indicator = {
+                        PullToRefreshDefaults.Indicator(
+                            state = pullRefreshState,
+                            isRefreshing = isRefreshing,
+                            modifier = Modifier.align(Alignment.TopCenter),
+                            containerColor = KitsugiColors.Surface,
+                            color = accentColor
+                        )
+                    }
+                ) {
                 val listState = rememberLazyListState()
                 val showFloatingHeader = listState.firstVisibleItemIndex >= 1
                 val tabs = listOf("Hakkında", "Karakterler", "Yapımlar")
@@ -283,6 +309,7 @@ fun StaffDetailPage(
                                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
+
                                                 Box(
                                                     modifier = Modifier
                                                         .size(40.dp)
@@ -539,6 +566,7 @@ fun StaffDetailPage(
                                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
+
                                             Box(
                                                 modifier = Modifier
                                                     .size(40.dp)
@@ -931,6 +959,7 @@ fun StaffDetailPage(
                     }
                 }
             } // end else (portrait)
+                } // end PullToRefreshBox
         } // end Success
     } // end when
 } // end outer Box

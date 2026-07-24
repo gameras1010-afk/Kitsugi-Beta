@@ -421,4 +421,73 @@ fun List<MediaEntry>.firstMatching(mediaId: Int, mediaSource: String): MediaEntr
     }
 }
 
+fun KitsugiCharacterDetail.mergeWith(other: KitsugiCharacterDetail): KitsugiCharacterDetail {
+    val mergedAlternativeNames = (this.alternativeNames + other.alternativeNames)
+        .map { it.trim() }
+        .filter { it.isNotBlank() && it != "null" }
+        .distinct()
+
+    val mergedVoiceActors = (this.voiceActors + other.voiceActors)
+        .groupBy { it.name.lowercase().trim() }
+        .map { (_, group) ->
+            group.firstOrNull { !it.imageUrl.isNullOrBlank() } ?: group.first()
+        }
+
+    val mergedMediaAppearances = (this.mediaAppearances + other.mediaAppearances)
+        .groupBy { it.title.lowercase().trim() }
+        .map { (_, group) ->
+            group.firstOrNull { !it.imageUrl.isNullOrBlank() } ?: group.first()
+        }
+
+    return this.copy(
+        nativeName = this.nativeName.takeIf { !it.isNullOrBlank() && it != "null" } ?: other.nativeName,
+        alternativeNames = mergedAlternativeNames,
+        imageUrl = this.imageUrl.takeIf { !it.isNullOrBlank() && it != "null" } ?: other.imageUrl,
+        gender = this.gender.takeIf { !it.isNullOrBlank() && it != "null" } ?: other.gender,
+        age = this.age.takeIf { !it.isNullOrBlank() && it != "null" } ?: other.age,
+        birthday = this.birthday.takeIf { !it.isNullOrBlank() && it != "null" } ?: other.birthday,
+        bloodType = this.bloodType.takeIf { !it.isNullOrBlank() && it != "null" } ?: other.bloodType,
+        biography = this.biography.takeIf { !it.isNullOrBlank() && it != "null" } ?: other.biography,
+        voiceActors = mergedVoiceActors,
+        mediaAppearances = mergedMediaAppearances,
+        isFavourite = this.isFavourite || other.isFavourite,
+        aniListId = this.aniListId ?: other.aniListId
+    )
+}
+
+fun KitsugiStaffDetail.mergeWith(other: KitsugiStaffDetail): KitsugiStaffDetail {
+    val mergedAlternativeNames = (this.alternativeNames + other.alternativeNames)
+        .map { it.trim() }
+        .filter { it.isNotBlank() && it != "null" }
+        .distinct()
+
+    val mergedCharacterRoles = (this.characterRoles + other.characterRoles)
+        .groupBy { (it.characterName.lowercase().trim() + "_" + it.mediaTitle.lowercase().trim()) }
+        .map { (_, group) ->
+            group.firstOrNull { !it.characterImageUrl.isNullOrBlank() } ?: group.first()
+        }
+
+    val mergedMediaWorks = (this.mediaWorks + other.mediaWorks)
+        .groupBy { (it.mediaTitle.lowercase().trim() + "_" + it.staffRole.lowercase().trim()) }
+        .map { (_, group) ->
+            group.firstOrNull { !it.mediaImageUrl.isNullOrBlank() } ?: group.first()
+        }
+
+    return this.copy(
+        nativeName = this.nativeName.takeIf { !it.isNullOrBlank() && it != "null" } ?: other.nativeName,
+        alternativeNames = mergedAlternativeNames,
+        imageUrl = this.imageUrl.takeIf { !it.isNullOrBlank() && it != "null" } ?: other.imageUrl,
+        biography = this.biography.takeIf { !it.isNullOrBlank() && it != "null" } ?: other.biography,
+        occupation = this.occupation.takeIf { !it.isNullOrBlank() && it != "null" } ?: other.occupation,
+        birthday = this.birthday.takeIf { !it.isNullOrBlank() && it != "null" } ?: other.birthday,
+        age = this.age.takeIf { !it.isNullOrBlank() && it != "null" } ?: other.age,
+        gender = this.gender.takeIf { !it.isNullOrBlank() && it != "null" } ?: other.gender,
+        homeTown = this.homeTown.takeIf { !it.isNullOrBlank() && it != "null" } ?: other.homeTown,
+        characterRoles = mergedCharacterRoles,
+        mediaWorks = mergedMediaWorks,
+        isFavourite = this.isFavourite || other.isFavourite,
+        aniListId = this.aniListId ?: other.aniListId
+    )
+}
+
 

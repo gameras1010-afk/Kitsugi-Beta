@@ -9,6 +9,8 @@ import com.kitsugi.animelist.data.local.TranslationManager
 import com.kitsugi.animelist.data.remote.DetailCache
 import com.kitsugi.animelist.data.remote.JikanApiClient
 import com.kitsugi.animelist.data.remote.KitsugiMediaMutationsClient
+import com.kitsugi.animelist.data.remote.RateLimitException
+import com.kitsugi.animelist.data.remote.ResourceNotFoundException
 import com.kitsugi.animelist.data.settings.SettingsDataStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +37,9 @@ class CharacterDetailViewModel(application: Application) : AndroidViewModel(appl
 
     private val _isFavourite = MutableStateFlow(false)
     val isFavourite: StateFlow<Boolean> = _isFavourite.asStateFlow()
+
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
     private var currentFetchKey: String? = null
     private var lastCharacterId: Int = 0
@@ -78,21 +83,50 @@ class CharacterDetailViewModel(application: Application) : AndroidViewModel(appl
         }
     }
 
+    fun forceRefresh() {
+        val characterId = lastCharacterId
+        val source = lastSource
+        val name = lastCharacterName
+        if (characterId > 0 && source.isNotEmpty()) {
+            _isRefreshing.value = true
+            viewModelScope.launch {
+                try {
+                    fetchCharacterDetail(characterId, source, name, force = true)
+                } finally {
+                    _isRefreshing.value = false
+                }
+            }
+        }
+    }
+
     private suspend fun fetchCharacterDetail(characterId: Int, source: String, name: String? = null, force: Boolean = false) {
+        if (force) {
+            DetailCache.removeCharacterDetail(source, characterId)
+        }
         val cached = DetailCache.getCharacterDetail(source, characterId)
         val detail = if (cached != null && !force) {
             cached
         } else {
-            val fetched = withContext(Dispatchers.IO) {
-                apiClient.fetchCharacterDetail(source, characterId, name)
-            }
-            if (fetched != null) {
-                DetailCache.putCharacterDetail(source, characterId, fetched)
-            }
-            fetched
+            runCatching {
+                withContext(Dispatchers.IO) {
+                    apiClient.fetchCharacterDetail(source, characterId, name)
+                }
+            }.onFailure { err ->
+                val msg = when (err) {
+                    is RateLimitException -> "Hız limitine takıldık. Lütfen birkaç saniye bekleyip tekrar deneyin."
+                    is ResourceNotFoundException -> "Bu karakter bulunamadı."
+                    is java.io.IOException -> "Ağ bağlantısı hatası. Lütfen bağlantınızı kontrol edin."
+                    else -> "Karakter detayları yüklenemedi."
+                }
+                Log.e(TAG, "fetchCharacterDetail error: ${err.message}", err)
+                if (_state.value !is CharacterDetailState.Success) {
+                    _state.value = CharacterDetailState.Error(msg)
+                }
+            }.getOrNull()
         }
 
         if (detail != null) {
+            DetailCache.putCharacterDetail(source, characterId, detail)
             _state.value = CharacterDetailState.Success(detail)
             _isFavourite.value = detail.isFavourite
 
@@ -111,7 +145,7 @@ class CharacterDetailViewModel(application: Application) : AndroidViewModel(appl
                     _translatedBio.value = tr
                 }
             }
-        } else {
+        } else if (_state.value !is CharacterDetailState.Success) {
             _state.value = CharacterDetailState.Error("Karakter detayları yüklenemedi.")
         }
     }

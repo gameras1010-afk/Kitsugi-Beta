@@ -14,6 +14,9 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 
+class RateLimitException(message: String) : java.io.IOException(message)
+class ResourceNotFoundException(message: String) : java.io.IOException(message)
+
 object KitsugiApiBase {
     private const val MIN_REQUEST_INTERVAL_MS = 450L
     private val requestMutex = Mutex()
@@ -81,6 +84,28 @@ object KitsugiApiBase {
         } catch (e: Exception) {
             android.util.Log.e("KitsugiApiBase", "executeGetRequest Exception: ${e.message} for URL: $url", e)
             null
+        }
+    }
+
+    fun executeGetRequestOrThrow(url: URL): String {
+        val request = Request.Builder()
+            .url(url)
+            .header("Accept", "application/json")
+            .header("User-Agent", "KitsugiAnimeList/1.0")
+            .build()
+
+        com.kitsugi.animelist.core.network.KitsugiHttpClient.client.newCall(request).execute().use { response ->
+            if (response.isSuccessful) {
+                return response.body?.string().orEmpty()
+            } else {
+                if (response.code == 429) {
+                    throw RateLimitException("HTTP 429 Too Many Requests: Rate limit hit for URL: $url")
+                } else if (response.code == 404) {
+                    throw ResourceNotFoundException("HTTP 404 Not Found for URL: $url")
+                } else {
+                    throw java.io.IOException("HTTP Error ${response.code}: ${response.message} for URL: $url")
+                }
+            }
         }
     }
 

@@ -246,10 +246,14 @@ class KitsugiCharacterClient {
                     KitsugiShikimoriClient.fetchCharacterDetail(characterId)
                 }
                 "jikan", "mal" -> {
+                    var detail: KitsugiCharacterDetail? = null
+                    var networkError: Throwable? = null
+
+                    // 1. MAL / Jikan API
                     val url = URL("https://api.jikan.moe/v4/characters/$characterId/full")
                     val jikanRes = runCatching {
                         KitsugiApiBase.runWithRateLimit {
-                            val response = KitsugiApiBase.executeGetRequest(url) ?: return@runWithRateLimit null
+                            val response = KitsugiApiBase.executeGetRequestOrThrow(url)
                             val root = JSONObject(response)
                             val data = root.optJSONObject("data") ?: return@runWithRateLimit null
 
@@ -341,32 +345,45 @@ class KitsugiCharacterClient {
                                 mediaAppearances = mediaAppearances
                             )
                         }
-                    }.getOrNull()
+                    }
+                    jikanRes.onSuccess {
+                        detail = it
+                    }.onFailure { err ->
+                        if (err !is ResourceNotFoundException) {
+                            networkError = err
+                        }
+                        Log.e(TAG, "Jikan fetch failed: ${err.message}", err)
+                    }
 
-                    val detail = if (jikanRes != null) {
-                        jikanRes
-                    } else {
-                        Log.w(TAG, "Jikan karakter detayları başarısız oldu. Shikimori fallback devralıyor...")
-                        val shikiDetail = KitsugiShikimoriClient.fetchCharacterDetail(characterId)
+                    // 2. Shikimori Fallback / Merge
+                    runCatching {
+                        KitsugiShikimoriClient.fetchCharacterDetail(characterId)
+                    }.onSuccess { shikiDetail ->
                         if (shikiDetail != null) {
-                            shikiDetail
-                        } else if (!name.isNullOrBlank()) {
-                            fetchAniListCharacterByName(name)
-                        } else {
-                            null
+                            detail = if (detail == null) shikiDetail else detail!!.mergeWith(shikiDetail)
+                        }
+                    }.onFailure { err ->
+                        Log.e(TAG, "Shikimori character detail fallback failed: ${err.message}", err)
+                    }
+
+                    // 3. AniList Fallback / Merge
+                    val targetName = detail?.name ?: name
+                    if (!targetName.isNullOrBlank()) {
+                        runCatching {
+                            fetchAniListCharacterByName(targetName)
+                        }.onSuccess { aniListDetail ->
+                            if (aniListDetail != null) {
+                                detail = if (detail == null) aniListDetail else detail!!.mergeWith(aniListDetail)
+                            }
+                        }.onFailure { err ->
+                            Log.e(TAG, "AniList character detail fallback failed: ${err.message}", err)
                         }
                     }
 
-                    if (detail != null && KitsugiApplication.getInstance()?.let { com.kitsugi.animelist.data.auth.ExternalAuthManager.getAniListToken(it) } != null) {
-                        val aniListDetail = fetchAniListCharacterByName(detail.name)
-                        if (aniListDetail != null) {
-                            detail.copy(isFavourite = aniListDetail.isFavourite, aniListId = aniListDetail.id)
-                        } else {
-                            detail
-                        }
-                    } else {
-                        detail
+                    if (detail == null && networkError != null) {
+                        throw networkError!!
                     }
+                    detail
                 }
                 "anilist" -> {
                     val query = """

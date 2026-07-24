@@ -135,6 +135,10 @@ object DetailCache {
         characterDetails[makeKey(source, id)] = detail
     }
 
+    fun removeCharacterDetail(source: String, id: Int) {
+        characterDetails.remove(makeKey(source, id))
+    }
+
     // Staff Detail
     fun getStaffDetail(source: String, id: Int): KitsugiStaffDetail? {
         return staffDetails[makeKey(source, id)]
@@ -142,6 +146,10 @@ object DetailCache {
 
     fun putStaffDetail(source: String, id: Int, detail: KitsugiStaffDetail) {
         staffDetails[makeKey(source, id)] = detail
+    }
+
+    fun removeStaffDetail(source: String, id: Int) {
+        staffDetails.remove(makeKey(source, id))
     }
 
     // Studio Detail

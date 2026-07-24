@@ -189,9 +189,9 @@ fun MyListScreen(
     )
 
     // Pager page change -> notify parent
-    LaunchedEffect(tabPagerState.currentPage) {
-        if (tabPagerState.currentPage != selectedTabIndex) {
-            onTabIndexChange(tabPagerState.currentPage)
+    LaunchedEffect(tabPagerState.settledPage) {
+        if (tabPagerState.settledPage != selectedTabIndex) {
+            onTabIndexChange(tabPagerState.settledPage)
         }
     }
 
@@ -660,9 +660,6 @@ fun MyListScreen(
                                 .background(if (isSelected) accentColor else KitsugiColors.surface)
                                 .tvClickable(shape = RoundedCornerShape(22.dp), onClick = {
                                     onTabIndexChange(index)
-                                    coroutineScope.launch {
-                                        tabPagerState.animateScrollToPage(index)
-                                    }
                                 })
                                 .padding(vertical = 12.dp),
                             contentAlignment = Alignment.Center
@@ -699,9 +696,8 @@ fun MyListScreen(
         // ── HorizontalPager: her sekme kendi scroll alanı ──────────────────────
         // tabScrollStates declared at composable top level
 
-        // Aktif tab'ın scroll state'ini lazyListState ile senkronize et
-        // (başlık gizleme ve FAB için)
-        val activeTabScrollState = tabScrollStates[selectedTabIndex.coerceIn(0, 2)]
+
+        // activeTabScrollState is declared at composable top level (tabScrollStates[selectedTabIndex])
 
         LaunchedEffect(activeTabScrollState) {
             snapshotFlow {

@@ -53,6 +53,11 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.snapshotFlow
@@ -270,7 +275,16 @@ fun KitsugiUserMediaListScreen(
 ) {
     val viewModel: KitsugiUserMediaListViewModel = customViewModel ?: androidx.lifecycle.viewmodel.compose.viewModel(key = "user_media_list_${userId}_${initialMediaType.name}")
 
+    val pagerState = rememberPagerState(
+        initialPage = if (initialMediaType == MediaType.Anime) 0 else 1,
+        pageCount = { 2 }
+    )
     var selectedType by rememberSaveable { mutableStateOf(initialMediaType) }
+
+    // Pager kaydırınca type güncelle
+    LaunchedEffect(pagerState.settledPage) {
+        selectedType = if (pagerState.settledPage == 0) MediaType.Anime else MediaType.Manga
+    }
 
     LaunchedEffect(userId, selectedType) {
         viewModel.loadUserMediaList(userId, selectedType)
@@ -279,12 +293,14 @@ fun KitsugiUserMediaListScreen(
     val state by viewModel.uiState.collectAsState()
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val coroutineScope = rememberCoroutineScope()
 
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var selectedStatusFilter by rememberSaveable { mutableStateOf<WatchStatus?>(null) }
     var isGridView by rememberSaveable { mutableStateOf(true) }
 
     var isFabVisible by rememberSaveable { mutableStateOf(true) }
+    var isSearchBarVisible by rememberSaveable { mutableStateOf(true) }
     var prevIndex by rememberSaveable { mutableStateOf(0) }
     var prevOffset by rememberSaveable { mutableStateOf(0) }
 
@@ -313,10 +329,13 @@ fun KitsugiUserMediaListScreen(
                 .collect { (index, offset) ->
                     if (index == 0 && offset < 40) {
                         isFabVisible = true
+                        isSearchBarVisible = true
                     } else if (index > prevIndex || (index == prevIndex && offset > prevOffset + 15)) {
                         isFabVisible = false
+                        isSearchBarVisible = false
                     } else if (index < prevIndex || (index == prevIndex && offset < prevOffset - 15)) {
                         isFabVisible = true
+                        isSearchBarVisible = true
                     }
                     prevIndex = index
                     prevOffset = offset
@@ -326,10 +345,13 @@ fun KitsugiUserMediaListScreen(
                 .collect { (index, offset) ->
                     if (index == 0 && offset < 40) {
                         isFabVisible = true
+                        isSearchBarVisible = true
                     } else if (index > prevIndex || (index == prevIndex && offset > prevOffset + 15)) {
                         isFabVisible = false
+                        isSearchBarVisible = false
                     } else if (index < prevIndex || (index == prevIndex && offset < prevOffset - 15)) {
                         isFabVisible = true
+                        isSearchBarVisible = true
                     }
                     prevIndex = index
                     prevOffset = offset
@@ -372,7 +394,6 @@ fun KitsugiUserMediaListScreen(
     )
 
     val pullRefreshState = rememberPullToRefreshState()
-    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -458,7 +479,7 @@ fun KitsugiUserMediaListScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Type Switcher Row (Anime / Manga)
+                // Anime / Manga Pager Tab (kaydırılabilir)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -466,61 +487,64 @@ fun KitsugiUserMediaListScreen(
                         .background(KitsugiColors.SurfaceStrong)
                         .padding(4.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(if (selectedType == MediaType.Anime) accentColor else Color.Transparent)
-                            .tvClickable(shape = RoundedCornerShape(12.dp)) { selectedType = MediaType.Anime }
-                            .padding(vertical = 8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Anime Listesi",
-                            color = if (selectedType == MediaType.Anime) KitsugiColors.Background else KitsugiColors.TextPrimary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(if (selectedType == MediaType.Manga) accentColor else Color.Transparent)
-                            .tvClickable(shape = RoundedCornerShape(12.dp)) { selectedType = MediaType.Manga }
-                            .padding(vertical = 8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Manga Listesi",
-                            color = if (selectedType == MediaType.Manga) KitsugiColors.Background else KitsugiColors.TextPrimary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp
-                        )
+                    listOf("Anime Listesi", "Manga Listesi").forEachIndexed { idx, label ->
+                        val isSelected = pagerState.currentPage == idx
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(if (isSelected) accentColor else Color.Transparent)
+                                .tvClickable(shape = RoundedCornerShape(12.dp)) {
+                                    coroutineScope.launch { pagerState.animateScrollToPage(idx) }
+                                }
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = label,
+                                color = if (isSelected) KitsugiColors.Background else KitsugiColors.TextPrimary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp
+                            )
+                        }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Arama Kutusu
-                KitsugiSearchField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    placeholder = "Kullanıcının listesinde ara...",
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-
+                // Arama Kutusu - kaydırma yönüne göre gizlenir/görünür
+                AnimatedVisibility(
+                    visible = isSearchBarVisible,
+                    enter = slideInVertically(tween(200)) { -it } + fadeIn(tween(200)),
+                    exit = slideOutVertically(tween(200)) { -it } + fadeOut(tween(200))
+                ) {
+                    Column {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        KitsugiSearchField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            placeholder = "Kullanıcının listesinde ara...",
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
             }
         }
 
-        PullToRefreshBox(
-            isRefreshing = state.isLoading,
-            onRefresh = {
-                viewModel.loadUserMediaList(userId, selectedType, forceRefresh = true)
-            },
+        // Kaydırılabilir Pager İçeriği
+        HorizontalPager(
+            state = pagerState,
             modifier = Modifier.weight(1f).fillMaxWidth(),
+            userScrollEnabled = true
+        ) { page ->
+        val pageMediaType = if (page == 0) MediaType.Anime else MediaType.Manga
+        LaunchedEffect(page) {
+            viewModel.loadUserMediaList(userId, pageMediaType)
+        }
+        PullToRefreshBox(
+            isRefreshing = state.isLoading && selectedType == pageMediaType,
+            onRefresh = {
+                viewModel.loadUserMediaList(userId, pageMediaType, forceRefresh = true)
+            },
+            modifier = Modifier.fillMaxSize(),
             state = pullRefreshState
         ) {
             if (state.isLoading && state.items.isEmpty()) {
@@ -694,6 +718,7 @@ fun KitsugiUserMediaListScreen(
                 }
             }
         }
+        } // end HorizontalPager
     }
 
     // ── Floating Status FAB (sağ alt köşe) ──

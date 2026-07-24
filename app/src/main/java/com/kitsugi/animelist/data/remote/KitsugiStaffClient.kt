@@ -155,10 +155,14 @@ class KitsugiStaffClient {
                     KitsugiShikimoriClient.fetchStaffDetail(staffId)
                 }
                 "jikan", "mal" -> {
+                    var detail: KitsugiStaffDetail? = null
+                    var networkError: Throwable? = null
+
+                    // 1. MAL / Jikan API
                     val url = URL("https://api.jikan.moe/v4/people/$staffId/full")
                     val jikanRes = runCatching {
                         KitsugiApiBase.runWithRateLimit {
-                            val response = KitsugiApiBase.executeGetRequest(url) ?: return@runWithRateLimit null
+                            val response = KitsugiApiBase.executeGetRequestOrThrow(url)
                             val root = JSONObject(response)
                             val data = root.optJSONObject("data") ?: return@runWithRateLimit null
 
@@ -178,10 +182,6 @@ class KitsugiStaffClient {
                             val biography = data.optNullableString("about")?.cleanApiText()?.takeIf { it.isNotBlank() }
 
                             val birthday = data.optNullableString("birthday")
-                            val age = null
-                            val gender = null
-                            val homeTown = null
-                            val occupation = null
 
                             val characterRoles = mutableListOf<KitsugiStaffCharacterRole>()
                             val voicesArray = data.optJSONArray("voices")
@@ -200,7 +200,6 @@ class KitsugiStaffClient {
                                     val charName = charObj.optNullableString("name") ?: "Bilinmeyen"
                                     val charImg = charObj.optJSONObject("images")?.optJSONObject("jpg")?.optNullableString("image_url")
 
-                                    // Karakter bilgisi yoksa atla; anime bilgisi opsiyoneldir
                                     if (charId <= 0 && charName.isBlank()) continue
 
                                     characterRoles.add(KitsugiStaffCharacterRole(
@@ -246,41 +245,54 @@ class KitsugiStaffClient {
                                 alternativeNames = alternativeNames,
                                 imageUrl = imageUrl,
                                 biography = biography,
-                                occupation = occupation,
+                                occupation = null,
                                 birthday = birthday,
-                                age = age,
-                                gender = gender,
-                                homeTown = homeTown,
+                                age = null,
+                                gender = null,
+                                homeTown = null,
                                 characterRoles = characterRoles,
                                 mediaWorks = mediaWorks
                             )
                         }
-                    }.getOrNull()
+                    }
+                    jikanRes.onSuccess {
+                        detail = it
+                    }.onFailure { err ->
+                        if (err !is ResourceNotFoundException) {
+                            networkError = err
+                        }
+                        android.util.Log.e("KitsugiStaffClient", "Jikan fetch failed: ${err.message}", err)
+                    }
 
-                    val detail = if (jikanRes != null) {
-                        jikanRes
-                    } else {
-                        android.util.Log.w("KitsugiStaffClient", "Jikan ekip detayları başarısız oldu. Shikimori fallback devralıyor...")
-                        val shikiDetail = KitsugiShikimoriClient.fetchStaffDetail(staffId)
+                    // 2. Shikimori Fallback / Merge
+                    runCatching {
+                        KitsugiShikimoriClient.fetchStaffDetail(staffId)
+                    }.onSuccess { shikiDetail ->
                         if (shikiDetail != null) {
-                            shikiDetail
-                        } else if (!name.isNullOrBlank()) {
-                            fetchAniListStaffByName(name)
-                        } else {
-                            null
+                            detail = if (detail == null) shikiDetail else detail!!.mergeWith(shikiDetail)
+                        }
+                    }.onFailure { err ->
+                        android.util.Log.e("KitsugiStaffClient", "Shikimori staff detail fallback failed: ${err.message}", err)
+                    }
+
+                    // 3. AniList Fallback / Merge
+                    val targetName = detail?.name ?: name
+                    if (!targetName.isNullOrBlank()) {
+                        runCatching {
+                            fetchAniListStaffByName(targetName)
+                        }.onSuccess { aniListDetail ->
+                            if (aniListDetail != null) {
+                                detail = if (detail == null) aniListDetail else detail!!.mergeWith(aniListDetail)
+                            }
+                        }.onFailure { err ->
+                            android.util.Log.e("KitsugiStaffClient", "AniList staff detail fallback failed: ${err.message}", err)
                         }
                     }
 
-                    if (detail != null && KitsugiApplication.getInstance()?.let { com.kitsugi.animelist.data.auth.ExternalAuthManager.getAniListToken(it) } != null) {
-                        val aniListDetail = fetchAniListStaffByName(detail.name)
-                        if (aniListDetail != null) {
-                            detail.copy(isFavourite = aniListDetail.isFavourite, aniListId = aniListDetail.id)
-                        } else {
-                            detail
-                        }
-                    } else {
-                        detail
+                    if (detail == null && networkError != null) {
+                        throw networkError!!
                     }
+                    detail
                 }
 
                 "anilist" -> {

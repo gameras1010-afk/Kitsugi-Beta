@@ -9,6 +9,8 @@ import com.kitsugi.animelist.data.local.TranslationManager
 import com.kitsugi.animelist.data.remote.DetailCache
 import com.kitsugi.animelist.data.remote.JikanApiClient
 import com.kitsugi.animelist.data.remote.KitsugiMediaMutationsClient
+import com.kitsugi.animelist.data.remote.RateLimitException
+import com.kitsugi.animelist.data.remote.ResourceNotFoundException
 import com.kitsugi.animelist.data.settings.SettingsDataStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +37,9 @@ class StaffDetailViewModel(application: Application) : AndroidViewModel(applicat
 
     private val _isFavourite = MutableStateFlow(false)
     val isFavourite: StateFlow<Boolean> = _isFavourite.asStateFlow()
+
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
     private var currentFetchKey: String? = null
     private var lastStaffId: Int = 0
@@ -78,21 +83,50 @@ class StaffDetailViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
+    fun forceRefresh() {
+        val staffId = lastStaffId
+        val source = lastSource
+        val name = lastStaffName
+        if (staffId > 0 && source.isNotEmpty()) {
+            _isRefreshing.value = true
+            viewModelScope.launch {
+                try {
+                    fetchStaffDetail(staffId, source, name, force = true)
+                } finally {
+                    _isRefreshing.value = false
+                }
+            }
+        }
+    }
+
     private suspend fun fetchStaffDetail(staffId: Int, source: String, name: String? = null, force: Boolean = false) {
+        if (force) {
+            DetailCache.removeStaffDetail(source, staffId)
+        }
         val cached = DetailCache.getStaffDetail(source, staffId)
         val detail = if (cached != null && !force) {
             cached
         } else {
-            val fetched = withContext(Dispatchers.IO) {
-                apiClient.fetchStaffDetail(source, staffId, name)
-            }
-            if (fetched != null) {
-                DetailCache.putStaffDetail(source, staffId, fetched)
-            }
-            fetched
+            runCatching {
+                withContext(Dispatchers.IO) {
+                    apiClient.fetchStaffDetail(source, staffId, name)
+                }
+            }.onFailure { err ->
+                val msg = when (err) {
+                    is RateLimitException -> "Hız limitine takıldık. Lütfen birkaç saniye bekleyip tekrar deneyin."
+                    is ResourceNotFoundException -> "Bu ekip üyesi bulunamadı."
+                    is java.io.IOException -> "Ağ bağlantısı hatası. Lütfen bağlantınızı kontrol edin."
+                    else -> "Ekip üyesi detayları yüklenemedi."
+                }
+                Log.e(TAG, "fetchStaffDetail error: ${err.message}", err)
+                if (_state.value !is StaffDetailState.Success) {
+                    _state.value = StaffDetailState.Error(msg)
+                }
+            }.getOrNull()
         }
 
         if (detail != null) {
+            DetailCache.putStaffDetail(source, staffId, detail)
             _state.value = StaffDetailState.Success(detail)
             _isFavourite.value = detail.isFavourite
 
@@ -111,7 +145,7 @@ class StaffDetailViewModel(application: Application) : AndroidViewModel(applicat
                     _translatedBio.value = tr
                 }
             }
-        } else {
+        } else if (_state.value !is StaffDetailState.Success) {
             _state.value = StaffDetailState.Error("Ekip üyesi detayları yüklenemedi.")
         }
     }
