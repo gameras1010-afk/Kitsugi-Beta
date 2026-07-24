@@ -24,19 +24,6 @@
 - **Platform farkındalıklı etiketler:** TMDB içerikleri "Trending Shows/Movies" olarak doğru etiketleniyor.
 - **Kaynak izolasyonu:** Platform değiştirirken eski veri yeni verinin üzerine yazılmıyor.
 
-### 🔄 Karakter & Ekip Detay Sayfaları
-- **Pull-to-Refresh:** Aşağı çekerek yenileme aktif. Eski yenile butonları kaldırıldı.
-- **Çok kaynaklı veri birleştirme:** Jikan/MAL, Shikimori ve AniList sıralı olarak sorgulanıyor; eksik alanlar otomatik dolduruluyor.
-- **Zorunlu yenileme:** Önbellek atlanarak tüm kaynaklar yeniden sorgulanabiliyor.
-
-### 👤 Kullanıcı Listesi & Profil Sayfaları
-- **Kaydırılabilir Anime/Manga sekmeleri:** Parmakla sola/sağa kaydırarak liste sekmeleri arasında geçiş.
-- **Akıllı arama barı:** Yukarı kaydırınca gizlenir, aşağı kaydırınca geri çıkar.
-- **Resim galerisi:** Aktivite ve medya detay sayfalarındaki galeriler düzgün açılıp gezinilebiliyor.
-
-### 🗂️ MyList — Sekme Senkronizasyonu
-- **Race condition düzeltildi:** Sekme geçişlerindeki animasyon sırasında oluşan indeks tutarsızlığı giderildi.
-
 ### 🛠️ Diğer Düzeltmeler & Teknik İyileştirmeler
 - **Yayın takvimi TMDB verileri:** Poster görselleri doğru yükleniyor, geri sayım ve meta veriler tüm platformlarda tutarlı.
 - **Cloudflare bypass & ağ katmanı:** HTTP istek altyapısı güçlendirildi.
@@ -65,19 +52,6 @@
 - **Unified airing calendar:** TMDB, AniList, and MAL "Airing Soon" data flows through a single pipeline.
 - **Platform-aware labels:** TMDB content correctly labeled as "Trending Shows/Movies".
 - **Source isolation hardened:** Switching platforms no longer allows stale data to overwrite fresh results.
-
-### 🔄 Character & Staff Detail Pages
-- **Pull-to-Refresh:** Swipe down to refresh. Legacy manual refresh buttons removed.
-- **Multi-source data aggregation:** Jikan/MAL, Shikimori, and AniList queried sequentially; missing fields auto-filled.
-- **Force refresh:** Cache can be bypassed to re-query all sources fresh.
-
-### 👤 User List & Profile Pages
-- **Swipeable Anime/Manga tabs:** Swipe left/right to switch between list tabs (HorizontalPager).
-- **Smart search bar:** Hides on scroll up, reappears on scroll down.
-- **Image gallery:** Galleries in activity and media detail pages open and navigate correctly.
-
-### 🗂️ MyList — Tab Sync Fix
-- **Race condition fixed:** Tab index inconsistency during pager transition animation is resolved.
 
 ### 🛠️ Other Fixes & Technical Improvements
 - **Airing calendar TMDB data:** Poster images load correctly, countdown and metadata consistent across all platforms.
