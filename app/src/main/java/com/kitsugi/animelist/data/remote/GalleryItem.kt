@@ -16,8 +16,8 @@ enum class GalleryCategory(val label: String) {
     LOGO("Logo"),
     BACKDROP("Arka Plan"),
     POSTER("Poster"),
-    THUMBNAIL("Küçük Resim"),
     CHARACTER("Karakter"),
+    THUMBNAIL("Küçük Resim"),
     BANNER("Afiş"),
     OTHER("Diğer")
 }

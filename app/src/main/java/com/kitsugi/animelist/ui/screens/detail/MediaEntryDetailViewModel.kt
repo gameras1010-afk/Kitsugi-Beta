@@ -428,12 +428,14 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
             }
             currentDetail?.pictures?.forEach { url ->
                 if (url.isNotBlank()) {
+                    val isTmdb = url.contains("image.tmdb.org")
                     val category = when {
-                        url.contains("/w1280") || url.contains("backdrop") -> GalleryCategory.BACKDROP
-                        url.contains("/w780") -> GalleryCategory.POSTER
+                        isTmdb && (url.contains("/w1280") || url.contains("backdrop")) -> GalleryCategory.BACKDROP
+                        isTmdb && (url.contains("/w780") || url.contains("poster")) -> GalleryCategory.POSTER
+                        !isTmdb -> GalleryCategory.POSTER // Jikan pictures are posters
                         else -> GalleryCategory.OTHER
                     }
-                    val source = if (url.contains("image.tmdb.org")) "TMDB" else "Jikan"
+                    val source = if (isTmdb) "TMDB" else "Jikan"
                     add(GalleryItem(url = url, source = source, category = category))
                 }
             }

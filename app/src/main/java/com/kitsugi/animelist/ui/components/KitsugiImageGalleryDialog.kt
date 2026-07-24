@@ -83,7 +83,9 @@ fun KitsugiImageGalleryDialog(
         }
     }
     
-    var selectedCategoryFilter by remember { mutableStateOf<GalleryCategory?>(null) }
+    var selectedCategoryFilter by remember { 
+        mutableStateOf<GalleryCategory?>(galleryItems.getOrNull(initialIndex)?.category) 
+    }
     
     // Filtered items based on selected category
     val filteredItems = remember(galleryItems, selectedCategoryFilter) {
@@ -94,12 +96,28 @@ fun KitsugiImageGalleryDialog(
         }
     }
     
-    val pagerState = rememberPagerState(initialPage = initialIndex.coerceIn(0, galleryItems.lastIndex), pageCount = { filteredItems.size })
+    val resolvedInitialPage = remember(galleryItems, initialIndex, filteredItems) {
+        val initialItem = galleryItems.getOrNull(initialIndex)
+        if (initialItem != null) {
+            val idx = filteredItems.indexOf(initialItem)
+            if (idx >= 0) idx else 0
+        } else {
+            0
+        }
+    }
     
-    // Reset to page 0 if selectedCategoryFilter changes to avoid index bounds error
+    val pagerState = rememberPagerState(initialPage = resolvedInitialPage.coerceIn(0, maxOf(0, filteredItems.size - 1)), pageCount = { filteredItems.size })
+    
+    var isFirstLaunch by remember { mutableStateOf(true) }
+    
+    // Reset to page 0 if selectedCategoryFilter changes to avoid index bounds error, ignoring first launch
     LaunchedEffect(selectedCategoryFilter) {
-        if (filteredItems.isNotEmpty()) {
-            pagerState.scrollToPage(0)
+        if (isFirstLaunch) {
+            isFirstLaunch = false
+        } else {
+            if (filteredItems.isNotEmpty()) {
+                pagerState.scrollToPage(0)
+            }
         }
     }
     

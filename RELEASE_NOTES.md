@@ -4,60 +4,78 @@
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### 🎨 Premium Fanart.tv Medya Galerisi Entegrasyonu
-- **Gelişmiş Görsel Kaynağı:** Medya detay sayfalarını zenginleştirmek için **Fanart.tv** entegrasyonu tamamlandı. Anime, dizi ve filmler için yüksek kaliteli logolar, arka planlar (backdrops), afişler ve küçük resimler doğrudan Fanart.tv API'sinden çekiliyor.
-- **Çoklu Kaynak Desteği:** Görsel galerisi artık Jikan (MyAnimeList), TMDB ve Fanart.tv kaynaklarından gelen tüm görselleri bir arada yönetiyor ve her görselin hangi platformdan geldiğini gösteren özel renkli doğrulama rozetleri barındırıyor.
-- **Kategori Filtreleme Sekmeleri:** Galeri diyaloğunda görseller kategorilerine göre (Logo, Backdrop, Poster vb.) sekmelerle filtrelenebiliyor.
-- **Akıllı Kimlik Çözümleme:** Anime içerikleri için Fanart.tv üzerinde TVDB kimlikleri (IDs) ARM API'si kullanılarak arka planda otomatik olarak çözümleniyor.
-- **Özel Ayarlar Sekmesi:** Entegrasyonlar ayarlarına dördüncü sekme olarak "Fanart.tv" eklendi. Kullanıcılar Fanart.tv API anahtarlarını girip entegrasyonu kolayca aktif veya pasif hale getirebiliyor.
+### 🖼️ Yeniden Yapılandırılan Resim Galerisi
+- **Kategorize Edilmiş Resim Bölümleri:** Medya detay sayfasındaki "Resimler" bölümü artık görselleri düz bir liste olarak değil, her biri kendi emoji başlığıyla ayrı yatay satırlarda gösteriyor:
+  - 🎨 Logo (Fanart.tv hdtvlogo / hdmovielogo)
+  - 🖼 Arka Plan (Fanart.tv showbackground / TMDB backdrops)
+  - 📋 Poster (Fanart.tv tvposter / TMDB posters / Jikan)
+  - 🎭 Karakter (Fanart.tv characterart)
+  - 🌐 Küçük Resim (Fanart.tv tvthumb)
+- **Platform Kaynak Etiketleri:** Her küçük resmin üzerinde hangi platformdan (Fanart.tv / TMDB / Jikan) geldiğini gösteren renkli rozet eklendi.
+- **Galeri Diyaloğunda Akıllı Sekme Seçimi:** Detay sayfasında bir resme tıklandığında galeri diyaloğu otomatik olarak o resmin kategorisini üstteki sekmelerden seçili hale getiriyor. Kullanıcı sekmeler arasında kolayca geçiş yapabilir.
+- **Doğru İndeks Eşleşmesi:** Tıklanan resim, galeri diyaloğunda tam olarak karşısına açılıyor; sayfa kaymaları veya indeks hataları giderildi.
 
-### 🛡️ Sistem Genelinde NSFW Flulaştırma (NSFW Blur)
-- **Merkezi NSFW Görsel Bileşeni:** Tüm el ile yazılmış `Modifier.blur` kullanımları kaldırılarak yerine yeni merkezi `KitsugiNsfwImage` bileşeni entegre edildi.
-- **Otomatik ve Güvenli Filtreleme:** Keşfet, Profil ve diğer tüm ekranlarda NSFW/Yetişkin içeriklerin görselleri ve yüklenme durumları, kullanıcının "Yetişkin İçerikleri Flulaştır" ayarına göre sistem genelinde otomatik ve tutarlı bir şekilde gizleniyor.
+### 🎨 Fanart.tv Medya Galerisi Entegrasyonu
+- **Çoklu Kaynak Galerisi:** Fanart.tv, TMDB ve Jikan'dan gelen tüm görseller tek bir galeri yapısında birleştirilip kategorilere ayrılıyor.
+- **Otomatik TVDB Kimlik Çözümleme:** Anime içerikleri için TVDB ID'leri ARM API üzerinden otomatik çözümleniyor.
+- **Entegrasyon Ayarları:** Ayarlar > Entegrasyonlar altında Fanart.tv sekmesi; API anahtarı girişi ve etkinleştirme seçeneğiyle birlikte sunuluyor.
+
+### 🛡️ Sistem Genelinde NSFW Flulaştırma
+- **Merkezi `KitsugiNsfwImage` Bileşeni:** Tüm el ile yazılmış `Modifier.blur` kullanımları kaldırılarak merkezi bileşene geçildi.
+- **Otomatik ve Tutarlı Gizleme:** Keşfet, Profil ve tüm medya ekranlarında yetişkin içerik görselleri kullanıcı ayarına göre sistem genelinde flulaştırılıyor.
 
 ### 🎬 Gelişmiş Video Oynatıcı Kontrolleri
-- **Çözünürlük/Kalite Seçimi:** Tam ekran video oynatıcısına dinamik akış kalitesi (Quality Selection) menüsü eklendi.
-- **Çoklu Ses İzi Desteği:** Birden fazla ses izi barındıran videolar için ses izi seçim butonu eklendi, tek ses izi olan videolarda ise bu buton otomatik olarak gizlenerek arayüz temizlendi.
-- **Akıllı Arayüz Gizleme:** Oynatıcı kontrollerinin kullanıcı deneyimini engellememesi için otomatik gizleme mekanizması ve hareket kontrolleri iyileştirildi.
+- **Kalite Seçimi:** Tam ekran oynatıcıya dinamik akış kalitesi seçim menüsü eklendi.
+- **Çoklu Ses İzi:** Birden fazla ses izi varsa ses izi butonu görünür, tek ise otomatik gizleniyor.
+- **Otomatik Kontrol Gizleme:** Oynatıcı arayüzü belirli süre sonra otomatik olarak gizleniyor.
 
 ### 📱 Modernize Edilmiş Kullanıcı Medya Listesi
-- **Kaydırma Hareketleri (Swipe Tabs):** Anime ve Manga sekmeleri arasında daha akıcı geçiş yapabilmek için `HorizontalPager` entegrasyonu sağlandı.
-- **Gizlenebilir Arama Çubuğu:** Liste aşağı kaydırıldığında ekran alanını genişletmek amacıyla arama çubuğu otomatik olarak gizleniyor, yukarı kaydırıldığında ise tekrar görünür hale geliyor.
+- **Kaydırma ile Sekme Geçişi:** `HorizontalPager` ile Anime/Manga sekmeleri arasında parmak kaydırmayla geçiş yapılabiliyor.
+- **Gizlenebilir Arama Çubuğu:** Aşağı kaydırmada arama çubuğu gizleniyor, yukarı kaydırmada geri geliyor.
 
-### 🎙️ Ses Sanatçısı Normalizasyonu ve Akıllı Sıralama
-- **Ad Soyad Formatı:** Tüm ses sanatçıları ve ekip isimleri "Soyad, Ad" yerine "Ad Soyad" formatına otomatik olarak dönüştürülüyor.
-- **Öncelikli Dil Sıralaması:** Ses sanatçıları artık tercih diline göre (Japonca, İngilizce, Türkçe ve ardından alfabetik) sıralanarak en uygun seslendirme kadrosuna kolayca ulaşılması sağlanıyor.
+### 🎙️ Ses Sanatçısı Normalizasyonu
+- **Ad Soyad Formatı:** Tüm ses sanatçısı isimleri "Soyad, Ad" yerine "Ad Soyad" formatında gösteriliyor.
+- **Dil Öncelikli Sıralama:** Japonca > İngilizce > Türkçe > Alfabetik sıraya göre listeleniyor.
 
-### 📅 Birleştirilmiş Keşfet & Yayın Takvimi
-- **Ortak Veri Akışı:** TMDB, AniList ve MAL platformlarındaki "Yakında Yayınlanacak" içerikler ve geri sayımlar tek bir ortak Yayın Takvimi (Airing Calendar) altyapısında birleştirildi.
+### 📅 Birleştirilmiş Yayın Takvimi
+- **Ortak Veri Altyapısı:** TMDB, AniList ve MAL'ın "Yakında" içerikleri tek bir Yayın Takvimi akışında toplandı.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### 🎨 Premium Fanart.tv Media Gallery Integration
-- **Premium Asset Provider:** Integrated **Fanart.tv** as a premium source for high-quality logos, backdrops, posters, and thumbnails in media detail pages.
-- **Multi-Source Image Gallery:** The image gallery system now consolidates assets from Jikan (MyAnimeList), TMDB, and Fanart.tv, featuring colored source-verification badges for each provider.
-- **Category Filtering Tabs:** Implemented dynamic category tabs (Logo, Backdrop, Poster, etc.) within the gallery dialog for easy asset filtering.
-- **Automatic ID Resolution:** Anime media entries leverage ARM API to resolve TVDB IDs behind the scenes for seamless Fanart.tv API communication.
-- **Dedicated Settings Tab:** Introduced a "Fanart.tv" settings tab under Integrations, allowing users to input their Fanart.tv API Key and toggle the feature.
+### 🖼️ Reconstructed Image Gallery
+- **Categorized Sections:** The "Resimler" (Images) section on the media detail page now displays assets in named, emoji-prefixed rows instead of a flat list:
+  - 🎨 Logo (Fanart.tv hdtvlogo / hdmovielogo)
+  - 🖼 Backdrop (Fanart.tv showbackground / TMDB backdrops)
+  - 📋 Poster (Fanart.tv tvposter / TMDB posters / Jikan)
+  - 🎭 Character Art (Fanart.tv characterart)
+  - 🌐 Thumbnail (Fanart.tv tvthumb)
+- **Platform Source Badges:** Each thumbnail now displays a colored badge indicating its source (Fanart.tv / TMDB / Jikan).
+- **Smart Pre-selected Filter Tab:** Tapping an image in the detail page opens the gallery dialog with the matching category tab automatically pre-selected for instant context.
+- **Correct Index Matching:** The gallery opens precisely on the tapped image, with all index-mismatch and scroll-reset issues resolved.
+
+### 🎨 Fanart.tv Media Gallery Integration
+- **Multi-Source Gallery:** Assets from Fanart.tv, TMDB, and Jikan are merged and categorized into a unified gallery structure.
+- **Automatic TVDB ID Resolution:** Anime entries resolve TVDB IDs automatically via the ARM API for seamless Fanart.tv lookups.
+- **Settings Integration:** A dedicated Fanart.tv tab under Settings > Integrations allows entering an API key and toggling the feature.
 
 ### 🛡️ System-Wide NSFW Blurring
-- **Centralized NSFW Image Wrapper:** Migrated all manual `Modifier.blur` implementations across screens to a centralized `KitsugiNsfwImage` component.
-- **Consistent Privacy Protection:** Ensures consistent automated blurring of NSFW/adult content and loading/placeholder states across the Explore and Profile screens based on user settings.
+- **Centralized `KitsugiNsfwImage` Component:** All manual `Modifier.blur` calls replaced with a single centralized wrapper.
+- **Consistent Automated Blur:** NSFW/adult content is automatically blurred across Explore, Profile, and all media screens based on user settings.
 
 ### 🎬 Advanced Video Player Controls
-- **Dynamic Quality Selection:** Added a dedicated quality selector within the player overlay during playback.
-- **Smart Audio Track Selector:** Dynamically renders the audio track selector only when multiple audio tracks are available, removing UI clutter.
-- **Overlay Auto-Hide:** Refined player overlay auto-hide logic and gestures for an uninterrupted viewing experience.
+- **Quality Selection:** Dynamic streaming quality selector added to the full-screen player overlay.
+- **Smart Audio Track Button:** The audio track button is shown only when multiple tracks are available.
+- **Auto-Hide Overlay:** Player controls auto-hide after inactivity for an uninterrupted viewing experience.
 
 ### 📱 Modernized User Media List
-- **Swipe-Based Navigation:** Integrated `HorizontalPager` for smooth gesture-based tab switching between Anime and Manga.
-- **Scroll-Aware Search Bar:** The search bar automatically hides when scrolling down to maximize screen real estate and reveals on scroll up.
+- **Swipe Navigation:** `HorizontalPager` integration for gesture-based Anime/Manga tab switching.
+- **Scroll-Aware Search Bar:** Search bar hides on downward scroll and reappears on upward scroll.
 
-### 🎙️ Normalized & Sorted Voice Actors
-- **First Last Format:** Standardized name presentations from "LastName, FirstName" to "FirstName LastName" using a global utility.
-- **Language-Preference Sort:** Stabilized voice actor listings by sorting them based on language preferences (Japanese, English, Turkish, then alphabetical).
+### 🎙️ Normalized Voice Actors
+- **First Last Format:** Voice actor names standardized from "LastName, FirstName" to "FirstName LastName".
+- **Language-Priority Sort:** Sorted by Japanese > English > Turkish > Alphabetical.
 
-### 📅 Unified Explore & Airing Calendar
-- **Consolidated Pipelines:** Harmonized TMDB, AniList, and MAL upcoming/airing media feeds into a unified countdown pipeline and Airing Calendar presentation.
+### 📅 Unified Airing Calendar
+- **Consolidated Pipelines:** TMDB, AniList, and MAL upcoming/airing feeds unified into a single calendar pipeline.

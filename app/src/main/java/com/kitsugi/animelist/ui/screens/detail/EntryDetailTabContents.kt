@@ -234,7 +234,7 @@ private fun DetailGalleryCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Galeri",
+                text = "Resimler",
                 color = KitsugiColors.TextPrimary,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold
@@ -246,93 +246,124 @@ private fun DetailGalleryCard(
             )
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 14.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            itemsIndexed(items) { index, item ->
-                // Aspect ratio depends on category
-                val aspectRatio = when (item.category) {
-                    GalleryCategory.BACKDROP -> 16f / 9f
-                    GalleryCategory.BANNER   -> 5.4f / 1f
-                    GalleryCategory.POSTER   -> 2f / 3f
-                    GalleryCategory.LOGO     -> 3f / 1.4f
-                    else                     -> 1f
-                }
+        val orderedCategories = listOf(
+            GalleryCategory.LOGO,
+            GalleryCategory.BACKDROP,
+            GalleryCategory.POSTER,
+            GalleryCategory.CHARACTER,
+            GalleryCategory.THUMBNAIL,
+            GalleryCategory.BANNER,
+            GalleryCategory.OTHER
+        )
 
-                val badgeBgColor = when (item.source.lowercase()) {
-                    "fanart.tv" -> Color(0xFF9C27B0)
-                    "tmdb"      -> Color(0xFF00C853)
-                    "jikan"     -> Color(0xFF00B0FF)
-                    else        -> accentColor
-                }
+        val grouped = androidx.compose.runtime.remember(items) {
+            items.groupBy { it.category }
+        }
 
-                Box(
+        orderedCategories.forEach { category ->
+            val categoryItems = grouped[category]
+            if (!categoryItems.isNullOrEmpty()) {
+                Column(
                     modifier = Modifier
-                        .height(100.dp)
-                        .aspectRatio(aspectRatio)
-                        .clip(RoundedCornerShape(12.dp))
-                        .border(1.dp, KitsugiColors.Border, RoundedCornerShape(12.dp))
-                        .tvClickable(shape = RoundedCornerShape(12.dp)) { onItemClick(index) }
+                        .fillMaxWidth()
+                        .padding(top = 10.dp)
                 ) {
-                    AsyncImage(
-                        model = item.url,
-                        contentDescription = "${item.category.label} – ${item.source}",
-                        modifier = Modifier.matchParentSize(),
-                        contentScale = ContentScale.Crop
+                    val emoji = when (category) {
+                        GalleryCategory.LOGO -> "🎨"
+                        GalleryCategory.BACKDROP -> "🖼"
+                        GalleryCategory.POSTER -> "📋"
+                        GalleryCategory.CHARACTER -> "🎭"
+                        GalleryCategory.THUMBNAIL -> "🌐"
+                        GalleryCategory.BANNER -> "🎫"
+                        GalleryCategory.OTHER -> "📁"
+                    }
+
+                    val turkishLabel = when (category) {
+                        GalleryCategory.LOGO -> "Logo"
+                        GalleryCategory.BACKDROP -> "Arka Plan"
+                        GalleryCategory.POSTER -> "Poster"
+                        GalleryCategory.CHARACTER -> "Karakter"
+                        GalleryCategory.THUMBNAIL -> "Küçük Resim"
+                        GalleryCategory.BANNER -> "Afiş"
+                        GalleryCategory.OTHER -> "Diğer"
+                    }
+
+                    Text(
+                        text = "$emoji $turkishLabel",
+                        color = KitsugiColors.TextPrimary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
                     )
 
-                    // Dark gradient at the bottom for readability
-                    Box(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        Color.Black.copy(alpha = 0.55f)
-                                    )
-                                )
-                            )
-                    )
-
-                    // Badge row at the bottom-left
-                    Row(
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(6.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 14.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        // Source badge (coloured)
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(5.dp))
-                                .background(badgeBgColor)
-                                .padding(horizontal = 5.dp, vertical = 2.dp)
-                        ) {
-                            Text(
-                                text = item.source,
-                                color = Color.White,
-                                fontSize = 8.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                        // Category badge (neutral)
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(5.dp))
-                                .background(Color.Black.copy(alpha = 0.55f))
-                                .padding(horizontal = 5.dp, vertical = 2.dp)
-                        ) {
-                            Text(
-                                text = item.category.label,
-                                color = Color.White,
-                                fontSize = 8.sp,
-                                fontWeight = FontWeight.Medium
-                            )
+                        itemsIndexed(categoryItems) { _, item ->
+                            val mainIndex = items.indexOf(item)
+
+                            val aspectRatio = when (item.category) {
+                                GalleryCategory.BACKDROP -> 16f / 9f
+                                GalleryCategory.BANNER   -> 5.4f / 1f
+                                GalleryCategory.POSTER   -> 2f / 3f
+                                GalleryCategory.LOGO     -> 3f / 1.4f
+                                else                     -> 1f
+                            }
+
+                            val badgeBgColor = when (item.source.lowercase()) {
+                                "fanart.tv" -> Color(0xFF9C27B0)
+                                "tmdb"      -> Color(0xFF00C853)
+                                "jikan"     -> Color(0xFF00B0FF)
+                                else        -> accentColor
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .height(100.dp)
+                                    .aspectRatio(aspectRatio)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .border(1.dp, KitsugiColors.Border, RoundedCornerShape(12.dp))
+                                    .tvClickable(shape = RoundedCornerShape(12.dp)) { onItemClick(mainIndex) }
+                            ) {
+                                AsyncImage(
+                                    model = item.url,
+                                    contentDescription = "${item.category.label} – ${item.source}",
+                                    modifier = Modifier.matchParentSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+
+                                Box(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .background(
+                                            Brush.verticalGradient(
+                                                colors = listOf(
+                                                    Color.Transparent,
+                                                    Color.Black.copy(alpha = 0.55f)
+                                                )
+                                            )
+                                        )
+                                )
+
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.BottomStart)
+                                        .padding(6.dp)
+                                        .clip(RoundedCornerShape(5.dp))
+                                        .background(badgeBgColor)
+                                        .padding(horizontal = 5.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        text = item.source,
+                                        color = Color.White,
+                                        fontSize = 8.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
                         }
                     }
                 }
