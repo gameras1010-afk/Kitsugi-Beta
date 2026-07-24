@@ -165,22 +165,13 @@ fun DetailedSeasonalMediaCard(
                     .clip(RoundedCornerShape(14.dp))
                     .background(KitsugiColors.SurfaceSoft)
             ) {
-                if (!result.imageUrl.isNullOrBlank()) {
-                    AsyncImage(
+                KitsugiNsfwImage(
                         model = result.imageUrl,
                         contentDescription = displayTitle,
+                        isAdult = result.isAdult,
                         modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
+                        initials = displayTitle
                     )
-                } else {
-                    Text(
-                        text = displayTitle.take(2).uppercase(),
-                        color = accentColor,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Black,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))

@@ -63,6 +63,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import com.kitsugi.animelist.ui.components.KitsugiNsfwImage
 import com.kitsugi.animelist.model.MediaEntry
 import com.kitsugi.animelist.model.MediaType
 import com.kitsugi.animelist.model.WatchStatus
@@ -1784,12 +1785,11 @@ fun AniListProfileContent(
                                                                 .background(KitsugiColors.Surface)
                                                         ) {
                                                             if (item.imageUrl.isNotBlank()) {
-                                                                AsyncImage(
+                                                                KitsugiNsfwImage(
                                                                     model = item.imageUrl,
                                                                     contentDescription = item.title,
-                                                                    modifier = Modifier
-                                                                        .fillMaxSize()
-                                                                        .then(if (appSettings.blurAdultMedia && item.isAdult) Modifier.blur(24.dp) else Modifier),
+                                                                    isAdult = item.isAdult,
+                                                                    modifier = Modifier.fillMaxSize(),
                                                                     contentScale = ContentScale.Crop
                                                                 )
                                                             } else {
@@ -2421,12 +2421,11 @@ fun MalProfileContent(
                                                                 .background(KitsugiColors.Surface)
                                                         ) {
                                                             if (item.imageUrl.isNotBlank()) {
-                                                                AsyncImage(
+                                                                KitsugiNsfwImage(
                                                                     model = item.imageUrl,
                                                                     contentDescription = item.title,
-                                                                    modifier = Modifier
-                                                                        .fillMaxSize()
-                                                                        .then(if (appSettings.blurAdultMedia && item.isAdult) Modifier.blur(24.dp) else Modifier),
+                                                                    isAdult = item.isAdult,
+                                                                    modifier = Modifier.fillMaxSize(),
                                                                     contentScale = ContentScale.Crop
                                                                 )
                                                             } else {
@@ -3194,12 +3193,11 @@ fun FavoritesHorizontalSection(
                             .background(KitsugiColors.Background)
                     ) {
                         if (item.imageUrl.isNotBlank()) {
-                            AsyncImage(
+                            KitsugiNsfwImage(
                                 model = item.imageUrl,
                                 contentDescription = item.title,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .then(if (blurAdultMedia && item.isAdult) Modifier.blur(24.dp) else Modifier),
+                                isAdult = item.isAdult,
+                                modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop
                             )
                         } else {
@@ -3314,12 +3312,11 @@ fun FavoritesExpandedBottomSheet(
                                 .background(KitsugiColors.Background)
                         ) {
                             if (item.imageUrl.isNotBlank()) {
-                                AsyncImage(
+                                KitsugiNsfwImage(
                                     model = item.imageUrl,
                                     contentDescription = item.title,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .then(if (blurAdultMedia && item.isAdult) Modifier.blur(24.dp) else Modifier),
+                                    isAdult = item.isAdult,
+                                    modifier = Modifier.fillMaxSize(),
                                     contentScale = ContentScale.Crop
                                 )
                             } else {
@@ -3493,13 +3490,13 @@ fun ActivityCard(
                             .padding(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        AsyncImage(
+                        KitsugiNsfwImage(
                             model = activity.mediaImage ?: "",
-                            contentDescription = null,
+                            contentDescription = "",
+                            isAdult = (activity as? ProfileActivityItem.ListActivity)?.isAdult == true,
                             modifier = Modifier
                                 .size(45.dp, 64.dp)
-                                .clip(RoundedCornerShape(6.dp))
-                                .then(if (blurAdultMedia && (activity as? ProfileActivityItem.ListActivity)?.isAdult == true) Modifier.blur(24.dp) else Modifier),
+                                .clip(RoundedCornerShape(6.dp)),
                             contentScale = ContentScale.Crop
                         )
                         Spacer(modifier = Modifier.width(12.dp))

@@ -28,6 +28,7 @@ import coil3.compose.AsyncImage
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayTitle
+import com.kitsugi.animelist.utils.toTurkishLanguage
 
 @Composable
 internal fun MediaAppearanceRow(
@@ -135,11 +136,9 @@ internal fun VoiceActorRow(
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold
             )
-            val labelText = if (actor.language.equals("oyuncu", ignoreCase = true)) {
-                "Oyuncu"
-            } else {
-                actor.language.replaceFirstChar { it.uppercase() }
-            }
+            val labelText = actor.language.toTurkishLanguage()
+                .replaceFirstChar { it.uppercase() }
+                .ifBlank { "Bilinmeyen" }
             Text(
                 text = labelText,
                 color = KitsugiColors.TextMuted,

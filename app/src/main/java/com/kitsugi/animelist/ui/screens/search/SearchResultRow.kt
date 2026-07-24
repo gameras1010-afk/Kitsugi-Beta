@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import coil3.compose.AsyncImage
 import com.kitsugi.animelist.data.remote.JikanSearchResult
+import com.kitsugi.animelist.ui.components.KitsugiNsfwImage
 import com.kitsugi.animelist.ui.theme.LocalIsTv
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
@@ -83,14 +84,12 @@ fun SearchResultRow(
                 .clip(if (isTv) KitsugiTvTokens.Shapes.posterCard else RoundedCornerShape(10.dp))
                 .background(KitsugiColors.SurfaceStrong)
         ) {
-            if (result.imageUrl != null) {
-                AsyncImage(
-                    model = result.imageUrl,
-                    contentDescription = displayTitle,
-                    modifier = Modifier.matchParentSize(),
-                    contentScale = ContentScale.Crop
-                )
-            }
+            KitsugiNsfwImage(
+                model = result.imageUrl,
+                contentDescription = displayTitle,
+                isAdult = result.isAdult,
+                modifier = Modifier.matchParentSize()
+            )
         }
 
         // Bilgiler

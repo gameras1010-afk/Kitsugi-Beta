@@ -95,6 +95,7 @@ import com.kitsugi.animelist.ui.app.RankedStatItem
 import com.kitsugi.animelist.ui.components.KitsugiActivityDetailBottomSheet
 import com.kitsugi.animelist.ui.components.KitsugiImageGalleryDialog
 import com.kitsugi.animelist.ui.components.KitsugiMarkdownText
+import com.kitsugi.animelist.ui.components.KitsugiNsfwImage
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import android.content.Context
@@ -1343,12 +1344,11 @@ fun KitsugiUserProfileScreen(
                                                                             .background(KitsugiColors.Surface)
                                                                     ) {
                                                                         if (item.imageUrl.isNotBlank()) {
-                                                                            AsyncImage(
+                                                                            KitsugiNsfwImage(
                                                                                 model = item.imageUrl,
                                                                                 contentDescription = item.title,
-                                                                                modifier = Modifier
-                                                                                    .fillMaxSize()
-                                                                                    .then(if (appSettings.blurAdultMedia && item.isAdult) Modifier.blur(24.dp) else Modifier),
+                                                                                isAdult = item.isAdult,
+                                                                                modifier = Modifier.fillMaxSize(),
                                                                                 contentScale = ContentScale.Crop
                                                                             )
                                                                         } else {

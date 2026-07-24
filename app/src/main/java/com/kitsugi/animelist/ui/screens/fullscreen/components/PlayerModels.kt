@@ -93,7 +93,7 @@ data class MetaCastMember(
 ) : java.io.Serializable
 
 enum class PlayerPanel {
-    NONE, SUBTITLES, AUDIO, SOURCES, EPISODES, STREAM_INFO, SKIP_SETTINGS, SPEED
+    NONE, SUBTITLES, AUDIO, SOURCES, EPISODES, STREAM_INFO, SKIP_SETTINGS, SPEED, QUALITY
 }
 
 data class TrackOption(

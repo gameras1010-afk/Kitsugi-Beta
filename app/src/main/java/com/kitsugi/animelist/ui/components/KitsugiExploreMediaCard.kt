@@ -31,7 +31,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -103,26 +102,13 @@ fun KitsugiExploreMediaCard(
                         .background(KitsugiColors.SurfaceSoft),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (!result.imageUrl.isNullOrBlank()) {
-                        AsyncImage(
-                            model = result.imageUrl,
-                            contentDescription = displayTitle,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .then(
-                                    if (blurAdultMedia && result.isAdult) Modifier.blur(24.dp)
-                                    else Modifier
-                                ),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Text(
-                            text = displayTitle.take(2).uppercase(),
-                            color = accentColor,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Black
-                        )
-                    }
+                    KitsugiNsfwImage(
+                        model = result.imageUrl,
+                        contentDescription = displayTitle,
+                        isAdult = result.isAdult,
+                        modifier = Modifier.fillMaxSize(),
+                        initials = displayTitle
+                    )
 
                     KitsugiSourceBadge(
                         source = result.source,
@@ -230,26 +216,13 @@ fun KitsugiExploreMediaCard(
                         .background(KitsugiColors.SurfaceSoft),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (!result.imageUrl.isNullOrBlank()) {
-                        AsyncImage(
-                            model = result.imageUrl,
-                            contentDescription = displayTitle,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .then(
-                                    if (blurAdultMedia && result.isAdult) Modifier.blur(24.dp)
-                                    else Modifier
-                                ),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Text(
-                            text = displayTitle.take(2).uppercase(),
-                            color = accentColor,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Black
-                        )
-                    }
+                    KitsugiNsfwImage(
+                        model = result.imageUrl,
+                        contentDescription = displayTitle,
+                        isAdult = result.isAdult,
+                        modifier = Modifier.fillMaxSize(),
+                        initials = displayTitle
+                    )
 
                     KitsugiSourceBadge(
                         source = result.source,
@@ -361,26 +334,13 @@ fun KitsugiExploreMediaCard(
                         .background(KitsugiColors.SurfaceSoft),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (!result.imageUrl.isNullOrBlank()) {
-                        AsyncImage(
-                            model = result.imageUrl,
-                            contentDescription = displayTitle,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .then(
-                                    if (blurAdultMedia && result.isAdult) Modifier.blur(24.dp)
-                                    else Modifier
-                                ),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Text(
-                            text = displayTitle.take(2).uppercase(),
-                            color = accentColor,
-                            style = MaterialTheme.typography.displaySmall,
-                            fontWeight = FontWeight.Black
-                        )
-                    }
+                    KitsugiNsfwImage(
+                        model = result.imageUrl,
+                        contentDescription = displayTitle,
+                        isAdult = result.isAdult,
+                        modifier = Modifier.fillMaxSize(),
+                        initials = displayTitle
+                    )
 
                     KitsugiSourceBadge(
                         source = result.source,

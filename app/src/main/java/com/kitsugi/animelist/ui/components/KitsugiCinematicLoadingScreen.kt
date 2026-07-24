@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import com.kitsugi.animelist.ui.components.KitsugiNsfwImage
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 
@@ -64,10 +65,10 @@ fun KitsugiCinematicLoadingScreen(
     ) {
         // 1. Fullscreen blurred background image with subtle pulse
         if (!imageUrl.isNullOrBlank()) {
-            AsyncImage(
+            KitsugiNsfwImage(
                 model = imageUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
+                contentDescription = "",
+                isAdult = isAdult,
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer {
@@ -75,10 +76,9 @@ fun KitsugiCinematicLoadingScreen(
                         scaleY = scalePulse * 1.05f
                         alpha = 0.35f
                     }
-                    .then(
-                        if (blurAdultMedia && isAdult) Modifier.blur(36.dp)
-                        else Modifier.blur(16.dp)
-                    )
+                    .blur(16.dp),
+                contentScale = ContentScale.Crop,
+                blurRadius = 20.dp
             )
         }
 
@@ -145,16 +145,12 @@ fun KitsugiCinematicLoadingScreen(
                         .background(KitsugiColors.Surface)
                         .size(width = 130.dp, height = 190.dp)
                 ) {
-                    AsyncImage(
+                    KitsugiNsfwImage(
                         model = imageUrl,
                         contentDescription = title,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .then(
-                                if (blurAdultMedia && isAdult) Modifier.blur(24.dp)
-                                else Modifier
-                            )
+                        isAdult = isAdult,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
                     )
                 }
                 Spacer(modifier = Modifier.height(24.dp))

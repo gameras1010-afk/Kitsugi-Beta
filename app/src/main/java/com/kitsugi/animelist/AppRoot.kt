@@ -141,6 +141,7 @@ import com.kitsugi.animelist.ui.screens.manga.MangaSourceHealthScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
+import com.kitsugi.animelist.ui.theme.LocalBlurAdultMedia
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.theme.KitsugiAccentForThemeId
 import java.io.OutputStreamWriter
@@ -759,7 +760,8 @@ fun AppRoot(
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     CompositionLocalProvider(
-        LocalKitsugiAccent provides activeAccentColor
+        LocalKitsugiAccent provides activeAccentColor,
+        LocalBlurAdultMedia provides appSettings.blurAdultMedia
     ) {
         Scaffold(
             containerColor = KitsugiColors.Background,
@@ -1124,6 +1126,7 @@ private fun AppNavigationContent(
                     scoreFormat = appSettings.scoreFormat,
                     hideScores = appSettings.hideScores,
                     showAdultContent = appSettings.showAdultContent,
+                    blurAdultMedia = appSettings.blurAdultMedia,
                     getMediaEntry = getMediaEntry
                 )
             }

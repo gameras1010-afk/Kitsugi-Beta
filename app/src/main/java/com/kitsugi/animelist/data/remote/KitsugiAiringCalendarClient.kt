@@ -101,7 +101,7 @@ class KitsugiAiringCalendarClient {
         }
     }
 
-    private fun parseDateToAiringAtAndDayOfWeek(dateStr: String): Pair<Long, Int> {
+    private fun parseDateToAiringAtAndDayOfWeek(dateStr: String, shiftToCurrentWeek: Boolean = false): Pair<Long, Int> {
         if (dateStr.isBlank()) {
             val now = System.currentTimeMillis()
             val day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
@@ -120,16 +120,19 @@ class KitsugiAiringCalendarClient {
                 }
                 val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
                 
-                val thisWeekCal = Calendar.getInstance()
-                val today = thisWeekCal.get(Calendar.DAY_OF_WEEK)
-                val diff = dayOfWeek - today
-                thisWeekCal.add(Calendar.DAY_OF_YEAR, diff)
-                thisWeekCal.set(Calendar.HOUR_OF_DAY, 20)
-                thisWeekCal.set(Calendar.MINUTE, 0)
-                thisWeekCal.set(Calendar.SECOND, 0)
-                thisWeekCal.set(Calendar.MILLISECOND, 0)
-                
-                Pair(thisWeekCal.timeInMillis / 1000L, dayOfWeek)
+                if (shiftToCurrentWeek) {
+                    val thisWeekCal = Calendar.getInstance()
+                    val today = thisWeekCal.get(Calendar.DAY_OF_WEEK)
+                    val diff = dayOfWeek - today
+                    thisWeekCal.add(Calendar.DAY_OF_YEAR, diff)
+                    thisWeekCal.set(Calendar.HOUR_OF_DAY, 20)
+                    thisWeekCal.set(Calendar.MINUTE, 0)
+                    thisWeekCal.set(Calendar.SECOND, 0)
+                    thisWeekCal.set(Calendar.MILLISECOND, 0)
+                    Pair(thisWeekCal.timeInMillis / 1000L, dayOfWeek)
+                } else {
+                    Pair(cal.timeInMillis / 1000L, dayOfWeek)
+                }
             } else {
                 val now = System.currentTimeMillis()
                 val day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)

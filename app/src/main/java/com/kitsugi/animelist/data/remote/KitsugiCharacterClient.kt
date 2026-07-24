@@ -98,7 +98,7 @@ class KitsugiCharacterClient {
                                 val item = data.optJSONObject(i) ?: continue
                                 val charObj = item.optJSONObject("character") ?: continue
                                 val id = charObj.optInt("mal_id")
-                                val name = charObj.optNullableString("name") ?: "Bilinmeyen"
+                                val name = (charObj.optNullableString("name") ?: "Bilinmeyen").toFriendlyName()
                                 val role = (item.optNullableString("role") ?: "Bilinmeyen").toTurkishCharacterRole()
                                 val imageUrl = charObj.optJSONObject("images")?.optJSONObject("jpg")?.optNullableString("image_url")
 
@@ -109,7 +109,7 @@ class KitsugiCharacterClient {
                                         val vaItem = vaArray.optJSONObject(j) ?: continue
                                         val vaPerson = vaItem.optJSONObject("person") ?: continue
                                         val vaId = vaPerson.optInt("mal_id")
-                                        val vaName = vaPerson.optNullableString("name") ?: "Bilinmeyen"
+                                        val vaName = (vaPerson.optNullableString("name") ?: "Bilinmeyen").toFriendlyName()
                                         val vaLang = (vaItem.optNullableString("language") ?: "Bilinmeyen").toTurkishLanguage()
                                         val vaImageUrl = vaPerson.optJSONObject("images")?.optJSONObject("jpg")?.optNullableString("image_url")
                                         vaList.add(KitsugiVoiceActor(vaId, vaName, vaLang, vaImageUrl, source = "jikan"))
@@ -257,7 +257,7 @@ class KitsugiCharacterClient {
                             val root = JSONObject(response)
                             val data = root.optJSONObject("data") ?: return@runWithRateLimit null
 
-                            val charName = data.optNullableString("name") ?: "Bilinmeyen"
+                            val charName = (data.optNullableString("name") ?: "Bilinmeyen").toFriendlyName()
                             val nativeName = data.optNullableString("name_kanji")
 
                             val nicknamesArray = data.optJSONArray("nicknames")
@@ -282,7 +282,7 @@ class KitsugiCharacterClient {
                                     val item = voicesArray.optJSONObject(i) ?: continue
                                     val personObj = item.optJSONObject("person") ?: continue
                                     val vaId = personObj.optInt("mal_id")
-                                    val vaName = personObj.optNullableString("name") ?: "Bilinmeyen"
+                                    val vaName = (personObj.optNullableString("name") ?: "Bilinmeyen").toFriendlyName()
                                     val language = (item.optNullableString("language") ?: "Bilinmeyen").toTurkishLanguage()
                                     val vaImg = personObj.optJSONObject("images")?.optJSONObject("jpg")?.optNullableString("image_url")
                                     voiceActors.add(KitsugiVoiceActor(vaId, vaName, language, vaImg))
@@ -341,7 +341,7 @@ class KitsugiCharacterClient {
                                 birthday = null,
                                 bloodType = null,
                                 biography = biography,
-                                voiceActors = voiceActors,
+                                voiceActors = voiceActors.sortedByLanguagePreference(),
                                 mediaAppearances = mediaAppearances
                             )
                         }
@@ -424,6 +424,7 @@ class KitsugiCharacterClient {
                                             name { userPreferred }
                                             image { medium }
                                             language
+                                            languageV2
                                         }
                                     }
                                 }
@@ -600,6 +601,7 @@ class KitsugiCharacterClient {
                                     name { userPreferred }
                                     image { medium }
                                     language
+                                    languageV2
                                 }
                             }
                         }
@@ -699,7 +701,9 @@ class KitsugiCharacterClient {
                             val vaId = va.optInt("id")
                             val vaName = va.optJSONObject("name")?.optNullableString("userPreferred") ?: "Bilinmeyen"
                             val vaImg = va.optJSONObject("image")?.optNullableString("medium")
-                            val vaLang = (va.optNullableString("language") ?: "Japanese").toTurkishLanguage()
+                            val vaLang = (va.optNullableString("languageV2")
+                                ?: va.optNullableString("language")
+                                ?: "Japanese").toTurkishLanguage()
                             voiceActors.add(
                                 KitsugiVoiceActor(
                                     id = vaId,

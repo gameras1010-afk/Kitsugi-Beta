@@ -71,7 +71,7 @@ class KitsugiStaffClient {
                                 val item = data.optJSONObject(i) ?: continue
                                 val personObj = item.optJSONObject("person") ?: continue
                                 val id = personObj.optInt("mal_id")
-                                val name = personObj.optNullableString("name") ?: "Bilinmeyen"
+                                val name = (personObj.optNullableString("name") ?: "Bilinmeyen").toFriendlyName()
                                 val positions = item.optJSONArray("positions")
                                 val role = if (positions != null && positions.length() > 0) {
                                     val posList = mutableListOf<String>()
@@ -166,7 +166,7 @@ class KitsugiStaffClient {
                             val root = JSONObject(response)
                             val data = root.optJSONObject("data") ?: return@runWithRateLimit null
 
-                            val staffName = data.optNullableString("name") ?: "Bilinmeyen"
+                            val staffName = (data.optNullableString("name") ?: "Bilinmeyen").toFriendlyName()
                             val nativeName = data.optNullableString("given_name") ?: data.optNullableString("family_name")
 
                             val alternativeNames = mutableListOf<String>()
@@ -197,7 +197,7 @@ class KitsugiStaffClient {
 
                                     val charObj = item.optJSONObject("character") ?: continue
                                     val charId = charObj.optInt("mal_id")
-                                    val charName = charObj.optNullableString("name") ?: "Bilinmeyen"
+                                    val charName = (charObj.optNullableString("name") ?: "Bilinmeyen").toFriendlyName()
                                     val charImg = charObj.optJSONObject("images")?.optJSONObject("jpg")?.optNullableString("image_url")
 
                                     if (charId <= 0 && charName.isBlank()) continue

@@ -285,6 +285,7 @@ fun PlayerBottomActions(
     hasMultiAudio: Boolean,
     hasSources: Boolean,
     hasEpisodes: Boolean,
+    hasQualityOptions: Boolean,
     currentResizeModeLabel: String,
     currentSpeedLabel: String,
     onSubtitleClick: () -> Unit,
@@ -295,6 +296,7 @@ fun PlayerBottomActions(
     onSpeedClick: () -> Unit,
     onStreamInfoClick: () -> Unit,
     onRotateClick: () -> Unit,
+    onQualityClick: () -> Unit = {},
     onSkipSettingsClick: (() -> Unit)? = null,
     showMediaInfo: Boolean = true,
     modifier: Modifier = Modifier
@@ -325,6 +327,13 @@ fun PlayerBottomActions(
                 icon = Icons.Rounded.Audiotrack,
                 label = "Ses",
                 onClick = onAudioClick
+            )
+        }
+        if (hasQualityOptions) {
+            PlayerActionButton(
+                icon = Icons.Rounded.HighQuality,
+                label = "Kalite",
+                onClick = onQualityClick
             )
         }
         if (hasSources) {

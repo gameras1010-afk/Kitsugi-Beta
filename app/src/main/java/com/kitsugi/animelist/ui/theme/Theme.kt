@@ -10,6 +10,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.TextUnitType
@@ -21,6 +22,16 @@ import androidx.compose.ui.unit.sp
  */
 val LocalIsTv = staticCompositionLocalOf { false }
 val LocalIsTvDevice = staticCompositionLocalOf { false }
+
+/**
+ * Global CompositionLocals for NSFW content settings.
+ * These are provided at the root of the app so every image composable can
+ * apply the blur automatically without needing per-parameter drilling.
+ *
+ * LocalBlurAdultMedia: when true and the item is adult, images should be blurred.
+ * LocalShowAdultContent: when false, adult items are filtered out upstream.
+ */
+val LocalBlurAdultMedia = compositionLocalOf { false }
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,

@@ -60,6 +60,7 @@ import com.kitsugi.animelist.ui.screens.fullscreen.components.PlayerBottomAction
 import com.kitsugi.animelist.ui.screens.fullscreen.components.SpeedSelectionOverlay
 import com.kitsugi.animelist.ui.screens.fullscreen.components.FeedbackBubble
 import com.kitsugi.animelist.ui.screens.fullscreen.components.SourcesSelectionOverlay
+import com.kitsugi.animelist.ui.screens.fullscreen.components.QualitySelectionOverlay
 import com.kitsugi.animelist.ui.screens.fullscreen.components.PlayerInlineLoadingOverlay
 import com.kitsugi.animelist.ui.screens.fullscreen.components.PlayerLoadingView
 import com.kitsugi.animelist.ui.screens.fullscreen.components.PlayerErrorView
@@ -747,18 +748,35 @@ fun KitsugiFullscreenPlayerScreen(
                 var seekFeedbackOnRightSide by remember { mutableStateOf(true) }
                 var playPauseIcon by remember { mutableStateOf<ImageVector?>(null) }
                 var showTopBar     by remember { mutableStateOf(false) }
-                var hideJob        by remember { mutableStateOf<Job?>(null) }
+                var resetHideTimerTrigger by remember { mutableStateOf(0) }
+
+                fun resetHideTimer() {
+                    resetHideTimerTrigger++
+                }
+
+                LaunchedEffect(showTopBar, isPlayingState, activePanel, resetHideTimerTrigger) {
+                    if (showTopBar && isPlayingState && activePanel == PlayerPanel.NONE) {
+                        delay(5000)
+                        showTopBar = false
+                    }
+                }
+
+                LaunchedEffect(showTopBar) {
+                    if (!showTopBar && isFocusTargetAttached) {
+                        try {
+                            mainFocusRequester.requestFocus()
+                        } catch (e: Exception) {
+                            Log.e("KitsugiPlayer", "Failed to request focus on controls hide", e)
+                        }
+                    }
+                }
 
                 LaunchedEffect(isPlayingState) {
                     if (!isPlayingState) {
-                        hideJob?.cancel()
                         showTopBar = true
                     } else {
-                        hideJob?.cancel()
-                        hideJob = scope.launch {
-                            delay(3500)
-                            showTopBar = false
-                        }
+                        showTopBar = true
+                        resetHideTimer()
                     }
                 }
 
@@ -786,7 +804,6 @@ fun KitsugiFullscreenPlayerScreen(
                                     }
                                     showTopBar -> {
                                         showTopBar = false
-                                        hideJob?.cancel()
                                         mainFocusRequester.requestFocus()
                                         true
                                     }
@@ -800,12 +817,7 @@ fun KitsugiFullscreenPlayerScreen(
                             if (activePanel != PlayerPanel.NONE) return@onPreviewKeyEvent false
                             
                             if (showTopBar) {
-                                hideJob?.cancel()
-                                hideJob = scope.launch {
-                                    delay(3500)
-                                    showTopBar = false
-                                    mainFocusRequester.requestFocus()
-                                }
+                                resetHideTimer()
                                 return@onPreviewKeyEvent false
                             }
                             
@@ -819,6 +831,7 @@ fun KitsugiFullscreenPlayerScreen(
                                         playPauseIcon = Icons.Rounded.PlayArrow
                                     }
                                     showTopBar = true
+                                    resetHideTimer()
                                     true
                                 }
                                 Key.DirectionLeft -> {
@@ -826,6 +839,7 @@ fun KitsugiFullscreenPlayerScreen(
                                     playerEngine.seekTo((pos - 10000).coerceAtLeast(0))
                                     seekFeedback = "-10s"
                                     seekFeedbackOnRightSide = false // sol tuş → geri → gösterge sağda (TopEnd)
+                                    resetHideTimer()
                                     true
                                 }
                                 Key.DirectionRight -> {
@@ -834,10 +848,12 @@ fun KitsugiFullscreenPlayerScreen(
                                     playerEngine.seekTo((pos + 10000).coerceAtMost(dur))
                                     seekFeedback = "+10s"
                                     seekFeedbackOnRightSide = true // sağ tuş → ileri → gösterge solda (TopStart)
+                                    resetHideTimer()
                                     true
                                 }
                                 Key.DirectionUp, Key.DirectionDown -> {
                                     showTopBar = true
+                                    resetHideTimer()
                                     true
                                 }
                                 else -> false
@@ -891,6 +907,7 @@ fun KitsugiFullscreenPlayerScreen(
                                         }
 
                                         if (isDragging) {
+                                            resetHideTimer()
                                             if (dyAbs > dxAbs * 1.5f) {
                                                 // Vertical swipe — volume or brightness
                                                 val deltaNorm: Float = (change.position.y - change.previousPosition.y) * -1.5f / size.height
@@ -957,6 +974,7 @@ fun KitsugiFullscreenPlayerScreen(
                                         seekFeedback = "-${safeSettings.doubleTapSeekSeconds}s"
                                         seekFeedbackOnRightSide = false // sola tıklandı → gösterge sağda (TopEnd)
                                     }
+                                    resetHideTimer()
                                 },
                                 onTap = { offset ->
                                     val startY = offset.y
@@ -964,6 +982,9 @@ fun KitsugiFullscreenPlayerScreen(
                                     val isInsideBottomControls = showTopBar && startY > (size.height - bottomControlsHeightState)
                                     if (!isInsideTopBar && !isInsideBottomControls) {
                                         showTopBar = !showTopBar
+                                        if (showTopBar) {
+                                            resetHideTimer()
+                                        }
                                     }
                                 }
                             )
@@ -974,9 +995,11 @@ fun KitsugiFullscreenPlayerScreen(
                                 if (zoom > 1.10f && currentAspectMode != com.kitsugi.animelist.core.player.PlayerAspectMode.ZOOM) {
                                     currentAspectMode = com.kitsugi.animelist.core.player.PlayerAspectMode.ZOOM
                                     aspectFeedback = "Yakınlaştır (Kırp)"
+                                    resetHideTimer()
                                 } else if (zoom < 0.90f && currentAspectMode != com.kitsugi.animelist.core.player.PlayerAspectMode.FIT) {
                                     currentAspectMode = com.kitsugi.animelist.core.player.PlayerAspectMode.FIT
                                     aspectFeedback = "Sığdır"
+                                    resetHideTimer()
                                 }
                             }
                         },
@@ -1089,6 +1112,7 @@ fun KitsugiFullscreenPlayerScreen(
                                         playerEngine.play()
                                         playPauseIcon = Icons.Rounded.PlayArrow
                                     }
+                                    resetHideTimer()
                                 },
                                 modifier = Modifier.align(Alignment.Center)
                             )
@@ -1132,9 +1156,13 @@ fun KitsugiFullscreenPlayerScreen(
                 PlayerSeekBar(
                     currentPosition = currentPosition,
                     duration = duration,
-                    onSeekTo = { playerEngine.seekTo(it) },
+                    onSeekTo = {
+                        playerEngine.seekTo(it)
+                        resetHideTimer()
+                    },
                     previewBitmap = if (safeSettings.previewSeekbarEnabled) previewBitmap.value else null,
                     onScrubPosition = if (safeSettings.previewSeekbarEnabled) { fraction ->
+                        resetHideTimer()
                         scope.launch {
                             val bmp = previewGenerator?.getPreviewImage(fraction)
                             previewBitmap.value = bmp
@@ -1144,11 +1172,20 @@ fun KitsugiFullscreenPlayerScreen(
 
                                 Spacer(modifier = Modifier.height(10.dp))
 
+                                val hasQualityOptions = remember(currentStreamSources) {
+                                    currentStreamSources
+                                        .map { it.qualityValue ?: 0 }
+                                        .filter { it > 0 }
+                                        .distinct()
+                                        .size > 1
+                                }
+
                                 PlayerBottomActions(
                                     hasTextTracks = textTrackOptions.isNotEmpty(),
-                                    hasMultiAudio = audioTrackOptions.isNotEmpty(),
+                                    hasMultiAudio = audioTrackOptions.size > 1,
                                     hasSources = streamSources.isNotEmpty(),
                                     hasEpisodes = episodesList.isNotEmpty(),
+                                    hasQualityOptions = hasQualityOptions,
                                     currentResizeModeLabel = when (currentAspectMode) {
                                         com.kitsugi.animelist.core.player.PlayerAspectMode.ORIGINAL -> "Orijinal"
                                         com.kitsugi.animelist.core.player.PlayerAspectMode.FIT -> "Sığdır"
@@ -1180,6 +1217,7 @@ fun KitsugiFullscreenPlayerScreen(
                                             com.kitsugi.animelist.core.player.PlayerAspectMode.CROP_4_3 -> "Kırp 4:3"
                                         }
                                         aspectFeedback = "Ekran Modu: $newModeText"
+                                        resetHideTimer()
                                     },
                                     onRotateClick = {
                                         val nextOrientation = when (screenOrientationState) {
@@ -1196,10 +1234,12 @@ fun KitsugiFullscreenPlayerScreen(
                                             else -> ""
                                         }
                                         aspectFeedback = text
+                                        resetHideTimer()
                                     },
                                     onSpeedClick = { activePanel = PlayerPanel.SPEED },
                                     onStreamInfoClick = { activePanel = PlayerPanel.STREAM_INFO },
                                     onSkipSettingsClick = { activePanel = PlayerPanel.SKIP_SETTINGS },
+                                    onQualityClick = { activePanel = PlayerPanel.QUALITY },
                                     showMediaInfo = safeSettings.showMediaInfo
                                 )
                             }
@@ -1453,6 +1493,32 @@ fun KitsugiFullscreenPlayerScreen(
                                     sharedPrefs.edit().putLong(nextResumeKey, currentPos).apply()
                                 } else {
                                     Toast.makeText(context, "Kaynak çözümlenemedi.", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        },
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                    )
+
+                    // Quality Selection Overlay (Side Panel)
+                    QualitySelectionOverlay(
+                        visible = activePanel == PlayerPanel.QUALITY,
+                        onClose = { activePanel = PlayerPanel.NONE },
+                        sources = currentStreamSources,
+                        currentSourceIndex = currentSourceIndex,
+                        onQualitySelected = { source, index ->
+                            activePanel = PlayerPanel.NONE
+                            viewModel.isResolvingStream = true
+                            scope.launch {
+                                val repo = AddonStreamRepository(context)
+                                val resolvedUrl = repo.resolveStreamUrl(source)
+                                viewModel.isResolvingStream = false
+                                if (resolvedUrl != null) {
+                                    val currentPos = playerEngine.currentPosition
+                                    viewModel.changeStreamSource(index, source, resolvedUrl)
+                                    val nextResumeKey = "play_pos_" + resolvedUrl.hashCode()
+                                    sharedPrefs.edit().putLong(nextResumeKey, currentPos).apply()
+                                } else {
+                                    android.widget.Toast.makeText(context, "Kaynak çözümlenemedi.", android.widget.Toast.LENGTH_SHORT).show()
                                 }
                             }
                         },

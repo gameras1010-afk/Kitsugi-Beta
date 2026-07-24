@@ -55,6 +55,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.kitsugi.animelist.ui.components.KitsugiNsfwImage
 import com.kitsugi.animelist.data.remote.JikanSearchResult
 import com.kitsugi.animelist.data.remote.matches
 import com.kitsugi.animelist.model.MediaEntry
@@ -351,15 +352,12 @@ fun KitsugiHeroSection(
                 val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
                 val heroImageModel = if (isLandscape) item.backdropUrl ?: item.imageUrl else item.imageUrl
                 if (!heroImageModel.isNullOrBlank()) {
-                    AsyncImage(
+                    KitsugiNsfwImage(
                         model = heroImageModel,
                         contentDescription = displayTitle,
+                        isAdult = item.isAdult,
                         modifier = Modifier
                             .fillMaxSize()
-                            .then(
-                                if (blurAdultMedia && item.isAdult) Modifier.blur(24.dp)
-                                else Modifier
-                            )
                             .graphicsLayer {
                                 alpha = layer.visibility
                                 translationX = -layer.offset * heroWidthPx * HERO_BACKGROUND_PARALLAX

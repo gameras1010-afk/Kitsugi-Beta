@@ -49,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.kitsugi.animelist.ui.components.KitsugiNsfwImage
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.utils.copyOnDoubleTap
@@ -95,13 +96,11 @@ fun KitsugiDetailHero(
             } else {
                 baseModifier
             }
-            AsyncImage(
+            KitsugiNsfwImage(
                 model = imageUrl,
                 contentDescription = title,
-                modifier = imageModifier.then(
-                    if (blurAdultMedia && isAdult) Modifier.blur(24.dp)
-                    else Modifier
-                ),
+                isAdult = isAdult,
+                modifier = imageModifier,
                 contentScale = ContentScale.Crop
             )
         } else {

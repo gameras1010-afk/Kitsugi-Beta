@@ -32,7 +32,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -91,16 +90,12 @@ fun KitsugiRankingMediaCard(
                 contentAlignment = Alignment.Center
             ) {
                 if (!result.imageUrl.isNullOrBlank()) {
-                    AsyncImage(
+                    KitsugiNsfwImage(
                         model = result.imageUrl,
                         contentDescription = displayTitle,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .then(
-                                if (blurAdultMedia && result.isAdult) Modifier.blur(24.dp)
-                                else Modifier
-                            ),
-                        contentScale = ContentScale.Crop
+                        isAdult = result.isAdult,
+                        modifier = Modifier.fillMaxSize(),
+                        initials = displayTitle
                     )
                 } else {
                     Text(

@@ -101,6 +101,7 @@ import com.kitsugi.animelist.ui.components.LocalShimmerBrush
 import com.kitsugi.animelist.ui.components.rememberKitsugiShimmerBrush
 import com.kitsugi.animelist.ui.components.KitsugiShimmerBlock
 import coil3.compose.AsyncImage
+import com.kitsugi.animelist.ui.components.KitsugiNsfwImage
 import androidx.compose.ui.res.stringResource
 import com.kitsugi.animelist.R
 import androidx.compose.ui.layout.ContentScale
@@ -143,7 +144,7 @@ fun ExploreScreen(
     val filteredTrendingManga = remember(viewModel.trendingManga, showAdultContent) { viewModel.trendingManga.filter { showAdultContent || !it.isAdult } }
     val filteredNewlyAddedAnime = remember(viewModel.newlyAddedAnime, showAdultContent) { viewModel.newlyAddedAnime.filter { showAdultContent || !it.isAdult } }
     val filteredNewlyAddedManga = remember(viewModel.newlyAddedManga, showAdultContent) { viewModel.newlyAddedManga.filter { showAdultContent || !it.isAdult } }
-    val filteredUpcomingMediaTmdb = remember(viewModel.upcomingMediaTmdb, showAdultContent) { viewModel.upcomingMediaTmdb.filter { showAdultContent || !it.isAdult } }
+    val filteredAiringSoonAnime = remember(viewModel.airingSoonAnime, showAdultContent) { viewModel.airingSoonAnime.filter { showAdultContent || !it.isAdult } }
 
 
     val heroItems = remember(viewModel.selectedPlatform, filteredTopAnime, filteredAiringAnime, filteredMovieAnime) {
@@ -312,7 +313,7 @@ fun ExploreScreen(
         viewModel.simklContinueSeries.isEmpty() && viewModel.simklContinueMovies.isEmpty() &&
         viewModel.simklPlannedSeries.isEmpty() && viewModel.simklPlannedMovies.isEmpty() &&
         filteredNewlyAddedAnime.isEmpty() && filteredNewlyAddedManga.isEmpty() &&
-        viewModel.airingSoonAnime.isEmpty() && filteredUpcomingMediaTmdb.isEmpty()
+        filteredAiringSoonAnime.isEmpty()
 
     Row(
         modifier = Modifier
@@ -684,8 +685,8 @@ fun ExploreScreen(
                                                 }
                                                 item {
                                                     ExploreCategoryChip(
-                                                        label = "Yaklaşan Animeler",
-                                                        onClick = { onSeeAllSection("Yaklaşan Animeler", ExploreCategoryType.UPCOMING_MEDIA_TMDB, filteredUpcomingMediaTmdb) }
+                                                        label = "Yakında Yayında",
+                                                        onClick = onOpenAiringCalendar
                                                     )
                                                 }
                                                 item {
@@ -702,8 +703,8 @@ fun ExploreScreen(
                             }
 
 
-                            // ─── TMDB YAKINDA YAYINDA (Upcoming TV/Movies/Anime) ───
-                            if (filteredUpcomingMediaTmdb.isNotEmpty() || viewModel.isLoading) {
+                            // ─── YAKINDA YAYINDA (TMDB — airingSoonAnime ile takvimle ortak veri) ───
+                            if (filteredAiringSoonAnime.isNotEmpty() || viewModel.isLoading) {
                                 item {
                                     Column(
                                         modifier = Modifier.fillMaxWidth()
@@ -724,7 +725,7 @@ fun ExploreScreen(
                                             IconButton(onClick = onOpenAiringCalendar) {
                                                 Icon(
                                                     imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
-                                                    contentDescription = "Tümünü Gör",
+                                                    contentDescription = "Yayın Takvimi",
                                                     tint = accentColor
                                                 )
                                             }
@@ -743,14 +744,14 @@ fun ExploreScreen(
                                             ),
                                             modifier = Modifier.fillMaxWidth()
                                         ) {
-                                            if (filteredUpcomingMediaTmdb.isEmpty() && viewModel.isLoading) {
+                                            if (filteredAiringSoonAnime.isEmpty() && viewModel.isLoading) {
                                                 // Yükleniyor: iskelet placeholder kartlar
                                                 items(6) {
                                                     AiringSoonHorizontalCardPlaceholder()
                                                 }
                                             } else {
-                                                items(filteredUpcomingMediaTmdb.size) { index ->
-                                                    val result = filteredUpcomingMediaTmdb[index]
+                                                items(filteredAiringSoonAnime.size) { index ->
+                                                    val result = filteredAiringSoonAnime[index]
                                                     AiringSoonHorizontalCard(
                                                         result = result,
                                                         alreadyInList = isAlreadyInList(result),
@@ -1187,8 +1188,8 @@ fun ExploreScreen(
                                 }
                             }
 
-                            // ─── YAKINDA YAYINDA (Airing Soon) — Sadece MAL/AniList ───
-                            if (viewModel.airingSoonAnime.isNotEmpty() && viewModel.selectedPlatform != ExplorePlatform.TMDB) {
+                            // ─── YAKINDA YAYINDA (Airing Soon) — MAL/AniList ───
+                            if (filteredAiringSoonAnime.isNotEmpty() && viewModel.selectedPlatform != ExplorePlatform.TMDB) {
                                 item {
                                     Column(
                                         modifier = Modifier.fillMaxWidth()
@@ -1228,8 +1229,8 @@ fun ExploreScreen(
                                             ),
                                             modifier = Modifier.fillMaxWidth()
                                         ) {
-                                            items(viewModel.airingSoonAnime.size) { index ->
-                                                val result = viewModel.airingSoonAnime[index]
+                                            items(filteredAiringSoonAnime.size) { index ->
+                                                val result = filteredAiringSoonAnime[index]
                                                 AiringSoonHorizontalCard(
                                                     result = result,
                                                     alreadyInList = isAlreadyInList(result),
@@ -1574,16 +1575,12 @@ fun AiringSoonHorizontalCard(
             contentAlignment = Alignment.Center
         ) {
             if (!result.imageUrl.isNullOrBlank()) {
-                AsyncImage(
+                KitsugiNsfwImage(
                     model = result.imageUrl,
                     contentDescription = displayTitle,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .then(
-                            if (blurAdultMedia && result.isAdult) Modifier.blur(24.dp)
-                            else Modifier
-                        )
+                    isAdult = result.isAdult,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
                 )
             } else {
                 Text(

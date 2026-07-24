@@ -46,6 +46,7 @@ import com.kitsugi.animelist.model.WatchStatus
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.utils.tvClickable
+import com.kitsugi.animelist.ui.components.KitsugiNsfwImage
 
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayTitle
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayScore
@@ -484,28 +485,15 @@ private fun LargeMediaEntryCard(
                         .clip(RoundedCornerShape(22.dp))
                         .background(statusColor.copy(alpha = 0.24f))
                 ) {
-                    val imageUrl = entry.imageUrl
-                    if (!imageUrl.isNullOrBlank()) {
-                        AsyncImage(
-                            model = imageUrl,
-                            contentDescription = entry.title,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .then(
-                                    if (blurAdultMedia && entry.isAdult) Modifier.blur(24.dp)
-                                    else Modifier
-                                ),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Text(
-                            text = entry.title.take(2).uppercase(),
-                            color = statusColor,
-                            style = MaterialTheme.typography.displaySmall,
-                            fontWeight = FontWeight.Black,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
+                    KitsugiNsfwImage(
+                        model = entry.imageUrl,
+                        contentDescription = entry.title,
+                        isAdult = entry.isAdult,
+                        modifier = Modifier.fillMaxSize(),
+                        initials = entry.title,
+                        initialsColor = statusColor,
+                        initialsStyle = MaterialTheme.typography.displaySmall
+                    )
 
                     StatusPill(
                         text = entry.status.label,
@@ -813,26 +801,15 @@ private fun PosterView(
             .then(posterModifier),
         contentAlignment = Alignment.Center
     ) {
-        if (!imageUrl.isNullOrBlank()) {
-            AsyncImage(
-                model = imageUrl,
-                contentDescription = entry.title,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .then(
-                        if (blurAdultMedia && entry.isAdult) Modifier.blur(24.dp)
-                        else Modifier
-                    ),
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            Text(
-                text = entry.title.take(1).uppercase(),
-                color = statusColor,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Black
-            )
-        }
+        KitsugiNsfwImage(
+            model = imageUrl,
+            contentDescription = entry.title,
+            isAdult = entry.isAdult,
+            modifier = Modifier.fillMaxSize(),
+            initials = entry.title,
+            initialsColor = statusColor,
+            initialsStyle = MaterialTheme.typography.titleLarge
+        )
 
         // Platform kaynak rozeti — sol alt
         KitsugiSourceBadge(
@@ -874,27 +851,15 @@ private fun LargePosterView(
             .background(statusColor.copy(alpha = 0.24f))
             .then(posterModifier)
     ) {
-        if (!imageUrl.isNullOrBlank()) {
-            AsyncImage(
-                model = imageUrl,
-                contentDescription = entry.title,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .then(
-                        if (blurAdultMedia && entry.isAdult) Modifier.blur(24.dp)
-                        else Modifier
-                    ),
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            Text(
-                text = entry.title.take(2).uppercase(),
-                color = statusColor,
-                style = MaterialTheme.typography.displaySmall,
-                fontWeight = FontWeight.Black,
-                modifier = Modifier.align(Alignment.Center)
-            )
-        }
+        KitsugiNsfwImage(
+            model = imageUrl,
+            contentDescription = entry.title,
+            isAdult = entry.isAdult,
+            modifier = Modifier.fillMaxSize(),
+            initials = entry.title,
+            initialsColor = statusColor,
+            initialsStyle = MaterialTheme.typography.displaySmall
+        )
 
         StatusPill(
             text = entry.status.label,
@@ -1228,27 +1193,15 @@ private fun PosterGridMediaEntryCard(
                 .background(statusColor.copy(alpha = 0.22f))
                 .then(posterModifier)
         ) {
-            if (!imageUrl.isNullOrBlank()) {
-                AsyncImage(
-                    model = imageUrl,
-                    contentDescription = entry.getDisplayTitle(titleLanguage),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .then(
-                            if (blurAdultMedia && entry.isAdult) Modifier.blur(24.dp)
-                            else Modifier
-                        ),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Text(
-                    text = entry.title.take(2).uppercase(),
-                    color = statusColor,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Black,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
+            KitsugiNsfwImage(
+                model = imageUrl,
+                contentDescription = entry.getDisplayTitle(titleLanguage),
+                isAdult = entry.isAdult,
+                modifier = Modifier.fillMaxSize(),
+                initials = entry.title,
+                initialsColor = statusColor,
+                initialsStyle = MaterialTheme.typography.titleLarge
+            )
 
             // Durum rozeti — sağ üst köşe
             Box(

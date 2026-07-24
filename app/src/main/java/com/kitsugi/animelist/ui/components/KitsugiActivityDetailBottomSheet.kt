@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import com.kitsugi.animelist.ui.components.KitsugiNsfwImage
 import com.kitsugi.animelist.data.local.TranslationManager
 import com.kitsugi.animelist.data.remote.JikanApiClient
 import com.kitsugi.animelist.data.remote.KitsugiActivity
@@ -364,13 +365,13 @@ fun KitsugiActivityDetailBottomSheet(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     if (!act.mediaCoverUrl.isNullOrBlank()) {
-                                        AsyncImage(
+                                        KitsugiNsfwImage(
                                             model = act.mediaCoverUrl,
-                                            contentDescription = act.mediaTitle,
+                                            contentDescription = act.mediaTitle ?: "",
+                                            isAdult = act.isAdult,
                                             modifier = Modifier
                                                 .size(width = 40.dp, height = 56.dp)
-                                                .clip(RoundedCornerShape(6.dp))
-                                                .then(if (blurAdultMedia && act.isAdult) Modifier.blur(24.dp) else Modifier),
+                                                .clip(RoundedCornerShape(6.dp)),
                                             contentScale = ContentScale.Crop
                                         )
                                         Spacer(modifier = Modifier.width(12.dp))

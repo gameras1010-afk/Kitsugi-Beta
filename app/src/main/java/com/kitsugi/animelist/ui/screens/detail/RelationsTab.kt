@@ -20,6 +20,7 @@ import com.kitsugi.animelist.data.remote.KitsugiRelation
 import com.kitsugi.animelist.model.MediaType
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
+import com.kitsugi.animelist.ui.components.KitsugiNsfwImage
 import com.kitsugi.animelist.ui.components.KitsugiShimmerSearchResultList
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayTitle
 
@@ -93,26 +94,16 @@ fun RelationCard(
                 .clip(RoundedCornerShape(8.dp))
                 .background(KitsugiColors.SurfaceSoft)
         ) {
-            if (!rel.imageUrl.isNullOrBlank()) {
-                val imageRequest = remember(rel.imageUrl as Any?, blurAdultMedia as Any?, rel.isAdult as Any?) {
-                    ImageRequest.Builder(context)
-                        .data(rel.imageUrl)
-                        .crossfade(!(blurAdultMedia && rel.isAdult))
-                        .build()
-                }
-                AsyncImage(
-                    model = imageRequest,
-                    contentDescription = displayTitle,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .then(if (blurAdultMedia && rel.isAdult) Modifier.blur(24.dp) else Modifier),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(displayTitle.take(2).uppercase(), color = KitsugiColors.TextMuted, fontWeight = FontWeight.Bold)
-                }
-            }
+            KitsugiNsfwImage(
+                model = rel.imageUrl,
+                contentDescription = displayTitle,
+                isAdult = rel.isAdult,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                initials = displayTitle,
+                initialsColor = KitsugiColors.TextMuted,
+                initialsStyle = MaterialTheme.typography.titleSmall
+            )
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column(

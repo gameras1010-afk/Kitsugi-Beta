@@ -47,6 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.kitsugi.animelist.ui.components.KitsugiNsfwImage
 import com.kitsugi.animelist.model.MediaEntry
 import com.kitsugi.animelist.model.MediaType
 import com.kitsugi.animelist.model.WatchStatus
@@ -82,16 +83,13 @@ internal fun DetailHero(
             .height(470.dp)
     ) {
         if (!entry.imageUrl.isNullOrBlank()) {
-            AsyncImage(
+            KitsugiNsfwImage(
                 model = entry.imageUrl,
                 contentDescription = entry.getDisplayTitle(titleLanguage),
+                isAdult = entry.isAdult,
                 modifier = Modifier
                     .fillMaxSize()
-                    .tvClickable { onPosterClick(entry.imageUrl) }
-                    .then(
-                        if (blurAdultMedia && entry.isAdult) Modifier.blur(24.dp)
-                        else Modifier
-                    ),
+                    .tvClickable { onPosterClick(entry.imageUrl) },
                 contentScale = ContentScale.Crop
             )
         } else {

@@ -2,6 +2,7 @@ package com.kitsugi.animelist.data.remote
 
 import com.kitsugi.animelist.model.MediaType
 import com.kitsugi.animelist.model.MediaEntry
+import com.kitsugi.animelist.utils.sortedByLanguagePreference
 
 data class JikanSearchResult(
     val malId: Int,
@@ -432,6 +433,7 @@ fun KitsugiCharacterDetail.mergeWith(other: KitsugiCharacterDetail): KitsugiChar
         .map { (_, group) ->
             group.firstOrNull { !it.imageUrl.isNullOrBlank() } ?: group.first()
         }
+        .sortedByLanguagePreference()
 
     val mergedMediaAppearances = (this.mediaAppearances + other.mediaAppearances)
         .groupBy { it.title.lowercase().trim() }

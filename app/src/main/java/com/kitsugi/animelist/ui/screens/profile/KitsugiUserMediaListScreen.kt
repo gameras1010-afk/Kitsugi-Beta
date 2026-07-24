@@ -91,6 +91,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.compose.AsyncImage
 import com.kitsugi.animelist.data.remote.JikanSearchResult
+import com.kitsugi.animelist.ui.components.KitsugiNsfwImage
 import com.kitsugi.animelist.data.remote.KitsugiApiBase
 import com.kitsugi.animelist.data.remote.cleanApiText
 import com.kitsugi.animelist.data.remote.matches
@@ -842,12 +843,11 @@ private fun UserMediaGridCard(
                 .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                 .background(KitsugiColors.SurfaceStrong)
         ) {
-            AsyncImage(
+            KitsugiNsfwImage(
                 model = item.imageUrl,
                 contentDescription = item.title,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .then(if (blurAdultMedia && item.isAdult) Modifier.blur(16.dp) else Modifier),
+                isAdult = item.isAdult,
+                modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
 
@@ -943,12 +943,11 @@ private fun UserMediaRowCard(
                 .clip(RoundedCornerShape(12.dp))
                 .background(KitsugiColors.SurfaceStrong)
         ) {
-            AsyncImage(
+            KitsugiNsfwImage(
                 model = item.imageUrl,
                 contentDescription = item.title,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .then(if (blurAdultMedia && item.isAdult) Modifier.blur(16.dp) else Modifier),
+                isAdult = item.isAdult,
+                modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
         }

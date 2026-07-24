@@ -1,6 +1,7 @@
 package com.kitsugi.animelist.utils
 
 import com.kitsugi.animelist.model.MediaType
+import com.kitsugi.animelist.data.remote.KitsugiVoiceActor
 
 // ─── Dil Yardımcısı ────────────────────────────────────────────────────────────
 
@@ -319,9 +320,55 @@ private val languageMap = mapOf(
     "UKRAINIAN" to "Ukraynaca",
     "Croatian" to "Hırvatça",
     "CROATIAN" to "Hırvatça",
+    "Spain" to "İspanya",
+    "SPAIN" to "İspanya",
+    "Brazil" to "Brezilya",
+    "BRAZIL" to "Brezilya",
+    "Latin America" to "Latin Amerika",
+    "LATIN AMERICA" to "Latin Amerika",
 )
 
-fun String.toTurkishLanguage(): String = if (!isTurkish()) this else languageMap[this] ?: this
+fun String.toTurkishLanguage(): String {
+    if (!isTurkish()) return this
+    val mapped = languageMap[this]
+    if (mapped != null) return mapped
+
+    if (this.contains("(")) {
+        val baseLang = this.substringBefore("(").trim()
+        val suffix = this.substringAfter("(").substringBefore(")").trim()
+        val baseMapped = languageMap[baseLang]
+        if (baseMapped != null) {
+            val suffixMapped = languageMap[suffix] ?: suffix
+            return "$baseMapped ($suffixMapped)"
+        }
+    }
+    return this
+}
+
+/**
+ * Reorders names in "LastName, FirstName" format to "FirstName LastName".
+ */
+fun String.toFriendlyName(): String {
+    if (this.contains(",")) {
+        val parts = this.split(",").map { it.trim() }
+        if (parts.size == 2) {
+            return "${parts[1]} ${parts[0]}"
+        }
+    }
+    return this
+}
+
+/**
+ * Sorts voice actors: Japanese first, English second, Turkish third, then others alphabetically by language.
+ */
+fun List<KitsugiVoiceActor>.sortedByLanguagePreference(): List<KitsugiVoiceActor> {
+    return this.sortedWith(
+        compareByDescending<KitsugiVoiceActor> { it.language.equals("Japonca", ignoreCase = true) }
+            .thenByDescending { it.language.equals("İngilizce", ignoreCase = true) }
+            .thenByDescending { it.language.equals("Türkçe", ignoreCase = true) }
+            .thenBy { it.language }
+    )
+}
 
 // ─── İlişki Tipi / Relation Type ──────────────────────────────────────────────
 
@@ -497,9 +544,353 @@ private val staffRoleMap = mapOf(
     "Conceptual Design" to "Kavramsal Tasarım",
     "Planning" to "Planlama",
     "Action Animation Director" to "Aksiyon Animasyon Yönetmeni",
+    "Original Music Composer" to "Orijinal Müzik Bestecisi",
+    "Costume Design" to "Kostüm Tasarımı",
+    "Director of Photography" to "Görüntü Yönetmeni",
+    "Stunt Coordinator" to "Dublör Koordinatörü",
+    "First Assistant Director" to "Birinci Yönetmen Yardımcısı",
+    "Casting" to "Oyuncu Seçimi",
+    "Conceptual Illustrator" to "Kavramsal İllüstratör",
+    "Construction Coordinator" to "İnşaat Koordinatörü",
+    "Transportation Coordinator" to "Ulaşım Koordinatörü",
+    "Production Design" to "Yapım Tasarımı",
+    "ADR Director" to "ADR Yönetmeni",
+    "ADR Script" to "ADR Senaristi",
+    "Executive Producer" to "Yönetici Yapımcı",
+    "Associate Producer" to "Ortak Yapımcı",
+    "Co-Producer" to "Eş Yapımcı",
+    "Line Producer" to "Hat Yapımcısı",
+    "Assistant Director" to "Yönetmen Yardımcısı",
+    "Second Assistant Director" to "İkinci Yönetmen Yardımcısı",
+    "Third Assistant Director" to "Üçüncü Yönetmen Yardımcısı",
+    "Writer" to "Yazar",
+    "Novel" to "Roman",
+    "Original Story" to "Orijinal Hikaye",
+    "Creator" to "Yaratıcı",
+    "Set Decoration" to "Set Dekorasyonu",
+    "Set Designer" to "Set Tasarımcısı",
+    "Supervising Art Director" to "Baş Sanat Yönetmeni",
+    "Production Director" to "Yapım Yönetmeni",
+    "Sound Editor" to "Ses Editörü",
+    "Sound Designer" to "Ses Tasarımcısı",
+    "Sound Effects Editor" to "Ses Efektleri Editörü",
+    "Supervising Sound Editor" to "Baş Ses Editörü",
+    "Sound Re-Recording Mixer" to "Ses Miksajı",
+    "Sound Mixer" to "Ses Mikseri",
+    "Production Sound Mixer" to "Yapım Ses Mikseri",
+    "Foley" to "Efekt Sanatçısı (Foley)",
+    "Foley Artist" to "Foley Sanatçısı",
+    "Foley Editor" to "Foley Editörü",
+    "Foley Mixer" to "Foley Mikseri",
+    "Dialogue Editor" to "Diyalog Editörü",
+    "Visual Effects" to "Görsel Efektler",
+    "Visual Effects Supervisor" to "Görsel Efektler Süpervizörü",
+    "Visual Effects Producer" to "Görsel Efektler Yapımcısı",
+    "Visual Effects Coordinator" to "Görsel Efektler Koordinatörü",
+    "Special Effects Coordinator" to "Özel Efektler Koordinatörü",
+    "Stunt Double" to "Dublör",
+    "Camera Operator" to "Kamera Operatörü",
+    "Steadicam Operator" to "Steadicam Operatörü",
+    "Still Photographer" to "Set Fotoğrafçısı",
+    "Gaffer" to "Işık Şefi",
+    "Best Boy Grip" to "Set Amiri Yardımcısı",
+    "Best Boy Electric" to "Işık Şefi Yardımcısı",
+    "Key Grip" to "Set Amiri",
+    "Grip" to "Set İşçisi",
+    "Rigging Grip" to "Rigging Set İşçisi",
+    "Rigging Gaffer" to "Rigging Işık Şefi",
+    "Lighting Technician" to "Işık Teknisyeni",
+    "Costume Supervisor" to "Kostüm Süpervizörü",
+    "Key Costumer" to "Baş Kostümcü",
+    "Costumer" to "Kostümcü",
+    "Makeup Artist" to "Makyaj Sanatçısı",
+    "Key Makeup Artist" to "Baş Makyaj Sanatçısı",
+    "Hair Designer" to "Saç Tasarımcısı",
+    "Key Hair Stylist" to "Baş Saç Stilisti",
+    "Makeup Department Head" to "Makyaj Bölümü Başkanı",
+    "Hair Department Head" to "Saç Bölümü Başkanı",
+    "Makeup Designer" to "Makyaj Tasarımcısı",
+    "Prosthetic Makeup Artist" to "Protez Makyaj Sanatçısı",
+    "Script Supervisor" to "Senaryo Süpervizörü",
+    "Publicist" to "Basın Danışmanı",
+    "Location Manager" to "Mekan Sorumlusu",
+    "Location Assistant" to "Mekan Sorumlusu Yardımcısı",
+    "Production Coordinator" to "Yapım Koordinatörü",
+    "Production Manager" to "Yapım Müdürü",
+    "Production Supervisor" to "Yapım Süpervizörü",
+    "Post Production Supervisor" to "Post-Prodüksiyon Süpervizörü",
+    "Colorist" to "Renk Uzmanı (Colorist)",
+    "Editorial Production Assistant" to "Kurgu Yapım Yardımcısı",
+    "First Assistant Editor" to "Birinci Kurgu Yardımcısı",
+    "Assistant Editor" to "Kurgu Yardımcısı",
+    "Co-Editor" to "Kurgu Ortağı",
+    "Music Editor" to "Müzik Editörü",
+    "Music Supervisor" to "Müzik Süpervizörü",
+    "Conductor" to "Orkestra Şefi",
+    "Choreographer" to "Koreograf",
+    "Boom Operator" to "Boom Operatörü",
+    "Compositing Supervisor" to "Kompozisyon Süpervizörü",
+    "Compositor" to "Kompozitör",
+    "Lead Animator" to "Baş Animatör",
+    "Animator" to "Animatör",
+    "Sequence Lead" to "Sekans Şefi",
+    "CG Artist" to "CG Sanatçısı",
+    "3D Animator" to "3D Animatörü",
+    "Character Modeling" to "Karakter Modelleme",
+    "Modeler" to "Modelci",
+    "Texture Artist" to "Doku Sanatçısı",
+    "Concept Artist" to "Konsept Sanatçısı",
+    "Storyboard Artist" to "Storyboard Sanatçısı",
+    "Layout Artist" to "Layout Tasarımcısı",
+    "Background Designer" to "Arka Plan Tasarımcısı",
+    "Key Background Artist" to "Baş Arka Plan Sanatçısı",
+    "Background Artist" to "Arka Plan Sanatçısı",
+    "Inbetween Artist" to "Ara Çizim Sanatçısı",
+    "Assistant Animation Director" to "Animasyon Yönetmeni Yardımcısı",
+    "Co-Animation Director" to "Animasyon Yönetmeni Ortağı",
+    "Co-Director" to "Yardımcı Yönetmen",
+    "Theme Song Lyrics" to "Tema Şarkısı Sözleri",
+    "Theme Song Arrangement" to "Tema Şarkısı Düzenlemesi",
+    "Theme Song Composition" to "Tema Şarkısı Bestesi",
+    "Theme Song Music" to "Tema Şarkısı Müziği",
 )
 
-fun String.toTurkishStaffRole(): String = if (!isTurkish()) this else staffRoleMap[this] ?: this
+private val commonPhrasesMap = mapOf(
+    "Original Character Design" to "Orijinal Karakter Tasarımı",
+    "Original Music Composer" to "Orijinal Müzik Bestecisi",
+    "First Assistant Director" to "Birinci Yönetmen Yardımcısı",
+    "Second Assistant Director" to "İkinci Yönetmen Yardımcısı",
+    "Third Assistant Director" to "Üçüncü Yönetmen Yardımcısı",
+    "Supervising Art Director" to "Baş Sanat Yönetmeni",
+    "Assistant Animation Director" to "Animasyon Yönetmeni Yardımcısı",
+    "Co-Animation Director" to "Animasyon Yönetmeni Ortağı",
+    "Action Animation Director" to "Aksiyon Animasyon Yönetmeni",
+    "Chief Animation Director" to "Baş Animasyon Yönetmeni",
+    "Animation Director" to "Animasyon Yönetmeni",
+    "Assistant Director" to "Yönetmen Yardımcısı",
+    "Technical Director" to "Teknik Yönetmen",
+    "Casting Director" to "Oyuncu Seçimi Yönetmeni",
+    "Episode Director" to "Bölüm Yönetmeni",
+    "Series Director" to "Seri Yönetmeni",
+    "Action Director" to "Aksiyon Yönetmeni",
+    "Chief Director" to "Baş Yönetmen",
+    "Co-Director" to "Yardımcı Yönetmen",
+    "Art Director" to "Sanat Yönetmeni",
+    "Sound Director" to "Ses Yönetmeni",
+    "Music Director" to "Müzik Yönetmeni",
+    "Unit Director" to "Birim Yönetmeni",
+    "Executive Producer" to "Yönetici Yapımcı",
+    "Associate Producer" to "Ortak Yapımcı",
+    "Line Producer" to "Hat Yapımcısı",
+    "Co-Producer" to "Eş Yapımcı",
+    "Music Producer" to "Müzik Yapımcısı",
+    "Sound Producer" to "Ses Yapımcısı",
+    "Animation Producer" to "Animasyon Yapımcısı",
+    "Character Designer" to "Karakter Tasarımcısı",
+    "Mechanical Designer" to "Mekanik Tasarımcı",
+    "Prop Designer" to "Sahne Eşyası Tasarımcısı",
+    "Set Designer" to "Set Tasarımcısı",
+    "Costume Designer" to "Kostüm Tasarımcısı",
+    "Makeup Designer" to "Makyaj Tasarımcısı",
+    "Sound Designer" to "Ses Tasarımcısı",
+    "Visual Designer" to "Görsel Tasarımcı",
+    "Graphic Designer" to "Grafik Tasarımcı",
+    "Background Designer" to "Arka Plan Tasarımcısı",
+    "Original Creator" to "Orijinal Yaratıcı",
+    "Original Story" to "Orijinal Hikaye",
+    "Original Work" to "Orijinal Eser",
+    "Theme Song Performance" to "Tema Şarkısı Performansı",
+    "Theme Song Lyrics" to "Tema Şarkısı Sözleri",
+    "Theme Song Arrangement" to "Tema Şarkısı Düzenlemesi",
+    "Theme Song Composition" to "Tema Şarkısı Bestesi",
+    "Theme Song Music" to "Tema Şarkısı Müziği",
+    "Theme Song" to "Tema Şarkısı",
+    "Opening Theme" to "Açılış Teması",
+    "Ending Theme" to "Kapanış Teması",
+    "Insert Song" to "Bölüm İçi Şarkı",
+    "Song Lyrics" to "Şarkı Sözleri",
+    "Song Performance" to "Şarkı Performansı",
+    "Song Arrangement" to "Şarkı Düzenlemesi",
+    "Song Composition" to "Şarkı Bestesi",
+    "Sound Effects" to "Ses Efektleri",
+    "Special Effects" to "Özel Efektler",
+    "Visual Effects" to "Görsel Efektler",
+    "VFX Supervisor" to "VFX Süpervizörü",
+    "VFX Producer" to "VFX Yapımcısı",
+    "VFX Coordinator" to "VFX Koordinatörü",
+    "SFX Coordinator" to "SFX Koordinatörü",
+    "Stunt Coordinator" to "Dublör Koordinatörü",
+    "Stunt Double" to "Dublör",
+    "Key Animator" to "Ana Animatör",
+    "Lead Animator" to "Baş Animatör",
+    "Assistant Animator" to "Yardımcı Animatör",
+    "In-between Animator" to "Ara Çizim Animatörü",
+    "Production Assistant" to "Yapım Asistanı",
+    "Production Manager" to "Yapım Müdürü",
+    "Production Supervisor" to "Yapım Süpervizörü",
+    "Production Coordinator" to "Yapım Koordinatörü",
+    "Location Manager" to "Mekan Sorumlusu",
+    "Location Assistant" to "Mekan Sorumlusu Yardımcısı",
+    "Public Relations" to "Halkla İlişkiler",
+    "Script Supervisor" to "Senaryo Süpervizörü",
+    "Dialogue Editor" to "Diyalog Editörü",
+    "Sound Editor" to "Ses Editörü",
+    "Foley Artist" to "Foley Sanatçısı",
+    "Camera Operator" to "Kamera Operatörü",
+    "Steadicam Operator" to "Steadicam Operatörü",
+    "Still Photographer" to "Set Fotoğrafçısı",
+    "Director of Photography" to "Görüntü Yönetmeni",
+    "Photography Director" to "Görüntü Yönetmeni",
+    "Costume Design" to "Kostüm Tasarımı",
+    "Production Design" to "Yapım Tasarımı",
+    "Character Design" to "Karakter Tasarımı",
+    "Color Design" to "Renk Tasarımı",
+    "Prop Design" to "Sahne Eşyası Tasarımı",
+    "Mechanical Design" to "Mekanik Tasarım",
+    "Conceptual Design" to "Kavramsal Tasarım",
+    "Art Design" to "Sanat Tasarımı",
+    "Background Art" to "Arka Plan Sanatı",
+    "Series Composition" to "Seri Düzenlemesi",
+    "Voice Actor" to "Seslendirme Sanatçısı",
+)
+
+private val commonWordsMap = mapOf(
+    "Director" to "Yönetmen",
+    "Producer" to "Yapımcı",
+    "Writer" to "Yazar",
+    "Creator" to "Yaratıcı",
+    "Supervisor" to "Süpervizör",
+    "Coordinator" to "Koordinatör",
+    "Manager" to "Müdür",
+    "Assistant" to "Yardımcı",
+    "Associate" to "Ortak",
+    "Executive" to "Yönetici",
+    "Chief" to "Baş",
+    "Editor" to "Editör",
+    "Editing" to "Kurgu",
+    "Artist" to "Sanatçı",
+    "Animator" to "Animatör",
+    "Designer" to "Tasarımcı",
+    "Design" to "Tasarım",
+    "Illustrator" to "İllüstratör",
+    "Choreographer" to "Koreograf",
+    "Conductor" to "Orkestra Şefi",
+    "Casting" to "Oyuncu Seçimi",
+    "Composer" to "Besteci",
+    "Composition" to "Kompozisyon",
+    "Singer" to "Şarkıcı",
+    "Vocalist" to "Vokalist",
+    "Actor" to "Oyuncu",
+    "Actress" to "Aktris",
+    "Host" to "Sunucu",
+    "Staff" to "Ekip Üyesi",
+    "Crew" to "Ekip",
+    "Art" to "Sanat",
+    "Music" to "Müzik",
+    "Sound" to "Ses",
+    "Audio" to "Ses",
+    "Voice" to "Ses",
+    "Camera" to "Kamera",
+    "Photography" to "Fotoğraf",
+    "Costume" to "Kostüm",
+    "Makeup" to "Makyaj",
+    "Hair" to "Saç",
+    "Effects" to "Efektler",
+    "Effect" to "Efekt",
+    "Special" to "Özel",
+    "Visual" to "Görsel",
+    "Production" to "Yapım",
+    "Development" to "Geliştirme",
+    "Technical" to "Teknik",
+    "Animation" to "Animasyon",
+    "Original" to "Orijinal",
+    "Character" to "Karakter",
+    "Mechanical" to "Mekanik",
+    "Concept" to "Konsept",
+    "Planning" to "Planlama",
+    "Theme" to "Tema",
+    "Song" to "Şarkı",
+    "Lyrics" to "Sözler",
+    "Performance" to "Performans",
+    "Arrangement" to "Düzenleme",
+    "Background" to "Arka Plan",
+    "Location" to "Mekan",
+    "Set" to "Set",
+    "Foley" to "Foley",
+    "Stunt" to "Dublör",
+    "Double" to "Dublör",
+    "Modeler" to "Modelleyici",
+    "Modeling" to "Modelleme",
+    "Texture" to "Doku",
+    "3D" to "3D",
+    "2D" to "2D",
+    "CG" to "CG",
+    "VFX" to "VFX",
+)
+
+private fun translateSuffix(suffix: String): String {
+    var result = suffix
+    // Translate languages in the suffix
+    languageMap.forEach { (en, tr) ->
+        if (result.equals(en, ignoreCase = true)) {
+            return tr
+        }
+        val pattern = "\\b${en}\\b".toRegex(RegexOption.IGNORE_CASE)
+        result = result.replace(pattern, tr)
+    }
+    // Translate common abbreviation patterns
+    result = result.replace("eps", "böl.", ignoreCase = true)
+    result = result.replace("ep ", "böl. ", ignoreCase = true)
+    result = result.replace("episode", "bölüm", ignoreCase = true)
+    result = result.replace("episodes", "bölümler", ignoreCase = true)
+    result = result.replace("Song Lyrics", "Şarkı Sözleri", ignoreCase = true)
+    result = result.replace("lyrics", "şarkı sözleri", ignoreCase = true)
+    return result
+}
+
+fun String.toTurkishStaffRole(): String {
+    if (!isTurkish()) return this
+    val trimmed = this.trim()
+    if (trimmed.isEmpty()) return trimmed
+
+    // Check for parenthesis details, e.g. "ADR Director (English)" or "Storyboard (OP, eps 1-3)"
+    if (trimmed.contains("(")) {
+        val base = trimmed.substringBefore("(").trim()
+        val suffix = trimmed.substringAfter("(").substringBefore(")").trim()
+        val baseTranslated = base.toTurkishStaffRole()
+        val suffixTranslated = translateSuffix(suffix)
+        return if (suffixTranslated.isNotEmpty()) {
+            "$baseTranslated ($suffixTranslated)"
+        } else {
+            baseTranslated
+        }
+    }
+
+    // Check for comma-separated roles, e.g. "Director, Writer"
+    if (trimmed.contains(",")) {
+        return trimmed.split(",")
+            .map { it.trim().toTurkishStaffRole() }
+            .filter { it.isNotEmpty() }
+            .joinToString(", ")
+    }
+
+    val exactMatch = staffRoleMap[trimmed]
+        ?: staffRoleMap[trimmed.lowercase()]
+        ?: staffRoleMap[trimmed.replaceFirstChar { it.uppercase() }]
+    if (exactMatch != null) return exactMatch
+
+    // Fallback: sub-phrase and word-by-word translation
+    var fallbackTranslated = trimmed
+    commonPhrasesMap.forEach { (en, tr) ->
+        val pattern = "\\b${en}\\b".toRegex(RegexOption.IGNORE_CASE)
+        fallbackTranslated = fallbackTranslated.replace(pattern, tr)
+    }
+    commonWordsMap.forEach { (en, tr) ->
+        val pattern = "\\b${en}\\b".toRegex(RegexOption.IGNORE_CASE)
+        fallbackTranslated = fallbackTranslated.replace(pattern, tr)
+    }
+    return fallbackTranslated
+}
 
 fun String.parseToMediaType(): MediaType {
     val lower = this.trim().lowercase()
