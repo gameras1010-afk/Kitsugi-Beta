@@ -147,7 +147,8 @@ fun KitsugiTopicDetailBottomSheet(
     }
 
     KitsugiSheetOrDialog(
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
+        innerScrollState = listState
     ) {
         Column(
             modifier = Modifier

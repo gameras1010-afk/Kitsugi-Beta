@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -62,6 +63,7 @@ fun SearchFilterSheet(
 ) {
     val isTv = LocalIsTv.current
     val accentColor = LocalKitsugiAccent.current
+    val filterListState = rememberLazyListState()
 
     var tempFilters by remember(currentFilters) { mutableStateOf(currentFilters) }
 
@@ -107,7 +109,8 @@ fun SearchFilterSheet(
 
     KitsugiSheetOrDialog(
         onDismiss = onDismiss,
-        heightFraction = 0.88f
+        heightFraction = 0.88f,
+        innerScrollState = filterListState
     ) {
         Column(
             modifier = Modifier
@@ -151,6 +154,7 @@ fun SearchFilterSheet(
 
             // Filters Scrollable Content
             LazyColumn(
+                state = filterListState,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),

@@ -207,6 +207,10 @@ class TmdbApiClient(
         TmdbDiscoverClient.getPopularMedia(page, apiKey, language, ::executeGet)
     }
 
+    suspend fun getTopRatedAnime(page: Int = 1): List<JikanSearchResult> = withContext(Dispatchers.IO) {
+        TmdbDiscoverClient.getTopRatedAnime(page, apiKey, language, ::executeGet)
+    }
+
     suspend fun getUpcomingMedia(page: Int = 1): List<JikanSearchResult> = withContext(Dispatchers.IO) {
         TmdbDiscoverClient.getUpcomingMedia(page, apiKey, language, ::executeGet)
     }

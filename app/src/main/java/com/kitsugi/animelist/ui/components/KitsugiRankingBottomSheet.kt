@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
@@ -27,10 +28,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -47,6 +45,7 @@ import com.kitsugi.animelist.data.remote.JikanApiClient
 import com.kitsugi.animelist.data.remote.JikanSearchResult
 import com.kitsugi.animelist.data.remote.TmdbApiClient
 import com.kitsugi.animelist.model.MediaType
+import com.kitsugi.animelist.ui.components.KitsugiSheetOrDialog
 import com.kitsugi.animelist.ui.screens.explore.ExplorePlatform
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
@@ -61,7 +60,6 @@ fun KitsugiRankingBottomSheet(
     alreadyInList: (JikanSearchResult) -> Boolean,
     onItemClick: (JikanSearchResult) -> Unit,
     onDismissRequest: () -> Unit,
-    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     titleLanguage: String = "ROMAJI",
     hideScores: Boolean = false,
     showAdultContent: Boolean = false,
@@ -72,6 +70,7 @@ fun KitsugiRankingBottomSheet(
     val scope = rememberCoroutineScope()
     val jikanClient = remember { JikanApiClient() }
     val tmdbClient = remember { TmdbApiClient() }
+    val lazyListState = rememberLazyListState()
 
     val isManga = mediaType == MediaType.Manga
     var selectedTab by remember { mutableStateOf("SCORE") } // SCORE, POPULARITY, FAVORITE, UPCOMING
@@ -134,17 +133,14 @@ fun KitsugiRankingBottomSheet(
         }
     }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismissRequest,
-        sheetState = sheetState,
-        containerColor = KitsugiColors.Background,
-        contentColor = KitsugiColors.TextPrimary,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+    KitsugiSheetOrDialog(
+        onDismiss = onDismissRequest,
+        fillMaxHeight = true,
+        innerScrollState = lazyListState
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.92f)
                 .padding(horizontal = 20.dp)
         ) {
             // Header bar (Title + Close Button)
@@ -205,6 +201,7 @@ fun KitsugiRankingBottomSheet(
                 }
             } else {
                 LazyColumn(
+                    state = lazyListState,
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     contentPadding = PaddingValues(bottom = 32.dp)

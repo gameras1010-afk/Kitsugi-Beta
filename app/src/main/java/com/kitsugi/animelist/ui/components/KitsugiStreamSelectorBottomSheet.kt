@@ -8,6 +8,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -76,6 +77,9 @@ fun KitsugiStreamSelectorBottomSheet(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val repository = remember { AddonStreamRepository(context) }
+    // Shared LazyListState – used by the portrait stream list and wired to
+    // KitsugiSheetOrDialog.innerScrollState so drag-to-dismiss is blocked mid-scroll.
+    val streamListState = rememberLazyListState()
 
     var isLoading by remember { mutableStateOf(true) }
     var streams by remember { mutableStateOf<List<StreamSource>>(emptyList()) }
@@ -105,7 +109,8 @@ fun KitsugiStreamSelectorBottomSheet(
     }
 
     KitsugiSheetOrDialog(
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
+        innerScrollState = streamListState
     ) {
         val configuration = LocalConfiguration.current
         val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -298,7 +303,9 @@ fun KitsugiStreamSelectorBottomSheet(
                             val filteredStreamsR = remember(streams, selectedAddonR) {
                                 if (selectedAddonR == "Tümü") streams else streams.filter { it.addonName == selectedAddonR }
                             }
+                            val landscapeListState = rememberLazyListState()
                             LazyColumn(
+                                state = landscapeListState,
                                 modifier = Modifier.fillMaxSize(),
                                 verticalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
@@ -491,6 +498,7 @@ fun KitsugiStreamSelectorBottomSheet(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     LazyColumn(
+                        state = streamListState,
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {

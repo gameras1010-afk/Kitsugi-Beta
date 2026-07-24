@@ -58,6 +58,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kitsugi.animelist.ui.components.KitsugiSheetOrDialog
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import java.util.Calendar
@@ -104,8 +105,7 @@ fun KitsugiSeasonalFilterBottomSheet(
     initialYear: Int,
     initialSort: String,
     onDismissRequest: () -> Unit,
-    onApply: (season: String, year: Int, sort: String) -> Unit,
-    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    onApply: (season: String, year: Int, sort: String) -> Unit
 ) {
     val accentColor = LocalKitsugiAccent.current
 
@@ -128,25 +128,10 @@ fun KitsugiSeasonalFilterBottomSheet(
         }
     }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismissRequest,
-        sheetState = sheetState,
-        containerColor = KitsugiColors.Surface,
-        dragHandle = {
-            Box(
-                modifier = Modifier
-                    .padding(vertical = 10.dp)
-                    .width(36.dp)
-                    .height(4.dp)
-                    .clip(CircleShape)
-                    .background(KitsugiColors.TextMuted.copy(alpha = 0.4f))
-            )
-        }
-    ) {
+    KitsugiSheetOrDialog(onDismiss = onDismissRequest) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(WindowInsets.navigationBars.asPaddingValues())
                 .padding(bottom = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {

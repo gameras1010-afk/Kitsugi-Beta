@@ -213,11 +213,11 @@ internal object TmdbDiscoverClient {
         val cacheKey = "trending_media_$page"
         get(cacheKey)?.let { return@withContext it }
 
-        val tvUrl = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&sort_by=popularity.desc&page=$page"
-        val tvResult = parseTmdbDiscoverList(tvUrl, MediaType.TvShow, executeGet)
+        val tvUrl = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&with_genres=16&with_original_language=ja&sort_by=popularity.desc&page=$page"
+        val tvResult = parseTmdbDiscoverList(tvUrl, MediaType.Anime, executeGet)
 
-        val movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&sort_by=popularity.desc&page=$page"
-        val movieResult = parseTmdbDiscoverList(movieUrl, MediaType.Movie, executeGet)
+        val movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&with_genres=16&with_original_language=ja&sort_by=popularity.desc&page=$page"
+        val movieResult = parseTmdbDiscoverList(movieUrl, MediaType.Anime, executeGet)
 
         val merged = mutableListOf<JikanSearchResult>()
         val maxSize = maxOf(tvResult.size, movieResult.size)
@@ -240,11 +240,38 @@ internal object TmdbDiscoverClient {
         val cacheKey = "popular_media_$page"
         get(cacheKey)?.let { return@withContext it }
 
-        val tvUrl = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&sort_by=vote_count.desc&page=$page"
-        val tvResult = parseTmdbDiscoverList(tvUrl, MediaType.TvShow, executeGet)
+        val tvUrl = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&with_genres=16&with_original_language=ja&sort_by=vote_count.desc&page=$page"
+        val tvResult = parseTmdbDiscoverList(tvUrl, MediaType.Anime, executeGet)
 
-        val movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&sort_by=vote_count.desc&page=$page"
-        val movieResult = parseTmdbDiscoverList(movieUrl, MediaType.Movie, executeGet)
+        val movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&with_genres=16&with_original_language=ja&sort_by=vote_count.desc&page=$page"
+        val movieResult = parseTmdbDiscoverList(movieUrl, MediaType.Anime, executeGet)
+
+        val merged = mutableListOf<JikanSearchResult>()
+        val maxSize = maxOf(tvResult.size, movieResult.size)
+        for (i in 0 until maxSize) {
+            if (i < tvResult.size) merged.add(tvResult[i])
+            if (i < movieResult.size) merged.add(movieResult[i])
+        }
+        val result = merged.take(20)
+
+        if (result.isNotEmpty()) put(cacheKey, result)
+        result
+    }
+
+    suspend fun getTopRatedAnime(
+        page: Int = 1,
+        apiKey: String,
+        language: String,
+        executeGet: suspend (String) -> String?
+    ): List<JikanSearchResult> = withContext(Dispatchers.IO) {
+        val cacheKey = "top_rated_anime_$page"
+        get(cacheKey)?.let { return@withContext it }
+
+        val tvUrl = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&with_genres=16&with_original_language=ja&sort_by=vote_average.desc&vote_count.gte=200&page=$page"
+        val tvResult = parseTmdbDiscoverList(tvUrl, MediaType.Anime, executeGet)
+
+        val movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&with_genres=16&with_original_language=ja&sort_by=vote_average.desc&vote_count.gte=100&page=$page"
+        val movieResult = parseTmdbDiscoverList(movieUrl, MediaType.Anime, executeGet)
 
         val merged = mutableListOf<JikanSearchResult>()
         val maxSize = maxOf(tvResult.size, movieResult.size)
@@ -359,8 +386,14 @@ internal object TmdbDiscoverClient {
                 val rating = item.optDouble("vote_average", 0.0)
                 val score = if (rating > 0.0) (rating * 10).toInt().coerceIn(0, 100) / 10 else null
                 val imageUrl = if (posterPath.isNotEmpty()) "https://image.tmdb.org/t/p/w500$posterPath" else null
+                val actualType = if (mediaType == MediaType.Anime) MediaType.Anime else if (isMovie) MediaType.Movie else MediaType.TvShow
                 val subtitleParts = buildList {
-                    add(if (isMovie) "Film" else "Dizi")
+                    if (mediaType == MediaType.Anime) {
+                        add("Anime")
+                        add(if (isMovie) "Film" else "Dizi")
+                    } else {
+                        add(if (isMovie) "Film" else "Dizi")
+                    }
                     if (year != null && year > 0) add(year.toString())
                 }
                 val nextAiringEpisode = try {
@@ -381,7 +414,7 @@ internal object TmdbDiscoverClient {
                     JikanSearchResult(
                         malId = tmdbId, title = title,
                         subtitle = subtitleParts.joinToString(", "),
-                        type = mediaType, total = null, score = score,
+                        type = actualType, total = null, score = score,
                         isAdult = item.optBoolean("adult", false),
                         imageUrl = imageUrl, year = year, source = "tmdb",
                         realMalId = null, titleEnglish = title, titleJapanese = null,

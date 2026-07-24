@@ -97,6 +97,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.foundation.layout.size
 import kotlinx.coroutines.delay
 import com.kitsugi.animelist.ui.components.KitsugiShimmerProvider
+import com.kitsugi.animelist.ui.components.LocalShimmerBrush
+import com.kitsugi.animelist.ui.components.rememberKitsugiShimmerBrush
+import com.kitsugi.animelist.ui.components.KitsugiShimmerBlock
 import coil3.compose.AsyncImage
 import androidx.compose.ui.res.stringResource
 import com.kitsugi.animelist.R
@@ -650,7 +653,6 @@ fun ExploreScreen(
                                             
                                             Spacer(modifier = Modifier.height(20.dp))
                                             
-                                            // ── Anime Alt Kategorisi ──
                                             Text(
                                                 text = "Anime",
                                                 style = MaterialTheme.typography.titleSmall,
@@ -676,6 +678,18 @@ fun ExploreScreen(
                                                 }
                                                 item {
                                                     ExploreCategoryChip(
+                                                        label = "En Yüksek Puanlı Animeler",
+                                                        onClick = { onSeeAllSection("En Yüksek Puanlı Animeler", ExploreCategoryType.TRENDING_MANGA, filteredTrendingManga) }
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
+                                                        label = "Yaklaşan Animeler",
+                                                        onClick = { onSeeAllSection("Yaklaşan Animeler", ExploreCategoryType.UPCOMING_MEDIA_TMDB, filteredUpcomingMediaTmdb) }
+                                                    )
+                                                }
+                                                item {
+                                                    ExploreCategoryChip(
                                                         label = "Yayın Takvimi",
                                                         onClick = onOpenAiringCalendar
                                                     )
@@ -687,8 +701,9 @@ fun ExploreScreen(
                                 }
                             }
 
+
                             // ─── TMDB YAKINDA YAYINDA (Upcoming TV/Movies/Anime) ───
-                            if (filteredUpcomingMediaTmdb.isNotEmpty()) {
+                            if (filteredUpcomingMediaTmdb.isNotEmpty() || viewModel.isLoading) {
                                 item {
                                     Column(
                                         modifier = Modifier.fillMaxWidth()
@@ -728,16 +743,23 @@ fun ExploreScreen(
                                             ),
                                             modifier = Modifier.fillMaxWidth()
                                         ) {
-                                            items(filteredUpcomingMediaTmdb.size) { index ->
-                                                val result = filteredUpcomingMediaTmdb[index]
-                                                AiringSoonHorizontalCard(
-                                                    result = result,
-                                                    alreadyInList = isAlreadyInList(result),
-                                                    onItemClick = { onOpenApiDetail(result) },
-                                                    onLongClick = { onLongClickItem(result) },
-                                                    titleLanguage = titleLanguage,
-                                                    blurAdultMedia = blurAdultMedia
-                                                )
+                                            if (filteredUpcomingMediaTmdb.isEmpty() && viewModel.isLoading) {
+                                                // Yükleniyor: iskelet placeholder kartlar
+                                                items(6) {
+                                                    AiringSoonHorizontalCardPlaceholder()
+                                                }
+                                            } else {
+                                                items(filteredUpcomingMediaTmdb.size) { index ->
+                                                    val result = filteredUpcomingMediaTmdb[index]
+                                                    AiringSoonHorizontalCard(
+                                                        result = result,
+                                                        alreadyInList = isAlreadyInList(result),
+                                                        onItemClick = { onOpenApiDetail(result) },
+                                                        onLongClick = { onLongClickItem(result) },
+                                                        titleLanguage = titleLanguage,
+                                                        blurAdultMedia = blurAdultMedia
+                                                    )
+                                                }
                                             }
                                         }
                                     }
@@ -749,14 +771,14 @@ fun ExploreScreen(
                             if (filteredTrendingAnime.isNotEmpty()) {
                                 item {
                                     KitsugiHorizontalMediaSection(
-                                        title = "Trend Medyalar",
+                                        title = "Trend Animeler",
                                         results = filteredTrendingAnime,
                                         isLoading = viewModel.isLoading,
                                         alreadyInList = isAlreadyInList,
                                         getMediaEntry = getMediaEntry,
                                         onItemClick = onOpenApiDetail,
                                         onLongClickItem = onLongClickItem,
-                                        onSeeAllClick = { onSeeAllSection("Trend Medyalar", ExploreCategoryType.TRENDING_ANIME, filteredTrendingAnime) },
+                                        onSeeAllClick = { onSeeAllSection("Trend Animeler", ExploreCategoryType.TRENDING_ANIME, filteredTrendingAnime) },
                                         titleLanguage = titleLanguage,
                                         scoreFormat = scoreFormat,
                                         hideScores = hideScores,
@@ -770,14 +792,34 @@ fun ExploreScreen(
                             if (filteredNewlyAddedAnime.isNotEmpty()) {
                                 item {
                                     KitsugiHorizontalMediaSection(
-                                        title = "Popüler Medyalar",
+                                        title = "Popüler Animeler",
                                         results = filteredNewlyAddedAnime,
                                         isLoading = viewModel.isLoading,
                                         alreadyInList = isAlreadyInList,
                                         getMediaEntry = getMediaEntry,
                                         onItemClick = onOpenApiDetail,
                                         onLongClickItem = onLongClickItem,
-                                        onSeeAllClick = { onSeeAllSection("Popüler Medyalar", ExploreCategoryType.NEWLY_ADDED_ANIME, filteredNewlyAddedAnime) },
+                                        onSeeAllClick = { onSeeAllSection("Popüler Animeler", ExploreCategoryType.NEWLY_ADDED_ANIME, filteredNewlyAddedAnime) },
+                                        titleLanguage = titleLanguage,
+                                        scoreFormat = scoreFormat,
+                                        hideScores = hideScores,
+                                        blurAdultMedia = blurAdultMedia
+                                    )
+                                    Spacer(modifier = Modifier.height(26.dp))
+                                }
+                            }
+                            // ─── TMDB EN YÜKSEK PUANLI ANİMELER ───
+                            if (filteredTrendingManga.isNotEmpty()) {
+                                item {
+                                    KitsugiHorizontalMediaSection(
+                                        title = "En Yüksek Puanlı Animeler",
+                                        results = filteredTrendingManga,
+                                        isLoading = viewModel.isLoading,
+                                        alreadyInList = isAlreadyInList,
+                                        getMediaEntry = getMediaEntry,
+                                        onItemClick = onOpenApiDetail,
+                                        onLongClickItem = onLongClickItem,
+                                        onSeeAllClick = { onSeeAllSection("En Yüksek Puanlı Animeler", ExploreCategoryType.TRENDING_MANGA, filteredTrendingManga) },
                                         titleLanguage = titleLanguage,
                                         scoreFormat = scoreFormat,
                                         hideScores = hideScores,
@@ -852,7 +894,7 @@ fun ExploreScreen(
                                     getMediaEntry = getMediaEntry,
                                     onItemClick = onOpenApiDetail,
                                     onLongClickItem = onLongClickItem,
-                                    onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_tmdb_popular_shows), ExploreCategoryType.AIRING_ANIME, filteredTopManga) },
+                                    onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_tmdb_popular_shows), ExploreCategoryType.TOP_MANGA, filteredTopManga) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
                                     hideScores = hideScores,
@@ -888,7 +930,7 @@ fun ExploreScreen(
                                     getMediaEntry = getMediaEntry,
                                     onItemClick = onOpenApiDetail,
                                     onLongClickItem = onLongClickItem,
-                                    onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_tmdb_top_rated_movies), ExploreCategoryType.TOP_MANGA, filteredPublishingManga) },
+                                    onSeeAllClick = { onSeeAllSection(context.getString(R.string.explore_tmdb_top_rated_movies), ExploreCategoryType.PUBLISHING_MANGA, filteredPublishingManga) },
                                     titleLanguage = titleLanguage,
                                     scoreFormat = scoreFormat,
                                     hideScores = hideScores,
@@ -1145,8 +1187,8 @@ fun ExploreScreen(
                                 }
                             }
 
-                            // ─── YAKINDA YAYINDA (Airing Soon) ───
-                            if (viewModel.airingSoonAnime.isNotEmpty()) {
+                            // ─── YAKINDA YAYINDA (Airing Soon) — Sadece MAL/AniList ───
+                            if (viewModel.airingSoonAnime.isNotEmpty() && viewModel.selectedPlatform != ExplorePlatform.TMDB) {
                                 item {
                                     Column(
                                         modifier = Modifier.fillMaxWidth()
@@ -1418,6 +1460,9 @@ fun AiringSoonCountdownText(
     val episode = remember(parts) { parts.getOrNull(0)?.toIntOrNull() } ?: return
     val targetEpoch = remember(parts) { parts.getOrNull(1)?.toLongOrNull() } ?: return
 
+    // episode == -1: TMDB "upcoming" listesinden gelen film/dizi (nextAiringEpisode = "-1|epoch")
+    val isTmdbUpcoming = episode == -1
+
     var countdownText by remember(episode, targetEpoch) { mutableStateOf("") }
 
     LaunchedEffect(episode, targetEpoch) {
@@ -1425,14 +1470,19 @@ fun AiringSoonCountdownText(
             val now = System.currentTimeMillis() / 1000L
             val remaining = targetEpoch - now
             countdownText = when {
-                remaining <= 0L -> if (episode > 0) "Bölüm $episode yayınlandı" else "Yayınlandı"
+                remaining <= 0L -> {
+                    // Zaten yayınlandı — TMDB upcoming listeleri için boş bırak
+                    ""
+                }
                 remaining < 3600L -> {
                     val mins = (remaining / 60).toInt()
-                    "${mins} dk sonra yayınlanacak"
+                    if (isTmdbUpcoming) "${mins} dk sonra çıkıyor"
+                    else "${mins} dk sonra yayınlanacak"
                 }
                 remaining < 86400L -> {
                     val hours = (remaining / 3600).toInt()
-                    "${hours} saat sonra yayınlanacak"
+                    if (isTmdbUpcoming) "${hours} saat sonra çıkıyor"
+                    else "${hours} saat sonra yayınlanacak"
                 }
                 else -> {
                     val days = (remaining / 86400).toInt()
@@ -1440,12 +1490,12 @@ fun AiringSoonCountdownText(
                         val weeks = days / 7
                         if (weeks > 4) {
                             val months = days / 30
-                            "$months ay sonra yayınlanacak"
+                            if (isTmdbUpcoming) "$months ay sonra çıkıyor" else "$months ay sonra yayınlanacak"
                         } else {
-                            "$weeks hafta sonra yayınlanacak"
+                            if (isTmdbUpcoming) "$weeks hafta sonra çıkıyor" else "$weeks hafta sonra yayınlanacak"
                         }
                     } else {
-                        "$days gün sonra yayınlanacak"
+                        if (isTmdbUpcoming) "$days gün sonra çıkıyor" else "$days gün sonra yayınlanacak"
                     }
                 }
             }
@@ -1458,9 +1508,11 @@ fun AiringSoonCountdownText(
     }
 
     if (countdownText.isNotBlank()) {
+        // episode > 0: AniList countdown → turuncu; TMDB upcoming → mavi/accent
+        val textColor = if (isTmdbUpcoming) KitsugiColors.Accent else KitsugiColors.AccentOrange
         Text(
             text = countdownText,
-            color = KitsugiColors.AccentOrange,
+            color = textColor,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
@@ -1469,6 +1521,7 @@ fun AiringSoonCountdownText(
         )
     }
 }
+
 
 @Composable
 fun AiringSoonHorizontalCard(
@@ -1575,3 +1628,47 @@ fun AiringSoonHorizontalCard(
         }
     }
 }
+
+@Composable
+fun AiringSoonHorizontalCardPlaceholder(modifier: Modifier = Modifier) {
+    val brush = LocalShimmerBrush.current ?: rememberKitsugiShimmerBrush()
+    Row(
+        modifier = modifier
+            .width(280.dp)
+            .height(100.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(KitsugiColors.Surface)
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        KitsugiShimmerBlock(
+            brush = brush,
+            modifier = Modifier
+                .width(60.dp)
+                .fillMaxHeight(),
+            cornerRadius = 8.dp
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            KitsugiShimmerBlock(
+                brush = brush,
+                modifier = Modifier.fillMaxWidth(0.9f).height(14.dp),
+                cornerRadius = 4.dp
+            )
+            KitsugiShimmerBlock(
+                brush = brush,
+                modifier = Modifier.fillMaxWidth(0.6f).height(10.dp),
+                cornerRadius = 4.dp
+            )
+            KitsugiShimmerBlock(
+                brush = brush,
+                modifier = Modifier.fillMaxWidth(0.4f).height(10.dp),
+                cornerRadius = 4.dp
+            )
+        }
+    }
+}
+

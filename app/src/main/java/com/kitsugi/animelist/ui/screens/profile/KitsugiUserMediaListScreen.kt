@@ -37,7 +37,7 @@ import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.PauseCircle
 import androidx.compose.material.icons.rounded.StopCircle
-import androidx.compose.material3.ModalBottomSheet
+import com.kitsugi.animelist.ui.components.KitsugiSheetOrDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -1019,21 +1019,7 @@ private fun UserMediaListStatusBottomSheet(
         Triple(WatchStatus.Dropped, "Bırakıldı", Icons.Rounded.StopCircle to droppedCount)
     )
 
-    ModalBottomSheet(
-        onDismissRequest = onDismissRequest,
-        containerColor = KitsugiColors.Surface,
-        scrimColor = KitsugiColors.Background.copy(alpha = 0.65f),
-        dragHandle = {
-            Box(
-                modifier = Modifier
-                    .padding(vertical = 12.dp)
-                    .width(40.dp)
-                    .height(4.dp)
-                    .clip(RoundedCornerShape(999.dp))
-                    .background(KitsugiColors.TextMuted.copy(alpha = 0.4f))
-            )
-        }
-    ) {
+    KitsugiSheetOrDialog(onDismiss = onDismissRequest) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()

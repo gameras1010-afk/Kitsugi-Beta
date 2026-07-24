@@ -398,6 +398,7 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         val trendingMediaDeferred  = async { runCatching { tmdbApiClient.getTrendingMedia() }.getOrDefault(emptyList()) }
         val popularMediaDeferred   = async { runCatching { tmdbApiClient.getPopularMedia() }.getOrDefault(emptyList()) }
         val upcomingMediaDeferred  = async { runCatching { tmdbApiClient.getUpcomingMedia() }.getOrDefault(emptyList()) }
+        val topRatedAnimeDeferred  = async { runCatching { tmdbApiClient.getTopRatedAnime() }.getOrDefault(emptyList()) }
         val airingSoonDeferred = async {
             val calendarClient = com.kitsugi.animelist.data.remote.KitsugiAiringCalendarClient()
             val upcoming = runCatching { calendarClient.fetchUpcomingSchedule(limit = 40, preferredSource = "tmdb") }.getOrNull() ?: emptyList()
@@ -439,6 +440,7 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         val trendingMediaList = trendingMediaDeferred.await()
         val popularMediaList  = popularMediaDeferred.await()
         val upcomingMediaList = upcomingMediaDeferred.await()
+        val topRatedAnimeList = topRatedAnimeDeferred.await()
         val airingSoonList    = airingSoonDeferred.await()
 
         // ── Authenticated: Simkl watchlist (sadece giriş yapılmışsa) ────────────────
@@ -489,11 +491,11 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
             upcomingAnime = popularMovies,      // Popüler Filmler
             topManga      = popularShows,       // Popüler Diziler
             publishingManga = topRatedMovies,   // En Yüksek Puanlı Filmler
-            trendingAnime = trendingMediaList,  // Trend Medyalar
+            trendingAnime = trendingMediaList,  // Trend Animeler
             movieAnime    = moviesList,         // Trend Filmler
             seasonalAnime = topRatedShows,      // En Yüksek Puanlı Diziler
-            newlyAddedAnime = popularMediaList, // Popüler Medyalar
-            trendingManga = emptyList(),        // MAL/AniList manga — TMDB'de kullanılmaz
+            newlyAddedAnime = popularMediaList, // Popüler Animeler
+            trendingManga = topRatedAnimeList,  // En Yüksek Puanlı Animeler
             upcomingMediaTmdb = upcomingMediaList, // Yakında Yayında (Medya) — ayrı field
             simklContinueMovies = continueMovies,
             simklPlannedMovies = plannedMovies,
@@ -682,6 +684,36 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
                             val trendingMediaDeferred  = async { runCatching { tmdbApiClient.getTrendingMedia() }.getOrDefault(emptyList()) }
                             val popularMediaDeferred   = async { runCatching { tmdbApiClient.getPopularMedia() }.getOrDefault(emptyList()) }
                             val upcomingMediaDeferred  = async { runCatching { tmdbApiClient.getUpcomingMedia() }.getOrDefault(emptyList()) }
+                            val topRatedAnimeDeferred  = async { runCatching { tmdbApiClient.getTopRatedAnime() }.getOrDefault(emptyList()) }
+                            val airingSoonDeferred = async {
+                                val calendarClient = com.kitsugi.animelist.data.remote.KitsugiAiringCalendarClient()
+                                val upcoming = runCatching { calendarClient.fetchUpcomingSchedule(limit = 40, preferredSource = "tmdb") }.getOrNull() ?: emptyList()
+                                val nowSeconds = System.currentTimeMillis() / 1000L
+                                upcoming
+                                    .filter { it.airingAt > nowSeconds }
+                                    .sortedBy { it.airingAt }
+                                    .take(15)
+                                    .map { entry ->
+                                        val finalType = if (entry.episode == 0) MediaType.Movie else MediaType.TvShow
+                                        JikanSearchResult(
+                                            malId = entry.aniListId,
+                                            title = entry.title,
+                                            subtitle = if (entry.episode == 0) "Film" else "${entry.episode}. Bölüm",
+                                            type = finalType,
+                                            total = null,
+                                            score = entry.averageScore,
+                                            isAdult = false,
+                                            imageUrl = entry.coverUrl,
+                                            year = null,
+                                            source = "tmdb",
+                                            realMalId = null,
+                                            titleEnglish = entry.titleEnglish,
+                                            titleJapanese = entry.titleNative,
+                                            nextAiringEpisode = "${entry.episode}|${entry.airingAt}",
+                                            tmdbId = entry.aniListId
+                                        )
+                                    }
+                            }
 
                             val moviesList    = trendingMoviesDeferred.await()
                             val showsList     = trendingShowsDeferred.await()
@@ -693,6 +725,8 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
                             val trendingMediaList = trendingMediaDeferred.await()
                             val popularMediaList  = popularMediaDeferred.await()
                             val upcomingMediaList = upcomingMediaDeferred.await()
+                            val topRatedAnimeList = topRatedAnimeDeferred.await()
+                            val airingSoonList    = airingSoonDeferred.await()
 
                             val userMoviesDeferred = if (!simklToken.isNullOrBlank()) {
                                 async { SimklSyncManager.fetchSimklWatchlist(app, "movies") }
@@ -804,13 +838,13 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
                                 movieAnime    = moviesList,
                                 seasonalAnime = topRatedShows,
                                 newlyAddedAnime = popularMediaList,
-                                trendingManga = emptyList(),        // TMDB'de manga yok
+                                trendingManga = topRatedAnimeList,
                                 upcomingMediaTmdb = upcomingMediaList, // Yakında Yayında (Medya)
                                 simklContinueMovies = continueMovies,
                                 simklPlannedMovies = plannedMovies,
                                 simklContinueSeries = continueSeries,
                                 simklPlannedSeries = plannedSeries,
-                                airingSoonAnime = emptyList()
+                                airingSoonAnime = airingSoonList
                             )
                         }.getOrNull()
 

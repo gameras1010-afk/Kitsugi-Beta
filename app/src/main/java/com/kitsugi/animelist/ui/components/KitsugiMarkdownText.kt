@@ -259,24 +259,7 @@ fun InteractiveSpoilerSheet(
     spoilerText: String,
     onDismiss: () -> Unit,
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = KitsugiColors.Surface,
-        dragHandle = {
-            Box(
-                Modifier
-                    .padding(vertical = 12.dp)
-                    .size(width = 40.dp, height = 4.dp)
-                    .background(
-                        color = KitsugiColors.Border,
-                        shape = RoundedCornerShape(2.dp)
-                    )
-            )
-        }
-    ) {
+    KitsugiSheetOrDialog(onDismiss = onDismiss) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()

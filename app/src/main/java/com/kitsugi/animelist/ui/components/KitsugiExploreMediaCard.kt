@@ -321,7 +321,7 @@ fun KitsugiExploreMediaCard(
                         )
                     } else {
                         Text(
-                            text = buildMetaText(result, scoreFormat, hideScores),
+                            text = buildMetaText(result, scoreFormat, hideScores, includeTypeAndYear = false),
                             color = if (alreadyInList) {
                                 KitsugiColors.AccentGreen
                             } else {
@@ -449,7 +449,7 @@ fun KitsugiExploreMediaCard(
                     )
                 } else {
                     Text(
-                        text = buildMetaText(result, scoreFormat, hideScores),
+                        text = buildMetaText(result, scoreFormat, hideScores, includeTypeAndYear = false),
                         color = accentColor,
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold
@@ -569,21 +569,29 @@ private fun entryProgressText(entry: com.kitsugi.animelist.model.MediaEntry): St
 private fun buildMetaText(
     result: JikanSearchResult,
     scoreFormat: String,
-    hideScores: Boolean
+    hideScores: Boolean,
+    includeTypeAndYear: Boolean = true
 ): String {
     val parts = buildList {
-        val typeLabel = when (result.type) {
-            MediaType.Anime -> "ANIME"
-            MediaType.Manga -> "MANGA"
-            MediaType.Movie -> "FİLM"
-            MediaType.TvShow -> "DİZİ"
+        if (includeTypeAndYear) {
+            val typeLabel = when (result.type) {
+                MediaType.Anime -> "ANIME"
+                MediaType.Manga -> "MANGA"
+                MediaType.Movie -> "FİLM"
+                MediaType.TvShow -> "DİZİ"
+            }
+            add(typeLabel)
+            if (result.year != null) add(result.year.toString())
         }
-        add(typeLabel)
-        if (result.year != null) add(result.year.toString())
         if (!hideScores) {
             val scoreStr = result.getDisplayScore(scoreFormat, hideScores)
-            if (scoreStr.isNotEmpty() && scoreStr != "N/A" && scoreStr != "0") {
-                add(scoreStr)
+            if (scoreStr.isNotEmpty() && scoreStr != "N/A" && scoreStr != "0" && scoreStr != "unrated") {
+                val formattedScore = if (!scoreStr.contains("★") && !scoreStr.contains("☆") && !scoreStr.contains("😊") && !scoreStr.contains("😐") && !scoreStr.contains("🙁")) {
+                    "★ $scoreStr"
+                } else {
+                    scoreStr
+                }
+                add(formattedScore)
             }
         }
 

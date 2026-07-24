@@ -199,7 +199,7 @@ fun FullScreenMediaGridPage(
                             ExploreCategoryType.TOP_MANGA -> tmdbApiClient.getPopularShows(np)
                             ExploreCategoryType.PUBLISHING_MANGA -> tmdbApiClient.getTopRatedMovies(np)
                             ExploreCategoryType.SEASONAL_ANIME -> tmdbApiClient.getTopRatedShows(np)
-                            ExploreCategoryType.TRENDING_MANGA -> tmdbApiClient.getUpcomingMedia(np)
+                            ExploreCategoryType.TRENDING_MANGA -> tmdbApiClient.getTopRatedAnime(np)
                             ExploreCategoryType.NEWLY_ADDED_ANIME -> tmdbApiClient.getPopularMedia(np)
                             ExploreCategoryType.UPCOMING_MEDIA_TMDB -> tmdbApiClient.getUpcomingMedia(np)
                             else -> emptyList()
