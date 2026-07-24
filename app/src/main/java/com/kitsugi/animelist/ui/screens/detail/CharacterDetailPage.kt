@@ -81,6 +81,7 @@ import com.kitsugi.animelist.ui.components.KitsugiCinematicLoadingScreen
 import com.kitsugi.animelist.ui.components.KitsugiImageGalleryDialog
 import com.kitsugi.animelist.ui.components.KitsugiPageEnter
 import com.kitsugi.animelist.utils.copyOnDoubleTap
+import com.kitsugi.animelist.utils.toFriendlySourceLabel
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
@@ -338,7 +339,7 @@ fun CharacterDetailPage(
                                     }
                                     // İsim + native name + pill
                                     Column(modifier = Modifier.padding(16.dp)) {
-                                        DetailPill(text = source.uppercase(), color = accentColor)
+                                         DetailPill(text = source.toFriendlySourceLabel().uppercase(), color = accentColor)
                                         Spacer(modifier = Modifier.height(8.dp))
                                         Text(
                                             text = detail.name,
@@ -663,10 +664,10 @@ fun CharacterDetailPage(
                                             .padding(20.dp)
                                     ) {
                                         // Source tag/pill
-                                        DetailPill(
-                                            text = source.uppercase(),
-                                            color = accentColor
-                                        )
+                                         DetailPill(
+                                             text = source.toFriendlySourceLabel().uppercase(),
+                                             color = accentColor
+                                         )
 
                                         Spacer(modifier = Modifier.height(10.dp))
 

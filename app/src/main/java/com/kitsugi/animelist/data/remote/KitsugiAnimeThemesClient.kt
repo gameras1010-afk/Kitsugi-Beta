@@ -5,7 +5,7 @@ import java.net.URL
 
 /**
  * AnimeThemes.moe API'sinden açılış/kapanış müziklerini çeker.
- * [KitsugiJikanDetailClient] ve [KitsugiAniListDetailClient] tarafından paylaşılır.
+ * [KitsugiMalDetailClient] ve [KitsugiAniListDetailClient] tarafından paylaşılır.
  */
 internal object KitsugiAnimeThemesClient {
 

@@ -172,7 +172,7 @@ fun FullScreenMediaGridPage(
                         ExploreCategoryType.TRENDING_MANGA -> apiClient.trendingManga(np)
                         ExploreCategoryType.NEWLY_ADDED_ANIME -> apiClient.newlyAddedAnime(np)
                         ExploreCategoryType.NEWLY_ADDED_MANGA -> apiClient.newlyAddedManga(np)
-                        ExploreCategoryType.UPCOMING_ANIME_TMDB -> emptyList()
+                        ExploreCategoryType.UPCOMING_MEDIA_TMDB -> emptyList()
                     }
                     ExplorePlatform.AniList -> when (categoryType) {
                         ExploreCategoryType.TOP_ANIME -> apiClient.aniListTopAnime(np)
@@ -186,22 +186,22 @@ fun FullScreenMediaGridPage(
                         ExploreCategoryType.TRENDING_MANGA -> apiClient.aniListTrendingManga(np)
                         ExploreCategoryType.NEWLY_ADDED_ANIME -> apiClient.aniListNewlyAddedAnime(np)
                         ExploreCategoryType.NEWLY_ADDED_MANGA -> apiClient.aniListNewlyAddedManga(np)
-                        ExploreCategoryType.UPCOMING_ANIME_TMDB -> emptyList()
+                        ExploreCategoryType.UPCOMING_MEDIA_TMDB -> emptyList()
                     }
                     ExplorePlatform.TMDB -> {
                         if (title.startsWith("İzlemeye Devam") || title.startsWith("Planladıklarım")) emptyList()
                         else when (categoryType) {
                             ExploreCategoryType.TOP_ANIME -> tmdbApiClient.getTrendingAll(np)
-                            ExploreCategoryType.TRENDING_ANIME -> tmdbApiClient.getTrendingAnime(np)
+                            ExploreCategoryType.TRENDING_ANIME -> tmdbApiClient.getTrendingMedia(np)
                             ExploreCategoryType.AIRING_ANIME -> tmdbApiClient.getTrendingShows(np)
                             ExploreCategoryType.MOVIE_ANIME -> tmdbApiClient.getTrendingMovies(np)
                             ExploreCategoryType.UPCOMING_ANIME -> tmdbApiClient.getPopularMovies(np)
                             ExploreCategoryType.TOP_MANGA -> tmdbApiClient.getPopularShows(np)
                             ExploreCategoryType.PUBLISHING_MANGA -> tmdbApiClient.getTopRatedMovies(np)
                             ExploreCategoryType.SEASONAL_ANIME -> tmdbApiClient.getTopRatedShows(np)
-                            ExploreCategoryType.TRENDING_MANGA -> tmdbApiClient.getUpcomingAnime(np)
-                            ExploreCategoryType.NEWLY_ADDED_ANIME -> tmdbApiClient.getPopularAnime(np)
-                            ExploreCategoryType.UPCOMING_ANIME_TMDB -> tmdbApiClient.getUpcomingAnime(np)
+                            ExploreCategoryType.TRENDING_MANGA -> tmdbApiClient.getUpcomingMedia(np)
+                            ExploreCategoryType.NEWLY_ADDED_ANIME -> tmdbApiClient.getPopularMedia(np)
+                            ExploreCategoryType.UPCOMING_MEDIA_TMDB -> tmdbApiClient.getUpcomingMedia(np)
                             else -> emptyList()
                         }
                     }

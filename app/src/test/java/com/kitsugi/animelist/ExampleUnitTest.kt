@@ -16,7 +16,7 @@ class ExampleUnitTest {
     }
 
     @Test
-    fun testTmdbUpcomingAnime() = kotlinx.coroutines.runBlocking {
+    fun testTmdbUpcomingMedia() = kotlinx.coroutines.runBlocking {
         val apiKey = "8265bd1679663a7ea12ac168da84d2e8"
         val language = "tr-TR"
         val client = okhttp3.OkHttpClient()
@@ -30,7 +30,7 @@ class ExampleUnitTest {
         }
 
         println("Fetching page 1...")
-        val page1 = com.kitsugi.animelist.data.remote.TmdbDiscoverClient.getUpcomingAnime(
+        val page1 = com.kitsugi.animelist.data.remote.TmdbDiscoverClient.getUpcomingMedia(
             page = 1, apiKey = apiKey, language = language, executeGet = executeGet
         )
         println("Page 1 count: ${page1.size}")
@@ -39,7 +39,7 @@ class ExampleUnitTest {
         }
 
         println("Fetching page 2...")
-        val page2 = com.kitsugi.animelist.data.remote.TmdbDiscoverClient.getUpcomingAnime(
+        val page2 = com.kitsugi.animelist.data.remote.TmdbDiscoverClient.getUpcomingMedia(
             page = 2, apiKey = apiKey, language = language, executeGet = executeGet
         )
         println("Page 2 count: ${page2.size}")

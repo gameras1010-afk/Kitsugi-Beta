@@ -204,20 +204,20 @@ internal object TmdbDiscoverClient {
         result
     }
 
-    suspend fun getTrendingAnime(
+    suspend fun getTrendingMedia(
         page: Int = 1,
         apiKey: String,
         language: String,
         executeGet: suspend (String) -> String?
     ): List<JikanSearchResult> = withContext(Dispatchers.IO) {
-        val cacheKey = "trending_anime_$page"
+        val cacheKey = "trending_media_$page"
         get(cacheKey)?.let { return@withContext it }
 
-        val tvUrl = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&with_genres=16&with_original_language=ja&sort_by=popularity.desc&page=$page"
-        val tvResult = parseTmdbDiscoverList(tvUrl, MediaType.Anime, executeGet)
+        val tvUrl = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&sort_by=popularity.desc&page=$page"
+        val tvResult = parseTmdbDiscoverList(tvUrl, MediaType.TvShow, executeGet)
 
-        val movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&with_genres=16&with_original_language=ja&sort_by=popularity.desc&page=$page"
-        val movieResult = parseTmdbDiscoverList(movieUrl, MediaType.Anime, executeGet)
+        val movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&sort_by=popularity.desc&page=$page"
+        val movieResult = parseTmdbDiscoverList(movieUrl, MediaType.Movie, executeGet)
 
         val merged = mutableListOf<JikanSearchResult>()
         val maxSize = maxOf(tvResult.size, movieResult.size)
@@ -231,20 +231,20 @@ internal object TmdbDiscoverClient {
         result
     }
 
-    suspend fun getPopularAnime(
+    suspend fun getPopularMedia(
         page: Int = 1,
         apiKey: String,
         language: String,
         executeGet: suspend (String) -> String?
     ): List<JikanSearchResult> = withContext(Dispatchers.IO) {
-        val cacheKey = "popular_anime_$page"
+        val cacheKey = "popular_media_$page"
         get(cacheKey)?.let { return@withContext it }
 
-        val tvUrl = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&with_genres=16&with_original_language=ja&sort_by=vote_count.desc&page=$page"
-        val tvResult = parseTmdbDiscoverList(tvUrl, MediaType.Anime, executeGet)
+        val tvUrl = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&sort_by=vote_count.desc&page=$page"
+        val tvResult = parseTmdbDiscoverList(tvUrl, MediaType.TvShow, executeGet)
 
-        val movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&with_genres=16&with_original_language=ja&sort_by=vote_count.desc&page=$page"
-        val movieResult = parseTmdbDiscoverList(movieUrl, MediaType.Anime, executeGet)
+        val movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&sort_by=vote_count.desc&page=$page"
+        val movieResult = parseTmdbDiscoverList(movieUrl, MediaType.Movie, executeGet)
 
         val merged = mutableListOf<JikanSearchResult>()
         val maxSize = maxOf(tvResult.size, movieResult.size)
@@ -258,13 +258,13 @@ internal object TmdbDiscoverClient {
         result
     }
 
-    suspend fun getUpcomingAnime(
+    suspend fun getUpcomingMedia(
         page: Int = 1,
         apiKey: String,
         language: String,
         executeGet: suspend (String) -> String?
     ): List<JikanSearchResult> = withContext(Dispatchers.IO) {
-        val cacheKey = "upcoming_anime_$page"
+        val cacheKey = "upcoming_media_$page"
         get(cacheKey)?.let { return@withContext it }
 
         val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())

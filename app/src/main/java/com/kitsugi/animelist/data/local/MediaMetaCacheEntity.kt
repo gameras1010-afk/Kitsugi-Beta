@@ -22,7 +22,8 @@ import androidx.room.PrimaryKey
     tableName = "media_meta_cache",
     indices = [
         Index(value = ["malId"]),
-        Index(value = ["aniListId"])
+        Index(value = ["aniListId"]),
+        Index(value = ["kitsuId"])
     ]
 )
 data class MediaMetaCacheEntity(
@@ -32,5 +33,6 @@ data class MediaMetaCacheEntity(
     val aniListId: Int?,     // Bu tmdbId'ye karşılık gelen AniList ID
     val logoUrl: String?,    // null = logo yok veya henüz bilinmiyor
     val logoNotFound: Boolean = false, // true = API sorgulandı, logo yok
-    val cachedAtMs: Long = System.currentTimeMillis()
+    val cachedAtMs: Long = System.currentTimeMillis(),
+    val kitsuId: String? = null // Bu tmdbId'ye karşılık gelen Kitsu ID veya Slug
 )

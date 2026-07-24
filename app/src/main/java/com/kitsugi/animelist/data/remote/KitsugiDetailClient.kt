@@ -65,7 +65,7 @@ class KitsugiDetailClient {
             }
 
             when (source.lowercase()) {
-                "jikan", "mal" -> KitsugiJikanDetailClient.fetchSynopsis(
+                "jikan", "mal" -> KitsugiMalDetailClient.fetchSynopsis(
                     malId = externalId,
                     mediaType = mediaType
                 )
@@ -93,8 +93,33 @@ class KitsugiDetailClient {
         return withContext(Dispatchers.IO) {
             if (externalId == null || externalId <= 0) return@withContext null
 
+            val cacheKey = "${source.lowercase()}_$externalId"
+            val context = com.kitsugi.animelist.KitsugiApplication.getInstance()?.applicationContext
+            val db = context?.let { com.kitsugi.animelist.data.local.KitsugiDatabase.getDatabase(it) }
+            val gson = com.google.gson.Gson()
+
+            // 1. Fresh Cache Check (Room - 24 hours threshold)
+            if (db != null) {
+                try {
+                    val cached = db.persistentDetailCacheDao().getDetail(cacheKey)
+                    if (cached != null) {
+                        val isFresh = (System.currentTimeMillis() - cached.cachedAtMs) < 24 * 60 * 60 * 1000L
+                        if (isFresh) {
+                            val detail = gson.fromJson(cached.detailJson, KitsugiMediaDetail::class.java)
+                            if (detail != null) {
+                                android.util.Log.d("KitsugiDetailClient", "Serving fresh detail from Room cache for $cacheKey")
+                                return@withContext detail
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("KitsugiDetailClient", "Error reading detail cache: ${e.message}")
+                }
+            }
+
+            // 2. Primary source fetch
             val detail = when (source.lowercase()) {
-                "jikan", "mal" -> KitsugiJikanDetailClient.fetchDetail(externalId, mediaType)
+                "jikan", "mal" -> KitsugiMalDetailClient.fetchDetail(externalId, mediaType)
                 "anilist" -> KitsugiAniListDetailClient.fetchDetail(externalId, mediaType)
                 // TMDB discovery öğeleri: malId aslında tmdbId, doğrudan TMDB'den çek
                 "tmdb" -> {
@@ -112,7 +137,7 @@ class KitsugiDetailClient {
                     // ── Öncelik zinciri (Simkl son çaredir) ────────────────────────────
                     // 1. Anime ise ve gerçek MAL ID varsa -> Jikan (rate-limit yok, önerilen)
                     if (mediaType == MediaType.Anime && realMalId != null && realMalId > 0) {
-                        val malDetail = KitsugiJikanDetailClient.fetchDetail(realMalId, mediaType)
+                        val malDetail = KitsugiMalDetailClient.fetchDetail(realMalId, mediaType)
                         if (malDetail != null) malDetail
                         else {
                             if (resolvedTmdb != null && resolvedTmdb > 0) {
@@ -138,14 +163,43 @@ class KitsugiDetailClient {
 
             var finalDetail = detail
             
-            // Fallback scenario 1: Primary fetch returned null for Movie/TV show -> Try direct TMDB search fallback by title!
-            if (finalDetail == null && (mediaType == MediaType.Movie || mediaType == MediaType.TvShow) && !title.isNullOrBlank()) {
-                android.util.Log.d("KitsugiDetailClient", "Primary fetch returned null for Movie/TV show. Triggering direct TMDB search fallback for: $title")
-                val searchResults = TmdbApiClient().search(title)
-                val matchedResult = searchResults.firstOrNull { it.type == mediaType }
-                if (matchedResult != null && matchedResult.tmdbId != null && matchedResult.tmdbId > 0) {
-                    android.util.Log.d("KitsugiDetailClient", "Fallback direct TMDB search resolved tmdbId: ${matchedResult.tmdbId} for title: $title")
-                    finalDetail = TmdbApiClient().fetchMediaDetail(matchedResult.tmdbId, mediaType == MediaType.Movie)
+            // 3. Fallback Client Chains (Live Backups)
+            if (finalDetail == null) {
+                if (mediaType == MediaType.Movie || mediaType == MediaType.TvShow) {
+                    // TMDB Fallback: TVmaze for TV Shows
+                    if (mediaType == MediaType.TvShow && !title.isNullOrBlank()) {
+                        android.util.Log.d("KitsugiDetailClient", "TMDB returned null. Trying TVmaze fallback for TV show: $title")
+                        finalDetail = TvMazeClient.fetchShowDetailByTitle(title)
+                    }
+                    // TMDB Fallback: Search fallback by title
+                    if (finalDetail == null && !title.isNullOrBlank()) {
+                        android.util.Log.d("KitsugiDetailClient", "Trying direct TMDB search fallback for: $title")
+                        val searchResults = TmdbApiClient().search(title)
+                        val matchedResult = searchResults.firstOrNull { it.type == mediaType }
+                        if (matchedResult != null && matchedResult.tmdbId != null && matchedResult.tmdbId > 0) {
+                            finalDetail = TmdbApiClient().fetchMediaDetail(matchedResult.tmdbId, mediaType == MediaType.Movie)
+                        }
+                    }
+                } else if (mediaType == MediaType.Anime) {
+                    // Anime Fallback: Kitsu
+                    android.util.Log.d("KitsugiDetailClient", "AniList/MAL detail returned null. Trying Kitsu fallback.")
+                    val kitsuId = if (db != null) {
+                        val resolvedEntity = if (source.lowercase() == "anilist") {
+                            db.mediaMetaCacheDao().getByAniListId(externalId)
+                        } else {
+                            db.mediaMetaCacheDao().getByMalId(externalId)
+                        }
+                        resolvedEntity?.kitsuId
+                    } else null
+
+                    if (!kitsuId.isNullOrBlank()) {
+                        android.util.Log.d("KitsugiDetailClient", "Fetching Kitsu detail via resolved kitsuId: $kitsuId")
+                        finalDetail = KitsuClient.fetchAnimeDetail(kitsuId)
+                    }
+                    if (finalDetail == null && !title.isNullOrBlank()) {
+                        android.util.Log.d("KitsugiDetailClient", "Fetching Kitsu detail via title search: $title")
+                        finalDetail = KitsuClient.fetchAnimeDetailByTitle(title)
+                    }
                 }
             }
 
@@ -227,6 +281,36 @@ class KitsugiDetailClient {
                     }
                 }
             }
+
+            // 4. Stale Cache Fallback (If all network attempts returned null, check cache again even if expired)
+            if (finalDetail == null && db != null) {
+                try {
+                    val cached = db.persistentDetailCacheDao().getDetail(cacheKey)
+                    if (cached != null) {
+                        finalDetail = gson.fromJson(cached.detailJson, KitsugiMediaDetail::class.java)
+                        if (finalDetail != null) {
+                            android.util.Log.d("KitsugiDetailClient", "Serving stale detail from Room cache for $cacheKey")
+                        }
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("KitsugiDetailClient", "Error reading stale cache: ${e.message}")
+                }
+            }
+
+            // 5. Cache update on success
+            if (finalDetail != null && db != null) {
+                try {
+                    val entity = com.kitsugi.animelist.data.local.PersistentDetailCacheEntity(
+                        cacheKey = cacheKey,
+                        detailJson = gson.toJson(finalDetail),
+                        cachedAtMs = System.currentTimeMillis()
+                    )
+                    db.persistentDetailCacheDao().insertDetail(entity)
+                } catch (e: Exception) {
+                    android.util.Log.e("KitsugiDetailClient", "Error writing detail cache: ${e.message}")
+                }
+            }
+
             finalDetail
         }
     }

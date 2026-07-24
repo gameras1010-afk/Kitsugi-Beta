@@ -55,6 +55,7 @@ import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayTitle
 import com.kitsugi.animelist.utils.copyOnDoubleTap
 import com.kitsugi.animelist.utils.ShareUtils
+import com.kitsugi.animelist.utils.toFriendlySourceLabel
 import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -306,7 +307,7 @@ internal fun DetailHero(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 DetailPill(
-                    text = entry.source.uppercase(),
+                    text = entry.source.toFriendlySourceLabel().uppercase(),
                     color = accentColor
                 )
 

@@ -49,7 +49,8 @@ fun AppRootDetailPages(
     onReadMangaClick: (MediaEntry, MangaMappingEntity?) -> Unit,
     triggerSearch: (String) -> Unit,
     triggerSearchByGenre: (String) -> Unit = {},
-    triggerSearchByTag: (String) -> Unit = {}
+    triggerSearchByTag: (String) -> Unit = {},
+    onScrollReset: () -> Unit = {}
 ) {
     when (key) {
         is AppStateKey.StudioDetail -> {
@@ -413,6 +414,7 @@ fun AppRootDetailPages(
         is AppStateKey.UserProfile -> {
             navState.stateHolder.SaveableStateProvider(key = "user_profile_${key.depth}_${key.userId}") {
                 com.kitsugi.animelist.ui.screens.profile.KitsugiUserProfileScreen(
+                    onScrollReset = onScrollReset,
                     userId = key.userId,
                     fallbackUsername = key.username,
                     fallbackAvatar = key.avatarUrl,
@@ -421,6 +423,10 @@ fun AppRootDetailPages(
                     onBackClick = { navState.popDetailStack() },
                     onFavoriteMediaClick = { mediaId, mediaType, source, title, imageUrl ->
                         val stableId = if (source == "anilist") mediaId + 100_000_000 else mediaId
+                        // isAdult, mevcut liste kaydından türetilerek blur tutarlılığı sağlanır.
+                        val resolvedIsAdult = mediaEntries.firstOrNull { entry ->
+                            entry.malId == stableId && entry.source.equals(source, ignoreCase = true)
+                        }?.isAdult ?: false
                         val searchResult = com.kitsugi.animelist.data.remote.JikanSearchResult(
                             malId = stableId,
                             title = title.ifBlank { "Yükleniyor..." },
@@ -428,7 +434,7 @@ fun AppRootDetailPages(
                             type = mediaType,
                             total = null,
                             score = null,
-                            isAdult = false,
+                            isAdult = resolvedIsAdult,
                             imageUrl = imageUrl,
                             year = null,
                             source = source

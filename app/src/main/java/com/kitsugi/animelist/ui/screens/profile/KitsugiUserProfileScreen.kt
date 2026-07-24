@@ -69,6 +69,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -121,7 +122,8 @@ fun KitsugiUserProfileScreen(
     onTagClick: (tag: String) -> Unit = {},
     onOpenUserMediaList: (userId: Int, mediaType: MediaType) -> Unit = { _, _ -> },
     accentColor: Color? = null,
-    customViewModel: KitsugiUserProfileViewModel? = null
+    customViewModel: KitsugiUserProfileViewModel? = null,
+    onScrollReset: () -> Unit = {}
 ) {
     val accentColor = accentColor ?: LocalKitsugiAccent.current
     val viewModel: KitsugiUserProfileViewModel = customViewModel ?: viewModel(key = "user_profile_${userId}")
@@ -164,11 +166,16 @@ fun KitsugiUserProfileScreen(
         initialFirstVisibleItemScrollOffset = viewModel.scrollOffset
     )
 
-    LaunchedEffect(listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset) {
-        viewModel.updateScroll(
-            listState.firstVisibleItemIndex,
-            listState.firstVisibleItemScrollOffset
-        )
+    LaunchedEffect(listState) {
+        snapshotFlow {
+            listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset
+        }.collect { (index, offset) ->
+            viewModel.updateScroll(index, offset)
+            // Listenin en üstüne gelindiğinde alt navigasyon barını göster
+            if (index == 0 && offset == 0) {
+                onScrollReset()
+            }
+        }
     }
 
     Column(

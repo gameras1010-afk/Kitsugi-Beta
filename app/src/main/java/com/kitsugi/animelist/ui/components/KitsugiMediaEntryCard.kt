@@ -49,6 +49,7 @@ import com.kitsugi.animelist.ui.utils.tvClickable
 
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayTitle
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayScore
+import com.kitsugi.animelist.utils.toFriendlySourceLabel
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -203,7 +204,7 @@ private fun CompactMediaEntryCard(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = entry.source.uppercase(),
+                            text = entry.source.toFriendlySourceLabel().uppercase(),
                             color = LocalKitsugiAccent.current,
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold
@@ -337,7 +338,7 @@ private fun ComfortableMediaEntryCard(
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Text(
-                            text = entry.source.uppercase(),
+                            text = entry.source.toFriendlySourceLabel().uppercase(),
                             color = LocalKitsugiAccent.current,
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold
@@ -534,7 +535,7 @@ private fun LargeMediaEntryCard(
 
                         if (entry.source != "manual") {
                             Text(
-                                text = entry.source.uppercase(),
+                                text = entry.source.toFriendlySourceLabel().uppercase(),
                                 color = LocalKitsugiAccent.current,
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold
@@ -653,7 +654,7 @@ private fun LargeMediaEntryCard(
 
                     if (entry.source != "manual") {
                         Text(
-                            text = entry.source.uppercase(),
+                            text = entry.source.toFriendlySourceLabel().uppercase(),
                             color = LocalKitsugiAccent.current,
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold
@@ -1013,7 +1014,7 @@ private fun compactMetaText(entry: MediaEntry): String {
     val parts = buildList {
         add(entryProgressText(entry))
         if (entry.year != null) add(entry.year.toString())
-        if (entry.source != "manual") add(entry.source.uppercase())
+        if (entry.source != "manual") add(entry.source.toFriendlySourceLabel().uppercase())
     }
 
     return parts.joinToString(" • ")
@@ -1094,7 +1095,7 @@ private fun MinimalistMediaEntryCard(
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Text(
-                            text = entry.source.uppercase(),
+                            text = entry.source.toFriendlySourceLabel().uppercase(),
                             color = LocalKitsugiAccent.current,
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold

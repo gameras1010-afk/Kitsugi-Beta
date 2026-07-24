@@ -52,6 +52,7 @@ import com.kitsugi.animelist.data.remote.JikanSearchResult
 import com.kitsugi.animelist.data.remote.MdbListRatings
 import com.kitsugi.animelist.utils.toTurkishGenre
 import com.kitsugi.animelist.utils.toEnglishGenreForSearch
+import com.kitsugi.animelist.utils.toFriendlySourceLabel
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.size
@@ -208,7 +209,7 @@ internal fun ApiHero(
                 )
 
                 ApiDetailPill(
-                    text = result.source.uppercase(),
+                    text = result.source.toFriendlySourceLabel().uppercase(),
                     color = accentColor
                 )
 
@@ -280,7 +281,7 @@ internal fun ApiStatsGrid(
 
         ApiMiniStatCard(
             label = "Kaynak",
-            value = result.source.uppercase(),
+            value = result.source.toFriendlySourceLabel().uppercase(),
             modifier = Modifier.weight(1f)
         )
 

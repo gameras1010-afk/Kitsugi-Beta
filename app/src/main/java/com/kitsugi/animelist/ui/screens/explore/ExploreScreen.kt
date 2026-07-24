@@ -140,7 +140,7 @@ fun ExploreScreen(
     val filteredTrendingManga = remember(viewModel.trendingManga, showAdultContent) { viewModel.trendingManga.filter { showAdultContent || !it.isAdult } }
     val filteredNewlyAddedAnime = remember(viewModel.newlyAddedAnime, showAdultContent) { viewModel.newlyAddedAnime.filter { showAdultContent || !it.isAdult } }
     val filteredNewlyAddedManga = remember(viewModel.newlyAddedManga, showAdultContent) { viewModel.newlyAddedManga.filter { showAdultContent || !it.isAdult } }
-    val filteredUpcomingAnimeTmdb = remember(viewModel.upcomingAnimeTmdb, showAdultContent) { viewModel.upcomingAnimeTmdb.filter { showAdultContent || !it.isAdult } }
+    val filteredUpcomingMediaTmdb = remember(viewModel.upcomingMediaTmdb, showAdultContent) { viewModel.upcomingMediaTmdb.filter { showAdultContent || !it.isAdult } }
 
 
     val heroItems = remember(viewModel.selectedPlatform, filteredTopAnime, filteredAiringAnime, filteredMovieAnime) {
@@ -309,7 +309,7 @@ fun ExploreScreen(
         viewModel.simklContinueSeries.isEmpty() && viewModel.simklContinueMovies.isEmpty() &&
         viewModel.simklPlannedSeries.isEmpty() && viewModel.simklPlannedMovies.isEmpty() &&
         filteredNewlyAddedAnime.isEmpty() && filteredNewlyAddedManga.isEmpty() &&
-        viewModel.airingSoonAnime.isEmpty() && filteredUpcomingAnimeTmdb.isEmpty()
+        viewModel.airingSoonAnime.isEmpty() && filteredUpcomingMediaTmdb.isEmpty()
 
     Row(
         modifier = Modifier
@@ -475,6 +475,44 @@ fun ExploreScreen(
                             }
                         }
 
+                        // Önbellek Bildirim Banner'ı
+                        if (viewModel.isShowingCachedData) {
+                            item(key = "cached_data_banner") {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp, vertical = 6.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(KitsugiColors.Surface.copy(alpha = 0.5f))
+                                        .border(1.dp, accentColor.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        Text(
+                                            text = "📡",
+                                            style = MaterialTheme.typography.bodyLarge
+                                        )
+                                        Column {
+                                            Text(
+                                                text = "Çevrimdışı / Önbellek Modu",
+                                                style = MaterialTheme.typography.labelLarge,
+                                                fontWeight = FontWeight.Bold,
+                                                color = KitsugiColors.TextPrimary
+                                            )
+                                            Text(
+                                                text = "İnternet bağlantısı kesildi veya sunucu yanıt vermiyor. Son başarılı önbelleğe alınan veriler gösteriliyor.",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = KitsugiColors.TextSecondary
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         // Hata mesajı
                         if (viewModel.errorMessage != null) {
                             item(key = "error_message") {
@@ -593,7 +631,7 @@ fun ExploreScreen(
                                                 item {
                                                     ExploreCategoryChip(
                                                         label = "Yakında Yayında",
-                                                        onClick = { onSeeAllSection("Yakında Yayında", ExploreCategoryType.UPCOMING_ANIME_TMDB, filteredUpcomingAnimeTmdb) }
+                                                        onClick = onOpenAiringCalendar
                                                     )
                                                 }
                                                 item {
@@ -650,7 +688,7 @@ fun ExploreScreen(
                             }
 
                             // ─── TMDB YAKINDA YAYINDA (Upcoming TV/Movies/Anime) ───
-                            if (filteredUpcomingAnimeTmdb.isNotEmpty()) {
+                            if (filteredUpcomingMediaTmdb.isNotEmpty()) {
                                 item {
                                     Column(
                                         modifier = Modifier.fillMaxWidth()
@@ -668,7 +706,7 @@ fun ExploreScreen(
                                                 style = MaterialTheme.typography.titleLarge,
                                                 fontWeight = FontWeight.Bold
                                             )
-                                            IconButton(onClick = { onSeeAllSection("Yakında Yayında", ExploreCategoryType.UPCOMING_ANIME_TMDB, filteredUpcomingAnimeTmdb) }) {
+                                            IconButton(onClick = onOpenAiringCalendar) {
                                                 Icon(
                                                     imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
                                                     contentDescription = "Tümünü Gör",
@@ -690,8 +728,8 @@ fun ExploreScreen(
                                             ),
                                             modifier = Modifier.fillMaxWidth()
                                         ) {
-                                            items(filteredUpcomingAnimeTmdb.size) { index ->
-                                                val result = filteredUpcomingAnimeTmdb[index]
+                                            items(filteredUpcomingMediaTmdb.size) { index ->
+                                                val result = filteredUpcomingMediaTmdb[index]
                                                 AiringSoonHorizontalCard(
                                                     result = result,
                                                     alreadyInList = isAlreadyInList(result),
@@ -707,18 +745,18 @@ fun ExploreScreen(
                                 }
                             }
 
-                            // ─── TMDB TREND ANİMELER ───
+                            // ─── TMDB TREND MEDYALAR ───
                             if (filteredTrendingAnime.isNotEmpty()) {
                                 item {
                                     KitsugiHorizontalMediaSection(
-                                        title = "Trend Animeler",
+                                        title = "Trend Medyalar",
                                         results = filteredTrendingAnime,
                                         isLoading = viewModel.isLoading,
                                         alreadyInList = isAlreadyInList,
                                         getMediaEntry = getMediaEntry,
                                         onItemClick = onOpenApiDetail,
                                         onLongClickItem = onLongClickItem,
-                                        onSeeAllClick = { onSeeAllSection("Trend Animeler", ExploreCategoryType.TRENDING_ANIME, filteredTrendingAnime) },
+                                        onSeeAllClick = { onSeeAllSection("Trend Medyalar", ExploreCategoryType.TRENDING_ANIME, filteredTrendingAnime) },
                                         titleLanguage = titleLanguage,
                                         scoreFormat = scoreFormat,
                                         hideScores = hideScores,
@@ -728,18 +766,18 @@ fun ExploreScreen(
                                 }
                             }
 
-                            // ─── TMDB POPÜLER ANİMELER ───
+                            // ─── TMDB POPÜLER MEDYALAR ───
                             if (filteredNewlyAddedAnime.isNotEmpty()) {
                                 item {
                                     KitsugiHorizontalMediaSection(
-                                        title = "Popüler Animeler",
+                                        title = "Popüler Medyalar",
                                         results = filteredNewlyAddedAnime,
                                         isLoading = viewModel.isLoading,
                                         alreadyInList = isAlreadyInList,
                                         getMediaEntry = getMediaEntry,
                                         onItemClick = onOpenApiDetail,
                                         onLongClickItem = onLongClickItem,
-                                        onSeeAllClick = { onSeeAllSection("Popüler Animeler", ExploreCategoryType.NEWLY_ADDED_ANIME, filteredNewlyAddedAnime) },
+                                        onSeeAllClick = { onSeeAllSection("Popüler Medyalar", ExploreCategoryType.NEWLY_ADDED_ANIME, filteredNewlyAddedAnime) },
                                         titleLanguage = titleLanguage,
                                         scoreFormat = scoreFormat,
                                         hideScores = hideScores,

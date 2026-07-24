@@ -18,6 +18,7 @@ import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.utils.tvClickable
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayScore
+import com.kitsugi.animelist.utils.toFriendlySourceLabel
 
 @Composable
 fun HeroTopPill(
@@ -91,12 +92,7 @@ fun buildHeroMeta(
             MediaType.TvShow -> "Dizi"
         }
         add(typeLabel)
-        val sourceLabel = when (result.source.lowercase()) {
-            "anilist" -> "AniList"
-            "mal", "jikan" -> "MAL"
-            "simkl" -> "Simkl"
-            else -> result.source.uppercase()
-        }
+        val sourceLabel = result.source.toFriendlySourceLabel()
         add(sourceLabel)
         if (result.year != null) add(result.year.toString())
         if (!hideScores) {

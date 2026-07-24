@@ -81,6 +81,7 @@ import com.kitsugi.animelist.ui.components.KitsugiCinematicLoadingScreen
 import com.kitsugi.animelist.ui.components.KitsugiImageGalleryDialog
 import com.kitsugi.animelist.ui.components.KitsugiPageEnter
 import com.kitsugi.animelist.utils.copyOnDoubleTap
+import com.kitsugi.animelist.utils.toFriendlySourceLabel
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
@@ -322,7 +323,7 @@ fun StaffDetailPage(
                                         }
                                     }
                                     Column(modifier = Modifier.padding(16.dp)) {
-                                        DetailPill(text = source.uppercase(), color = accentColor)
+                                        DetailPill(text = source.toFriendlySourceLabel().uppercase(), color = accentColor)
                                         Spacer(modifier = Modifier.height(8.dp))
                                         Text(text = detail.name, modifier = Modifier.copyOnDoubleTap(context, detail.name), color = KitsugiColors.TextPrimary, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black)
                                         if (!detail.nativeName.isNullOrBlank()) {
@@ -584,7 +585,7 @@ fun StaffDetailPage(
                                             .padding(20.dp)
                                     ) {
                                         DetailPill(
-                                            text = source.uppercase(),
+                                            text = source.toFriendlySourceLabel().uppercase(),
                                             color = accentColor
                                         )
 

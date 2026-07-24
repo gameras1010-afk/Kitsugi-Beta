@@ -49,6 +49,7 @@ import com.kitsugi.animelist.ui.theme.KitsugiTvTokens
 
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayTitle
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayScore
+import com.kitsugi.animelist.utils.toFriendlySourceLabel
 
 @Composable
 fun KitsugiExploreMediaCard(
@@ -586,12 +587,7 @@ private fun buildMetaText(
             }
         }
 
-        val sourceLabel = when (result.source.lowercase()) {
-            "anilist" -> "AniList"
-            "mal", "jikan" -> "MAL"
-            "simkl" -> "Simkl"
-            else -> result.source.uppercase()
-        }
+        val sourceLabel = result.source.toFriendlySourceLabel()
         add("$sourceLabel #${result.malId}")
         if (result.isAdult) add("+18")
     }

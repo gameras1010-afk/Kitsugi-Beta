@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.kitsugi.animelist.data.remote.JikanApiClient
 import com.kitsugi.animelist.data.remote.JikanSearchResult
+import com.kitsugi.animelist.utils.toFriendlySourceLabel
 import com.kitsugi.animelist.model.MediaType
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
@@ -150,11 +151,7 @@ fun KitsugiHeroPreviewDialog(
                         text = if (result.type == MediaType.Anime) "ANIME" else "MANGA"
                     )
 
-                    val sourceLabel = when (result.source.lowercase()) {
-                        "anilist" -> "AniList"
-                        "mal", "jikan" -> "MAL"
-                        else -> result.source.uppercase()
-                    }
+                    val sourceLabel = result.source.toFriendlySourceLabel()
                     HeroPill(
                         text = sourceLabel
                     )
@@ -180,11 +177,7 @@ fun KitsugiHeroPreviewDialog(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                val sourceIdLabel = when (result.source.lowercase()) {
-                    "anilist" -> "AniList ID"
-                    "mal", "jikan" -> "MAL ID"
-                    else -> "${result.source.uppercase()} ID"
-                }
+                val sourceIdLabel = "${result.source.toFriendlySourceLabel()} ID"
                 HeroInfoRow(
                     label = sourceIdLabel,
                     value = result.malId.toString()

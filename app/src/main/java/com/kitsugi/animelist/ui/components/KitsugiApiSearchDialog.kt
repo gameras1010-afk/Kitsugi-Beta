@@ -54,6 +54,7 @@ import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.runtime.CompositionLocalProvider
 import com.kitsugi.animelist.ui.utils.KitsugiScrollDefaults
 import com.kitsugi.animelist.ui.utils.dpadVerticalFastScroll
+import com.kitsugi.animelist.utils.toFriendlySourceLabel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -797,21 +798,13 @@ private fun ApiResultPreviewDialog(
                                     value = if (result.type == MediaType.Anime) "Anime" else "Manga"
                                 )
 
-                                val sourceLabel = when (result.source.lowercase()) {
-                                    "anilist" -> "AniList"
-                                    "mal", "jikan" -> "MAL"
-                                    else -> result.source.uppercase()
-                                }
+                                val sourceLabel = result.source.toFriendlySourceLabel()
                                 PreviewInfoRow(
                                     label = "Kaynak",
                                     value = sourceLabel
                                 )
 
-                                val sourceIdLabel = when (result.source.lowercase()) {
-                                    "anilist" -> "AniList ID"
-                                    "mal", "jikan" -> "MAL ID"
-                                    else -> "${result.source.uppercase()} ID"
-                                }
+                                val sourceIdLabel = "${result.source.toFriendlySourceLabel()} ID"
                                 PreviewInfoRow(
                                     label = sourceIdLabel,
                                     value = result.malId.toString()
@@ -924,21 +917,13 @@ private fun ApiResultPreviewDialog(
                                 value = if (result.type == MediaType.Anime) "Anime" else "Manga"
                             )
 
-                            val sourceLabel = when (result.source.lowercase()) {
-                                "anilist" -> "AniList"
-                                "mal", "jikan" -> "MAL"
-                                else -> result.source.uppercase()
-                            }
+                            val sourceLabel = result.source.toFriendlySourceLabel()
                             PreviewInfoRow(
                                 label = "Kaynak",
                                 value = sourceLabel
                             )
 
-                            val sourceIdLabel = when (result.source.lowercase()) {
-                                "anilist" -> "AniList ID"
-                                "mal", "jikan" -> "MAL ID"
-                                else -> "${result.source.uppercase()} ID"
-                            }
+                            val sourceIdLabel = "${result.source.toFriendlySourceLabel()} ID"
                             PreviewInfoRow(
                                 label = sourceIdLabel,
                                 value = result.malId.toString()
@@ -1011,21 +996,13 @@ private fun ApiResultPreviewDialog(
                             value = if (result.type == MediaType.Anime) "Anime" else "Manga"
                         )
 
-                        val sourceLabel = when (result.source.lowercase()) {
-                            "anilist" -> "AniList"
-                            "mal", "jikan" -> "MAL"
-                            else -> result.source.uppercase()
-                        }
+                        val sourceLabel = result.source.toFriendlySourceLabel()
                         PreviewInfoRow(
                             label = "Kaynak",
                             value = sourceLabel
                         )
 
-                        val sourceIdLabel = when (result.source.lowercase()) {
-                            "anilist" -> "AniList ID"
-                            "mal", "jikan" -> "MAL ID"
-                            else -> "${result.source.uppercase()} ID"
-                        }
+                        val sourceIdLabel = "${result.source.toFriendlySourceLabel()} ID"
                         PreviewInfoRow(
                             label = sourceIdLabel,
                             value = result.malId.toString()
@@ -1268,11 +1245,7 @@ private fun ApiSearchResultCard(
                     fontWeight = FontWeight.Bold
                 )
 
-                val sourceLabel = when (result.source.lowercase()) {
-                    "anilist" -> "AniList"
-                    "mal", "jikan" -> "MAL"
-                    else -> result.source.uppercase()
-                }
+                val sourceLabel = result.source.toFriendlySourceLabel()
                 Text(
                     text = sourceLabel,
                     color = KitsugiColors.TextMuted,

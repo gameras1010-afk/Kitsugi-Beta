@@ -33,15 +33,15 @@ class TranslationManager(context: Context) {
         return words.count { it in turkishWords } >= 2
     }
 
-    suspend fun translateToTurkish(text: String?): String = withContext(Dispatchers.IO) {
+    suspend fun translateTo(text: String?, targetLang: String): String = withContext(Dispatchers.IO) {
         if (text.isNullOrBlank()) return@withContext ""
         
         val trimmed = text.trim()
 
         // Metin zaten Türkçeyse çevirme — gereksiz API çağrısını önle
-        if (isLikelyTurkish(trimmed)) return@withContext trimmed
+        if (targetLang == "tr" && isLikelyTurkish(trimmed)) return@withContext trimmed
 
-        val hash = md5(trimmed)
+        val hash = md5(trimmed + "_" + targetLang)
 
         // 1. Check local Room database cache
         val cached = runCatching { dao.getTranslation(hash) }.getOrNull()
@@ -50,7 +50,7 @@ class TranslationManager(context: Context) {
         }
 
         // 2. If not cached, fetch translation from Google Translate
-        val translated = fetchFromGoogle(trimmed)
+        val translated = fetchFromGoogle(trimmed, targetLang)
         
         // 3. Cache the success response in DB
         if (translated.isNotBlank() && translated != trimmed) {
@@ -63,9 +63,13 @@ class TranslationManager(context: Context) {
         return@withContext trimmed
     }
 
-    private fun fetchFromGoogle(text: String): String {
+    suspend fun translateToTurkish(text: String?): String = translateTo(text, "tr")
+
+    suspend fun translateToEnglish(text: String?): String = translateTo(text, "en")
+
+    private fun fetchFromGoogle(text: String, targetLang: String): String {
         return try {
-            val urlStr = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=tr&dt=t&q=" + 
+            val urlStr = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=" + targetLang + "&dt=t&q=" + 
                     URLEncoder.encode(text, "UTF-8")
             val request = Request.Builder()
                 .url(urlStr)

@@ -40,6 +40,7 @@ import com.kitsugi.animelist.model.MediaType
 import com.kitsugi.animelist.model.WatchStatus
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
+import com.kitsugi.animelist.utils.toFriendlySourceLabel
 
 @Composable
 fun KitsugiMediaEntryDetailDialog(
@@ -495,7 +496,7 @@ private fun DetailInfoGrid(
 
         DetailInfoRow(
             label = "Kaynak",
-            value = entry.source.uppercase()
+            value = entry.source.toFriendlySourceLabel().uppercase()
         )
 
         DetailInfoRow(
@@ -614,40 +615,7 @@ private fun DetailPill(
 
 private fun buildExternalUrl(entry: MediaEntry): String? {
     val id = entry.malId ?: return null
-
-    return when (entry.source.lowercase()) {
-        "jikan", "mal" -> {
-            when (entry.type) {
-                MediaType.Anime -> "https://myanimelist.net/anime/$id"
-                MediaType.Manga -> "https://myanimelist.net/manga/$id"
-                else -> null
-            }
-        }
-
-        "anilist" -> {
-            val aniListId = if (id >= 100_000_000) {
-                id - 100_000_000
-            } else {
-                null
-            }
-
-            if (aniListId != null && aniListId > 0) {
-                when (entry.type) {
-                    MediaType.Anime -> "https://anilist.co/anime/$aniListId"
-                    MediaType.Manga -> "https://anilist.co/manga/$aniListId"
-                    else -> null
-                }
-            } else {
-                when (entry.type) {
-                    MediaType.Anime -> "https://myanimelist.net/anime/$id"
-                    MediaType.Manga -> "https://myanimelist.net/manga/$id"
-                    else -> null
-                }
-            }
-        }
-
-        else -> null
-    }
+    return com.kitsugi.animelist.utils.ShareUtils.buildExternalMediaUrl(entry.source, id, type = entry.type)
 }
 
 private fun statusColor(status: WatchStatus): Color {

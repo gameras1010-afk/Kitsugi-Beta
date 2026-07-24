@@ -12,6 +12,6 @@ enum class ExploreCategoryType {
     TRENDING_MANGA,
     NEWLY_ADDED_ANIME,
     NEWLY_ADDED_MANGA,
-    /** TMDB'ye özgü "Yakında Yayında" animeleri — getUpcomingAnime() ile sayfalanır */
-    UPCOMING_ANIME_TMDB
+    /** TMDB'ye özgü "Yakında Yayında" içerikleri — getUpcomingMedia() ile sayfalanır */
+    UPCOMING_MEDIA_TMDB
 }

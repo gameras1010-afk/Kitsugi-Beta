@@ -37,6 +37,7 @@ import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.theme.KitsugiTvTokens
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayTitle
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayScore
+import com.kitsugi.animelist.utils.toFriendlySourceLabel
 
 import com.kitsugi.animelist.ui.utils.tvClickable
 
@@ -189,11 +190,7 @@ fun SearchResultRow(
                         fontWeight = FontWeight.SemiBold
                     )
                     
-                    val sourceLabel = when (result.source.lowercase()) {
-                        "anilist" -> "AniList"
-                        "mal", "jikan" -> "MAL"
-                        else -> result.source.uppercase()
-                    }
+                    val sourceLabel = result.source.toFriendlySourceLabel()
                     val sourceColor = when (result.source.lowercase()) {
                         "anilist" -> KitsugiColors.AccentBlue
                         else -> accentColor

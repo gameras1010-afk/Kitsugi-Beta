@@ -49,6 +49,53 @@ object ShareUtils {
         }
     }
 
+    fun buildExternalMediaUrl(source: String, id: Int, tmdbId: Int? = null, type: MediaType): String? {
+        val s = source.lowercase().trim()
+        return when (s) {
+            "jikan", "mal" -> {
+                when (type) {
+                    MediaType.Anime -> "https://myanimelist.net/anime/$id"
+                    MediaType.Manga -> "https://myanimelist.net/manga/$id"
+                    else -> null
+                }
+            }
+            "anilist" -> {
+                val aniListId = if (id >= 100_000_000) id - 100_000_000 else id
+                if (aniListId > 0) {
+                    when (type) {
+                        MediaType.Anime -> "https://anilist.co/anime/$aniListId"
+                        MediaType.Manga -> "https://anilist.co/manga/$aniListId"
+                        else -> null
+                    }
+                } else {
+                    // Fallback to MAL link
+                    when (type) {
+                        MediaType.Anime -> "https://myanimelist.net/anime/$id"
+                        MediaType.Manga -> "https://myanimelist.net/manga/$id"
+                        else -> null
+                    }
+                }
+            }
+            "tmdb" -> {
+                val realTmdbId = tmdbId ?: id
+                when (type) {
+                    MediaType.Movie -> "https://www.themoviedb.org/movie/$realTmdbId"
+                    MediaType.TvShow -> "https://www.themoviedb.org/tv/$realTmdbId"
+                    else -> null
+                }
+            }
+            "simkl" -> {
+                when (type) {
+                    MediaType.Manga -> "https://simkl.com/manga/$id"
+                    MediaType.Movie -> "https://simkl.com/movies/$id"
+                    MediaType.TvShow -> "https://simkl.com/shows/$id"
+                    else -> "https://simkl.com/anime/$id"
+                }
+            }
+            else -> null
+        }
+    }
+
     fun buildProfileUrl(source: String, username: String): String {
         return when (source.lowercase()) {
             "anilist" -> "https://anilist.co/user/$username"

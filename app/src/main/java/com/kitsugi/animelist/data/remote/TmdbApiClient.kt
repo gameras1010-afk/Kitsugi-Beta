@@ -199,16 +199,16 @@ class TmdbApiClient(
         TmdbDiscoverClient.getTopRatedShows(page, apiKey, language, ::executeGet)
     }
 
-    suspend fun getTrendingAnime(page: Int = 1): List<JikanSearchResult> = withContext(Dispatchers.IO) {
-        TmdbDiscoverClient.getTrendingAnime(page, apiKey, language, ::executeGet)
+    suspend fun getTrendingMedia(page: Int = 1): List<JikanSearchResult> = withContext(Dispatchers.IO) {
+        TmdbDiscoverClient.getTrendingMedia(page, apiKey, language, ::executeGet)
     }
 
-    suspend fun getPopularAnime(page: Int = 1): List<JikanSearchResult> = withContext(Dispatchers.IO) {
-        TmdbDiscoverClient.getPopularAnime(page, apiKey, language, ::executeGet)
+    suspend fun getPopularMedia(page: Int = 1): List<JikanSearchResult> = withContext(Dispatchers.IO) {
+        TmdbDiscoverClient.getPopularMedia(page, apiKey, language, ::executeGet)
     }
 
-    suspend fun getUpcomingAnime(page: Int = 1): List<JikanSearchResult> = withContext(Dispatchers.IO) {
-        TmdbDiscoverClient.getUpcomingAnime(page, apiKey, language, ::executeGet)
+    suspend fun getUpcomingMedia(page: Int = 1): List<JikanSearchResult> = withContext(Dispatchers.IO) {
+        TmdbDiscoverClient.getUpcomingMedia(page, apiKey, language, ::executeGet)
     }
 
     suspend fun discoverByGenre(genreId: Int, isMovie: Boolean): List<JikanSearchResult> = withContext(Dispatchers.IO) {

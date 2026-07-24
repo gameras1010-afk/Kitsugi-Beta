@@ -132,7 +132,7 @@ object KitsugiEpisodeRatingsRepository {
             return@withContext id
         }
 
-        val tmdbId = runCatching {
+        var tmdbId = runCatching {
             val url = URL("https://arm.haglund.dev/api/v2/ids?source=anilist&id=$aniListId")
             val response = KitsugiApiBase.executeGetRequest(url) ?: return@runCatching null
             val json = JSONObject(response)
@@ -179,8 +179,35 @@ object KitsugiEpisodeRatingsRepository {
             null
         }
 
+        // Fallback to animeapi.my.id if ARM failed or returned null
+        if (tmdbId == null) {
+            tmdbId = runCatching {
+                val url = URL("https://animeapi.my.id/anilist/$aniListId")
+                val response = KitsugiApiBase.executeGetRequest(url) ?: return@runCatching null
+                val json = JSONObject(response)
+                val value = json.optInt("themoviedb", -1)
+                if (value > 0) {
+                    val malId = if (json.isNull("myanimelist")) null else json.optInt("myanimelist", -1).takeIf { it > 0 }
+                    val existing = dao?.getByTmdbId(value)
+                    val updated = existing?.copy(aniListId = aniListId, malId = malId ?: existing.malId) ?: MediaMetaCacheEntity(
+                        tmdbId = value,
+                        malId = malId,
+                        aniListId = aniListId,
+                        logoUrl = null,
+                        logoNotFound = false
+                    )
+                    dao?.insert(updated)
+                    Log.d(TAG, "Room write (AnimeAPI AniList): aniListId=$aniListId → tmdbId=$value")
+                    value
+                } else null
+            }.getOrElse {
+                Log.w(TAG, "AnimeAPI lookup failed for aniListId=$aniListId: ${it.message}")
+                null
+            }
+        }
+
         mutex.withLock { malToTmdbCache[cacheKey] = tmdbId }
-        Log.d(TAG, "ARM lookup: aniListId=$aniListId → tmdbId=$tmdbId")
+        Log.d(TAG, "ARM lookup (with fallback): aniListId=$aniListId → tmdbId=$tmdbId")
         tmdbId
     }
 
@@ -439,7 +466,7 @@ object KitsugiEpisodeRatingsRepository {
             return@withContext id
         }
 
-        val tmdbId = runCatching {
+        var tmdbId = runCatching {
             val url = URL("https://arm.haglund.dev/api/v2/ids?source=myanimelist&id=$malId")
             val response = KitsugiApiBase.executeGetRequest(url) ?: return@runCatching null
             val json = JSONObject(response)
@@ -465,8 +492,35 @@ object KitsugiEpisodeRatingsRepository {
             null
         }
 
+        // Fallback to animeapi.my.id if ARM failed or returned null
+        if (tmdbId == null) {
+            tmdbId = runCatching {
+                val url = URL("https://animeapi.my.id/myanimelist/$malId")
+                val response = KitsugiApiBase.executeGetRequest(url) ?: return@runCatching null
+                val json = JSONObject(response)
+                val value = json.optInt("themoviedb", -1)
+                if (value > 0) {
+                    val aniListId = if (json.isNull("anilist")) null else json.optInt("anilist", -1).takeIf { it > 0 }
+                    val existing = dao?.getByTmdbId(value)
+                    val updated = existing?.copy(malId = malId, aniListId = aniListId ?: existing.aniListId) ?: MediaMetaCacheEntity(
+                        tmdbId = value,
+                        malId = malId,
+                        aniListId = aniListId,
+                        logoUrl = null,
+                        logoNotFound = false
+                    )
+                    dao?.insert(updated)
+                    Log.d(TAG, "Room write (AnimeAPI MAL): malId=$malId → tmdbId=$value")
+                    value
+                } else null
+            }.getOrElse {
+                Log.w(TAG, "AnimeAPI lookup failed for malId=$malId: ${it.message}")
+                null
+            }
+        }
+
         mutex.withLock { malToTmdbCache[malId] = tmdbId }
-        Log.d(TAG, "ARM lookup: malId=$malId → tmdbId=$tmdbId")
+        Log.d(TAG, "ARM lookup (with fallback): malId=$malId → tmdbId=$tmdbId")
         tmdbId
     }
 

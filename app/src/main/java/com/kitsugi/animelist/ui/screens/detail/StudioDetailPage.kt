@@ -50,6 +50,7 @@ import com.kitsugi.animelist.ui.components.KitsugiImageGalleryDialog
 import com.kitsugi.animelist.ui.components.KitsugiPageEnter
 import com.kitsugi.animelist.ui.components.KitsugiCinematicLoadingScreen
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayTitle
+import com.kitsugi.animelist.utils.toFriendlySourceLabel
 
 import android.content.res.Configuration
 import androidx.compose.ui.platform.LocalConfiguration
@@ -652,7 +653,7 @@ private fun StudioHeroHeader(
                 )
 
                 DetailPill(
-                    text = source.uppercase(),
+                    text = source.toFriendlySourceLabel().uppercase(),
                     color = KitsugiColors.TextSecondary
                 )
 

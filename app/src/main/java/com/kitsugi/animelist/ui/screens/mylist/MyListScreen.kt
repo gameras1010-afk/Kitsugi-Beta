@@ -59,6 +59,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.animateDpAsState
+import com.kitsugi.animelist.ui.components.KitsugiMotion
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.zIndex
@@ -142,7 +144,9 @@ fun MyListScreen(
     onSyncMal: () -> Unit,
     onSyncSimkl: () -> Unit,
     onEntryClick: (MediaEntry) -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    isBottomBarVisible: Boolean = true,
+    onScrollReset: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -710,6 +714,10 @@ fun MyListScreen(
                 val scrollingUp   = index < prevIndex || (index == prevIndex && offset < prevOffset - 15)
                 // Header collapse
                 showHeader = (index == 0 && offset < 100)
+                // Reset scroll/show bottom bar at top
+                if (index == 0 && offset == 0) {
+                    onScrollReset()
+                }
                 // Scroll-to-top FAB
                 showScrollToTopState = index > 3
                 // FAB (Tümü) görünürlüğü
@@ -910,22 +918,31 @@ fun MyListScreen(
     // ── Scroll-aware floating category button ──
     val isTv = com.kitsugi.animelist.ui.theme.LocalIsTvDevice.current
     if (!isTv) {
+        val navigationBarsPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+        val bottomPadding by animateDpAsState(
+            targetValue = if (isLandscape) {
+                16.dp
+            } else if (isBottomBarVisible) {
+                64.dp + navigationBarsPadding
+            } else {
+                16.dp + navigationBarsPadding
+            },
+            animationSpec = tween(durationMillis = KitsugiMotion.fastMillis + 50),
+            label = "fab_bottom_padding"
+        )
+
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
             // Tümü (Kategori) button on the Bottom-Start (Bottom-Left)
             AnimatedVisibility(
-                visible = isFabVisible,
+                visible = isFabVisible && isBottomBarVisible,
                 enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
                 exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .padding(
-                        bottom = if (isLandscape) {
-                            16.dp
-                        } else {
-                            64.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-                        },
+                        bottom = bottomPadding,
                         start = 20.dp
                     )
                     .zIndex(10f)
@@ -969,11 +986,7 @@ fun MyListScreen(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(
-                        bottom = if (isLandscape) {
-                            16.dp
-                        } else {
-                            64.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-                        },
+                        bottom = bottomPadding,
                         end = 20.dp
                     )
                     .zIndex(10f)
@@ -987,6 +1000,7 @@ fun MyListScreen(
                             coroutineScope.launch {
                                 val activeState = tabScrollStates[selectedTabIndex.coerceIn(0, 2)]
                                 activeState.animateScrollToItem(0)
+                                onScrollReset()
                             }
                         },
                     contentAlignment = Alignment.Center

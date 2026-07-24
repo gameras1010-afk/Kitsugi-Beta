@@ -41,7 +41,7 @@ object KitsugiShikimoriClient {
                             rolesArr.optString(0)
                         } else "Supporting"
 
-                        val charName = charObj.optString("name", "Bilinmeyen")
+                        val charName = translateIfRussian(charObj.optString("name", "Bilinmeyen"))
                         val relativeImg = charObj.optJSONObject("image")?.optString("original")
                         val imageUrl = relativeImg?.let { if (it.startsWith("/")) "https://shikimori.one$it" else it }
 
@@ -50,7 +50,7 @@ object KitsugiShikimoriClient {
                         if (personObj != null) {
                             val vaId = personObj.optInt("id")
                             if (vaId > 0) {
-                                val vaName = personObj.optString("name", "Bilinmeyen")
+                                val vaName = translateIfRussian(personObj.optString("name", "Bilinmeyen"))
                                 val vaRelativeImg = personObj.optJSONObject("image")?.optString("original")
                                 val vaImageUrl = vaRelativeImg?.let { if (it.startsWith("/")) "https://shikimori.one$it" else it }
                                 vaList.add(
@@ -119,7 +119,7 @@ object KitsugiShikimoriClient {
                                 rolesArr.optString(0)
                             } else "Staff"
 
-                            val staffName = personObj.optString("name", "Bilinmeyen")
+                            val staffName = translateIfRussian(personObj.optString("name", "Bilinmeyen"))
                             val relativeImg = personObj.optJSONObject("image")?.optString("original")
                             val imageUrl = relativeImg?.let { if (it.startsWith("/")) "https://shikimori.one$it" else it }
 
@@ -152,7 +152,7 @@ object KitsugiShikimoriClient {
                     val response = KitsugiApiBase.executeGetRequest(url) ?: return@runWithRateLimit null
                     val data = JSONObject(response)
 
-                    val charName = data.optString("name", "Bilinmeyen")
+                    val charName = translateIfRussian(data.optString("name", "Bilinmeyen"))
                     val nativeName = data.optNullableString("japanese")
                     val alternativeNames = mutableListOf<String>()
                     val altname = data.optNullableString("altname")
@@ -162,7 +162,7 @@ object KitsugiShikimoriClient {
 
                     val relativeImg = data.optJSONObject("image")?.optString("original")
                     val imageUrl = relativeImg?.let { if (it.startsWith("/")) "https://shikimori.one$it" else it }
-                    val biography = data.optNullableString("description")?.cleanApiText()
+                    val biography = translateIfRussian(data.optNullableString("description")?.cleanApiText())
 
                     val gender = null
                     val age = null
@@ -177,7 +177,7 @@ object KitsugiShikimoriClient {
                             val seyuId = seyuItem.optInt("id")
                             if (seyuId <= 0) continue
 
-                            val seyuName = seyuItem.optString("name", "Bilinmeyen")
+                            val seyuName = translateIfRussian(seyuItem.optString("name", "Bilinmeyen"))
                             val seyuRelativeImg = seyuItem.optJSONObject("image")?.optString("original")
                             val seyuImageUrl = seyuRelativeImg?.let { if (it.startsWith("/")) "https://shikimori.one$it" else it }
 
@@ -201,7 +201,7 @@ object KitsugiShikimoriClient {
                             val animeId = animeItem.optInt("id")
                             if (animeId <= 0) continue
 
-                            val animeTitle = animeItem.optString("name", "Bilinmeyen")
+                            val animeTitle = translateIfRussian(animeItem.optString("name", "Bilinmeyen"))
                             val animeRelativeImg = animeItem.optJSONObject("image")?.optString("original")
                             val animeImageUrl = animeRelativeImg?.let { if (it.startsWith("/")) "https://shikimori.one$it" else it }
                             val kind = animeItem.optString("kind", "tv")
@@ -231,7 +231,7 @@ object KitsugiShikimoriClient {
                             val mangaId = mangaItem.optInt("id")
                             if (mangaId <= 0) continue
 
-                            val mangaTitle = mangaItem.optString("name", "Bilinmeyen")
+                            val mangaTitle = translateIfRussian(mangaItem.optString("name", "Bilinmeyen"))
                             val mangaRelativeImg = mangaItem.optJSONObject("image")?.optString("original")
                             val mangaImageUrl = mangaRelativeImg?.let { if (it.startsWith("/")) "https://shikimori.one$it" else it }
 
@@ -282,10 +282,10 @@ object KitsugiShikimoriClient {
                     val response = KitsugiApiBase.executeGetRequest(url) ?: return@runWithRateLimit null
                     val data = JSONObject(response)
 
-                    val staffName = data.optString("name", "Bilinmeyen")
+                    val staffName = translateIfRussian(data.optString("name", "Bilinmeyen"))
                     val nativeName = data.optNullableString("japanese")
                     val alternativeNames = mutableListOf<String>()
-                    val biography = data.optNullableString("biography")?.cleanApiText()
+                    val biography = translateIfRussian(data.optNullableString("biography")?.cleanApiText())
 
                     val birthday = data.optNullableString("birth_on")
                     val homeTown = data.optNullableString("birth_place")
@@ -305,12 +305,12 @@ object KitsugiShikimoriClient {
                             val animeObj = roleObj.optJSONObject("anime") ?: roleObj.optJSONObject("manga")
 
                             val charId = charObj.optInt("id")
-                            val charName = charObj.optString("name", "Bilinmeyen") ?: "Bilinmeyen"
+                            val charName = translateIfRussian(charObj.optString("name", "Bilinmeyen"))
                             val charRelativeImg = charObj.optJSONObject("image")?.optString("original")
                             val charImg = charRelativeImg?.let { if (it.startsWith("/")) "https://shikimori.one$it" else it }
 
                             val mediaId = animeObj?.optInt("id") ?: 0
-                            val mediaTitle = animeObj?.optString("name", "Bilinmeyen") ?: "Bilinmeyen"
+                            val mediaTitle = translateIfRussian(animeObj?.optString("name", "Bilinmeyen") ?: "Bilinmeyen")
                             val mediaRelativeImg = animeObj?.optJSONObject("image")?.optString("original")
                             val mediaImg = mediaRelativeImg?.let { if (it.startsWith("/")) "https://shikimori.one$it" else it }
                             val mediaTypeStr = animeObj?.optString("kind", "tv") ?: "manga"
@@ -343,7 +343,7 @@ object KitsugiShikimoriClient {
                             val mediaId = animeObj.optInt("id")
                             if (mediaId <= 0) continue
 
-                            val mediaTitle = animeObj.optString("name", "Bilinmeyen") ?: "Bilinmeyen"
+                            val mediaTitle = translateIfRussian(animeObj.optString("name", "Bilinmeyen") ?: "Bilinmeyen")
                             val mediaRelativeImg = animeObj.optJSONObject("image")?.optString("original")
                             val mediaImg = mediaRelativeImg?.let { if (it.startsWith("/")) "https://shikimori.one$it" else it }
                             val mediaTypeStr = animeObj.optString("kind", "tv") ?: "tv"
@@ -381,6 +381,59 @@ object KitsugiShikimoriClient {
                     )
                 }
             }.getOrNull()
+        }
+    }
+
+    private suspend fun translateRussianToEnglish(text: String?): String {
+        if (text.isNullOrBlank()) return ""
+        if (!text.any { it in '\u0400'..'\u04FF' }) return text
+
+        val context = com.kitsugi.animelist.KitsugiApplication.getInstance()?.applicationContext
+        return if (context != null) {
+            val translationManager = com.kitsugi.animelist.data.local.TranslationManager(context)
+            translationManager.translateToEnglish(text)
+        } else {
+            directTranslateToEnglish(text)
+        }
+    }
+
+    private fun directTranslateToEnglish(text: String): String {
+        return try {
+            val urlStr = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=" + 
+                    java.net.URLEncoder.encode(text, "UTF-8")
+            val request = okhttp3.Request.Builder()
+                .url(urlStr)
+                .header("User-Agent", "Mozilla/5.0")
+                .build()
+            com.kitsugi.animelist.core.network.KitsugiHttpClient.client.newCall(request).execute().use { response ->
+                if (response.isSuccessful) {
+                    val responseText = response.body?.string() ?: return text
+                    val jsonArray = org.json.JSONArray(responseText)
+                    val sentences = jsonArray.optJSONArray(0) ?: return text
+                    val result = java.lang.StringBuilder()
+                    for (i in 0 until sentences.length()) {
+                        val sentence = sentences.optJSONArray(i)
+                        val translatedPart = sentence?.optString(0)
+                        if (translatedPart != null) {
+                            result.append(translatedPart)
+                        }
+                    }
+                    result.toString()
+                } else {
+                    text
+                }
+            }
+        } catch (e: java.lang.Exception) {
+            text
+        }
+    }
+
+    private suspend fun translateIfRussian(text: String?): String {
+        if (text.isNullOrBlank()) return ""
+        return if (text.any { it in '\u0400'..'\u04FF' }) {
+            translateRussianToEnglish(text)
+        } else {
+            text
         }
     }
 }

@@ -123,33 +123,38 @@ fun KitsugiImageGalleryDialog(
         properties = DialogProperties(
             usePlatformDefaultWidth = false,
             dismissOnBackPress = true,
-            dismissOnClickOutside = false
+            dismissOnClickOutside = false,
+            decorFitsSystemWindows = false
         )
     ) {
-        AnimatedVisibility(
-            visible = isAnimatedVisible,
-            enter = slideInVertically(
-                initialOffsetY = { it },
-                animationSpec = tween(durationMillis = 300, easing = EaseOutCubic)
-            ) + fadeIn(animationSpec = tween(300)),
-            exit = slideOutVertically(
-                targetOffsetY = { it },
-                animationSpec = tween(durationMillis = 280, easing = EaseInCubic)
-            ) + fadeOut(animationSpec = tween(280))
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(
-                                KitsugiColors.Surface.copy(alpha = 0.97f),
-                                KitsugiColors.Background.copy(alpha = 0.99f)
-                            ),
-                            radius = 1800f
-                        )
-                    )
+        // Dış Box şeffaf — arka plan AnimatedVisibility içinde kalarak
+        // çıkış animasyonuyla birlikte solup gider (peek artefaktını önler).
+        Box(modifier = Modifier.fillMaxSize()) {
+            AnimatedVisibility(
+                visible = isAnimatedVisible,
+                enter = slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = tween(durationMillis = 300, easing = EaseOutCubic)
+                ) + fadeIn(animationSpec = tween(300)),
+                exit = slideOutVertically(
+                    targetOffsetY = { it },
+                    animationSpec = tween(durationMillis = 280, easing = EaseInCubic)
+                ) + fadeOut(animationSpec = tween(280)),
+                modifier = Modifier.fillMaxSize()
             ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.radialGradient(
+                                colors = listOf(
+                                    KitsugiColors.Surface.copy(alpha = 0.97f),
+                                    KitsugiColors.Background.copy(alpha = 0.99f)
+                                ),
+                                radius = 1800f
+                            )
+                        )
+                ) {
                 // Ambient glow behind current image
                 Box(
                     modifier = Modifier
@@ -308,6 +313,7 @@ fun KitsugiImageGalleryDialog(
                 }
             }
         }
+    }
     }
 }
 

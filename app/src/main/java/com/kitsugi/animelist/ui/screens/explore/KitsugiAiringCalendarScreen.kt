@@ -189,7 +189,8 @@ fun KitsugiAiringCalendarScreen(
             isGridView = isGridView,
             onGridViewChange = { isGridView = it },
             onRefresh = { viewModel.loadSchedule(preferredSource = preferredSource, force = true) },
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
+            isTmdb = preferredSource == "tmdb"
         )
 
         // ── Gün sekmeleri ──────────────────────────────────────────────────
@@ -257,7 +258,8 @@ private fun AiringCalendarHeader(
     isGridView: Boolean,
     onGridViewChange: (Boolean) -> Unit,
     onRefresh: () -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    isTmdb: Boolean = false
 ) {
     Row(
         modifier = Modifier
@@ -289,7 +291,7 @@ private fun AiringCalendarHeader(
             )
             if (totalCount > 0) {
                 Text(
-                    text = "$totalCount bölüm",
+                    text = if (isTmdb) "$totalCount içerik" else "$totalCount bölüm",
                     style = MaterialTheme.typography.labelSmall,
                     color = KitsugiColors.TextSecondary
                 )
@@ -841,7 +843,7 @@ fun AiringEntryCard(
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = "Bölüm ${entry.episode}",
+                        text = if (entry.episode == 0) "Film" else "Bölüm ${entry.episode}",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Medium,
                         color = accentColor
@@ -931,7 +933,9 @@ private fun AiringTimeText(entry: AiringEntry, episode: Int? = null) {
         text = "${entry.formattedTime()} • Yayında"
     }
 
-    val displayText = if (episode != null) "$episode. Bölüm • $text" else text
+    val displayText = if (episode != null) {
+        if (episode == 0) "Film • $text" else "$episode. Bölüm • $text"
+    } else text
 
     Text(
         text = displayText,

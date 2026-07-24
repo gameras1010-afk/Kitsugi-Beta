@@ -531,3 +531,16 @@ fun String.parseToMediaType(): MediaType {
         else -> MediaType.Anime
     }
 }
+
+fun String.toFriendlySourceLabel(): String {
+    return when (this.lowercase().trim()) {
+        "jikan", "mal" -> "MyAnimeList"
+        "anilist" -> "AniList"
+        "tmdb" -> "TMDB"
+        "shikimori" -> "Shikimori"
+        "simkl" -> "Simkl"
+        "manual" -> "Manual"
+        else -> this
+    }
+}
+

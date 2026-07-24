@@ -16,9 +16,9 @@ import kotlinx.coroutines.withContext
  * MyAnimeList / Jikan API'sinden anime/manga detay bilgisi çeker.
  * Tüm Jikan spesifik parsing mantığını barındırır.
  */
-internal object KitsugiJikanDetailClient {
+internal object KitsugiMalDetailClient {
 
-    private const val TAG = "KitsugiJikanDetail"
+    private const val TAG = "KitsugiMalDetail"
     private const val MAX_RETRIES = 3
 
     suspend fun fetchDetail(malId: Int, mediaType: MediaType): KitsugiMediaDetail? {

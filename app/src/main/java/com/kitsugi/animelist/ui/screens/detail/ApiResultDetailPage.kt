@@ -1554,40 +1554,7 @@ fun ApiResultDetailPage(
  * - Diğer     → null
  */
 private fun buildExternalUrl(result: JikanSearchResult): String? {
-    return when (result.source.lowercase()) {
-        "jikan", "mal" -> {
-            val id = result.malId
-            when (result.type) {
-                MediaType.Anime -> "https://myanimelist.net/anime/$id"
-                MediaType.Manga -> "https://myanimelist.net/manga/$id"
-                else -> null
-            }
-        }
-
-        "anilist" -> {
-            // malId >= 100_000_000 → AniList ID offset'li gömülü
-            val rawId = result.malId
-            val aniListId = if (rawId >= 100_000_000) rawId - 100_000_000 else rawId
-            if (aniListId > 0) {
-                when (result.type) {
-                    MediaType.Anime -> "https://anilist.co/anime/$aniListId"
-                    MediaType.Manga -> "https://anilist.co/manga/$aniListId"
-                    else -> null
-                }
-            } else null
-        }
-
-        "tmdb" -> {
-            val tmdbId = result.tmdbId ?: result.malId
-            when (result.type) {
-                MediaType.Movie -> "https://www.themoviedb.org/movie/$tmdbId"
-                MediaType.TvShow -> "https://www.themoviedb.org/tv/$tmdbId"
-                else -> null
-            }
-        }
-
-        else -> null
-    }
+    return com.kitsugi.animelist.utils.ShareUtils.buildExternalMediaUrl(result.source, result.malId, result.tmdbId, result.type)
 }
 
 // buildMalCrossUrl: artık kullanılmıyor (platform-specific buton mantığı buildExternalUrl'e taşındı)

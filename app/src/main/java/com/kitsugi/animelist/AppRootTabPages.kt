@@ -65,7 +65,9 @@ data class TabPagesContext(
     val onOpenMangaReader: () -> Unit,
     val onEditEntry: (MediaEntry) -> Unit,
     val onSearchByGenre: (String) -> Unit = {},
-    val onSearchByTag: (String) -> Unit = {}
+    val onSearchByTag: (String) -> Unit = {},
+    val isBottomBarVisible: Boolean = true,
+    val onScrollReset: () -> Unit = {}
 )
 
 @Composable
@@ -97,7 +99,9 @@ fun AppRootTabPages(
                     appViewModel = ctx.appViewModel,
                     authViewModel = ctx.authViewModel,
                     navState = ctx.navState,
-                    context = context
+                    context = context,
+                    isBottomBarVisible = ctx.isBottomBarVisible,
+                    onScrollReset = ctx.onScrollReset
                 )
             }
         }
@@ -135,6 +139,10 @@ fun AppRootTabPages(
                         // KitsugiAniListDetailClient 100M+ offset'e göre id: vs idMal: ayrımı yapar.
                         // Offset eklenerek doğru sorgulama sağlanır.
                         val stableId = if (source == "anilist") mediaId + 100_000_000 else mediaId
+                        // isAdult, mevcut liste kaydından türetilerek blur tutarlılığı sağlanır.
+                        val resolvedIsAdult = ctx.mediaEntries.firstOrNull { entry ->
+                            entry.malId == stableId && entry.source.equals(source, ignoreCase = true)
+                        }?.isAdult ?: false
                         val result = com.kitsugi.animelist.data.remote.JikanSearchResult(
                             malId = stableId,
                             title = title.ifBlank { "Yükleniyor..." },
@@ -142,7 +150,7 @@ fun AppRootTabPages(
                             type = mediaType,
                             total = null,
                             score = null,
-                            isAdult = false,
+                            isAdult = resolvedIsAdult,
                             imageUrl = imageUrl,
                             year = null,
                             source = source
@@ -280,7 +288,9 @@ private fun MyListTabPageWrapper(
     appViewModel: AppViewModel,
     authViewModel: AuthViewModel,
     navState: AppNavigationState,
-    context: android.content.Context
+    context: android.content.Context,
+    isBottomBarVisible: Boolean,
+    onScrollReset: () -> Unit
 ) {
     MyListScreen(
         selectedListLayoutId = appSettings.selectedListLayoutId,
@@ -330,6 +340,8 @@ private fun MyListTabPageWrapper(
         },
         onSettingsClick = {
             appViewModel.selectTab(MainTab.Settings)
-        }
+        },
+        isBottomBarVisible = isBottomBarVisible,
+        onScrollReset = onScrollReset
     )
 }

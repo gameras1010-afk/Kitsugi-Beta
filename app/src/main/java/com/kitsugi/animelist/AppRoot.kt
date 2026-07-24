@@ -898,7 +898,8 @@ fun AppRoot(
                     triggerSearchByGenre = triggerSearchByGenre,
                     triggerSearchByTag = triggerSearchByTag,
                     isAlreadyInList = ::isAlreadyInList,
-                    getMediaEntry = ::getMediaEntry
+                    getMediaEntry = ::getMediaEntry,
+                    bottomBarScrollState = bottomBarScrollState
                 )
 
                 AppBulkInstallProgress(
@@ -1034,7 +1035,8 @@ private fun AppNavigationContent(
     triggerSearchByGenre: (String) -> Unit = {},
     triggerSearchByTag: (String) -> Unit = {},
     isAlreadyInList: (JikanSearchResult) -> Boolean,
-    getMediaEntry: (JikanSearchResult) -> MediaEntry?
+    getMediaEntry: (JikanSearchResult) -> MediaEntry?,
+    bottomBarScrollState: com.kitsugi.animelist.utils.ScrollVisibilityState
 ) {
 
     AnimatedContent(
@@ -1102,7 +1104,8 @@ private fun AppNavigationContent(
                     },
                     triggerSearch = triggerSearch,
                     triggerSearchByGenre = triggerSearchByGenre,
-                    triggerSearchByTag = triggerSearchByTag
+                    triggerSearchByTag = triggerSearchByTag,
+                    onScrollReset = { bottomBarScrollState.show() }
                 )
             }
 
@@ -1172,7 +1175,9 @@ private fun AppNavigationContent(
                         onOpenMangaReader = onOpenMangaReader,
                         onEditEntry = onEditEntry,
                         onSearchByGenre = triggerSearchByGenre,
-                        onSearchByTag = triggerSearchByTag
+                        onSearchByTag = triggerSearchByTag,
+                        isBottomBarVisible = bottomBarScrollState.isVisible,
+                        onScrollReset = { bottomBarScrollState.show() }
                     )
                 )
             }

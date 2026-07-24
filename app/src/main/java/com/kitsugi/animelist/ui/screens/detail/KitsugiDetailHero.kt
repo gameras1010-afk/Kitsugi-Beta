@@ -52,6 +52,7 @@ import coil3.compose.AsyncImage
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.utils.copyOnDoubleTap
+import com.kitsugi.animelist.utils.toFriendlySourceLabel
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -316,7 +317,7 @@ fun KitsugiDetailHero(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 HeroDetailPill(
-                    text = source.uppercase(),
+                    text = source.toFriendlySourceLabel().uppercase(),
                     color = accentColor
                 )
 

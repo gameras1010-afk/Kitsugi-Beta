@@ -21,9 +21,11 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         MangaMappingEntity::class,
         SearchHistoryEntity::class,
         HistoryEntity::class,                 // 🎬 İzleme geçmişi
-        VideoEntity::class                   // 📹 Video cache/çözümleme
+        VideoEntity::class,                  // 📹 Video cache/çözümleme
+        ExploreCacheEntity::class,           // 📂 Explore page cache
+        PersistentDetailCacheEntity::class   // 📂 Media details cache
     ],
-    version = 23,
+    version = 24,
     exportSchema = true  // T3-03/TASK-106: KSP → $projectDir/schemas/ konumuna yazar
 )
 abstract class KitsugiDatabase : RoomDatabase() {
@@ -40,6 +42,8 @@ abstract class KitsugiDatabase : RoomDatabase() {
     abstract fun searchHistoryDao(): SearchHistoryDao
     abstract fun historyDao(): HistoryDao                           // 🎬 İzleme geçmişi
     abstract fun videoDao(): VideoDao                               // 📹 Video cache/çözümleme
+    abstract fun exploreCacheDao(): ExploreCacheDao
+    abstract fun persistentDetailCacheDao(): PersistentDetailCacheDao
 
 
     companion object {
@@ -327,6 +331,31 @@ abstract class KitsugiDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_23_24 = object : Migration(23, 24) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE media_meta_cache ADD COLUMN kitsuId TEXT DEFAULT NULL")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_media_meta_cache_kitsuId ON media_meta_cache(kitsuId)")
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `explore_cache` (
+                        `categoryKey` TEXT PRIMARY KEY NOT NULL,
+                        `payloadJson` TEXT NOT NULL,
+                        `cachedAtMs` INTEGER NOT NULL
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `persistent_details_cache` (
+                        `cacheKey` TEXT PRIMARY KEY NOT NULL,
+                        `detailJson` TEXT NOT NULL,
+                        `cachedAtMs` INTEGER NOT NULL
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
+
         fun getDatabase(context: Context): KitsugiDatabase {
             return INSTANCE ?: synchronized(this) {
                 val builder = Room.databaseBuilder(
@@ -355,7 +384,8 @@ abstract class KitsugiDatabase : RoomDatabase() {
                         MIGRATION_19_20,   // ✨ Altyazı alanları
                         MIGRATION_20_21,    // ✨ Arama geçmişi
                         MIGRATION_21_22,   // 🎬 İzleme geçmişi
-                        MIGRATION_22_23    // 📹 Video cache/çözümleme
+                        MIGRATION_22_23,   // 📹 Video cache/çözümleme
+                        MIGRATION_23_24    // 📂 Üçlü Fallback / Explore Cache
                     )
                 
                 // T3-03: Güvenlik sertleştirmesi — Üretim sürümünde verilerin kazara sıfırlanmasını engeller.

@@ -16,9 +16,15 @@ interface MediaMetaCacheDao {
     @Query("SELECT * FROM media_meta_cache WHERE aniListId = :aniListId")
     suspend fun getByAniListId(aniListId: Int): MediaMetaCacheEntity?
 
+    @Query("SELECT * FROM media_meta_cache WHERE kitsuId = :kitsuId")
+    suspend fun getByKitsuId(kitsuId: String): MediaMetaCacheEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(cache: MediaMetaCacheEntity)
 
     @Query("DELETE FROM media_meta_cache")
     suspend fun clearAll()
+
+    @Query("SELECT COUNT(*) FROM media_meta_cache")
+    suspend fun getCount(): Int
 }

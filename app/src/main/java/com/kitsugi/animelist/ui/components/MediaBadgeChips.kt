@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kitsugi.animelist.R
 import com.kitsugi.animelist.ui.theme.KitsugiColors
+import com.kitsugi.animelist.utils.toFriendlySourceLabel
 
 // ─────────────────────────────────────────────────────────────────────────────
 // V2-A03 – ImdbRatingSourceLabel
@@ -50,12 +51,13 @@ fun ImdbRatingSourceLabel(
     source: String = "imdb",
     modifier: Modifier = Modifier
 ) {
-    val (bgColor, textColor, label) = when (source.lowercase()) {
-        "imdb"    -> Triple(Color(0xFFF5C518), Color.Black, "IMDb")
-        "simkl"   -> Triple(Color(0xFF1F2744), Color.White, "SIMKL")
-        "anilist" -> Triple(Color(0xFF02A9FF), Color.White, "AniList")
-        "mal"     -> Triple(Color(0xFF2E51A2), Color.White, "MAL")
-        else      -> Triple(KitsugiColors.SurfaceSoft, KitsugiColors.TextPrimary, source.uppercase())
+    val friendlySource = source.toFriendlySourceLabel()
+    val (bgColor, textColor, label) = when (friendlySource.lowercase()) {
+        "imdb"        -> Triple(Color(0xFFF5C518), Color.Black, "IMDb")
+        "simkl"       -> Triple(Color(0xFF1F2744), Color.White, "SIMKL")
+        "anilist"     -> Triple(Color(0xFF02A9FF), Color.White, "AniList")
+        "myanimelist" -> Triple(Color(0xFF2E51A2), Color.White, "MyAnimeList")
+        else          -> Triple(KitsugiColors.SurfaceSoft, KitsugiColors.TextPrimary, friendlySource)
     }
 
     Row(

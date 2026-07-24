@@ -171,6 +171,44 @@ class KitsugiApplication : Application(), SingletonImageLoader.Factory {
             }
         }
 
+        // Schedule offline mapping database sync periodically (every 14 days)
+        applicationScope.launch {
+            try {
+                val db = KitsugiDatabase.getDatabase(this@KitsugiApplication)
+                val count = db.mediaMetaCacheDao().getCount()
+                
+                // One-time sync on first run if database is empty
+                if (count == 0) {
+                    val oneTimeRequest = androidx.work.OneTimeWorkRequestBuilder<com.kitsugi.animelist.data.local.MappingSyncWorker>()
+                        .build()
+                    androidx.work.WorkManager.getInstance(this@KitsugiApplication).enqueueUniqueWork(
+                        "mapping_sync_one_time",
+                        androidx.work.ExistingWorkPolicy.KEEP,
+                        oneTimeRequest
+                    )
+                }
+
+                // Periodic sync
+                val workRequest = androidx.work.PeriodicWorkRequestBuilder<com.kitsugi.animelist.data.local.MappingSyncWorker>(
+                    14, java.util.concurrent.TimeUnit.DAYS
+                )
+                    .setConstraints(
+                        androidx.work.Constraints.Builder()
+                            .setRequiredNetworkType(androidx.work.NetworkType.UNMETERED) // Wi-Fi only
+                            .setRequiresBatteryNotLow(true)
+                            .build()
+                    )
+                    .build()
+                androidx.work.WorkManager.getInstance(this@KitsugiApplication).enqueueUniquePeriodicWork(
+                    "mapping_sync_work",
+                    androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+                    workRequest
+                )
+            } catch (e: Exception) {
+                android.util.Log.e("KitsugiApplication", "Failed to schedule mapping sync: ${e.message}")
+            }
+        }
+
         // ── Otomatik Arka Plan Liste Yenileme ──────────────────────────────────────
         // AniHyou / MoeList gibi: uygulama açıldığında bağlı platformların listelerini
         // sessizce arka planda yeniler. Son yenilemeden 24 saat geçmemişse atlar.

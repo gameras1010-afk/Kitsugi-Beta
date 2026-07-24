@@ -4,22 +4,16 @@
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI — Yeni Güncelleme
 
-### 📅 TMDB Yayın Takvimi Entegrasyonu ve Platform Senkronizasyonu
-- **TMDB Sekmesi ve Genel İçerik Desteği**: TMDB sekmesindeki "Yakında Yayında" (Airing Soon) ve Yayın Takvimi bölümleri artık sadece animeleri değil, TMDB üzerindeki tüm popüler/yaklaşan genel dizi ve filmleri (her şeyi) gösterecek şekilde güncellendi.
-- **Platform Akıllı Yönlendirme**: Yayın Takvimi, hangi sekmeden açıldığını tespit ederek dinamik yönlendirme gerçekleştirir:
-  - **TMDB Sekmesinde**: Tüm vizyondaki dizi/filmleri gösterir ve detayları TMDB üzerinden açar.
-  - **AniList Sekmesinde**: Animeleri gösterir ve AniList detay sayfasını açar.
-  - **MAL Sekmesinde**: Animeleri gösterir ve tıklandığında doğrudan MyAnimeList (MAL) detay sayfasını açar.
-- **Performans ve Kararlılık**: TMDB API keşif istekleri optimize edilerek sayfa yüklenme hızları artırıldı ve takvim sayfasındaki veri tutarsızlıkları tamamen giderildi.
+### 👤 Profil Arayüzü İyileştirmeleri ve Kararlılık Güncellemeleri
+- **isAdult Filtre Entegrasyonu**: Profil sekmesindeki favori medyaya tıklandığında, `isAdult` özelliği kütüphane kayıtlarından otomatik olarak okunarak detay sayfasına doğru şekilde iletilir. Bu sayede yetişkin içerikli medyalardaki "+18 Sansür/Blur" koruması ilk kareden itibaren doğru şekilde çalışır.
+- **Akıllı Navigasyon Çubuğu Kontrolü**: Kullanıcı profili ekranında listenin en üstüne kaydırıldığında (Scroll to Top) alt navigasyon barı (`bottomBar`) otomatik olarak yeniden görünür hale getirildi.
+- **Pürüzsüz Galeri Kapatma Efekti**: Resim galerisinden çıkış yaparken arka planda oluşan kısa süreli "parlama/peek" hatası düzeltildi. Arka plan karartması ve galeri içeriği çıkış animasyonuyla tam senkronize olacak şekilde kararıp kapanır.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES — Latest Update
 
-### 📅 TMDB Airing Calendar Integration & Platform Sync
-- **TMDB Tab & General Content Support**: Updated the "Yakında Yayında" (Airing Soon) and Airing Calendar sections under the TMDB tab to display all general TV shows and movies on the air, not just anime.
-- **Smart Platform Routing**: The Airing Calendar dynamically adapts based on the active explore tab:
-  - **TMDB Tab**: Shows all general movies/TV shows and opens details via TMDB.
-  - **AniList Tab**: Shows airing anime and opens details via AniList.
-  - **MAL Tab**: Shows airing anime and routes details directly to MyAnimeList (MAL).
-  - **Performance & Stability**: Optimized TMDB API discovery requests to improve page load times and eliminated data inconsistencies in the calendar stream.
+### 👤 Profile UI Stabilization & Blur Propagation Updates
+- **isAdult Propagation for Favorites**: When clicking a favorite media item on the profile screen, the `isAdult` flag is correctly propagated from library entries to the detail view. This ensures the cinematic loading screen displays adult media blurs instantly from the first frame.
+- **Scroll-Aware Bottom Nav Reset**: Enabled scroll-aware bottom navigation resetting on the user profile page. Scrolling back to the top of the list automatically restores the visibility of the bottom navigation bar.
+- **Smooth Image Gallery Exit**: Fixed the brief background flash/peek artifact when exiting the image gallery. The background dim/scrim and gallery content now fade out in full synchronization.
