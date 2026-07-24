@@ -19,9 +19,19 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.PhotoLibrary
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -102,6 +112,15 @@ internal fun EntryDetailOverviewTab(
                 items = galleryItems,
                 onItemClick = { index ->
                     onGalleryItemRequest?.invoke(galleryItems, index)
+                },
+                onOpenGallery = { category ->
+                    // İlk eşleşen görselden başla
+                    val startIndex = if (category == null) {
+                        0
+                    } else {
+                        galleryItems.indexOfFirst { it.category == category }.coerceAtLeast(0)
+                    }
+                    onGalleryItemRequest?.invoke(galleryItems, startIndex)
                 }
             )
         }
@@ -213,7 +232,8 @@ internal fun EntryDetailOverviewTab(
 @Composable
 private fun DetailGalleryCard(
     items: List<GalleryItem>,
-    onItemClick: (index: Int) -> Unit
+    onItemClick: (index: Int) -> Unit,
+    onOpenGallery: ((category: GalleryCategory?) -> Unit)? = null
 ) {
     val accentColor = LocalKitsugiAccent.current
 
@@ -226,24 +246,126 @@ private fun DetailGalleryCard(
             .padding(vertical = 14.dp)
     ) {
         // Section header
+        var showCategoryMenu by remember { mutableStateOf(false) }
+
+        // Mevcut kategorileri hesapla (sıralı)
+        val availableCategories = remember(items) {
+            val order = listOf(
+                GalleryCategory.LOGO,
+                GalleryCategory.BACKDROP,
+                GalleryCategory.POSTER,
+                GalleryCategory.CHARACTER,
+                GalleryCategory.THUMBNAIL,
+                GalleryCategory.BANNER,
+                GalleryCategory.OTHER
+            )
+            order.filter { cat -> items.any { it.category == cat } }
+        }
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(start = 16.dp, end = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Resimler",
-                color = KitsugiColors.TextPrimary,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "${items.size} görsel",
-                color = KitsugiColors.TextMuted,
-                style = MaterialTheme.typography.labelSmall
-            )
+            Column {
+                Text(
+                    text = "Resimler",
+                    color = KitsugiColors.TextPrimary,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "${items.size} görsel · ${availableCategories.size} kategori",
+                    color = KitsugiColors.TextMuted,
+                    style = MaterialTheme.typography.labelSmall
+                )
+            }
+
+            // Kategori seçici buton
+            Box {
+                IconButton(
+                    onClick = { showCategoryMenu = true }
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.PhotoLibrary,
+                        contentDescription = "Galeriyi Aç",
+                        tint = accentColor,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = showCategoryMenu,
+                    onDismissRequest = { showCategoryMenu = false },
+                    containerColor = KitsugiColors.Surface,
+                ) {
+                    // "Tümü" seçeneği
+                    DropdownMenuItem(
+                        text = {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(text = "📂", style = MaterialTheme.typography.bodyMedium)
+                                Text(
+                                    text = "Tümü (${items.size})",
+                                    color = KitsugiColors.TextPrimary,
+                                    fontWeight = FontWeight.SemiBold,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        },
+                        onClick = {
+                            showCategoryMenu = false
+                            onOpenGallery?.invoke(null)
+                        }
+                    )
+
+                    availableCategories.forEach { category ->
+                        val count = items.count { it.category == category }
+                        val emoji = when (category) {
+                            GalleryCategory.LOGO      -> "🎨"
+                            GalleryCategory.BACKDROP  -> "🖼"
+                            GalleryCategory.POSTER    -> "📋"
+                            GalleryCategory.CHARACTER -> "🎭"
+                            GalleryCategory.THUMBNAIL -> "🌐"
+                            GalleryCategory.BANNER    -> "🎫"
+                            GalleryCategory.OTHER     -> "📁"
+                        }
+                        val label = when (category) {
+                            GalleryCategory.LOGO      -> "Logo"
+                            GalleryCategory.BACKDROP  -> "Arka Plan"
+                            GalleryCategory.POSTER    -> "Poster"
+                            GalleryCategory.CHARACTER -> "Karakter"
+                            GalleryCategory.THUMBNAIL -> "Küçük Resim"
+                            GalleryCategory.BANNER    -> "Afiş"
+                            GalleryCategory.OTHER     -> "Diğer"
+                        }
+                        DropdownMenuItem(
+                            text = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(text = emoji, style = MaterialTheme.typography.bodyMedium)
+                                    Text(
+                                        text = "$label ($count)",
+                                        color = KitsugiColors.TextPrimary,
+                                        fontWeight = FontWeight.Medium,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+                            },
+                            onClick = {
+                                showCategoryMenu = false
+                                onOpenGallery?.invoke(category)
+                            }
+                        )
+                    }
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(6.dp))
@@ -317,6 +439,9 @@ private fun DetailGalleryCard(
                                 "fanart.tv" -> Color(0xFF9C27B0)
                                 "tmdb"      -> Color(0xFF00C853)
                                 "jikan"     -> Color(0xFF00B0FF)
+                                "anilist"   -> Color(0xFF3DB4F2)
+                                "simkl"     -> Color(0xFFE50914)
+                                "kitsu"     -> Color(0xFFFD5C63)
                                 else        -> accentColor
                             }
 

@@ -41,6 +41,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
+import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -228,6 +229,26 @@ fun StudioDetailPage(
                                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
+                                            if (!detail.imageUrl.isNullOrBlank()) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(40.dp)
+                                                        .clip(CircleShape)
+                                                        .background(accentColor.copy(alpha = 0.22f)),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    IconButton(onClick = {
+                                                        activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                                        activeGalleryIndex = 0
+                                                    }) {
+                                                        Icon(
+                                                            imageVector = Icons.Rounded.Image,
+                                                            contentDescription = "Galeri",
+                                                            tint = accentColor
+                                                        )
+                                                    }
+                                                }
+                                            }
                                             Box(
                                                 modifier = Modifier
                                                     .size(40.dp)
@@ -360,7 +381,11 @@ fun StudioDetailPage(
                                     onBackClick = onBackClick,
                                     isFavourite = isFavourite,
                                     isAniListSource = showFavouriteButton,
-                                    onToggleFavourite = { viewModel.toggleFavourite() }
+                                    onToggleFavourite = { viewModel.toggleFavourite() },
+                                    onGalleryClick = if (!detail.imageUrl.isNullOrBlank()) {{
+                                        activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                        activeGalleryIndex = 0
+                                    }} else null
                                 )
                             }
 
@@ -458,6 +483,18 @@ fun StudioDetailPage(
                                     overflow = TextOverflow.Ellipsis,
                                     modifier = Modifier.weight(1f)
                                 )
+                                if (!detail.imageUrl.isNullOrBlank()) {
+                                    IconButton(onClick = {
+                                        activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                        activeGalleryIndex = 0
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Image,
+                                            contentDescription = "Galeri",
+                                            tint = accentColor
+                                        )
+                                    }
+                                }
                                 IconButton(onClick = {
                                     val url = com.kitsugi.animelist.utils.ShareUtils.buildStudioUrl(source, studioId)
                                     com.kitsugi.animelist.utils.ShareUtils.shareText(context, detail.name, url)
@@ -505,7 +542,8 @@ private fun StudioHeroHeader(
     onBackClick: () -> Unit,
     isFavourite: Boolean = false,
     isAniListSource: Boolean = false,
-    onToggleFavourite: () -> Unit = {}
+    onToggleFavourite: () -> Unit = {},
+    onGalleryClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
 
@@ -588,6 +626,23 @@ private fun StudioHeroHeader(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                if (onGalleryClick != null) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(accentColor.copy(alpha = 0.22f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        IconButton(onClick = onGalleryClick) {
+                            Icon(
+                                imageVector = Icons.Rounded.Image,
+                                contentDescription = "Galeri",
+                                tint = accentColor
+                            )
+                        }
+                    }
+                }
                 Box(
                     modifier = Modifier
                         .size(40.dp)

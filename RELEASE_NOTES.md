@@ -1,64 +1,61 @@
-# Kitsugi Release Notes 🚀
+# Kitsugi v2.4.95 Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### 🖼️ Yeniden Yapılandırılan Resim Galerisi
-- **Kategorize Edilmiş Resim Bölümleri:** Medya detay sayfasındaki "Resimler" bölümü artık görselleri düz bir liste olarak değil, her biri kendi emoji başlığıyla ayrı yatay satırlarda gösteriyor:
-  - 🎨 Logo (Fanart.tv hdtvlogo / hdmovielogo)
-  - 🖼 Arka Plan (Fanart.tv showbackground / TMDB backdrops)
-  - 📋 Poster (Fanart.tv tvposter / TMDB posters / Jikan)
-  - 🎭 Karakter (Fanart.tv characterart)
-  - 🌐 Küçük Resim (Fanart.tv tvthumb)
-- **Platform Kaynak Etiketleri:** Her küçük resmin üzerinde hangi platformdan (Fanart.tv / TMDB / Jikan) geldiğini gösteren renkli rozet eklendi.
-- **Galeri Diyaloğunda Akıllı Sekme Seçimi:** Detay sayfasında bir resme tıklandığında galeri diyaloğu otomatik olarak o resmin kategorisini üstteki sekmelerden seçili hale getiriyor. Kullanıcı sekmeler arasında kolayca geçiş yapabilir.
-- **Doğru İndeks Eşleşmesi:** Tıklanan resim, galeri diyaloğunda tam olarak karşısına açılıyor; sayfa kaymaları veya indeks hataları giderildi.
+### 🖼️ Standart Galeri Butonu — Karakter, Ekip & Stüdyo Sayfaları
+- **Yeni Galeri Butonu:** Karakter, Ekip Üyesi ve Stüdyo detay sayfalarının başlık alanına "Galeri" butonu (🖼️) eklendi.
+- **Paylaş butonunun hemen yanında:** Galeri butonu Paylaş ve Favori butonlarıyla aynı hizada, tutarlı konumda görünüyor.
+- **Koşullu Görünürlük:** Buton yalnızca o sayfa için geçerli bir resim mevcut olduğunda gösteriliyor; resim yoksa düzen bozulmuyor.
+- **Tek Dokunuşla Galeri:** Butona tıklayınca `KitsugiImageGalleryDialog` açılıyor ve resim tam ekranda incelenebiliyor.
+- **Yatay & Dikey Uyum:** Hem portre hem de yatay ekran düzeninde (tablet / TV) düzgün çalışıyor.
+- **Kayan Başlık Desteği:** Aşağı kaydırmada beliren sticky başlık barına da galeri butonu eklendi.
 
 ### 🎨 Fanart.tv Medya Galerisi Entegrasyonu
 - **Çoklu Kaynak Galerisi:** Fanart.tv, TMDB ve Jikan'dan gelen tüm görseller tek bir galeri yapısında birleştirilip kategorilere ayrılıyor.
-- **Otomatik TVDB Kimlik Çözümleme:** Anime içerikleri için TVDB ID'leri ARM API üzerinden otomatik çözümleniyor.
-- **Entegrasyon Ayarları:** Ayarlar > Entegrasyonlar altında Fanart.tv sekmesi; API anahtarı girişi ve etkinleştirme seçeneğiyle birlikte sunuluyor.
+- **Kategorize Edilmiş Bölümler:** Görseller türüne göre ayrı satırlarda gösteriliyor:
+  - 🎨 Logo — 🖼 Arka Plan — 📋 Poster — 🎭 Karakter Sanatı — 🌐 Küçük Resim
+- **Platform Kaynak Etiketleri:** Her görsel üzerinde hangi platformdan geldiğini gösteren renkli rozet.
+- **Akıllı Galeri Filtresi:** Bir görsele tıklandığında galeri diyaloğu otomatik olarak o kategoriye geçiyor.
+- **Fanart.tv Ayarları:** Ayarlar → Entegrasyonlar altından API anahtarı girilebilir, özellik açılıp kapatılabilir.
 
 ### 🛡️ Sistem Genelinde NSFW Flulaştırma
-- **Merkezi `KitsugiNsfwImage` Bileşeni:** Tüm el ile yazılmış `Modifier.blur` kullanımları kaldırılarak merkezi bileşene geçildi.
-- **Otomatik ve Tutarlı Gizleme:** Keşfet, Profil ve tüm medya ekranlarında yetişkin içerik görselleri kullanıcı ayarına göre sistem genelinde flulaştırılıyor.
+- **Merkezi `KitsugiNsfwImage` Bileşeni:** Tüm el ile yazılmış `Modifier.blur` kullanımları merkezi bileşene taşındı.
+- **Tutarlı Otomatik Gizleme:** Keşfet, Profil ve tüm medya ekranlarında yetişkin içerikler kullanıcı tercihine göre sistem genelinde flulaştırılıyor.
 
 ### 🎬 Gelişmiş Video Oynatıcı Kontrolleri
 - **Kalite Seçimi:** Tam ekran oynatıcıya dinamik akış kalitesi seçim menüsü eklendi.
-- **Çoklu Ses İzi:** Birden fazla ses izi varsa ses izi butonu görünür, tek ise otomatik gizleniyor.
-- **Otomatik Kontrol Gizleme:** Oynatıcı arayüzü belirli süre sonra otomatik olarak gizleniyor.
+- **Akıllı Ses İzi Butonu:** Birden fazla ses izi varsa buton görünür, tek ise otomatik gizleniyor.
+- **Otomatik Kontrol Gizleme:** Oynatıcı arayüzü belirli süre işlemsiz kalırsa otomatik olarak gizleniyor.
+
+### 🎙️ Ses Sanatçısı Normalizasyonu
+- **Ad Soyad Formatı:** Tüm ses sanatçısı isimleri "Soyad, Ad" yerine "Ad Soyad" formatında gösteriliyor.
+- **Dil Öncelikli Sıralama:** Japonca → İngilizce → Türkçe → Alfabetik sıraya göre listeleniyor.
 
 ### 📱 Modernize Edilmiş Kullanıcı Medya Listesi
 - **Kaydırma ile Sekme Geçişi:** `HorizontalPager` ile Anime/Manga sekmeleri arasında parmak kaydırmayla geçiş yapılabiliyor.
 - **Gizlenebilir Arama Çubuğu:** Aşağı kaydırmada arama çubuğu gizleniyor, yukarı kaydırmada geri geliyor.
 
-### 🎙️ Ses Sanatçısı Normalizasyonu
-- **Ad Soyad Formatı:** Tüm ses sanatçısı isimleri "Soyad, Ad" yerine "Ad Soyad" formatında gösteriliyor.
-- **Dil Öncelikli Sıralama:** Japonca > İngilizce > Türkçe > Alfabetik sıraya göre listeleniyor.
-
-### 📅 Birleştirilmiş Yayın Takvimi
-- **Ortak Veri Altyapısı:** TMDB, AniList ve MAL'ın "Yakında" içerikleri tek bir Yayın Takvimi akışında toplandı.
-
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### 🖼️ Reconstructed Image Gallery
-- **Categorized Sections:** The "Resimler" (Images) section on the media detail page now displays assets in named, emoji-prefixed rows instead of a flat list:
-  - 🎨 Logo (Fanart.tv hdtvlogo / hdmovielogo)
-  - 🖼 Backdrop (Fanart.tv showbackground / TMDB backdrops)
-  - 📋 Poster (Fanart.tv tvposter / TMDB posters / Jikan)
-  - 🎭 Character Art (Fanart.tv characterart)
-  - 🌐 Thumbnail (Fanart.tv tvthumb)
-- **Platform Source Badges:** Each thumbnail now displays a colored badge indicating its source (Fanart.tv / TMDB / Jikan).
-- **Smart Pre-selected Filter Tab:** Tapping an image in the detail page opens the gallery dialog with the matching category tab automatically pre-selected for instant context.
-- **Correct Index Matching:** The gallery opens precisely on the tapped image, with all index-mismatch and scroll-reset issues resolved.
+### 🖼️ Standardized Gallery Button — Character, Staff & Studio Pages
+- **New Gallery Button:** A gallery button (🖼️) has been added to the hero action bar of Character, Staff, and Studio detail pages.
+- **Alongside Share & Favorite:** The button is consistently placed next to the Share and Favorite icons in all layouts.
+- **Conditional Visibility:** The button only appears when a valid image is available for that entity — no empty space when there's nothing to show.
+- **One-Tap Gallery:** Tapping the button opens `KitsugiImageGalleryDialog` for full-screen image browsing.
+- **Portrait & Landscape Support:** Works correctly in both portrait and landscape (tablet/TV) orientations.
+- **Floating Header Support:** The gallery button is also included in the sticky collapse header that appears on scroll.
 
 ### 🎨 Fanart.tv Media Gallery Integration
 - **Multi-Source Gallery:** Assets from Fanart.tv, TMDB, and Jikan are merged and categorized into a unified gallery structure.
-- **Automatic TVDB ID Resolution:** Anime entries resolve TVDB IDs automatically via the ARM API for seamless Fanart.tv lookups.
-- **Settings Integration:** A dedicated Fanart.tv tab under Settings > Integrations allows entering an API key and toggling the feature.
+- **Categorized Sections:** Images are displayed in labeled horizontal rows by type:
+  - 🎨 Logo — 🖼 Backdrop — 📋 Poster — 🎭 Character Art — 🌐 Thumbnail
+- **Platform Source Badges:** Each thumbnail displays a colored badge indicating its origin (Fanart.tv / TMDB / Jikan).
+- **Smart Pre-selected Filter Tab:** Tapping an image opens the gallery dialog with the matching category tab automatically pre-selected.
+- **Settings Integration:** Fanart.tv API key and toggle available under Settings → Integrations.
 
 ### 🛡️ System-Wide NSFW Blurring
 - **Centralized `KitsugiNsfwImage` Component:** All manual `Modifier.blur` calls replaced with a single centralized wrapper.
@@ -66,16 +63,13 @@
 
 ### 🎬 Advanced Video Player Controls
 - **Quality Selection:** Dynamic streaming quality selector added to the full-screen player overlay.
-- **Smart Audio Track Button:** The audio track button is shown only when multiple tracks are available.
+- **Smart Audio Track Button:** Audio track button is shown only when multiple tracks are available; hidden otherwise.
 - **Auto-Hide Overlay:** Player controls auto-hide after inactivity for an uninterrupted viewing experience.
+
+### 🎙️ Normalized Voice Actors
+- **First Last Format:** Voice actor names standardized from "LastName, FirstName" to "FirstName LastName".
+- **Language-Priority Sort:** Sorted by Japanese → English → Turkish → Alphabetical.
 
 ### 📱 Modernized User Media List
 - **Swipe Navigation:** `HorizontalPager` integration for gesture-based Anime/Manga tab switching.
 - **Scroll-Aware Search Bar:** Search bar hides on downward scroll and reappears on upward scroll.
-
-### 🎙️ Normalized Voice Actors
-- **First Last Format:** Voice actor names standardized from "LastName, FirstName" to "FirstName LastName".
-- **Language-Priority Sort:** Sorted by Japanese > English > Turkish > Alphabetical.
-
-### 📅 Unified Airing Calendar
-- **Consolidated Pipelines:** TMDB, AniList, and MAL upcoming/airing feeds unified into a single calendar pipeline.

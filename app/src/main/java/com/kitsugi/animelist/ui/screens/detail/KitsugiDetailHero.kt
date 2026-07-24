@@ -1,6 +1,7 @@
 package com.kitsugi.animelist.ui.screens.detail
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import com.kitsugi.animelist.ui.utils.tvClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Tv
@@ -75,6 +77,7 @@ fun KitsugiDetailHero(
     alreadyInList: Boolean = false,
     blurAdultMedia: Boolean = false,
     onShareClick: (() -> Unit)? = null,
+    onGalleryClick: (() -> Unit)? = null,
     totalEpisodes: Int? = null,
     nextAiring: String? = null,
     showFavoriteButton: Boolean = false,
@@ -163,6 +166,31 @@ fun KitsugiDetailHero(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Galeri butonu (resimler yüklendiğinde görünür)
+                if (onGalleryClick != null) {
+                    val accentColorLocal = LocalKitsugiAccent.current
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(accentColorLocal.copy(alpha = 0.22f))
+                            .border(
+                                width = 1.dp,
+                                color = accentColorLocal.copy(alpha = 0.45f),
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        IconButton(onClick = onGalleryClick) {
+                            Icon(
+                                imageVector = Icons.Rounded.Image,
+                                contentDescription = "Galeri",
+                                tint = accentColorLocal
+                            )
+                        }
+                    }
+                }
+
                 Box(
                     modifier = Modifier
                         .size(40.dp)

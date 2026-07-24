@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ContentCopy
+import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Favorite
@@ -325,6 +326,29 @@ fun CharacterDetailPage(
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
 
+                                                if (!detail.imageUrl.isNullOrBlank()) {
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .size(40.dp)
+                                                            .clip(CircleShape)
+                                                            .background(accentColor.copy(alpha = 0.22f))
+                                                            .then(
+                                                                Modifier.padding(1.dp)
+                                                            ),
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        IconButton(onClick = {
+                                                            activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                                            activeGalleryIndex = 0
+                                                        }) {
+                                                            Icon(
+                                                                imageVector = Icons.Rounded.Image,
+                                                                contentDescription = "Galeri",
+                                                                tint = accentColor
+                                                            )
+                                                        }
+                                                    }
+                                                }
 
                                                 Box(
                                                     modifier = Modifier
@@ -647,6 +671,26 @@ fun CharacterDetailPage(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
 
+                                            if (!detail.imageUrl.isNullOrBlank()) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(40.dp)
+                                                        .clip(CircleShape)
+                                                        .background(accentColor.copy(alpha = 0.22f)),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    IconButton(onClick = {
+                                                        activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                                        activeGalleryIndex = 0
+                                                    }) {
+                                                        Icon(
+                                                            imageVector = Icons.Rounded.Image,
+                                                            contentDescription = "Galeri",
+                                                            tint = accentColor
+                                                        )
+                                                    }
+                                                }
+                                            }
 
                                             Box(
                                                 modifier = Modifier
@@ -768,6 +812,18 @@ fun CharacterDetailPage(
                                                 overflow = TextOverflow.Ellipsis,
                                                 modifier = Modifier.weight(1f)
                                             )
+                                            if (!detail.imageUrl.isNullOrBlank()) {
+                                                IconButton(onClick = {
+                                                    activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                                    activeGalleryIndex = 0
+                                                }) {
+                                                    Icon(
+                                                        imageVector = Icons.Rounded.Image,
+                                                        contentDescription = "Galeri",
+                                                        tint = accentColor
+                                                    )
+                                                }
+                                            }
                                             IconButton(onClick = {
                                                 val url = com.kitsugi.animelist.utils.ShareUtils.buildCharacterUrl(source, characterId)
                                                 com.kitsugi.animelist.utils.ShareUtils.shareText(context, detail.name, url)

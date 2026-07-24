@@ -27,6 +27,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material3.AlertDialog
@@ -776,6 +777,18 @@ fun MediaEntryDetailPage(
                                             contentDescription = "Paylaş",
                                             tint = KitsugiColors.TextSecondary
                                         )
+                                    }
+                                    if (galleryItems.isNotEmpty()) {
+                                        IconButton(onClick = {
+                                            activeGalleryItems = galleryItems
+                                            activeGalleryItemIndex = 0
+                                        }) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Image,
+                                                contentDescription = "Galeri",
+                                                tint = accentColor
+                                            )
+                                        }
                                     }
                                     if (showFavouriteButton) {
                                         IconButton(onClick = onToggleFavoriteClick) {

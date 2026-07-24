@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ContentCopy
+import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Share
@@ -309,6 +310,27 @@ fun StaffDetailPage(
                                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
+
+                                                if (!detail.imageUrl.isNullOrBlank()) {
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .size(40.dp)
+                                                            .clip(CircleShape)
+                                                            .background(accentColor.copy(alpha = 0.22f)),
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        IconButton(onClick = {
+                                                            activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                                            activeGalleryIndex = 0
+                                                        }) {
+                                                            Icon(
+                                                                imageVector = Icons.Rounded.Image,
+                                                                contentDescription = "Galeri",
+                                                                tint = accentColor
+                                                            )
+                                                        }
+                                                    }
+                                                }
 
                                                 Box(
                                                     modifier = Modifier
@@ -567,6 +589,27 @@ fun StaffDetailPage(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
 
+                                            if (!detail.imageUrl.isNullOrBlank()) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(40.dp)
+                                                        .clip(CircleShape)
+                                                        .background(accentColor.copy(alpha = 0.22f)),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    IconButton(onClick = {
+                                                        activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                                        activeGalleryIndex = 0
+                                                    }) {
+                                                        Icon(
+                                                            imageVector = Icons.Rounded.Image,
+                                                            contentDescription = "Galeri",
+                                                            tint = accentColor
+                                                        )
+                                                    }
+                                                }
+                                            }
+
                                             Box(
                                                 modifier = Modifier
                                                     .size(40.dp)
@@ -686,6 +729,18 @@ fun StaffDetailPage(
                                                 overflow = TextOverflow.Ellipsis,
                                                 modifier = Modifier.weight(1f)
                                             )
+                                            if (!detail.imageUrl.isNullOrBlank()) {
+                                                IconButton(onClick = {
+                                                    activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                                    activeGalleryIndex = 0
+                                                }) {
+                                                    Icon(
+                                                        imageVector = Icons.Rounded.Image,
+                                                        contentDescription = "Galeri",
+                                                        tint = accentColor
+                                                    )
+                                                }
+                                            }
                                             IconButton(onClick = {
                                                 val url = com.kitsugi.animelist.utils.ShareUtils.buildStaffUrl(source, staffId)
                                                 com.kitsugi.animelist.utils.ShareUtils.shareText(context, detail.name, url)

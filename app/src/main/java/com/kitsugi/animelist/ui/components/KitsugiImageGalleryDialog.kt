@@ -319,6 +319,9 @@ fun KitsugiImageGalleryDialog(
                                                 "fanart.tv" -> Color(0xFF9C27B0) // Violet
                                                 "tmdb" -> Color(0xFF00C853) // Green
                                                 "jikan" -> Color(0xFF00B0FF) // Blue
+                                                "anilist" -> Color(0xFF3DB4F2) // AniList blue
+                                                "simkl" -> Color(0xFFE50914) // Simkl red
+                                                "kitsu" -> Color(0xFFFD5C63) // Kitsu reddish-orange
                                                 else -> accentColor
                                             }
                                             Box(

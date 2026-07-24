@@ -223,6 +223,11 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
                 _detailLoading.value = false
             }
             try {
+                fetchFanartGallery(entry)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching Fanart gallery (post-detail): ${e.message}", e)
+            }
+            try {
                 fetchSynopsis(entry)
             } catch (e: Exception) {
                 Log.e(TAG, "Error fetching synopsis: ${e.message}", e)
@@ -411,12 +416,16 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
                 }
                 else -> entry.malId?.let { KitsugiEpisodeRatingsRepository.resolveTmdbIdFromMal(it) }
             }
-        } ?: return
+        }
 
         val isMovie = entry.type == MediaType.Movie
 
-        val fanartItems = withContext(Dispatchers.IO) {
-            KitsugiEpisodeRatingsRepository.getFanartGalleryItems(tmdbId, isMovie)
+        val fanartItems = if (tmdbId != null && tmdbId > 0) {
+            withContext(Dispatchers.IO) {
+                KitsugiEpisodeRatingsRepository.getFanartGalleryItems(tmdbId, isMovie)
+            }
+        } else {
+            emptyList()
         }
 
         // Mevcut TMDB/Jikan resimlerini de GalleryItem'a çevir ve birleştir
@@ -424,19 +433,15 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
         val existingItems = buildList {
             val entryImageUrl = entry.imageUrl
             if (!entryImageUrl.isNullOrBlank()) {
-                add(GalleryItem(url = entryImageUrl, source = "Jikan", category = GalleryCategory.POSTER))
+                val src = determineSource(entryImageUrl, entry.source)
+                val cat = determineCategory(entryImageUrl, GalleryCategory.POSTER)
+                add(GalleryItem(url = entryImageUrl, source = src, category = cat))
             }
             currentDetail?.pictures?.forEach { url ->
                 if (url.isNotBlank()) {
-                    val isTmdb = url.contains("image.tmdb.org")
-                    val category = when {
-                        isTmdb && (url.contains("/w1280") || url.contains("backdrop")) -> GalleryCategory.BACKDROP
-                        isTmdb && (url.contains("/w780") || url.contains("poster")) -> GalleryCategory.POSTER
-                        !isTmdb -> GalleryCategory.POSTER // Jikan pictures are posters
-                        else -> GalleryCategory.OTHER
-                    }
-                    val source = if (isTmdb) "TMDB" else "Jikan"
-                    add(GalleryItem(url = url, source = source, category = category))
+                    val src = determineSource(url, entry.source)
+                    val cat = determineCategory(url, GalleryCategory.POSTER)
+                    add(GalleryItem(url = url, source = src, category = cat))
                 }
             }
         }
@@ -445,6 +450,42 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
         val merged = (fanartItems + existingItems)
             .distinctBy { it.url }
         _galleryItems.value = merged
+    }
+
+    private fun determineSource(url: String, fallbackSource: String): String {
+        val lowerUrl = url.lowercase()
+        return when {
+            lowerUrl.contains("fanart.tv") -> "Fanart.tv"
+            lowerUrl.contains("image.tmdb.org") || lowerUrl.contains("tmdb.org") -> "TMDB"
+            lowerUrl.contains("anilist.co") -> "AniList"
+            lowerUrl.contains("simkl.in") || lowerUrl.contains("simkl.com") -> "Simkl"
+            lowerUrl.contains("myanimelist.net") || lowerUrl.contains("jikan.moe") -> "Jikan"
+            lowerUrl.contains("kitsu.io") -> "Kitsu"
+            else -> {
+                when (fallbackSource.lowercase()) {
+                    "anilist" -> "AniList"
+                    "tmdb" -> "TMDB"
+                    "simkl" -> "Simkl"
+                    "jikan" -> "Jikan"
+                    "mal" -> "Jikan"
+                    "kitsu" -> "Kitsu"
+                    else -> fallbackSource.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+                }
+            }
+        }
+    }
+
+    private fun determineCategory(url: String, defaultCategory: GalleryCategory): GalleryCategory {
+        val lowerUrl = url.lowercase()
+        return when {
+            lowerUrl.contains("logo") || lowerUrl.contains("clearart") -> GalleryCategory.LOGO
+            lowerUrl.contains("backdrop") || lowerUrl.contains("background") || lowerUrl.contains("/w1280") || lowerUrl.contains("showbackground") -> GalleryCategory.BACKDROP
+            lowerUrl.contains("poster") || lowerUrl.contains("/w780") || lowerUrl.contains("/w500") || lowerUrl.contains("/w342") || lowerUrl.contains("coverimage") || lowerUrl.contains("large_image_url") -> GalleryCategory.POSTER
+            lowerUrl.contains("character") || lowerUrl.contains("actor") || lowerUrl.contains("voiceactor") -> GalleryCategory.CHARACTER
+            lowerUrl.contains("thumb") || lowerUrl.contains("still") || lowerUrl.contains("/w300") || lowerUrl.contains("/w185") -> GalleryCategory.THUMBNAIL
+            lowerUrl.contains("banner") -> GalleryCategory.BANNER
+            else -> defaultCategory
+        }
     }
 
     private suspend fun fetchSynopsis(entry: MediaEntry) {
