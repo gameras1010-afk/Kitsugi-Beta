@@ -9,6 +9,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kitsugi.animelist.data.remote.AiringEntry
 import com.kitsugi.animelist.data.remote.KitsugiAiringCalendarClient
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -31,20 +33,33 @@ class KitsugiAiringCalendarViewModel : ViewModel() {
 
     private var lastLoadedSource: String? = null
 
-    init {
-        loadSchedule()
-    }
+    /**
+     * Uçuştaki önceki isteği iptal etmek için Job referansı.
+     * Race condition önleme: init yerine LaunchedEffect(preferredSource) başlatır.
+     * init { loadSchedule() } KASTEN KALDIRILDI:
+     *  - init null/AniList isteği başlatır
+     *  - LaunchedEffect aynı anda TMDB isteği başlatır
+     *  - Hangisi geç biterse öncekinin verisini siler → yanlış veri gösterilir
+     * Çözüm: Her platform kendi ViewModel key'ine sahip, LaunchedEffect yönetir.
+     */
+    private var loadJob: Job? = null
 
     fun loadSchedule(accessToken: String? = null, preferredSource: String? = null, force: Boolean = false) {
         if (!force && lastLoadedSource == preferredSource && weekSchedule.isNotEmpty()) return
+
+        // Önceki uçuştaki isteği iptal et — race condition önlemek için kritik
+        loadJob?.cancel()
+
         lastLoadedSource = preferredSource
-        viewModelScope.launch {
+        loadJob = viewModelScope.launch {
             isLoading = true
             errorMessage = null
             try {
                 val schedule = client.fetchWeeklySchedule(accessToken, preferredSource)
                 weekSchedule.clear()
                 weekSchedule.putAll(schedule)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 errorMessage = "Takvim yüklenemedi: ${e.message}"
             } finally {

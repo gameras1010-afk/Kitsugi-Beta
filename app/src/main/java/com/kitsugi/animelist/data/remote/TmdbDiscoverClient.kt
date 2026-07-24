@@ -294,25 +294,29 @@ internal object TmdbDiscoverClient {
         val cacheKey = "upcoming_media_$page"
         get(cacheKey)?.let { return@withContext it }
 
-        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
-
-        val tvUrl = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&first_air_date.gte=$today&sort_by=first_air_date.asc&page=$page"
+        // tv/on_the_air: Bu hafta yayında olan diziler — hepsi posterlidir
+        val tvUrl = "https://api.themoviedb.org/3/tv/on_the_air?api_key=$apiKey&language=$language&page=$page"
         val tvResult = parseTmdbDiscoverList(tvUrl, MediaType.TvShow, executeGet)
 
-        val movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&primary_release_date.gte=$today&sort_by=primary_release_date.asc&page=$page"
+        // movie/upcoming: TMDB resmi yakında çıkacak filmler endpointi — hepsi posterlidir
+        val movieUrl = "https://api.themoviedb.org/3/movie/upcoming?api_key=$apiKey&language=$language&page=$page"
         val movieResult = parseTmdbDiscoverList(movieUrl, MediaType.Movie, executeGet)
 
         val merged = mutableListOf<JikanSearchResult>()
         merged.addAll(tvResult)
         merged.addAll(movieResult)
 
-        val result = merged.sortedBy { item ->
-            item.nextAiringEpisode?.split("|")?.getOrNull(1)?.toLongOrNull() ?: Long.MAX_VALUE
-        }.take(20)
+        // Sadece poster/görseli olan öğeleri dahil et; nextAiringEpisode'a göre sırala
+        val result = merged
+            .filter { it.imageUrl != null }
+            .sortedBy { item ->
+                item.nextAiringEpisode?.split("|")?.getOrNull(1)?.toLongOrNull() ?: Long.MAX_VALUE
+            }.take(20)
 
         if (result.isNotEmpty()) put(cacheKey, result)
         result
     }
+
 
 
     // ── Backdrop by Title ───────────────────────────────────────────────────────

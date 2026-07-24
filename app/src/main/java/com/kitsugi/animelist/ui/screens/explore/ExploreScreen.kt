@@ -1565,25 +1565,34 @@ fun AiringSoonHorizontalCard(
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Sol Taraf: Poster
         Box(
             modifier = Modifier
                 .width(60.dp)
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(8.dp))
-                .background(KitsugiColors.SurfaceSoft)
+                .background(KitsugiColors.SurfaceSoft),
+            contentAlignment = Alignment.Center
         ) {
-            AsyncImage(
-                model = result.imageUrl,
-                contentDescription = displayTitle,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .then(
-                        if (blurAdultMedia && result.isAdult) Modifier.blur(24.dp)
-                        else Modifier
-                    )
-            )
+            if (!result.imageUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = result.imageUrl,
+                    contentDescription = displayTitle,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(
+                            if (blurAdultMedia && result.isAdult) Modifier.blur(24.dp)
+                            else Modifier
+                        )
+                )
+            } else {
+                Text(
+                    text = displayTitle.take(2).uppercase(),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Black,
+                    color = KitsugiColors.Accent
+                )
+            }
         }
 
         Spacer(modifier = Modifier.width(10.dp))

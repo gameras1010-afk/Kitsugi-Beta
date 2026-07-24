@@ -127,7 +127,7 @@ fun KitsugiAiringCalendarScreen(
     onOpenAiringEntry: (AiringEntry) -> Unit = {},
     onBackClick: () -> Unit = {},
     preferredSource: String = "anilist",
-    viewModel: KitsugiAiringCalendarViewModel = viewModel()
+    viewModel: KitsugiAiringCalendarViewModel = viewModel(key = "calendar_$preferredSource")
 ) {
     LaunchedEffect(preferredSource) {
         viewModel.loadSchedule(preferredSource = preferredSource)
