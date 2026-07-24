@@ -35,10 +35,13 @@ object FanartApiClient {
 
     /**
      * Dahili (yedek) Fanart.tv proje API anahtarı.
-     * Kullanıcı kendi anahtarını girmese bile Fanart.tv entegrasyonu çalışır.
+     * Kullanıcı kendi anahtarını girmezse bu anahtar kullanılır.
+     * NOT: Fanart.tv project API keys expire or can become invalid.
+     * Always prefer the user's own key via Settings → Integrations.
+     *
      * Öncelik sırası:
-     *  1. Kullanıcının ayarlardan girdiği kişisel API anahtarı
-     *  2. Bu built-in proje anahtarı (rate-limit paylaşımlı)
+     *  1. Kullanıcının ayarlardan girdiği kişisel API anahtarı  → api_key olarak gönderilir
+     *  2. Bu built-in proje anahtarı (rate-limit paylaşımlı)    → api_key olarak gönderilir
      */
     private const val BUILT_IN_API_KEY = "7e8fce70b5cc0dc7c9b3b2b2741a9e92"
 
@@ -48,6 +51,21 @@ object FanartApiClient {
      */
     fun getActiveApiKey(userKey: String = ""): String =
         userKey.trim().ifBlank { BUILT_IN_API_KEY }
+
+    /**
+     * Fanart.tv istek URL'sini oluşturur.
+     *
+     * - Kullanıcı kendi API anahtarını girmişse → api_key = userKey (en güvenilir yol)
+     * - Kullanıcı anahtarı yoksa               → api_key = BUILT_IN_API_KEY
+     *
+     * [apiKey] parametresi [getActiveApiKey] sonucu olmalıdır (zaten doğru anahtarı içerir).
+     */
+    private fun buildUrl(endpoint: String, id: Int, apiKey: String): java.net.URL {
+        val trimmedKey = apiKey.trim().ifBlank { BUILT_IN_API_KEY }
+        val urlString = "$BASE_URL/$endpoint/$id?api_key=$trimmedKey"
+        Log.d(TAG, "Fanart request URL: $urlString")
+        return java.net.URL(urlString)
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
     // TV / Anime: TVDB ID bazlı
@@ -60,11 +78,16 @@ object FanartApiClient {
     fun fetchTvImages(tvdbId: Int, apiKey: String, language: String = "en"): List<GalleryItem> {
         if (tvdbId <= 0 || apiKey.isBlank()) return emptyList()
         return try {
-            val url = java.net.URL("$BASE_URL/tv/$tvdbId?api_key=$apiKey")
-            val response = KitsugiApiBase.executeGetRequest(url) ?: return emptyList()
+            val url = buildUrl("tv", tvdbId, apiKey)
+            val response = KitsugiApiBase.executeGetRequest(url)
+            if (response == null) {
+                Log.w(TAG, "fetchTvImages: HTTP request failed or returned empty for tvdbId=$tvdbId")
+                return emptyList()
+            }
+            Log.d(TAG, "fetchTvImages: Response length=${response.length} for tvdbId=$tvdbId")
             parseTvImages(JSONObject(response), language)
         } catch (e: Exception) {
-            Log.w(TAG, "fetchTvImages failed for tvdbId=$tvdbId: ${e.message}")
+            Log.w(TAG, "fetchTvImages failed for tvdbId=$tvdbId: ${e.message}", e)
             emptyList()
         }
     }
@@ -75,12 +98,17 @@ object FanartApiClient {
     fun fetchBestLogo(tvdbId: Int, apiKey: String, language: String = "en"): String? {
         if (tvdbId <= 0 || apiKey.isBlank()) return null
         return try {
-            val url = java.net.URL("$BASE_URL/tv/$tvdbId?api_key=$apiKey")
-            val response = KitsugiApiBase.executeGetRequest(url) ?: return null
+            val url = buildUrl("tv", tvdbId, apiKey)
+            val response = KitsugiApiBase.executeGetRequest(url)
+            if (response == null) {
+                Log.w(TAG, "fetchBestLogo: HTTP request failed or returned empty for tvdbId=$tvdbId")
+                return null
+            }
+            Log.d(TAG, "fetchBestLogo: Response length=${response.length} for tvdbId=$tvdbId")
             val root = JSONObject(response)
             extractBestUrl(root, listOf("hdtvlogo", "hdclearart"), language)
         } catch (e: Exception) {
-            Log.w(TAG, "fetchBestLogo (TV) failed for tvdbId=$tvdbId: ${e.message}")
+            Log.w(TAG, "fetchBestLogo (TV) failed for tvdbId=$tvdbId: ${e.message}", e)
             null
         }
     }
@@ -95,11 +123,16 @@ object FanartApiClient {
     fun fetchMovieImages(tmdbId: Int, apiKey: String, language: String = "en"): List<GalleryItem> {
         if (tmdbId <= 0 || apiKey.isBlank()) return emptyList()
         return try {
-            val url = java.net.URL("$BASE_URL/movies/$tmdbId?api_key=$apiKey")
-            val response = KitsugiApiBase.executeGetRequest(url) ?: return emptyList()
+            val url = buildUrl("movies", tmdbId, apiKey)
+            val response = KitsugiApiBase.executeGetRequest(url)
+            if (response == null) {
+                Log.w(TAG, "fetchMovieImages: HTTP request failed or returned empty for tmdbId=$tmdbId")
+                return emptyList()
+            }
+            Log.d(TAG, "fetchMovieImages: Response length=${response.length} for tmdbId=$tmdbId")
             parseMovieImages(JSONObject(response), language)
         } catch (e: Exception) {
-            Log.w(TAG, "fetchMovieImages failed for tmdbId=$tmdbId: ${e.message}")
+            Log.w(TAG, "fetchMovieImages failed for tmdbId=$tmdbId: ${e.message}", e)
             emptyList()
         }
     }
@@ -110,12 +143,17 @@ object FanartApiClient {
     fun fetchBestMovieLogo(tmdbId: Int, apiKey: String, language: String = "en"): String? {
         if (tmdbId <= 0 || apiKey.isBlank()) return null
         return try {
-            val url = java.net.URL("$BASE_URL/movies/$tmdbId?api_key=$apiKey")
-            val response = KitsugiApiBase.executeGetRequest(url) ?: return null
+            val url = buildUrl("movies", tmdbId, apiKey)
+            val response = KitsugiApiBase.executeGetRequest(url)
+            if (response == null) {
+                Log.w(TAG, "fetchBestMovieLogo: HTTP request failed or returned empty for tmdbId=$tmdbId")
+                return null
+            }
+            Log.d(TAG, "fetchBestMovieLogo: Response length=${response.length} for tmdbId=$tmdbId")
             val root = JSONObject(response)
             extractBestUrl(root, listOf("hdmovielogo", "hdmovieclearart"), language)
         } catch (e: Exception) {
-            Log.w(TAG, "fetchBestMovieLogo failed for tmdbId=$tmdbId: ${e.message}")
+            Log.w(TAG, "fetchBestMovieLogo failed for tmdbId=$tmdbId: ${e.message}", e)
             null
         }
     }

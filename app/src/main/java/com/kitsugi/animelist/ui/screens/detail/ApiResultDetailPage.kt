@@ -217,6 +217,10 @@ fun ApiResultDetailPage(
     val targetSeason by viewModel.targetSeason.collectAsState()
     val mdbListRatings by viewModel.mdbListRatings.collectAsState()
     val mdbListLoading by viewModel.mdbListLoading.collectAsState()
+    val galleryLoading by viewModel.galleryLoading.collectAsState()
+
+    // Galeri ve detay her ikisi de hazır olana kadar yükleme ekranı göster
+    val isLoading = detailLoading || galleryLoading
 
     val displayResult = remember(result, detailState) {
         val detail = detailState
@@ -342,7 +346,7 @@ fun ApiResultDetailPage(
     val displaySynopsis = translatedSynopsis ?: detailState?.synopsis
 
     KitsugiPageEnter {
-        if (detailLoading) {
+        if (isLoading) {
             KitsugiCinematicLoadingScreen(
                 title = displayResult.title,
                 imageUrl = displayResult.imageUrl,

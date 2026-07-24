@@ -213,6 +213,10 @@ fun MediaEntryDetailPage(
     val episodesState by viewModel.episodesState.collectAsState()
     val targetSeason by viewModel.targetSeason.collectAsState()
     val galleryItems by viewModel.galleryItems.collectAsState()
+    val galleryLoading by viewModel.galleryLoading.collectAsState()
+
+    // Galeri ve detay her ikisi de hazır olana kadar yükleme ekranı göster
+    val isLoading = detailLoading || galleryLoading
 
     val onMediaClick: (Int, String, String) -> Unit = { mediaId, mediaType, mediaSource ->
         val searchType = mediaType.parseToMediaType()
@@ -270,7 +274,7 @@ fun MediaEntryDetailPage(
     }
 
     KitsugiPageEnter {
-        if (detailLoading) {
+        if (isLoading) {
             KitsugiCinematicLoadingScreen(
                 title = entry.title,
                 imageUrl = entry.imageUrl,

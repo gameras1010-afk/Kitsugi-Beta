@@ -426,55 +426,103 @@ object KitsugiEpisodeRatingsRepository {
 
     /**
      * Verilen TMDB ID'nin TVDB ID'sini çözer.
-     * ARM API'deki "thetvdb" alanını kullanır. Hata durumunda null döner.
+     *
+     * ARM API artık `source=themoviedb` sorgusunu desteklemiyor (400 Bad Request).
+     * Bunun yerine Room önbelleğindeki malId veya aniListId üzerinden
+     * animeapi.my.id'yi kullanarak TVDB ID'yi çözüyoruz.
      */
     private suspend fun resolveTvdbIdFromTmdb(tmdbId: Int): Int? = withContext(Dispatchers.IO) {
-        // Önbelleğ kontrolü
-        val cached = mutex.withLock { tmdbToTvdbCache[tmdbId] }
-        if (tmdbToTvdbCache.containsKey(tmdbId)) return@withContext cached
+        // 1. Bellek önbelleği kontrolü
+        if (tmdbToTvdbCache.containsKey(tmdbId)) {
+            return@withContext mutex.withLock { tmdbToTvdbCache[tmdbId] }
+        }
 
-        val tvdbId = runCatching {
-            val url = URL("https://arm.haglund.dev/api/v2/ids?source=themoviedb&id=$tmdbId")
-            val response = KitsugiApiBase.executeGetRequest(url) ?: return@runCatching null
-            val text = response.trim()
-            val json = when {
-                text.startsWith("[") -> {
-                    val arr = org.json.JSONArray(text)
-                    if (arr.length() == 0) return@runCatching null
-                    arr.optJSONObject(0)
-                }
-                text.startsWith("{") -> JSONObject(text)
-                else -> return@runCatching null
-            } ?: return@runCatching null
+        // 2. Room'dan bu tmdbId için bilinen malId veya aniListId'yi çek
+        val cachedEntity = runCatching { dao?.getByTmdbId(tmdbId) }.getOrNull()
 
-            val value = json.optInt("thetvdb", -1)
-            if (value > 0) value else null
-        }.getOrElse {
-            Log.w(TAG, "resolveTvdbIdFromTmdb failed for tmdbId=$tmdbId: ${it.message}")
-            null
+        // 3. malId üzerinden TVDB ID çöz
+        var tvdbId: Int? = null
+        val malId = cachedEntity?.malId
+        if (malId != null && malId > 0) {
+            tvdbId = resolveTvdbIdFromMal(malId)
+        }
+
+        // 4. malId başarısız olursa aniListId üzerinden dene
+        if (tvdbId == null) {
+            val aniListId = cachedEntity?.aniListId
+            if (aniListId != null && aniListId > 0) {
+                tvdbId = resolveTvdbIdFromAniList(aniListId)
+            }
         }
 
         mutex.withLock { tmdbToTvdbCache[tmdbId] = tvdbId }
-        Log.d(TAG, "TVDB resolve: tmdbId=$tmdbId → tvdbId=$tvdbId")
+        Log.d(TAG, "TVDB resolve (via MAL/AniList): tmdbId=$tmdbId → tvdbId=$tvdbId")
         tvdbId
+    }
+
+    /**
+     * MAL ID üzerinden TVDB ID çözer (animeapi.my.id).
+     */
+    private suspend fun resolveTvdbIdFromMal(malId: Int): Int? {
+        if (malId <= 0) return null
+        return runCatching {
+            val url = URL("https://animeapi.my.id/myanimelist/$malId")
+            val response = KitsugiApiBase.executeGetRequest(url) ?: return@runCatching null
+            val json = JSONObject(response)
+            val value = json.optInt("thetvdb", -1)
+            if (value > 0) {
+                Log.d(TAG, "TVDB via AnimeAPI (MAL): malId=$malId → tvdbId=$value")
+                value
+            } else null
+        }.getOrElse {
+            Log.w(TAG, "resolveTvdbIdFromMal failed for malId=$malId: ${it.message}")
+            null
+        }
+    }
+
+    /**
+     * AniList ID üzerinden TVDB ID çözer (animeapi.my.id).
+     */
+    private suspend fun resolveTvdbIdFromAniList(aniListId: Int): Int? {
+        if (aniListId <= 0) return null
+        return runCatching {
+            val url = URL("https://animeapi.my.id/anilist/$aniListId")
+            val response = KitsugiApiBase.executeGetRequest(url) ?: return@runCatching null
+            val json = JSONObject(response)
+            val value = json.optInt("thetvdb", -1)
+            if (value > 0) {
+                Log.d(TAG, "TVDB via AnimeAPI (AniList): aniListId=$aniListId → tvdbId=$value")
+                value
+            } else null
+        }.getOrElse {
+            Log.w(TAG, "resolveTvdbIdFromAniList failed for aniListId=$aniListId: ${it.message}")
+            null
+        }
     }
 
     /**
      * Fanart.tv'den zengin galeri öğeleri (logo, backdrop, poster, vb.) çeker.
      *
-     * @param tmdbId   TMDB ID (TV veya Film)
-     * @param isMovie  true ise Film endpoint'i kullanılır; false ise TV
-     * @return         Fanart.tv API'sinden elde edilen [GalleryItem] listesi.
-     *                 Fanart.tv devre dışı veya API anahtarı yoksa boş liste döner.
+     * TV/Anime için: TMDB ID → Room cache → MAL/AniList ID → TVDB ID → Fanart.tv TV endpoint
+     * Film için:    TMDB ID → Fanart.tv Film endpoint (doğrudan)
+     *
+     * @param tmdbId      TMDB ID (TV veya Film)
+     * @param isMovie     true ise Film endpoint'i kullanılır; false ise TV
+     * @param fallbackMalId    Opsiyonel MAL ID (tmdb→tvdb çevriminde yedek olarak kullanılır)
+     * @param fallbackAniListId Opsiyonel AniList ID (tmdb→tvdb çevriminde yedek olarak kullanılır)
+     * @return            Fanart.tv API'sinden elde edilen [GalleryItem] listesi.
      */
     suspend fun getFanartGalleryItems(
         tmdbId: Int,
-        isMovie: Boolean = false
+        isMovie: Boolean = false,
+        fallbackMalId: Int? = null,
+        fallbackAniListId: Int? = null
     ): List<GalleryItem> = withContext(Dispatchers.IO) {
         val (fanartEnabled, fanartApiKey) = getFanartSettings()
-        if (!fanartEnabled || tmdbId <= 0) return@withContext emptyList()
+        if (!fanartEnabled || fanartApiKey.isBlank()) return@withContext emptyList()
 
         return@withContext if (isMovie) {
+            if (tmdbId <= 0) return@withContext emptyList()
             // Film: TMDB ID doğrudan kullanılır
             runCatching {
                 FanartApiClient.fetchMovieImages(tmdbId, fanartApiKey)
@@ -484,9 +532,23 @@ object KitsugiEpisodeRatingsRepository {
             }
         } else {
             // TV/Anime: TVDB ID çözümlenir
-            val tvdbId = resolveTvdbIdFromTmdb(tmdbId)
+            // Önce Room+animeapi.my.id zincirini dene
+            var tvdbId = if (tmdbId > 0) resolveTvdbIdFromTmdb(tmdbId) else null
+
+            // Hâlâ bulunamazsa caller'dan gelen fallback id'leri dene
             if (tvdbId == null || tvdbId <= 0) {
-                Log.d(TAG, "No TVDB ID for tmdbId=$tmdbId — Fanart.tv skipped")
+                if (fallbackMalId != null && fallbackMalId > 0) {
+                    tvdbId = resolveTvdbIdFromMal(fallbackMalId)
+                }
+            }
+            if (tvdbId == null || tvdbId <= 0) {
+                if (fallbackAniListId != null && fallbackAniListId > 0) {
+                    tvdbId = resolveTvdbIdFromAniList(fallbackAniListId)
+                }
+            }
+
+            if (tvdbId == null || tvdbId <= 0) {
+                Log.d(TAG, "No TVDB ID for tmdbId=$tmdbId — Fanart.tv TV skipped")
                 return@withContext emptyList()
             }
             runCatching {

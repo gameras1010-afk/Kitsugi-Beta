@@ -1,25 +1,19 @@
-# Kitsugi v2.4.98 Release Notes 🚀
+# Kitsugi v2.4.99 Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### 🖼️ Birleşik Medya Galerisi Standardizasyonu
-- **Merkezi `GalleryItem` Mimarisi:** Karakter, Ekip (Staff), Stüdyo ve Medya detay sayfalarının tamamı artık tek bir merkezi `GalleryItem` mimarisi kullanıyor. Tüm eski veri formatları ve dize listeleri temizlendi.
-- **Tek ve Güçlü `KitsugiImageGalleryDialog`:** Karakter/Ekip/Stüdyo ve Medya sayfaları için ayrı ayrı yazılmış olan tüm galeri diyaloğu kodları birleştirilerek tek bir güçlü, performanslı ve tutarlı galeri diyaloğuna dönüştürüldü.
-- **Gelişmiş Kategori Filtreleme & Arama:** Görseller otomatik olarak Logo, Poster, Arka Plan, Karakter ve Küçük Resim gibi kategorilere ayrılarak üstte filtre sekmeleri ile sunuluyor.
-- **Akıllı Başlangıç Kategorisi:** Detay sayfasında herhangi bir resim kategorisine veya kartına tıklandığında, galeri diyaloğu otomatik olarak ilgili kategoriyi seçerek ve doğru görseli odaklayarak açılır.
-- **Yatay & Dikey Tam Uyumluluk:** Tüm ekran boyutlarında, portre (dikey) ve landscape (yatay) modlarda kusursuz galeri yerleşimi ve dokunmatik kontroller sağlandı.
-- **Kararlılık ve Performans İyileştirmeleri:** VM düzeyinde eski yinelenen görsel çekme mantıkları kaldırıldı, rate-limit aşım sorunları giderildi ve galeri tetikleyicilerindeki durumsal tutarsızlıklar tamamen çözüldü.
+### 🖼️ Fanart.tv & Galeri Senkronizasyonu Düzeltmeleri
+- **API Anahtarı Entegrasyonu Giderildi:** Fanart.tv tarafında geçersiz olan gömülü (built-in) API anahtarı yerine, kullanıcının ayarlardan girdiği kişisel anahtarın doğrudan kullanılması sağlandı. Bu sayede tüm Fanart.tv istekleri başarıyla sonuçlanmaktadır.
+- **Akıllı TVDB ID Fallback Desteği:** TV şovları ve animelerde TMDB ID'si bulunmadığında veya 0 olduğunda, MAL ve AniList ID'leri üzerinden TVDB kimliğini çözmek için `animeapi.my.id` fallback zinciri uygulandı.
+- **Sinematik Yükleme & Galeri Senkronizasyonu:** Detay sayfalarında arka planda resimler yüklenirken yükleme ekranının erken kapanma hatası giderildi. `KitsugiCinematicLoadingScreen` artık galeri ögeleri de yüklenene kadar açık kalır, böylece galeri butonu doğrudan dolu ve aktif olarak açılır.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### 🖼️ Unified Media Gallery Standardization
-- **Centralized `GalleryItem` Architecture:** Character, Staff, Studio, and Media detail pages now all leverage a single centralized `GalleryItem` model. Legacy string-based and fragmented image lists have been completely purged.
-- **Consolidated `KitsugiImageGalleryDialog`:** Merged multiple bifurcated media gallery dialog implementations into a single, high-performance, and unified dialog window.
-- **Advanced Category Filtering:** Images are automatically grouped into categories (Logo, Poster, Backdrop, Character, Thumbnail) with clear tabs shown at the top of the gallery dialog.
-- **Smart Category Auto-Focus:** Clicking on any poster, card, or specific category button in the detail views launches the gallery dialog pre-selected to that category and focused on the selected image.
-- **Perfect Landscape & Portrait Scaling:** Fixed previous orientation regressions, ensuring a fluid and fully responsive viewing experience across all device form factors and rotations.
-- **Performance & State Refinement:** Cleaned up duplicate image retrieval processes at the ViewModel level, resolved API rate-limiting edge cases, and polished all touch-target and trigger behaviors.
+### 🖼️ Fanart.tv & Gallery Sync Fixes
+- **API Key Integration Resolved:** Fixed a critical bug where an invalid built-in project API key was prioritized over the user's personal key. The user's own key is now correctly passed as the primary `api_key` parameter for all Fanart.tv requests.
+- **Smart TVDB ID Fallbacks:** Implemented an fallback lookup chain using `animeapi.my.id` to resolve the required TVDB ID via MAL and AniList identifiers when TMDB ID mappings are incomplete or missing (0).
+- **Cinematic Loading & Gallery Synchronization:** Resolved premature dismissal of the detail loading screen. The `KitsugiCinematicLoadingScreen` is now kept active until both detail metadata and Fanart gallery items are successfully retrieved, ensuring the "Gallery" action button displays instantly with fully loaded content.

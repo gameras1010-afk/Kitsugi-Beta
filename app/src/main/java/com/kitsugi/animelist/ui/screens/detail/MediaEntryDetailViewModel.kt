@@ -108,6 +108,9 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
     private val _galleryItems = MutableStateFlow<List<GalleryItem>>(emptyList())
     val galleryItems: StateFlow<List<GalleryItem>> = _galleryItems.asStateFlow()
 
+    private val _galleryLoading = MutableStateFlow(false)
+    val galleryLoading: StateFlow<Boolean> = _galleryLoading.asStateFlow()
+
     // --- Cache / Lock Key ---
     private var currentFetchKey: String? = null
     private var mangaMappingJob: Job? = null
@@ -164,6 +167,7 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
         _episodeRatings.value = emptyMap()
         _resolvedTmdbId.value = null
         _galleryItems.value = emptyList()
+        _galleryLoading.value = false
 
         // Reset tab states to either cached values or Loading
         val malId = entry.malId ?: 0
@@ -223,9 +227,12 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
                 _detailLoading.value = false
             }
             try {
+                _galleryLoading.value = true
                 fetchFanartGallery(entry)
             } catch (e: Exception) {
                 Log.e(TAG, "Error fetching Fanart gallery (post-detail): ${e.message}", e)
+            } finally {
+                _galleryLoading.value = false
             }
             try {
                 fetchSynopsis(entry)
@@ -413,12 +420,26 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
 
         val isMovie = entry.type == MediaType.Movie
 
-        val fanartItems = if (tmdbId != null && tmdbId > 0) {
-            withContext(Dispatchers.IO) {
-                KitsugiEpisodeRatingsRepository.getFanartGalleryItems(tmdbId, isMovie)
+        val fallbackMalId: Int? = when {
+            entry.source.equals("anilist", ignoreCase = true) -> {
+                val m = entry.malId ?: 0
+                if (m > 0 && m < 100_000_000) m else _detailState.value?.realMalId
             }
-        } else {
-            emptyList()
+            !entry.source.equals("tmdb", ignoreCase = true) -> entry.malId
+            else -> null
+        }
+        val fallbackAniListId: Int? = if (entry.source.equals("anilist", ignoreCase = true)) {
+            val m = entry.malId ?: 0
+            if (m >= 100_000_000) m - 100_000_000 else null
+        } else null
+
+        val fanartItems = withContext(Dispatchers.IO) {
+            KitsugiEpisodeRatingsRepository.getFanartGalleryItems(
+                tmdbId = tmdbId ?: 0,
+                isMovie = isMovie,
+                fallbackMalId = fallbackMalId,
+                fallbackAniListId = fallbackAniListId
+            )
         }
 
         // Mevcut TMDB/Jikan resimlerini de GalleryItem'a çevir ve birleştir

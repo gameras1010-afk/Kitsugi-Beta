@@ -93,6 +93,9 @@ class ApiResultDetailViewModel(application: Application) : AndroidViewModel(appl
     private val _galleryItems = MutableStateFlow<List<GalleryItem>>(emptyList())
     val galleryItems: StateFlow<List<GalleryItem>> = _galleryItems.asStateFlow()
 
+    private val _galleryLoading = MutableStateFlow(false)
+    val galleryLoading: StateFlow<Boolean> = _galleryLoading.asStateFlow()
+
     // --- Cache / Lock Key ---
     private var currentFetchKey: String? = null
 
@@ -127,6 +130,7 @@ class ApiResultDetailViewModel(application: Application) : AndroidViewModel(appl
         _episodeRatings.value = emptyMap()
         _resolvedTmdbId.value = null
         _galleryItems.value = emptyList()
+        _galleryLoading.value = false
 
         val cachedCharacters = DetailCache.getMediaCharacters(result.source, result.malId)
         if (cachedCharacters != null && cachedCharacters.isEmpty()) {
@@ -183,9 +187,12 @@ class ApiResultDetailViewModel(application: Application) : AndroidViewModel(appl
                 _detailLoading.value = false
             }
             try {
+                _galleryLoading.value = true
                 fetchFanartGallery(result)
             } catch (e: Exception) {
                 Log.e(TAG, "Error fetching Fanart gallery: ${e.message}", e)
+            } finally {
+                _galleryLoading.value = false
             }
             try {
                 fetchMdbListRatings(result)
@@ -623,12 +630,24 @@ class ApiResultDetailViewModel(application: Application) : AndroidViewModel(appl
 
         val isMovie = result.type == MediaType.Movie
 
-        val fanartItems = if (tmdbId != null && tmdbId > 0) {
-            withContext(Dispatchers.IO) {
-                KitsugiEpisodeRatingsRepository.getFanartGalleryItems(tmdbId, isMovie)
-            }
-        } else {
-            emptyList()
+        // Fanart.tv TV/Anime için TVDB ID gerekir; Room cache'de yoksa
+        // fallback olarak MAL ID ve AniList ID'yi de gönderiyoruz.
+        val fallbackMalId: Int? = when {
+            result.source.equals("anilist", ignoreCase = true) -> result.realMalId
+            !result.source.equals("tmdb", ignoreCase = true) -> if (result.malId > 0) result.malId else null
+            else -> null
+        }
+        val fallbackAniListId: Int? = if (result.source.equals("anilist", ignoreCase = true) && result.malId >= 100_000_000) {
+            result.malId - 100_000_000
+        } else null
+
+        val fanartItems = withContext(Dispatchers.IO) {
+            KitsugiEpisodeRatingsRepository.getFanartGalleryItems(
+                tmdbId = tmdbId ?: 0,
+                isMovie = isMovie,
+                fallbackMalId = fallbackMalId,
+                fallbackAniListId = fallbackAniListId
+            )
         }
 
         val currentDetail = _detailState.value
