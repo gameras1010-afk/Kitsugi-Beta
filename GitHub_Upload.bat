@@ -13,61 +13,101 @@ cd /d "C:\Kitsugi-Beta"
 set "GIT_EXE=C:\Program Files\Git\cmd\git.exe"
 set "GH_EXE=C:\Program Files\GitHub CLI\gh.exe"
 
-if not exist "!GIT_EXE!" set "GIT_EXE=git"
-if not exist "!GH_EXE!" set "GH_EXE=gh"
+if not exist "%GIT_EXE%" set "GIT_EXE=git"
+if not exist "%GH_EXE%" set "GH_EXE=gh"
 
-echo [+] 1. Surum numarasi ve Release Notlari otomatik yukseltiliyor...
-FOR /F "usebackq tokens=*" %%V IN (`powershell -ExecutionPolicy Bypass -File scripts\bump_version.ps1`) DO SET "NEW_VER=%%V"
+echo [+] 0. Surum numarasi otomatik olarak artiriliyor ve dosyalar guncelleniyor...
+FOR /F "usebackq tokens=*" %%V IN (`powershell -NoProfile -ExecutionPolicy Bypass -File scripts\bump_version.ps1`) DO SET "APP_VER=%%V"
+if not defined APP_VER (
+    FOR /F "usebackq tokens=*" %%V IN (`powershell -NoProfile -Command "((Get-Content app/build.gradle.kts) -match 'val appVersionName =').Split([char]34)[1]"`) DO SET "APP_VER=%%V"
+)
+if not defined APP_VER set "APP_VER=2.4.19"
+set "TAG_NAME=v!APP_VER!"
 
-if not defined NEW_VER (
-    echo [!] HATA: Surum numarasi yukseltilemedi.
-    pause
-    exit /b 1
+echo [+] Algilanan Surum: !TAG_NAME!
+
+echo [+] 1. Kod degisiklikleri GitHub'a gonderiliyor...
+"%GIT_EXE%" add .
+"%GIT_EXE%" commit -m "Auto Update: Source code for !TAG_NAME!"
+"%GIT_EXE%" push -u origin main
+
+echo.
+echo [+] 2. FOSS ve GMS APK'lari Derleniyor (Lutfen bekleyin)...
+call gradlew.bat assembleFossRelease assembleGmsRelease --parallel --build-cache --configuration-cache
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo [!] Hizli derleme basarisiz. Configuration cache temizlenip tekrar deneniyor...
+    call gradlew.bat --stop >nul 2>&1
+    call gradlew.bat assembleFossRelease assembleGmsRelease --parallel --build-cache --no-configuration-cache
+    if %ERRORLEVEL% NEQ 0 (
+        echo.
+        echo [!] Ikinci deneme de basarisiz. Clean build baslatiliyor - en guvenli yol...
+        call gradlew.bat clean assembleFossRelease assembleGmsRelease
+    )
 )
 
-set "TAG_NAME=v!NEW_VER!"
-echo [+] Yeni Otomatik Surum: !TAG_NAME!
+set "UPLOAD_ASSETS="
 
-echo.
-echo [+] 2. Kod ve surum degisiklikleri GitHub'a gonderiliyor...
-"!GIT_EXE!" add .
-"!GIT_EXE!" commit -m "Release !TAG_NAME!: Auto increment version and update release notes"
-"!GIT_EXE!" push -u origin main
+for %%F in ("app\build\outputs\apk\foss\release\*.apk") do (
+    set "FILENAME=%%~nxF"
+    set "TARGET_FILE=app\build\outputs\apk\Kitsugi-Beta-v!APP_VER!-foss.apk"
+    if NOT "!FILENAME!"=="!FILENAME:arm64=!" (
+        set "TARGET_FILE=app\build\outputs\apk\Kitsugi-Beta-v!APP_VER!-foss-arm64-v8a.apk"
+    ) else if NOT "!FILENAME!"=="!FILENAME:v7a=!" (
+        set "TARGET_FILE=app\build\outputs\apk\Kitsugi-Beta-v!APP_VER!-foss-armeabi-v7a.apk"
+    )
+    copy /Y "%%F" "!TARGET_FILE!" >nul
+    echo [+] Hazirlanan FOSS APK: !TARGET_FILE!
+    set "UPLOAD_ASSETS=!UPLOAD_ASSETS! "!TARGET_FILE!""
+)
 
-echo.
-echo [+] 3. FOSS ve GMS APK'lari Derleniyor (Lutfen bekleyin)...
-call gradlew.bat assembleFossRelease assembleGmsRelease
+for %%F in ("app\build\outputs\apk\gms\release\*.apk") do (
+    set "FILENAME=%%~nxF"
+    set "TARGET_FILE=app\build\outputs\apk\Kitsugi-Beta-v!APP_VER!-gms.apk"
+    if NOT "!FILENAME!"=="!FILENAME:arm64=!" (
+        set "TARGET_FILE=app\build\outputs\apk\Kitsugi-Beta-v!APP_VER!-gms-arm64-v8a.apk"
+    ) else if NOT "!FILENAME!"=="!FILENAME:v7a=!" (
+        set "TARGET_FILE=app\build\outputs\apk\Kitsugi-Beta-v!APP_VER!-gms-armeabi-v7a.apk"
+    )
+    copy /Y "%%F" "!TARGET_FILE!" >nul
+    echo [+] Hazirlanan GMS APK: !TARGET_FILE!
+    set "UPLOAD_ASSETS=!UPLOAD_ASSETS! "!TARGET_FILE!""
+)
 
-set "FOSS_APK="
-for %%F in ("app\build\outputs\apk\foss\release\*.apk") do set "FOSS_APK=%%F"
-set "GMS_APK="
-for %%F in ("app\build\outputs\apk\gms\release\*.apk") do set "GMS_APK=%%F"
-
-if exist "!FOSS_APK!" (
+if defined UPLOAD_ASSETS (
     echo.
-    echo [+] 4. GitHub Release !TAG_NAME! - FOSS ve GMS APK'lari Yukleniyor...
-    
-    if exist "!GMS_APK!" (
-        "!GH_EXE!" release create !TAG_NAME! "!FOSS_APK!" "!GMS_APK!" --title "Kitsugi !TAG_NAME!" --notes-file RELEASE_NOTES.md
-        if !errorlevel! neq 0 (
-            echo [!] Release zaten mevcut, APK'lar guncelleniyor...
-            "!GH_EXE!" release upload !TAG_NAME! "!FOSS_APK!" "!GMS_APK!" --clobber
-        )
-    ) else (
-        "!GH_EXE!" release create !TAG_NAME! "!FOSS_APK!" --title "Kitsugi !TAG_NAME!" --notes-file RELEASE_NOTES.md
-        if !errorlevel! neq 0 (
-            echo [!] Release zaten mevcut, APK yukleniyor...
-            "!GH_EXE!" release upload !TAG_NAME! "!FOSS_APK!" --clobber
+    echo [+] 3. GitHub Release !TAG_NAME! ve APK'lar Yukleniyor...
+    set "SUCCESS=0"
+    for /L %%I in (1,1,3) do (
+        if !SUCCESS!==0 (
+            echo [+] Yukleme Denemesi %%I / 3...
+            "%GH_EXE%" release create !TAG_NAME! !UPLOAD_ASSETS! --title "Kitsugi !TAG_NAME!" --notes-file RELEASE_NOTES.md
+            if !ERRORLEVEL!==0 (
+                set "SUCCESS=1"
+            ) else (
+                echo [!] UYARI: Release olusturulamadi veya ag zaman asimina ugradi. Tekrar deneniyor...
+                "%GH_EXE%" release upload !TAG_NAME! !UPLOAD_ASSETS! --clobber >nul 2>&1
+                if !ERRORLEVEL!==0 set "SUCCESS=1"
+                timeout /t 4 >nul
+            )
         )
     )
 
-    echo.
-    echo =================================================================
-    echo   [BASARILI] !TAG_NAME! Surumu ve APK'lar GitHub'da Yayinlandi!
-    echo =================================================================
+    if !SUCCESS!==1 (
+        echo.
+        echo =================================================================
+        echo   [BASARILI] !TAG_NAME! Surumu ve APK'lar GitHub'da Yayinlandi!
+        echo =================================================================
+    ) else (
+        echo.
+        echo =================================================================
+        echo   [HATA] 3 denemede de release yüklemesi tamamlanamadi!
+        echo   Baglantinizi veya GitHub sunucu durumunu kontrol edin.
+        echo =================================================================
+    )
 ) else (
     echo.
-    echo [!] HATA: APK derlenemedi.
+    echo [!] HATA: Yuklenecek APK dosyasi bulunamadi. Derleme basarisiz olabilir.
 )
 
 echo.
