@@ -6,6 +6,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.kitsugi.animelist.data.auth.ExternalAuthManager
 import com.kitsugi.animelist.data.remote.DetailCache
+import com.kitsugi.animelist.data.remote.GalleryCategory
+import com.kitsugi.animelist.data.remote.GalleryItem
 import com.kitsugi.animelist.data.remote.JikanApiClient
 import com.kitsugi.animelist.data.remote.KitsugiMediaMutationsClient
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +26,9 @@ class StudioDetailViewModel(application: Application) : AndroidViewModel(applica
 
     private val _state = MutableStateFlow<StudioDetailState>(StudioDetailState.Loading)
     val state: StateFlow<StudioDetailState> = _state.asStateFlow()
+
+    private val _galleryItems = MutableStateFlow<List<GalleryItem>>(emptyList())
+    val galleryItems: StateFlow<List<GalleryItem>> = _galleryItems.asStateFlow()
 
     private val _isFavourite = MutableStateFlow(false)
     val isFavourite: StateFlow<Boolean> = _isFavourite.asStateFlow()
@@ -84,6 +89,21 @@ class StudioDetailViewModel(application: Application) : AndroidViewModel(applica
         if (detail != null) {
             _state.value = StudioDetailState.Success(detail)
             _isFavourite.value = detail.isFavourite
+
+            // Build gallery from studio imageUrl (logo)
+            val imageUrl = detail.imageUrl
+            if (!imageUrl.isNullOrBlank()) {
+                val category = if (imageUrl.contains("logo", ignoreCase = true) ||
+                    imageUrl.contains("image.tmdb.org", ignoreCase = true)) {
+                    GalleryCategory.LOGO
+                } else {
+                    GalleryCategory.POSTER
+                }
+                val src = if (imageUrl.contains("image.tmdb.org") || imageUrl.contains("tmdb.org")) "TMDB" else "Jikan"
+                _galleryItems.value = listOf(GalleryItem(url = imageUrl, source = src, category = category))
+            } else {
+                _galleryItems.value = emptyList()
+            }
         } else {
             _state.value = StudioDetailState.Error("Stüdyo detayları yüklenemedi.")
         }

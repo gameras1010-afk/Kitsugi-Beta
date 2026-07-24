@@ -97,6 +97,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
+import com.kitsugi.animelist.data.remote.GalleryItem
 import androidx.compose.ui.focus.focusRequester
 
 sealed interface CharacterDetailState {
@@ -221,7 +222,9 @@ fun CharacterDetailPage(
                 val isTv = LocalIsTv.current
                 val tabListState = rememberLazyListState()
                 var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
+                var activeGalleryItems by remember { mutableStateOf<List<GalleryItem>>(emptyList()) }
                 var activeGalleryIndex by remember { mutableStateOf(0) }
+                val galleryItems by viewModel.galleryItems.collectAsState()
 
                 val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
                 // TV odak highway
@@ -262,7 +265,7 @@ fun CharacterDetailPage(
                                                     .focusRequester(leftPanelFocusRequester)
                                                     .focusProperties { right = tabBarFocusRequester }
                                                     .tvClickable {
-                                                        activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                                        activeGalleryItems = galleryItems
                                                         activeGalleryIndex = 0
                                                     },
                                                 contentScale = ContentScale.Crop
@@ -338,7 +341,7 @@ fun CharacterDetailPage(
                                                         contentAlignment = Alignment.Center
                                                     ) {
                                                         IconButton(onClick = {
-                                                            activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                                            activeGalleryItems = galleryItems
                                                             activeGalleryIndex = 0
                                                         }) {
                                                             Icon(
@@ -572,7 +575,14 @@ fun CharacterDetailPage(
                                 }
                             }
 
-                            if (activeGalleryImages.isNotEmpty()) {
+                            if (activeGalleryItems.isNotEmpty()) {
+                                KitsugiImageGalleryDialog(
+                                    galleryItems = activeGalleryItems,
+                                    initialIndex = activeGalleryIndex,
+                                    title = detail.name,
+                                    onDismiss = { activeGalleryItems = emptyList() }
+                                )
+                            } else if (activeGalleryImages.isNotEmpty()) {
                                 KitsugiImageGalleryDialog(
                                     imageUrls = activeGalleryImages,
                                     initialIndex = activeGalleryIndex,
@@ -680,7 +690,7 @@ fun CharacterDetailPage(
                                                     contentAlignment = Alignment.Center
                                                 ) {
                                                     IconButton(onClick = {
-                                                        activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                                        activeGalleryItems = galleryItems
                                                         activeGalleryIndex = 0
                                                     }) {
                                                         Icon(
@@ -814,7 +824,7 @@ fun CharacterDetailPage(
                                             )
                                             if (!detail.imageUrl.isNullOrBlank()) {
                                                 IconButton(onClick = {
-                                                    activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                                    activeGalleryItems = galleryItems
                                                     activeGalleryIndex = 0
                                                 }) {
                                                     Icon(
@@ -1084,7 +1094,14 @@ fun CharacterDetailPage(
                             }
                         }
 
-                        if (activeGalleryImages.isNotEmpty()) {
+                        if (activeGalleryItems.isNotEmpty()) {
+                            KitsugiImageGalleryDialog(
+                                galleryItems = activeGalleryItems,
+                                initialIndex = activeGalleryIndex,
+                                title = detail.name,
+                                onDismiss = { activeGalleryItems = emptyList() }
+                            )
+                        } else if (activeGalleryImages.isNotEmpty()) {
                             KitsugiImageGalleryDialog(
                                 imageUrls = activeGalleryImages,
                                 initialIndex = activeGalleryIndex,

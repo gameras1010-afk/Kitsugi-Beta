@@ -77,6 +77,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.runtime.rememberCoroutineScope
 import com.kitsugi.animelist.data.remote.JikanApiClient
+import com.kitsugi.animelist.data.remote.GalleryItem
 import com.kitsugi.animelist.data.remote.KitsugiStaffDetail
 import com.kitsugi.animelist.data.local.TranslationManager
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
@@ -216,7 +217,9 @@ fun StaffDetailPage(
                 val isTv = LocalIsTv.current
                 val tabListState = rememberLazyListState()
                 var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
+                var activeGalleryItems by remember { mutableStateOf<List<GalleryItem>>(emptyList()) }
                 var activeGalleryIndex by remember { mutableStateOf(0) }
+                val galleryItems by viewModel.galleryItems.collectAsState()
                 val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
                 // TV odak highway
                 val leftPanelFocusRequester = remember { FocusRequester() }
@@ -256,7 +259,7 @@ fun StaffDetailPage(
                                                     .focusRequester(leftPanelFocusRequester)
                                                     .focusProperties { right = tabBarFocusRequester }
                                                     .tvClickable {
-                                                        activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                                        activeGalleryItems = galleryItems
                                                         activeGalleryIndex = 0
                                                     },
                                                 contentScale = ContentScale.Crop
@@ -311,7 +314,7 @@ fun StaffDetailPage(
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
 
-                                                if (!detail.imageUrl.isNullOrBlank()) {
+                                                if (galleryItems.isNotEmpty()) {
                                                     Box(
                                                         modifier = Modifier
                                                             .size(40.dp)
@@ -320,7 +323,7 @@ fun StaffDetailPage(
                                                         contentAlignment = Alignment.Center
                                                     ) {
                                                         IconButton(onClick = {
-                                                            activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                                            activeGalleryItems = galleryItems
                                                             activeGalleryIndex = 0
                                                         }) {
                                                             Icon(
@@ -495,8 +498,20 @@ fun StaffDetailPage(
                                     } // end HorizontalPager
                                 }
                             }
-                            if (activeGalleryImages.isNotEmpty()) {
-                                KitsugiImageGalleryDialog(imageUrls = activeGalleryImages, initialIndex = activeGalleryIndex, title = detail.name, onDismiss = { activeGalleryImages = emptyList() })
+                            if (activeGalleryItems.isNotEmpty()) {
+                                KitsugiImageGalleryDialog(
+                                    galleryItems = activeGalleryItems,
+                                    initialIndex = activeGalleryIndex,
+                                    title = detail.name,
+                                    onDismiss = { activeGalleryItems = emptyList() }
+                                )
+                            } else if (activeGalleryImages.isNotEmpty()) {
+                                KitsugiImageGalleryDialog(
+                                    imageUrls = activeGalleryImages,
+                                    initialIndex = activeGalleryIndex,
+                                    title = detail.name,
+                                    onDismiss = { activeGalleryImages = emptyList() }
+                                )
                             }
                         }
                     }
@@ -522,7 +537,7 @@ fun StaffDetailPage(
                                             modifier = Modifier
                                                 .fillMaxSize()
                                                 .tvClickable {
-                                                    activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                                    activeGalleryItems = galleryItems
                                                     activeGalleryIndex = 0
                                                 },
                                             contentScale = ContentScale.Crop
@@ -589,7 +604,7 @@ fun StaffDetailPage(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
 
-                                            if (!detail.imageUrl.isNullOrBlank()) {
+                                            if (galleryItems.isNotEmpty()) {
                                                 Box(
                                                     modifier = Modifier
                                                         .size(40.dp)
@@ -598,7 +613,7 @@ fun StaffDetailPage(
                                                     contentAlignment = Alignment.Center
                                                 ) {
                                                     IconButton(onClick = {
-                                                        activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                                        activeGalleryItems = galleryItems
                                                         activeGalleryIndex = 0
                                                     }) {
                                                         Icon(
@@ -729,9 +744,9 @@ fun StaffDetailPage(
                                                 overflow = TextOverflow.Ellipsis,
                                                 modifier = Modifier.weight(1f)
                                             )
-                                            if (!detail.imageUrl.isNullOrBlank()) {
+                                            if (galleryItems.isNotEmpty()) {
                                                 IconButton(onClick = {
-                                                    activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                                    activeGalleryItems = galleryItems
                                                     activeGalleryIndex = 0
                                                 }) {
                                                     Icon(
@@ -1001,7 +1016,14 @@ fun StaffDetailPage(
                             }
                         }
 
-                        if (activeGalleryImages.isNotEmpty()) {
+                        if (activeGalleryItems.isNotEmpty()) {
+                            KitsugiImageGalleryDialog(
+                                galleryItems = activeGalleryItems,
+                                initialIndex = activeGalleryIndex,
+                                title = detail.name,
+                                onDismiss = { activeGalleryItems = emptyList() }
+                            )
+                        } else if (activeGalleryImages.isNotEmpty()) {
                             KitsugiImageGalleryDialog(
                                 imageUrls = activeGalleryImages,
                                 initialIndex = activeGalleryIndex,

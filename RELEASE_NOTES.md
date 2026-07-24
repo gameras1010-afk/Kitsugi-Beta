@@ -1,75 +1,67 @@
-# Kitsugi v2.4.95 Release Notes 🚀
+# Kitsugi v2.4.96 Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### 🖼️ Standart Galeri Butonu — Karakter, Ekip & Stüdyo Sayfaları
-- **Yeni Galeri Butonu:** Karakter, Ekip Üyesi ve Stüdyo detay sayfalarının başlık alanına "Galeri" butonu (🖼️) eklendi.
-- **Paylaş butonunun hemen yanında:** Galeri butonu Paylaş ve Favori butonlarıyla aynı hizada, tutarlı konumda görünüyor.
-- **Koşullu Görünürlük:** Buton yalnızca o sayfa için geçerli bir resim mevcut olduğunda gösteriliyor; resim yoksa düzen bozulmuyor.
-- **Tek Dokunuşla Galeri:** Butona tıklayınca `KitsugiImageGalleryDialog` açılıyor ve resim tam ekranda incelenebiliyor.
-- **Yatay & Dikey Uyum:** Hem portre hem de yatay ekran düzeninde (tablet / TV) düzgün çalışıyor.
-- **Kayan Başlık Desteği:** Aşağı kaydırmada beliren sticky başlık barına da galeri butonu eklendi.
+### 🖼️ Standartlaştırılmış Medya Galerisi — Karakter, Ekip & Stüdyo
+- **Tam GalleryItem Migrasyonu:** Karakter, Ekip ve Stüdyo detay sayfaları artık tamamen modern `GalleryItem` tabanlı galeri sistemini kullanıyor.
+- **Platform Kaynak Rozetleri:** Açık galeri görüntüsünün sol alt köşesinde hangi platformdan geldiği **renkli rozet** ile kesin olarak belirtiliyor:
+  - 🟣 **Fanart.tv** — Mor rozet
+  - 🟢 **TMDB** — Yeşil rozet
+  - 🔵 **Jikan (MyAnimeList)** — Mavi rozet
+  - 🔷 **AniList** — AniList mavisi rozet
+  - 🔴 **Simkl** — Kırmızı rozet
+- **Kategorili Filtre Sekmeleri:** Galeride birden fazla kategori varsa üst kısımda filtre sekmeleri belirir: Logo · Arka Plan · Poster · Karakter · Küçük Resim.
+- **Koşullu Galeri Butonu:** Galeri butonu yalnızca o sayfa için gerçek resim verisi mevcut olduğunda görünür.
+- **Yatay & Dikey Uyum:** Tüm detay sayfalarında hem portre hem de yatay ekran düzeninde tam uyum.
 
-### 🎨 Fanart.tv Medya Galerisi Entegrasyonu
-- **Çoklu Kaynak Galerisi:** Fanart.tv, TMDB ve Jikan'dan gelen tüm görseller tek bir galeri yapısında birleştirilip kategorilere ayrılıyor.
-- **Kategorize Edilmiş Bölümler:** Görseller türüne göre ayrı satırlarda gösteriliyor:
-  - 🎨 Logo — 🖼 Arka Plan — 📋 Poster — 🎭 Karakter Sanatı — 🌐 Küçük Resim
-- **Platform Kaynak Etiketleri:** Her görsel üzerinde hangi platformdan geldiğini gösteren renkli rozet.
-- **Akıllı Galeri Filtresi:** Bir görsele tıklandığında galeri diyaloğu otomatik olarak o kategoriye geçiyor.
+### 🎨 Fanart.tv & Çoklu Kaynak Galeri Entegrasyonu
+- **Birleşik Galeri:** Fanart.tv, TMDB ve Jikan'dan gelen tüm görseller tek bir galeri yapısında toplanıp kategorilere ayrılıyor.
+- **Akıllı Kategori Geçişi:** Bir görsele tıklandığında galeri diyaloğu otomatik olarak o kategoriye açılıyor.
+- **Küçük Resim Şeridi:** Galeri altındaki thumbnail şeridi seçili kategoriye göre filtreleniyor ve seçili resme otomatik kaydırıyor.
 - **Fanart.tv Ayarları:** Ayarlar → Entegrasyonlar altından API anahtarı girilebilir, özellik açılıp kapatılabilir.
 
+### ⚡ APK Derleme Hızlandırması
+- **`clean` Kaldırıldı:** Her derlemede sıfırdan başlama zorunluluğu kaldırıldı; Gradle yalnızca değişen dosyaları yeniden derliyor.
+- **Paralel Build:** FOSS ve GMS varyantları artık aynı anda, paralel olarak derleniyor.
+- **Configuration Cache:** Gradle proje yapısını önbelleğe alıyor — tekrarlayan derlemelerde yapılandırma süresi neredeyse sıfır.
+- **Akıllı Fallback:** Hızlı derleme başarısız olursa sistem otomatik olarak güvenli `clean build`'e geçiyor.
+- **Kotlin Incremental Düzeltmesi:** `useClasspathSnapshot=true` ile deprecated flag temizlendi, ABI snapshot tabanlı derleme aktif.
+
 ### 🛡️ Sistem Genelinde NSFW Flulaştırma
-- **Merkezi `KitsugiNsfwImage` Bileşeni:** Tüm el ile yazılmış `Modifier.blur` kullanımları merkezi bileşene taşındı.
+- **Merkezi `KitsugiNsfwImage` Bileşeni:** Tüm el ile yazılmış blur kullanımları merkezi bileşene taşındı.
 - **Tutarlı Otomatik Gizleme:** Keşfet, Profil ve tüm medya ekranlarında yetişkin içerikler kullanıcı tercihine göre sistem genelinde flulaştırılıyor.
-
-### 🎬 Gelişmiş Video Oynatıcı Kontrolleri
-- **Kalite Seçimi:** Tam ekran oynatıcıya dinamik akış kalitesi seçim menüsü eklendi.
-- **Akıllı Ses İzi Butonu:** Birden fazla ses izi varsa buton görünür, tek ise otomatik gizleniyor.
-- **Otomatik Kontrol Gizleme:** Oynatıcı arayüzü belirli süre işlemsiz kalırsa otomatik olarak gizleniyor.
-
-### 🎙️ Ses Sanatçısı Normalizasyonu
-- **Ad Soyad Formatı:** Tüm ses sanatçısı isimleri "Soyad, Ad" yerine "Ad Soyad" formatında gösteriliyor.
-- **Dil Öncelikli Sıralama:** Japonca → İngilizce → Türkçe → Alfabetik sıraya göre listeleniyor.
-
-### 📱 Modernize Edilmiş Kullanıcı Medya Listesi
-- **Kaydırma ile Sekme Geçişi:** `HorizontalPager` ile Anime/Manga sekmeleri arasında parmak kaydırmayla geçiş yapılabiliyor.
-- **Gizlenebilir Arama Çubuğu:** Aşağı kaydırmada arama çubuğu gizleniyor, yukarı kaydırmada geri geliyor.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### 🖼️ Standardized Gallery Button — Character, Staff & Studio Pages
-- **New Gallery Button:** A gallery button (🖼️) has been added to the hero action bar of Character, Staff, and Studio detail pages.
-- **Alongside Share & Favorite:** The button is consistently placed next to the Share and Favorite icons in all layouts.
-- **Conditional Visibility:** The button only appears when a valid image is available for that entity — no empty space when there's nothing to show.
-- **One-Tap Gallery:** Tapping the button opens `KitsugiImageGalleryDialog` for full-screen image browsing.
-- **Portrait & Landscape Support:** Works correctly in both portrait and landscape (tablet/TV) orientations.
-- **Floating Header Support:** The gallery button is also included in the sticky collapse header that appears on scroll.
+### 🖼️ Standardized Media Gallery — Character, Staff & Studio
+- **Full GalleryItem Migration:** Character, Staff, and Studio detail pages now fully use the modern `GalleryItem`-based gallery architecture.
+- **Platform Source Badges:** Every open gallery image displays a **colored badge** in the bottom-left corner showing exactly which platform it came from:
+  - 🟣 **Fanart.tv** — Purple badge
+  - 🟢 **TMDB** — Green badge
+  - 🔵 **Jikan (MyAnimeList)** — Blue badge
+  - 🔷 **AniList** — AniList blue badge
+  - 🔴 **Simkl** — Red badge
+- **Category Filter Tabs:** When a gallery contains multiple categories, scrollable filter tabs appear at the top: Logo · Backdrop · Poster · Character · Thumbnail.
+- **Conditional Gallery Button:** Gallery button is only shown when real image data is available for that entity.
+- **Portrait & Landscape Support:** Full layout compatibility across all detail pages in both orientations.
 
-### 🎨 Fanart.tv Media Gallery Integration
-- **Multi-Source Gallery:** Assets from Fanart.tv, TMDB, and Jikan are merged and categorized into a unified gallery structure.
-- **Categorized Sections:** Images are displayed in labeled horizontal rows by type:
-  - 🎨 Logo — 🖼 Backdrop — 📋 Poster — 🎭 Character Art — 🌐 Thumbnail
-- **Platform Source Badges:** Each thumbnail displays a colored badge indicating its origin (Fanart.tv / TMDB / Jikan).
-- **Smart Pre-selected Filter Tab:** Tapping an image opens the gallery dialog with the matching category tab automatically pre-selected.
+### 🎨 Fanart.tv & Multi-Source Gallery Integration
+- **Unified Gallery:** Assets from Fanart.tv, TMDB, and Jikan are merged and categorized into a single unified gallery structure.
+- **Smart Category Pre-selection:** Tapping an image opens the gallery dialog with the correct category tab automatically pre-selected.
+- **Synchronized Thumbnail Strip:** The bottom thumbnail strip filters by selected category and auto-scrolls to the current image.
 - **Settings Integration:** Fanart.tv API key and toggle available under Settings → Integrations.
+
+### ⚡ APK Build Speed Improvements
+- **`clean` Removed:** No more full rebuild from scratch every time — Gradle only recompiles changed files.
+- **Parallel Builds:** FOSS and GMS variants now compile simultaneously using all available CPU threads.
+- **Configuration Cache:** Gradle caches project configuration — repeated builds skip re-evaluation entirely.
+- **Smart Fallback:** If the fast build fails, the system automatically falls back to a safe clean build.
+- **Kotlin Incremental Fix:** Deprecated `useClasspathSnapshot=false` flag removed; ABI snapshot-based incremental compilation enabled.
 
 ### 🛡️ System-Wide NSFW Blurring
 - **Centralized `KitsugiNsfwImage` Component:** All manual `Modifier.blur` calls replaced with a single centralized wrapper.
-- **Consistent Automated Blur:** NSFW/adult content is automatically blurred across Explore, Profile, and all media screens based on user settings.
-
-### 🎬 Advanced Video Player Controls
-- **Quality Selection:** Dynamic streaming quality selector added to the full-screen player overlay.
-- **Smart Audio Track Button:** Audio track button is shown only when multiple tracks are available; hidden otherwise.
-- **Auto-Hide Overlay:** Player controls auto-hide after inactivity for an uninterrupted viewing experience.
-
-### 🎙️ Normalized Voice Actors
-- **First Last Format:** Voice actor names standardized from "LastName, FirstName" to "FirstName LastName".
-- **Language-Priority Sort:** Sorted by Japanese → English → Turkish → Alphabetical.
-
-### 📱 Modernized User Media List
-- **Swipe Navigation:** `HorizontalPager` integration for gesture-based Anime/Manga tab switching.
-- **Scroll-Aware Search Bar:** Search bar hides on downward scroll and reappears on upward scroll.
+- **Consistent Automated Blur:** Adult content is automatically blurred across Explore, Profile, and all media screens based on user settings.

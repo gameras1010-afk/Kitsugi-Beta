@@ -247,13 +247,6 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
             }
         }
 
-        viewModelScope.launch {
-            try {
-                fetchFanartGallery(entry)
-            } catch (e: Exception) {
-                Log.e(TAG, "Error fetching Fanart gallery: ${e.message}", e)
-            }
-        }
     }
 
     private suspend fun fetchDetail(entry: MediaEntry) {

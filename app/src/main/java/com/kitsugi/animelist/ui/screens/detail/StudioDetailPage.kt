@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.kitsugi.animelist.data.remote.JikanApiClient
+import com.kitsugi.animelist.data.remote.GalleryItem
 import com.kitsugi.animelist.data.remote.KitsugiStudioDetail
 import com.kitsugi.animelist.data.remote.KitsugiStaffMediaWork
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
@@ -151,7 +152,9 @@ fun StudioDetailPage(
                 val showFloatingHeader = gridState.firstVisibleItemIndex >= 1
                 val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
                 var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
+                var activeGalleryItems by remember { mutableStateOf<List<GalleryItem>>(emptyList()) }
                 var activeGalleryIndex  by remember { mutableStateOf(0) }
+                val galleryItems by viewModel.galleryItems.collectAsState()
 
                 if (isLandscape) {
                     val configuration = LocalConfiguration.current
@@ -229,7 +232,7 @@ fun StudioDetailPage(
                                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            if (!detail.imageUrl.isNullOrBlank()) {
+                                            if (galleryItems.isNotEmpty()) {
                                                 Box(
                                                     modifier = Modifier
                                                         .size(40.dp)
@@ -238,7 +241,7 @@ fun StudioDetailPage(
                                                     contentAlignment = Alignment.Center
                                                 ) {
                                                     IconButton(onClick = {
-                                                        activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                                        activeGalleryItems = galleryItems
                                                         activeGalleryIndex = 0
                                                     }) {
                                                         Icon(
@@ -352,7 +355,14 @@ fun StudioDetailPage(
                         }
                     }
                     // Gallery overlay for landscape
-                    if (activeGalleryImages.isNotEmpty()) {
+                    if (activeGalleryItems.isNotEmpty()) {
+                        KitsugiImageGalleryDialog(
+                            galleryItems = activeGalleryItems,
+                            initialIndex = activeGalleryIndex,
+                            title = detail.name,
+                            onDismiss = { activeGalleryItems = emptyList() }
+                        )
+                    } else if (activeGalleryImages.isNotEmpty()) {
                         KitsugiImageGalleryDialog(
                             imageUrls = activeGalleryImages,
                             initialIndex = activeGalleryIndex,
@@ -382,8 +392,8 @@ fun StudioDetailPage(
                                     isFavourite = isFavourite,
                                     isAniListSource = showFavouriteButton,
                                     onToggleFavourite = { viewModel.toggleFavourite() },
-                                    onGalleryClick = if (!detail.imageUrl.isNullOrBlank()) {{
-                                        activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                    onGalleryClick = if (galleryItems.isNotEmpty()) {{
+                                        activeGalleryItems = galleryItems
                                         activeGalleryIndex = 0
                                     }} else null
                                 )
@@ -483,9 +493,9 @@ fun StudioDetailPage(
                                     overflow = TextOverflow.Ellipsis,
                                     modifier = Modifier.weight(1f)
                                 )
-                                if (!detail.imageUrl.isNullOrBlank()) {
+                                if (galleryItems.isNotEmpty()) {
                                     IconButton(onClick = {
-                                        activeGalleryImages = listOfNotNull(detail.imageUrl)
+                                        activeGalleryItems = galleryItems
                                         activeGalleryIndex = 0
                                     }) {
                                         Icon(
@@ -519,7 +529,14 @@ fun StudioDetailPage(
                     }
                 }
                     // Gallery overlay for portrait
-                    if (activeGalleryImages.isNotEmpty()) {
+                    if (activeGalleryItems.isNotEmpty()) {
+                        KitsugiImageGalleryDialog(
+                            galleryItems = activeGalleryItems,
+                            initialIndex = activeGalleryIndex,
+                            title = detail.name,
+                            onDismiss = { activeGalleryItems = emptyList() }
+                        )
+                    } else if (activeGalleryImages.isNotEmpty()) {
                         KitsugiImageGalleryDialog(
                             imageUrls = activeGalleryImages,
                             initialIndex = activeGalleryIndex,

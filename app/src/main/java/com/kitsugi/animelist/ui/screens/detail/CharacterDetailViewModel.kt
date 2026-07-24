@@ -7,7 +7,10 @@ import androidx.lifecycle.viewModelScope
 import com.kitsugi.animelist.data.auth.ExternalAuthManager
 import com.kitsugi.animelist.data.local.TranslationManager
 import com.kitsugi.animelist.data.remote.DetailCache
+import com.kitsugi.animelist.data.remote.GalleryCategory
+import com.kitsugi.animelist.data.remote.GalleryItem
 import com.kitsugi.animelist.data.remote.JikanApiClient
+import com.kitsugi.animelist.data.remote.KitsugiApiBase
 import com.kitsugi.animelist.data.remote.KitsugiMediaMutationsClient
 import com.kitsugi.animelist.data.remote.RateLimitException
 import com.kitsugi.animelist.data.remote.ResourceNotFoundException
@@ -19,6 +22,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.net.URL
 
 class CharacterDetailViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -31,6 +36,9 @@ class CharacterDetailViewModel(application: Application) : AndroidViewModel(appl
 
     private val _state = MutableStateFlow<CharacterDetailState>(CharacterDetailState.Loading)
     val state: StateFlow<CharacterDetailState> = _state.asStateFlow()
+
+    private val _galleryItems = MutableStateFlow<List<GalleryItem>>(emptyList())
+    val galleryItems: StateFlow<List<GalleryItem>> = _galleryItems.asStateFlow()
 
     private val _translatedBio = MutableStateFlow<String?>(null)
     val translatedBio: StateFlow<String?> = _translatedBio.asStateFlow()
@@ -130,6 +138,9 @@ class CharacterDetailViewModel(application: Application) : AndroidViewModel(appl
             _state.value = CharacterDetailState.Success(detail)
             _isFavourite.value = detail.isFavourite
 
+            // Build gallery from imageUrl + Jikan /pictures
+            buildCharacterGallery(characterId, source, detail.imageUrl)
+
             // Otomatik çeviri açıksa biyografiyi çevir (zaten Türkçeyse TranslationManager atlar)
             val bio = detail.biography
             val autoTranslate = runCatching { settingsDataStore.settingsFlow.first() }.getOrNull()?.autoTranslateEnabled ?: false
@@ -148,6 +159,65 @@ class CharacterDetailViewModel(application: Application) : AndroidViewModel(appl
         } else if (_state.value !is CharacterDetailState.Success) {
             _state.value = CharacterDetailState.Error("Karakter detayları yüklenemedi.")
         }
+    }
+
+    /**
+     * Karakter görsellerini Jikan /pictures endpoint'inden alır ve GalleryItem listesi oluşturur.
+     * Ana imageUrl'i POSTER olarak ekler, ek görseller de POSTER kategorisinde etiketlenir.
+     */
+    private suspend fun buildCharacterGallery(characterId: Int, source: String, mainImageUrl: String?) {
+        val jikanId = if (source.lowercase() == "anilist" && characterId >= 100_000_000) {
+            null // AniList-only ID, no MAL equivalent
+        } else {
+            characterId.takeIf { it > 0 }
+        }
+
+        val pictureUrls = if (jikanId != null && source.lowercase() != "anilist") {
+            withContext(Dispatchers.IO) {
+                fetchJikanPictures(jikanId, "characters")
+            }
+        } else emptyList()
+
+        val items = buildList {
+            if (!mainImageUrl.isNullOrBlank()) {
+                add(GalleryItem(url = mainImageUrl, source = "Jikan", category = GalleryCategory.CHARACTER))
+            }
+            for (url in pictureUrls) {
+                if (url != mainImageUrl && url.isNotBlank()) {
+                    add(GalleryItem(url = url, source = "Jikan", category = GalleryCategory.CHARACTER))
+                }
+            }
+        }.distinctBy { it.url }
+
+        _galleryItems.value = items
+    }
+
+    private fun fetchJikanPictures(id: Int, endpoint: String): List<String> {
+        val url = URL("https://api.jikan.moe/v4/$endpoint/$id/pictures")
+        val request = okhttp3.Request.Builder()
+            .url(url)
+            .header("Accept", "application/json")
+            .header("User-Agent", "KitsugiAnimeList/1.0")
+            .build()
+        return runCatching {
+            com.kitsugi.animelist.core.network.KitsugiHttpClient.client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@runCatching emptyList()
+                val text = response.body?.string() ?: return@runCatching emptyList()
+                val dataArr = JSONObject(text).optJSONArray("data") ?: return@runCatching emptyList()
+                val urls = mutableListOf<String>()
+                for (i in 0 until dataArr.length()) {
+                    val obj = dataArr.getJSONObject(i)
+                    val webp = obj.optJSONObject("webp")
+                    val jpg = obj.optJSONObject("jpg")
+                    val picUrl = webp?.optString("large_image_url")?.takeIf { it.isNotBlank() }
+                        ?: webp?.optString("image_url")?.takeIf { it.isNotBlank() }
+                        ?: jpg?.optString("large_image_url")?.takeIf { it.isNotBlank() }
+                        ?: jpg?.optString("image_url")?.takeIf { it.isNotBlank() }
+                    if (!picUrl.isNullOrBlank()) urls.add(picUrl)
+                }
+                urls
+            }
+        }.getOrElse { emptyList() }
     }
 
     /**
