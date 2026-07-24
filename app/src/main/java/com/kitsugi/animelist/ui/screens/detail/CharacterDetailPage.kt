@@ -98,6 +98,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import com.kitsugi.animelist.data.remote.GalleryItem
+import com.kitsugi.animelist.data.remote.GalleryCategory
 import androidx.compose.ui.focus.focusRequester
 
 sealed interface CharacterDetailState {
@@ -221,7 +222,6 @@ fun CharacterDetailPage(
                 val coroutineScope = rememberCoroutineScope()
                 val isTv = LocalIsTv.current
                 val tabListState = rememberLazyListState()
-                var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
                 var activeGalleryItems by remember { mutableStateOf<List<GalleryItem>>(emptyList()) }
                 var activeGalleryIndex by remember { mutableStateOf(0) }
                 val galleryItems by viewModel.galleryItems.collectAsState()
@@ -537,7 +537,7 @@ fun CharacterDetailPage(
                                                             KitsugiMarkdownText(
                                                                 text = displayBio,
                                                                 onImageGalleryRequest = { urls, idx ->
-                                                                    activeGalleryImages = urls
+                                                                    activeGalleryItems = urls.map { url -> GalleryItem(url = url, category = GalleryCategory.OTHER, source = "Biyografi") }
                                                                     activeGalleryIndex = idx
                                                                 }
                                                             )
@@ -582,13 +582,6 @@ fun CharacterDetailPage(
                                     title = detail.name,
                                     onDismiss = { activeGalleryItems = emptyList() }
                                 )
-                            } else if (activeGalleryImages.isNotEmpty()) {
-                                KitsugiImageGalleryDialog(
-                                    imageUrls = activeGalleryImages,
-                                    initialIndex = activeGalleryIndex,
-                                    title = detail.name,
-                                    onDismiss = { activeGalleryImages = emptyList() }
-                                )
                             }
                         }
                     }
@@ -611,11 +604,16 @@ fun CharacterDetailPage(
                                         AsyncImage(
                                             model = detail.imageUrl,
                                             contentDescription = detail.name,
-                                             modifier = Modifier
+                                            modifier = Modifier
                                                 .fillMaxSize()
                                                 .tvClickable {
-                                                    activeGalleryImages = listOfNotNull(detail.imageUrl)
-                                                    activeGalleryIndex = 0
+                                                    if (galleryItems.isNotEmpty()) {
+                                                        activeGalleryItems = galleryItems
+                                                        activeGalleryIndex = 0
+                                                    } else {
+                                                        activeGalleryItems = listOfNotNull(detail.imageUrl).map { url -> GalleryItem(url = url, category = GalleryCategory.POSTER, source = "Jikan") }
+                                                        activeGalleryIndex = 0
+                                                    }
                                                 },
                                             contentScale = ContentScale.Crop
                                         )
@@ -1055,7 +1053,7 @@ fun CharacterDetailPage(
                                                                 KitsugiMarkdownText(
                                                                     text = displayBio,
                                                                     onImageGalleryRequest = { urls, idx ->
-                                                                        activeGalleryImages = urls
+                                                                        activeGalleryItems = urls.map { url -> GalleryItem(url = url, category = GalleryCategory.OTHER, source = "Biyografi") }
                                                                         activeGalleryIndex = idx
                                                                     }
                                                                 )
@@ -1100,13 +1098,6 @@ fun CharacterDetailPage(
                                 initialIndex = activeGalleryIndex,
                                 title = detail.name,
                                 onDismiss = { activeGalleryItems = emptyList() }
-                            )
-                        } else if (activeGalleryImages.isNotEmpty()) {
-                            KitsugiImageGalleryDialog(
-                                imageUrls = activeGalleryImages,
-                                initialIndex = activeGalleryIndex,
-                                title = detail.name,
-                                onDismiss = { activeGalleryImages = emptyList() }
                             )
                         }
 

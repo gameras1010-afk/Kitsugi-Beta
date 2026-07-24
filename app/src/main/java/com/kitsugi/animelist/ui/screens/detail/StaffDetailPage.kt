@@ -78,6 +78,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.runtime.rememberCoroutineScope
 import com.kitsugi.animelist.data.remote.JikanApiClient
 import com.kitsugi.animelist.data.remote.GalleryItem
+import com.kitsugi.animelist.data.remote.GalleryCategory
 import com.kitsugi.animelist.data.remote.KitsugiStaffDetail
 import com.kitsugi.animelist.data.local.TranslationManager
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
@@ -216,7 +217,6 @@ fun StaffDetailPage(
                 val coroutineScope = rememberCoroutineScope()
                 val isTv = LocalIsTv.current
                 val tabListState = rememberLazyListState()
-                var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
                 var activeGalleryItems by remember { mutableStateOf<List<GalleryItem>>(emptyList()) }
                 var activeGalleryIndex by remember { mutableStateOf(0) }
                 val galleryItems by viewModel.galleryItems.collectAsState()
@@ -472,7 +472,7 @@ fun StaffDetailPage(
                                                         else KitsugiMarkdownText(
                                                             text = displayBio,
                                                             onImageGalleryRequest = { urls, idx ->
-                                                                activeGalleryImages = urls
+                                                                activeGalleryItems = urls.map { url -> GalleryItem(url = url, category = GalleryCategory.OTHER, source = "Biyografi") }
                                                                 activeGalleryIndex = idx
                                                             }
                                                         )
@@ -504,13 +504,6 @@ fun StaffDetailPage(
                                     initialIndex = activeGalleryIndex,
                                     title = detail.name,
                                     onDismiss = { activeGalleryItems = emptyList() }
-                                )
-                            } else if (activeGalleryImages.isNotEmpty()) {
-                                KitsugiImageGalleryDialog(
-                                    imageUrls = activeGalleryImages,
-                                    initialIndex = activeGalleryIndex,
-                                    title = detail.name,
-                                    onDismiss = { activeGalleryImages = emptyList() }
                                 )
                             }
                         }
@@ -977,7 +970,7 @@ fun StaffDetailPage(
                                                                 KitsugiMarkdownText(
                                                                     text = displayBio,
                                                                     onImageGalleryRequest = { urls, idx ->
-                                                                        activeGalleryImages = urls
+                                                                        activeGalleryItems = urls.map { url -> GalleryItem(url = url, category = GalleryCategory.OTHER, source = "Biyografi") }
                                                                         activeGalleryIndex = idx
                                                                     }
                                                                 )
@@ -1022,13 +1015,6 @@ fun StaffDetailPage(
                                 initialIndex = activeGalleryIndex,
                                 title = detail.name,
                                 onDismiss = { activeGalleryItems = emptyList() }
-                            )
-                        } else if (activeGalleryImages.isNotEmpty()) {
-                            KitsugiImageGalleryDialog(
-                                imageUrls = activeGalleryImages,
-                                initialIndex = activeGalleryIndex,
-                                title = detail.name,
-                                onDismiss = { activeGalleryImages = emptyList() }
                             )
                         }
 

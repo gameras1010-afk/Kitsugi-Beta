@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.kitsugi.animelist.data.remote.JikanApiClient
 import com.kitsugi.animelist.data.remote.GalleryItem
+import com.kitsugi.animelist.data.remote.GalleryCategory
 import com.kitsugi.animelist.data.remote.KitsugiStudioDetail
 import com.kitsugi.animelist.data.remote.KitsugiStaffMediaWork
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
@@ -151,7 +152,6 @@ fun StudioDetailPage(
                 val gridState = rememberLazyGridState()
                 val showFloatingHeader = gridState.firstVisibleItemIndex >= 1
                 val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-                var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
                 var activeGalleryItems by remember { mutableStateOf<List<GalleryItem>>(emptyList()) }
                 var activeGalleryIndex  by remember { mutableStateOf(0) }
                 val galleryItems by viewModel.galleryItems.collectAsState()
@@ -314,7 +314,7 @@ fun StudioDetailPage(
                                             KitsugiMarkdownText(
                                                 text = detail.about,
                                                 onImageGalleryRequest = { urls, idx ->
-                                                    activeGalleryImages = urls
+                                                    activeGalleryItems = urls.map { url -> GalleryItem(url = url, category = GalleryCategory.OTHER, source = "Hakkında") }
                                                     activeGalleryIndex = idx
                                                 }
                                             )
@@ -361,13 +361,6 @@ fun StudioDetailPage(
                             initialIndex = activeGalleryIndex,
                             title = detail.name,
                             onDismiss = { activeGalleryItems = emptyList() }
-                        )
-                    } else if (activeGalleryImages.isNotEmpty()) {
-                        KitsugiImageGalleryDialog(
-                            imageUrls = activeGalleryImages,
-                            initialIndex = activeGalleryIndex,
-                            title = detail.name,
-                            onDismiss = { activeGalleryImages = emptyList() }
                         )
                     }
                 } else {
@@ -420,7 +413,7 @@ fun StudioDetailPage(
                                         KitsugiMarkdownText(
                                             text = detail.about,
                                             onImageGalleryRequest = { urls, idx ->
-                                                activeGalleryImages = urls
+                                                activeGalleryItems = urls.map { url -> GalleryItem(url = url, category = GalleryCategory.OTHER, source = "Hakkında") }
                                                 activeGalleryIndex = idx
                                             }
                                         )
@@ -535,13 +528,6 @@ fun StudioDetailPage(
                             initialIndex = activeGalleryIndex,
                             title = detail.name,
                             onDismiss = { activeGalleryItems = emptyList() }
-                        )
-                    } else if (activeGalleryImages.isNotEmpty()) {
-                        KitsugiImageGalleryDialog(
-                            imageUrls = activeGalleryImages,
-                            initialIndex = activeGalleryIndex,
-                            title = detail.name,
-                            onDismiss = { activeGalleryImages = emptyList() }
                         )
                     }
                 } // end else (portrait)

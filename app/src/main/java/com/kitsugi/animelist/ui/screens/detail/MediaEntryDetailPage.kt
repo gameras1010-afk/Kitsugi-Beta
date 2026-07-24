@@ -231,19 +231,9 @@ fun MediaEntryDetailPage(
         onRelationClick(searchResult)
     }
 
-    val allImages = remember(entry.imageUrl, detailState?.pictures) {
-        buildList {
-            if (!entry.imageUrl.isNullOrBlank()) {
-                add(entry.imageUrl)
-            }
-            detailState?.pictures?.let { addAll(it) }
-        }.distinct()
-    }
-    var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
-    var activeGalleryIndex by remember { mutableStateOf(0) }
     // GalleryItem-based dialog state (Fanart.tv + multi-source)
     var activeGalleryItems by remember { mutableStateOf<List<GalleryItem>>(emptyList()) }
-    var activeGalleryItemIndex by remember { mutableStateOf(0) }
+    var activeGalleryIndex by remember { mutableStateOf(0) }
     var activeEpisodeForOptions by remember { mutableStateOf<KitsugiStreamingEpisode?>(null) }
     var showWatchDialog by remember { mutableStateOf(false) }
     var watchEpisodeInput by remember { mutableStateOf("") }
@@ -345,10 +335,26 @@ fun MediaEntryDetailPage(
                                 titleLanguage = titleLanguage,
                                 blurAdultMedia = blurAdultMedia,
                                 onPosterClick = { clickedUrl ->
-                                    val index = allImages.indexOf(clickedUrl).coerceAtLeast(0)
-                                    activeGalleryImages = allImages
-                                    activeGalleryIndex = index
+                                    if (galleryItems.isNotEmpty()) {
+                                        activeGalleryItems = galleryItems
+                                        activeGalleryIndex = 0
+                                    } else if (!clickedUrl.isNullOrBlank()) {
+                                        activeGalleryItems = listOf(
+                                            GalleryItem(
+                                                url = clickedUrl,
+                                                category = GalleryCategory.POSTER,
+                                                source = entry.source
+                                            )
+                                        )
+                                        activeGalleryIndex = 0
+                                    }
                                 },
+                                onGalleryClick = if (galleryItems.isNotEmpty()) {
+                                    {
+                                        activeGalleryItems = galleryItems
+                                        activeGalleryIndex = 0
+                                    }
+                                } else null,
                                 nextAiring = detailState?.nextAiringEpisode,
                                 showFavoriteButton = showFavouriteButton,
                                 onToggleFavoriteClick = onToggleFavoriteClick
@@ -516,13 +522,13 @@ fun MediaEntryDetailPage(
                                                         { showIntegrationsDialog = true }
                                                     } else null,
                                                     onImageGalleryRequest = { urls, index ->
-                                                        activeGalleryImages = urls
+                                                        activeGalleryItems = urls.map { url -> GalleryItem(url = url, category = GalleryCategory.OTHER, source = "Açıklama") }
                                                         activeGalleryIndex = index
                                                     },
                                                     galleryItems = galleryItems,
                                                     onGalleryItemRequest = { items, index ->
                                                         activeGalleryItems = items
-                                                        activeGalleryItemIndex = index
+                                                        activeGalleryIndex = index
                                                     }
                                                 )
                                             }
@@ -633,10 +639,26 @@ fun MediaEntryDetailPage(
                             titleLanguage = titleLanguage,
                             blurAdultMedia = blurAdultMedia,
                             onPosterClick = { clickedUrl ->
-                                val index = allImages.indexOf(clickedUrl).coerceAtLeast(0)
-                                activeGalleryImages = allImages
-                                activeGalleryIndex = index
+                                if (galleryItems.isNotEmpty()) {
+                                    activeGalleryItems = galleryItems
+                                    activeGalleryIndex = 0
+                                } else if (!clickedUrl.isNullOrBlank()) {
+                                    activeGalleryItems = listOf(
+                                        GalleryItem(
+                                            url = clickedUrl,
+                                            category = GalleryCategory.POSTER,
+                                            source = entry.source
+                                        )
+                                    )
+                                    activeGalleryIndex = 0
+                                }
                             },
+                            onGalleryClick = if (galleryItems.isNotEmpty()) {
+                                {
+                                    activeGalleryItems = galleryItems
+                                    activeGalleryIndex = 0
+                                }
+                            } else null,
                             nextAiring = detailState?.nextAiringEpisode,
                             showFavoriteButton = showFavouriteButton,
                             onToggleFavoriteClick = onToggleFavoriteClick
@@ -781,7 +803,7 @@ fun MediaEntryDetailPage(
                                     if (galleryItems.isNotEmpty()) {
                                         IconButton(onClick = {
                                             activeGalleryItems = galleryItems
-                                            activeGalleryItemIndex = 0
+                                            activeGalleryIndex = 0
                                         }) {
                                             Icon(
                                                 imageVector = Icons.Rounded.Image,
@@ -928,13 +950,13 @@ fun MediaEntryDetailPage(
                                                 { showIntegrationsDialog = true }
                                             } else null,
                                             onImageGalleryRequest = { urls, index ->
-                                                activeGalleryImages = urls
+                                                activeGalleryItems = urls.map { url -> GalleryItem(url = url, category = GalleryCategory.OTHER, source = "Açıklama") }
                                                 activeGalleryIndex = index
                                             },
                                             galleryItems = galleryItems,
                                             onGalleryItemRequest = { items, index ->
                                                 activeGalleryItems = items
-                                                activeGalleryItemIndex = index
+                                                activeGalleryIndex = index
                                             }
                                         )
                                     }
@@ -1031,16 +1053,9 @@ fun MediaEntryDetailPage(
         if (activeGalleryItems.isNotEmpty()) {
             KitsugiImageGalleryDialog(
                 galleryItems = activeGalleryItems,
-                initialIndex = activeGalleryItemIndex,
-                title = entry.title,
-                onDismiss = { activeGalleryItems = emptyList() }
-            )
-        } else if (activeGalleryImages.isNotEmpty()) {
-            KitsugiImageGalleryDialog(
-                imageUrls = activeGalleryImages,
                 initialIndex = activeGalleryIndex,
                 title = entry.title,
-                onDismiss = { activeGalleryImages = emptyList() }
+                onDismiss = { activeGalleryItems = emptyList() }
             )
         }
 
