@@ -64,14 +64,17 @@ object KitsugiEpisodeRatingsRepository {
         }
     }
 
-    /** Fanart.tv ayarlarını döner (apiKey, enabled). API anahtarı boşsa devre dışı sayılır. */
+    /** Fanart.tv ayarlarını döner (apiKey, enabled). Built-in API anahtarı her zaman fallback olarak kullanılır. */
     private suspend fun getFanartSettings(): Pair<Boolean, String> {
-        val context = appContext ?: return Pair(false, "")
+        val context = appContext ?: return Pair(true, FanartApiClient.getActiveApiKey())
         return try {
             val settings = com.kitsugi.animelist.data.settings.SettingsDataStore(context).settingsFlow.first()
-            Pair(settings.fanartTvEnabled && settings.fanartTvApiKey.isNotBlank(), settings.fanartTvApiKey)
+            // Kullanıcı toggle'ı kapattıysa devre dışı; aksi hâlde built-in key ile devam et
+            val enabled = settings.fanartTvEnabled
+            val apiKey = FanartApiClient.getActiveApiKey(settings.fanartTvApiKey)
+            Pair(enabled, apiKey)
         } catch (e: Exception) {
-            Pair(false, "")
+            Pair(true, FanartApiClient.getActiveApiKey())
         }
     }
 

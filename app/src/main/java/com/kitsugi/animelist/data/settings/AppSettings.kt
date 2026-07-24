@@ -75,7 +75,7 @@ data class AppSettings(
     // Fanart.tv: Yüksek kaliteli logo/artwork kaynağı (TVDB ID bazlı)
     // Proje API anahtarı: https://fanart.tv/get-an-api-key/ adresinden alınır
     val fanartTvApiKey: String = "",
-    val fanartTvEnabled: Boolean = false,
+    val fanartTvEnabled: Boolean = true,
     // AniSkip: Anime intro/outro zaman damgalarını otomatik çekme
     val aniSkipEnabled: Boolean = true,
     val aniSkipAutoSkip: Boolean = false,

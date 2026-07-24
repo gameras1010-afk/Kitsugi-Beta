@@ -33,6 +33,22 @@ object FanartApiClient {
     private const val BASE_URL = "https://webservice.fanart.tv/v3"
     private const val IMG_ORIGINAL = "" // Fanart.tv URL'leri zaten tam yol içerir
 
+    /**
+     * Dahili (yedek) Fanart.tv proje API anahtarı.
+     * Kullanıcı kendi anahtarını girmese bile Fanart.tv entegrasyonu çalışır.
+     * Öncelik sırası:
+     *  1. Kullanıcının ayarlardan girdiği kişisel API anahtarı
+     *  2. Bu built-in proje anahtarı (rate-limit paylaşımlı)
+     */
+    private const val BUILT_IN_API_KEY = "7e8fce70b5cc0dc7c9b3b2b2741a9e92"
+
+    /**
+     * Etkin Fanart.tv API anahtarını döner.
+     * Kullanıcı anahtarı varsa onu, yoksa dahili proje anahtarını kullanır.
+     */
+    fun getActiveApiKey(userKey: String = ""): String =
+        userKey.trim().ifBlank { BUILT_IN_API_KEY }
+
     // ─────────────────────────────────────────────────────────────────────────
     // TV / Anime: TVDB ID bazlı
     // ─────────────────────────────────────────────────────────────────────────

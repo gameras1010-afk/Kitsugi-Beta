@@ -243,7 +243,7 @@ class SettingsDataStore(
                     mdbListShowTmdb = preferences[Keys.MdbListShowTmdb] ?: false,
                     mdbListShowTrakt = preferences[Keys.MdbListShowTrakt] ?: false,
                     fanartTvApiKey = preferences[Keys.FanartTvApiKey] ?: "",
-                    fanartTvEnabled = preferences[Keys.FanartTvEnabled] ?: false,
+                    fanartTvEnabled = preferences[Keys.FanartTvEnabled] ?: true,
                     aniSkipEnabled = preferences[Keys.AniSkipEnabled] ?: true,
                     aniSkipAutoSkip = preferences[Keys.AniSkipAutoSkip] ?: false,
                     animeSkipClientId = preferences[Keys.AnimeSkipClientId] ?: "",
