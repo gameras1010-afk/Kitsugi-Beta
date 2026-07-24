@@ -131,6 +131,8 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.runtime.remember
 import com.kitsugi.animelist.utils.parseToMediaType
+import com.kitsugi.animelist.data.remote.GalleryItem
+import com.kitsugi.animelist.data.remote.GalleryCategory
 
 @Composable
 fun MediaEntryDetailPage(
@@ -209,6 +211,7 @@ fun MediaEntryDetailPage(
     val reviewsState by viewModel.reviewsState.collectAsState()
     val episodesState by viewModel.episodesState.collectAsState()
     val targetSeason by viewModel.targetSeason.collectAsState()
+    val galleryItems by viewModel.galleryItems.collectAsState()
 
     val onMediaClick: (Int, String, String) -> Unit = { mediaId, mediaType, mediaSource ->
         val searchType = mediaType.parseToMediaType()
@@ -237,6 +240,9 @@ fun MediaEntryDetailPage(
     }
     var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
     var activeGalleryIndex by remember { mutableStateOf(0) }
+    // GalleryItem-based dialog state (Fanart.tv + multi-source)
+    var activeGalleryItems by remember { mutableStateOf<List<GalleryItem>>(emptyList()) }
+    var activeGalleryItemIndex by remember { mutableStateOf(0) }
     var activeEpisodeForOptions by remember { mutableStateOf<KitsugiStreamingEpisode?>(null) }
     var showWatchDialog by remember { mutableStateOf(false) }
     var watchEpisodeInput by remember { mutableStateOf("") }
@@ -511,6 +517,11 @@ fun MediaEntryDetailPage(
                                                     onImageGalleryRequest = { urls, index ->
                                                         activeGalleryImages = urls
                                                         activeGalleryIndex = index
+                                                    },
+                                                    galleryItems = galleryItems,
+                                                    onGalleryItemRequest = { items, index ->
+                                                        activeGalleryItems = items
+                                                        activeGalleryItemIndex = index
                                                     }
                                                 )
                                             }
@@ -906,6 +917,11 @@ fun MediaEntryDetailPage(
                                             onImageGalleryRequest = { urls, index ->
                                                 activeGalleryImages = urls
                                                 activeGalleryIndex = index
+                                            },
+                                            galleryItems = galleryItems,
+                                            onGalleryItemRequest = { items, index ->
+                                                activeGalleryItems = items
+                                                activeGalleryItemIndex = index
                                             }
                                         )
                                     }
@@ -999,7 +1015,14 @@ fun MediaEntryDetailPage(
             } // end PullToRefreshBox
     } // end else (non-loading)
 
-        if (activeGalleryImages.isNotEmpty()) {
+        if (activeGalleryItems.isNotEmpty()) {
+            KitsugiImageGalleryDialog(
+                galleryItems = activeGalleryItems,
+                initialIndex = activeGalleryItemIndex,
+                title = entry.title,
+                onDismiss = { activeGalleryItems = emptyList() }
+            )
+        } else if (activeGalleryImages.isNotEmpty()) {
             KitsugiImageGalleryDialog(
                 imageUrls = activeGalleryImages,
                 initialIndex = activeGalleryIndex,
@@ -1191,6 +1214,10 @@ fun MediaEntryDetailPage(
                 onAniSkipAutoSkipChanged = { coroutineScope.launch { settingsDataStore.setAniSkipAutoSkip(it) } },
                 animeSkipClientId = settingsState.animeSkipClientId,
                 onAnimeSkipClientIdChanged = { coroutineScope.launch { settingsDataStore.setAnimeSkipClientId(it) } },
+                fanartTvEnabled = settingsState.fanartTvEnabled,
+                onFanartTvEnabledChanged = { coroutineScope.launch { settingsDataStore.setFanartTvEnabled(it) } },
+                fanartTvApiKey = settingsState.fanartTvApiKey,
+                onFanartTvApiKeyChanged = { coroutineScope.launch { settingsDataStore.setFanartTvApiKey(it) } },
                 onDismiss = { showIntegrationsDialog = false }
             )
         }

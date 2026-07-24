@@ -104,10 +104,14 @@ fun KitsugiIntegrationsSettingsDialog(
     onAniSkipAutoSkipChanged: (Boolean) -> Unit,
     animeSkipClientId: String,
     onAnimeSkipClientIdChanged: (String) -> Unit,
+    fanartTvEnabled: Boolean,
+    onFanartTvEnabledChanged: (Boolean) -> Unit,
+    fanartTvApiKey: String,
+    onFanartTvApiKeyChanged: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
     val accentColor = LocalKitsugiAccent.current
-    val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { 4 })
     val scope = rememberCoroutineScope()
 
     KitsugiSheetOrDialog(
@@ -175,6 +179,19 @@ fun KitsugiIntegrationsSettingsDialog(
                             Text(
                                 stringResource(R.string.integrations_tab_skip),
                                 fontWeight = if (pagerState.currentPage == 2) FontWeight.Bold else FontWeight.Normal,
+                                fontSize = 13.sp
+                            )
+                        }
+                    )
+                    Tab(
+                        selected = pagerState.currentPage == 3,
+                        onClick = {
+                            scope.launch { pagerState.animateScrollToPage(3) }
+                        },
+                        text = {
+                            Text(
+                                "Fanart.tv",
+                                fontWeight = if (pagerState.currentPage == 3) FontWeight.Bold else FontWeight.Normal,
                                 fontSize = 13.sp
                             )
                         }
@@ -254,6 +271,13 @@ fun KitsugiIntegrationsSettingsDialog(
                         onAutoSkipChanged = onAniSkipAutoSkipChanged,
                         animeSkipClientId = animeSkipClientId,
                         onAnimeSkipClientIdChanged = onAnimeSkipClientIdChanged,
+                        accentColor = accentColor
+                    )
+                    3 -> FanartTvSettingsTab(
+                        enabled = fanartTvEnabled,
+                        onEnabledChanged = onFanartTvEnabledChanged,
+                        apiKey = fanartTvApiKey,
+                        onApiKeyChanged = onFanartTvApiKeyChanged,
                         accentColor = accentColor
                     )
                 }
@@ -1046,3 +1070,81 @@ private fun AnimeSkipClientIdValidationDialog(
         textContentColor = KitsugiColors.TextPrimary
     )
 }
+
+@Composable
+private fun FanartTvSettingsTab(
+    enabled: Boolean,
+    onEnabledChanged: (Boolean) -> Unit,
+    apiKey: String,
+    onApiKeyChanged: (String) -> Unit,
+    accentColor: Color
+) {
+    val scrollState = rememberScrollState()
+    var tempKey by remember(apiKey) { mutableStateOf(apiKey) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+            .padding(vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+        KitsugiSettingsSection(title = "Fanart.tv Ayarları") {
+            KitsugiSettingsSwitchItem(
+                title = "Etkinleştir",
+                description = "Fanart.tv entegrasyonunu etkinleştirerek yüksek kaliteli logo, karakter tasarımları ve arka plan görselleri çekin.",
+                icon = Icons.Rounded.Movie,
+                iconColor = accentColor,
+                checked = enabled,
+                onCheckedChange = onEnabledChanged
+            )
+
+            if (enabled) {
+                KitsugiSettingsDivider()
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    OutlinedTextField(
+                        value = tempKey,
+                        onValueChange = {
+                            tempKey = it
+                            onApiKeyChanged(it)
+                        },
+                        label = { Text("Fanart.tv API Anahtarı") },
+                        placeholder = { Text("Kişisel Fanart.tv API anahtarınızı girin...") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = accentColor,
+                            unfocusedBorderColor = KitsugiColors.Border,
+                            cursorColor = accentColor,
+                            focusedTextColor = KitsugiColors.TextPrimary,
+                            unfocusedTextColor = KitsugiColors.TextPrimary,
+                            focusedLabelColor = accentColor,
+                            unfocusedLabelColor = KitsugiColors.TextSecondary
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        singleLine = true,
+                        trailingIcon = {
+                            if (tempKey.isNotEmpty()) {
+                                IconButton(onClick = {
+                                    tempKey = ""
+                                    onApiKeyChanged("")
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Close,
+                                        contentDescription = "Temizle",
+                                        tint = KitsugiColors.TextSecondary
+                                    )
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+

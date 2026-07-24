@@ -54,6 +54,14 @@ import com.kitsugi.animelist.data.trailer.YoutubeChunkedDataSourceFactory
 import com.kitsugi.animelist.ui.screens.fullscreen.KitsugiFullscreenPlayerActivity
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
+import com.kitsugi.animelist.core.player.engine.PlayerEngine
+import com.kitsugi.animelist.core.player.engine.PlayerEngineType
+import com.kitsugi.animelist.core.player.engine.Media3PlayerEngine
+import com.kitsugi.animelist.core.player.engine.MpvPlayerEngine
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.delay
+
 
 // ---------------------------------------------------------------------------
 //  YouTube ID Extractor
@@ -143,39 +151,97 @@ fun KitsugiYouTubePlayer(
         }
     } else {
         val source = playbackSource!!
-        val exoPlayer = remember(context, videoId) {
-            androidx.media3.exoplayer.ExoPlayer.Builder(context).build().apply {
-                playWhenReady = true
-                repeatMode = androidx.media3.common.Player.REPEAT_MODE_ONE
+        val dataStore = remember { com.kitsugi.animelist.data.settings.SettingsDataStore(context.applicationContext) }
+        val appSettingsState = dataStore.settingsFlow.collectAsState(initial = null)
+        val appSettings = appSettingsState.value
+        val safeSettings = remember(appSettings) { appSettings ?: com.kitsugi.animelist.data.settings.AppSettings() }
+
+        var activeEngineType by remember(videoId) { mutableStateOf(PlayerEngineType.MEDIA3) }
+        val playerEngine = remember(context, activeEngineType, videoId) {
+            when (activeEngineType) {
+                PlayerEngineType.MPV -> MpvPlayerEngine(context, safeSettings)
+                else -> Media3PlayerEngine(context, safeSettings)
             }
         }
 
-        DisposableEffect(exoPlayer) {
+        var isPlayingState by remember { mutableStateOf(true) }
+        var currentPosition by remember { mutableStateOf(0L) }
+        var duration by remember { mutableStateOf(0L) }
+
+        DisposableEffect(playerEngine) {
+            val listener = object : PlayerEngine.Listener {
+                override fun onStateChanged(state: PlayerEngine.State) {
+                    isPlayingState = playerEngine.isPlaying
+                }
+
+                override fun onPlaybackError(errorCode: Int, errorMsg: String, cause: Throwable?) {
+                    Log.e("KitsugiYouTubePlayer", "Playback error: $errorMsg (code: $errorCode)")
+                    if (activeEngineType == PlayerEngineType.MEDIA3) {
+                        Log.d("KitsugiYouTubePlayer", "ExoPlayer failed, switching to MPV")
+                        activeEngineType = PlayerEngineType.MPV
+                    } else {
+                        hasError = true
+                    }
+                }
+
+                override fun onPositionChanged(positionMs: Long, durationMs: Long) {
+                    currentPosition = positionMs
+                    duration = durationMs
+                }
+
+                override fun onTracksChanged(
+                    audioTracks: List<com.kitsugi.animelist.ui.screens.fullscreen.components.TrackOption>,
+                    subtitleTracks: List<com.kitsugi.animelist.ui.screens.fullscreen.components.TrackOption>
+                ) {}
+            }
+            playerEngine.addListener(listener)
             onDispose {
-                exoPlayer.stop()
-                exoPlayer.clearMediaItems()
-                exoPlayer.release()
+                playerEngine.removeListener(listener)
+                playerEngine.release()
             }
         }
 
-        LaunchedEffect(source) {
-            val videoUri = Uri.parse(source.videoUrl)
-            if (!source.audioUrl.isNullOrBlank()) {
-                val mediaSourceFactory = androidx.media3.exoplayer.source.DefaultMediaSourceFactory(YoutubeChunkedDataSourceFactory())
-                val videoSource = mediaSourceFactory.createMediaSource(androidx.media3.common.MediaItem.fromUri(videoUri))
-                val audioSource = mediaSourceFactory.createMediaSource(androidx.media3.common.MediaItem.fromUri(Uri.parse(source.audioUrl)))
-                exoPlayer.setMediaSource(androidx.media3.exoplayer.source.MergingMediaSource(videoSource, audioSource))
-            } else {
-                exoPlayer.setMediaItem(androidx.media3.common.MediaItem.fromUri(videoUri))
+        LaunchedEffect(source, activeEngineType) {
+            try {
+                playerEngine.prepare(
+                    videoUrl = source.videoUrl,
+                    audioUrl = source.audioUrl,
+                    startPositionMs = currentPosition
+                )
+                playerEngine.play()
+            } catch (e: Exception) {
+                Log.e("KitsugiYouTubePlayer", "Prepare error", e)
+                if (activeEngineType == PlayerEngineType.MEDIA3) {
+                    activeEngineType = PlayerEngineType.MPV
+                } else {
+                    hasError = true
+                }
             }
-            exoPlayer.prepare()
+        }
+
+        LaunchedEffect(playerEngine, isPlayingState) {
+            if (isPlayingState) {
+                while (true) {
+                    currentPosition = playerEngine.currentPosition
+                    duration = playerEngine.duration.coerceAtLeast(0L)
+                    delay(1000)
+                }
+            }
         }
 
         KitsugiPlayerGestureWrapper(
-            exoPlayer = exoPlayer,
+            isPlaying = isPlayingState,
+            currentPosition = currentPosition,
+            duration = duration,
+            onPlayPause = {
+                if (isPlayingState) playerEngine.pause() else playerEngine.play()
+            },
+            onSeek = { target ->
+                playerEngine.seekTo(target)
+            },
             modifier = modifier,
             onFullscreen = {
-                exoPlayer.pause()
+                playerEngine.pause()
                 KitsugiFullscreenPlayerActivity.startWithStreamUrls(
                     context = context,
                     videoUrl = source.videoUrl,
@@ -185,10 +251,7 @@ fun KitsugiYouTubePlayer(
         ) {
             AndroidView(
                 factory = { ctx ->
-                    android.view.LayoutInflater.from(ctx).inflate(com.kitsugi.animelist.R.layout.trailer_player_view, null).apply {
-                        val playerView = findViewById<androidx.media3.ui.PlayerView>(com.kitsugi.animelist.R.id.trailer_player_view)
-                        playerView.player = exoPlayer
-                    }
+                    playerEngine.createVideoView(ctx)
                 },
                 modifier = Modifier.fillMaxSize()
             )
@@ -201,7 +264,11 @@ fun KitsugiYouTubePlayer(
 // ---------------------------------------------------------------------------
 @Composable
 fun KitsugiPlayerGestureWrapper(
-    exoPlayer: androidx.media3.exoplayer.ExoPlayer,
+    isPlaying: Boolean,
+    currentPosition: Long,
+    duration: Long,
+    onPlayPause: () -> Unit,
+    onSeek: (Long) -> Unit,
     modifier: Modifier = Modifier,
     onFullscreen: (() -> Unit)? = null,
     content: @Composable () -> Unit
@@ -211,14 +278,14 @@ fun KitsugiPlayerGestureWrapper(
 
     LaunchedEffect(seekFeedbackText) {
         if (seekFeedbackText != null) {
-            kotlinx.coroutines.delay(650)
+            delay(650)
             seekFeedbackText = null
         }
     }
 
     LaunchedEffect(playPauseFeedbackIcon) {
         if (playPauseFeedbackIcon != null) {
-            kotlinx.coroutines.delay(500)
+            delay(500)
             playPauseFeedbackIcon = null
         }
     }
@@ -234,32 +301,25 @@ fun KitsugiPlayerGestureWrapper(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .pointerInput(exoPlayer) {
+                .pointerInput(isPlaying, currentPosition, duration) {
                     detectTapGestures(
                         onDoubleTap = { offset ->
                             val width = size.width
                             val isRightSide = offset.x > width / 2f
-                            val currentPos = exoPlayer.currentPosition
-                            val duration = exoPlayer.duration
                             
                             if (isRightSide) {
-                                val target = (currentPos + 5000).coerceAtMost(duration)
-                                exoPlayer.seekTo(target)
+                                val target = (currentPosition + 5000).coerceAtMost(duration)
+                                onSeek(target)
                                 seekFeedbackText = "+5s"
                             } else {
-                                val target = (currentPos - 5000).coerceAtLeast(0)
-                                exoPlayer.seekTo(target)
+                                val target = (currentPosition - 5000).coerceAtLeast(0)
+                                onSeek(target)
                                 seekFeedbackText = "-5s"
                             }
                         },
                         onTap = {
-                            if (exoPlayer.isPlaying) {
-                                exoPlayer.pause()
-                                playPauseFeedbackIcon = Icons.Rounded.Pause
-                            } else {
-                                exoPlayer.play()
-                                playPauseFeedbackIcon = Icons.Rounded.PlayArrow
-                            }
+                            onPlayPause()
+                            playPauseFeedbackIcon = if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow
                         }
                     )
                 }

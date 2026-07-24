@@ -356,5 +356,9 @@ data class IntegrationsSettings(
     val onPreferredTranslatorSelected: (String) -> Unit = {},
     val onOpenStats: () -> Unit = {},
     val onOpenFavourites: () -> Unit = {},
-    val onOpenAbout: () -> Unit = {}
+    val onOpenAbout: () -> Unit = {},
+    val fanartTvEnabled: Boolean = false,
+    val onFanartTvEnabledChanged: (Boolean) -> Unit = {},
+    val fanartTvApiKey: String = "",
+    val onFanartTvApiKeyChanged: (String) -> Unit = {}
 )

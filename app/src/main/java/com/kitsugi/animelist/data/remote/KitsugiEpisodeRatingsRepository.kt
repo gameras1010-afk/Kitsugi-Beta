@@ -64,12 +64,26 @@ object KitsugiEpisodeRatingsRepository {
         }
     }
 
+    /** Fanart.tv ayarlarını döner (apiKey, enabled). API anahtarı boşsa devre dışı sayılır. */
+    private suspend fun getFanartSettings(): Pair<Boolean, String> {
+        val context = appContext ?: return Pair(false, "")
+        return try {
+            val settings = com.kitsugi.animelist.data.settings.SettingsDataStore(context).settingsFlow.first()
+            Pair(settings.fanartTvEnabled && settings.fanartTvApiKey.isNotBlank(), settings.fanartTvApiKey)
+        } catch (e: Exception) {
+            Pair(false, "")
+        }
+    }
+
     // tmdbId → ratings önbelleği
     private val ratingsCache = mutableMapOf<Int, CacheEntry>()
     private val inFlight = mutableMapOf<Int, Deferred<Map<Pair<Int, Int>, Double>>>()
 
     // malId → tmdbId önbelleği (ARM API sonuçları)
     private val malToTmdbCache = mutableMapOf<Int, Int?>()
+
+    // tmdbId → tvdbId önbelleği (ARM API üzerinden alınan thetvdb alanı)
+    private val tmdbToTvdbCache = mutableMapOf<Int, Int?>()
 
     // tmdbId → logo URL önbelleği (SeriesGraph /api/shows/{id} → logo_path → TMDB CDN)
     private val logoCache = mutableMapOf<Int, String?>()
@@ -223,6 +237,7 @@ object KitsugiEpisodeRatingsRepository {
         ratingsCache.clear()
         inFlight.clear()
         malToTmdbCache.clear()
+        tmdbToTvdbCache.clear()
         logoCache.clear()
         logoInFlight.clear()
         tmdbEpisodesCache.clear()
@@ -261,8 +276,24 @@ object KitsugiEpisodeRatingsRepository {
         val deferred = mutex.withLock {
             logoInFlight[tmdbId] ?: scope.async {
                 try {
-                    val seriesGraphUrl = fetchLogoFromSeriesGraph(tmdbId)
-                    val finalUrl = seriesGraphUrl ?: fetchLogoFromTmdbDirect(tmdbId)
+                    // 1. Fanart.tv (en yüksek kalite) — TVDB ID gerektirir
+                    val (fanartEnabled, fanartApiKey) = getFanartSettings()
+                    val fanartLogoUrl = if (fanartEnabled) {
+                        val tvdbId = resolveTvdbIdFromTmdb(tmdbId)
+                        if (tvdbId != null && tvdbId > 0) {
+                            runCatching {
+                                FanartApiClient.fetchBestLogo(tvdbId, fanartApiKey)
+                            }.getOrNull()
+                        } else null
+                    } else null
+
+                    // 2. SeriesGraph fallback
+                    val seriesGraphUrl = if (fanartLogoUrl == null) fetchLogoFromSeriesGraph(tmdbId) else null
+
+                    // 3. TMDB direct fallback
+                    val finalUrl = fanartLogoUrl
+                        ?: seriesGraphUrl
+                        ?: fetchLogoFromTmdbDirect(tmdbId)
                     
                     // Sadece gerçek sonucu önbelleğe yaz (null = bulunamadı anlamına gelir)
                     mutex.withLock { logoCache[tmdbId] = finalUrl }
@@ -388,6 +419,80 @@ object KitsugiEpisodeRatingsRepository {
             }
             bestLogoPath
         }.getOrNull()
+    }
+
+    /**
+     * Verilen TMDB ID'nin TVDB ID'sini çözer.
+     * ARM API'deki "thetvdb" alanını kullanır. Hata durumunda null döner.
+     */
+    private suspend fun resolveTvdbIdFromTmdb(tmdbId: Int): Int? = withContext(Dispatchers.IO) {
+        // Önbelleğ kontrolü
+        val cached = mutex.withLock { tmdbToTvdbCache[tmdbId] }
+        if (tmdbToTvdbCache.containsKey(tmdbId)) return@withContext cached
+
+        val tvdbId = runCatching {
+            val url = URL("https://arm.haglund.dev/api/v2/ids?source=themoviedb&id=$tmdbId")
+            val response = KitsugiApiBase.executeGetRequest(url) ?: return@runCatching null
+            val text = response.trim()
+            val json = when {
+                text.startsWith("[") -> {
+                    val arr = org.json.JSONArray(text)
+                    if (arr.length() == 0) return@runCatching null
+                    arr.optJSONObject(0)
+                }
+                text.startsWith("{") -> JSONObject(text)
+                else -> return@runCatching null
+            } ?: return@runCatching null
+
+            val value = json.optInt("thetvdb", -1)
+            if (value > 0) value else null
+        }.getOrElse {
+            Log.w(TAG, "resolveTvdbIdFromTmdb failed for tmdbId=$tmdbId: ${it.message}")
+            null
+        }
+
+        mutex.withLock { tmdbToTvdbCache[tmdbId] = tvdbId }
+        Log.d(TAG, "TVDB resolve: tmdbId=$tmdbId → tvdbId=$tvdbId")
+        tvdbId
+    }
+
+    /**
+     * Fanart.tv'den zengin galeri öğeleri (logo, backdrop, poster, vb.) çeker.
+     *
+     * @param tmdbId   TMDB ID (TV veya Film)
+     * @param isMovie  true ise Film endpoint'i kullanılır; false ise TV
+     * @return         Fanart.tv API'sinden elde edilen [GalleryItem] listesi.
+     *                 Fanart.tv devre dışı veya API anahtarı yoksa boş liste döner.
+     */
+    suspend fun getFanartGalleryItems(
+        tmdbId: Int,
+        isMovie: Boolean = false
+    ): List<GalleryItem> = withContext(Dispatchers.IO) {
+        val (fanartEnabled, fanartApiKey) = getFanartSettings()
+        if (!fanartEnabled || tmdbId <= 0) return@withContext emptyList()
+
+        return@withContext if (isMovie) {
+            // Film: TMDB ID doğrudan kullanılır
+            runCatching {
+                FanartApiClient.fetchMovieImages(tmdbId, fanartApiKey)
+            }.getOrElse {
+                Log.w(TAG, "getFanartGalleryItems (movie) failed: ${it.message}")
+                emptyList()
+            }
+        } else {
+            // TV/Anime: TVDB ID çözümlenir
+            val tvdbId = resolveTvdbIdFromTmdb(tmdbId)
+            if (tvdbId == null || tvdbId <= 0) {
+                Log.d(TAG, "No TVDB ID for tmdbId=$tmdbId — Fanart.tv skipped")
+                return@withContext emptyList()
+            }
+            runCatching {
+                FanartApiClient.fetchTvImages(tvdbId, fanartApiKey)
+            }.getOrElse {
+                Log.w(TAG, "getFanartGalleryItems (tv) failed: ${it.message}")
+                emptyList()
+            }
+        }
     }
 
     /**

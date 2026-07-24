@@ -1530,6 +1530,10 @@ fun ApiResultDetailPage(
             onAniSkipAutoSkipChanged = { coroutineScope.launch { settingsDataStore.setAniSkipAutoSkip(it) } },
             animeSkipClientId = settingsState.animeSkipClientId,
             onAnimeSkipClientIdChanged = { coroutineScope.launch { settingsDataStore.setAnimeSkipClientId(it) } },
+            fanartTvEnabled = settingsState.fanartTvEnabled,
+            onFanartTvEnabledChanged = { coroutineScope.launch { settingsDataStore.setFanartTvEnabled(it) } },
+            fanartTvApiKey = settingsState.fanartTvApiKey,
+            onFanartTvApiKeyChanged = { coroutineScope.launch { settingsDataStore.setFanartTvApiKey(it) } },
             onDismiss = { showIntegrationsDialog = false }
         )
     }

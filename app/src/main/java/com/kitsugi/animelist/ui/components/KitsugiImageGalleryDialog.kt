@@ -52,6 +52,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
 import com.kitsugi.animelist.ui.theme.KitsugiColors
+import com.kitsugi.animelist.data.remote.GalleryItem
+import com.kitsugi.animelist.data.remote.GalleryCategory
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.utils.KitsugiImageDownloadHelper
 import kotlinx.coroutines.delay
@@ -61,16 +63,46 @@ import kotlin.math.abs
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun KitsugiImageGalleryDialog(
-    imageUrls: List<String>,
+    galleryItems: List<GalleryItem>,
     initialIndex: Int = 0,
     title: String,
     onDismiss: () -> Unit
 ) {
-    if (imageUrls.isEmpty()) return
+    if (galleryItems.isEmpty()) return
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(initialPage = initialIndex, pageCount = { imageUrls.size })
+    
+    // We only show category tabs if there are multiple categories.
+    val availableCategories = remember(galleryItems) {
+        val cats = galleryItems.map { it.category }.distinct()
+        if (cats.size > 1) {
+            listOf(null) + cats.sortedBy { it.ordinal } // null representing "All" (Tümü)
+        } else {
+            emptyList()
+        }
+    }
+    
+    var selectedCategoryFilter by remember { mutableStateOf<GalleryCategory?>(null) }
+    
+    // Filtered items based on selected category
+    val filteredItems = remember(galleryItems, selectedCategoryFilter) {
+        if (selectedCategoryFilter == null) {
+            galleryItems
+        } else {
+            galleryItems.filter { it.category == selectedCategoryFilter }
+        }
+    }
+    
+    val pagerState = rememberPagerState(initialPage = initialIndex.coerceIn(0, galleryItems.lastIndex), pageCount = { filteredItems.size })
+    
+    // Reset to page 0 if selectedCategoryFilter changes to avoid index bounds error
+    LaunchedEffect(selectedCategoryFilter) {
+        if (filteredItems.isNotEmpty()) {
+            pagerState.scrollToPage(0)
+        }
+    }
+    
     val accentColor = LocalKitsugiAccent.current
     val density = LocalDensity.current
     val configuration = LocalConfiguration.current
@@ -97,9 +129,9 @@ fun KitsugiImageGalleryDialog(
     ) { permissions ->
         val granted = permissions.entries.all { it.value }
         if (granted) {
-            val currentUrl = imageUrls.getOrNull(pagerState.currentPage)
-            if (currentUrl != null) {
-                KitsugiImageDownloadHelper.downloadImage(context, currentUrl, title)
+            val currentItem = filteredItems.getOrNull(pagerState.currentPage)
+            if (currentItem != null) {
+                KitsugiImageDownloadHelper.downloadImage(context, currentItem.url, title)
             }
         } else {
             android.widget.Toast.makeText(context, "Depolama izni verilmedi.", android.widget.Toast.LENGTH_SHORT).show()
@@ -127,8 +159,6 @@ fun KitsugiImageGalleryDialog(
             decorFitsSystemWindows = false
         )
     ) {
-        // Dış Box şeffaf — arka plan AnimatedVisibility içinde kalarak
-        // çıkış animasyonuyla birlikte solup gider (peek artefaktını önler).
         Box(modifier = Modifier.fillMaxSize()) {
             AnimatedVisibility(
                 visible = isAnimatedVisible,
@@ -155,156 +185,239 @@ fun KitsugiImageGalleryDialog(
                             )
                         )
                 ) {
-                // Ambient glow behind current image
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    accentColor.copy(alpha = 0.04f),
-                                    Color.Transparent,
-                                    accentColor.copy(alpha = 0.03f)
-                                )
-                            )
-                        )
-                )
-
-                // ─────────────────────────────────────
-                // UNIFIED LAYOUT: Ana resim ortada, thumbnail altta
-                // ─────────────────────────────────────
-
-                // Ana Pager
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier.fillMaxSize(),
-                    pageSpacing = if (isLandscape) 12.dp else 16.dp,
-                    verticalAlignment = Alignment.CenterVertically
-                ) { page ->
-                    GalleryImagePage(
-                        imageUrl = imageUrls[page],
-                        title = title,
-                        page = page,
-                        pagerState = pagerState,
-                        onDismiss = { dismissWithAnimation() }
-                    )
-                }
-
-                // Header (üst)
-                KitsugiGalleryHeader(
-                    title = title,
-                    currentPage = pagerState.currentPage,
-                    totalPages = imageUrls.size,
-                    accentColor = accentColor,
-                    downloadGlow = downloadGlow,
-                    onDownload = {
-                        val currentUrl = imageUrls.getOrNull(pagerState.currentPage)
-                        if (currentUrl != null) {
-                            if (KitsugiImageDownloadHelper.hasWritePermission(context)) {
-                                KitsugiImageDownloadHelper.downloadImage(context, currentUrl, title)
-                            } else {
-                                launcher.launch(KitsugiImageDownloadHelper.getRequiredPermissions())
-                            }
-                        }
-                    },
-                    onShare = {
-                        val currentUrl = imageUrls.getOrNull(pagerState.currentPage)
-                        if (currentUrl != null) {
-                            KitsugiImageDownloadHelper.shareImage(context, currentUrl, title)
-                        }
-                    },
-                    onDismiss = { dismissWithAnimation() },
-                    isLandscape = isLandscape
-                )
-
-                // Thumbnail Strip (alt)
-                if (imageUrls.size > 1) {
-                    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
-
-                    LaunchedEffect(pagerState.currentPage) {
-                        val listInfo = listState.layoutInfo
-                        val viewportWidth = listInfo.viewportEndOffset - listInfo.viewportStartOffset
-                        if (viewportWidth > 0) {
-                            val itemWidthPx = with(density) { (if (isLandscape) 40.dp else 52.dp).roundToPx() }
-                            val targetOffset = (viewportWidth - itemWidthPx) / 2
-                            listState.animateScrollToItem(pagerState.currentPage, -targetOffset)
-                        } else {
-                            listState.animateScrollToItem(pagerState.currentPage)
-                        }
-                    }
-
+                    // Ambient glow behind current image
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.BottomCenter)
+                            .fillMaxSize()
                             .background(
                                 Brush.verticalGradient(
                                     colors = listOf(
+                                        accentColor.copy(alpha = 0.04f),
                                         Color.Transparent,
-                                        KitsugiColors.Background.copy(alpha = if (isLandscape) 0.8f else 0.9f),
-                                        KitsugiColors.Surface.copy(alpha = if (isLandscape) 0.90f else 0.96f)
+                                        accentColor.copy(alpha = 0.03f)
                                     )
                                 )
                             )
-                            .navigationBarsPadding()
-                            .padding(
-                                bottom = if (isLandscape) 8.dp else 20.dp,
-                                top = if (isLandscape) 12.dp else 24.dp
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        LazyRow(
-                            state = listState,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            contentPadding = PaddingValues(horizontal = 20.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            itemsIndexed(imageUrls) { index, url ->
-                                val isSelected = pagerState.currentPage == index
-                                val thumbScale by animateFloatAsState(
-                                    targetValue = if (isSelected) 1.12f else 0.88f,
-                                    animationSpec = spring(dampingRatio = 0.6f),
-                                    label = "thumb_scale_$index"
-                                )
-                                val thumbAlpha by animateFloatAsState(
-                                    targetValue = if (isSelected) 1f else 0.38f,
-                                    label = "thumb_alpha_$index"
-                                )
+                    )
 
-                                Box(
-                                    modifier = Modifier
-                                        .graphicsLayer(scaleX = thumbScale, scaleY = thumbScale, alpha = thumbAlpha)
-                                ) {
-                                    AsyncImage(
-                                        model = url,
-                                        contentDescription = "Thumbnail $index",
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        // Header (üst)
+                        KitsugiGalleryHeader(
+                            title = title,
+                            currentPage = pagerState.currentPage,
+                            totalPages = filteredItems.size,
+                            accentColor = accentColor,
+                            downloadGlow = downloadGlow,
+                            onDownload = {
+                                val currentItem = filteredItems.getOrNull(pagerState.currentPage)
+                                if (currentItem != null) {
+                                    if (KitsugiImageDownloadHelper.hasWritePermission(context)) {
+                                        KitsugiImageDownloadHelper.downloadImage(context, currentItem.url, title)
+                                    } else {
+                                        launcher.launch(KitsugiImageDownloadHelper.getRequiredPermissions())
+                                    }
+                                }
+                            },
+                            onShare = {
+                                val currentItem = filteredItems.getOrNull(pagerState.currentPage)
+                                if (currentItem != null) {
+                                    KitsugiImageDownloadHelper.shareImage(context, currentItem.url, title)
+                                }
+                            },
+                            onDismiss = { dismissWithAnimation() },
+                            isLandscape = isLandscape
+                        )
+
+                        // Categories filter (if multiple categories available)
+                        if (availableCategories.isNotEmpty()) {
+                            LazyRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                itemsIndexed(availableCategories) { _, cat ->
+                                    val isSelected = selectedCategoryFilter == cat
+                                    val label = cat?.label ?: "Tümü"
+                                    
+                                    Box(
                                         modifier = Modifier
-                                            .size(
-                                                width = if (isLandscape) 40.dp else 48.dp,
-                                                height = if (isLandscape) 52.dp else 64.dp
+                                            .clip(RoundedCornerShape(999.dp))
+                                            .background(if (isSelected) accentColor else KitsugiColors.SurfaceSoft)
+                                            .tvClickable(shape = RoundedCornerShape(999.dp)) {
+                                                selectedCategoryFilter = cat
+                                            }
+                                            .padding(horizontal = 14.dp, vertical = 6.dp)
+                                    ) {
+                                        Text(
+                                            text = label,
+                                            color = if (isSelected) KitsugiColors.Background else KitsugiColors.TextPrimary,
+                                            style = MaterialTheme.typography.labelMedium,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // Main Pager & Image area
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            HorizontalPager(
+                                state = pagerState,
+                                modifier = Modifier.fillMaxSize(),
+                                pageSpacing = if (isLandscape) 12.dp else 16.dp,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) { page ->
+                                val item = filteredItems.getOrNull(page)
+                                if (item != null) {
+                                    Box(modifier = Modifier.fillMaxSize()) {
+                                        GalleryImagePage(
+                                            imageUrl = item.url,
+                                            title = title,
+                                            page = page,
+                                            pagerState = pagerState,
+                                            onDismiss = { dismissWithAnimation() }
+                                        )
+                                        
+                                        // Source & Category badge overlay on the page
+                                        Row(
+                                            modifier = Modifier
+                                                .align(Alignment.BottomStart)
+                                                .padding(start = 24.dp, bottom = if (isLandscape) 12.dp else 24.dp)
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(KitsugiColors.SurfaceStrong.copy(alpha = 0.85f))
+                                                .border(1.dp, KitsugiColors.Border, RoundedCornerShape(12.dp))
+                                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                        ) {
+                                            val badgeBg = when (item.source.lowercase()) {
+                                                "fanart.tv" -> Color(0xFF9C27B0) // Violet
+                                                "tmdb" -> Color(0xFF00C853) // Green
+                                                "jikan" -> Color(0xFF00B0FF) // Blue
+                                                else -> accentColor
+                                            }
+                                            Box(
+                                                modifier = Modifier
+                                                    .clip(RoundedCornerShape(6.dp))
+                                                    .background(badgeBg)
+                                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                            ) {
+                                                Text(
+                                                    text = item.source,
+                                                    color = Color.White,
+                                                    fontSize = 10.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                            
+                                            Text(
+                                                text = item.category.label,
+                                                color = KitsugiColors.TextPrimary,
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.SemiBold
                                             )
-                                            .clip(RoundedCornerShape(10.dp))
-                                            .border(
-                                                width = if (isSelected) 2.dp else 0.dp,
-                                                color = if (isSelected) accentColor else Color.Transparent,
-                                                shape = RoundedCornerShape(10.dp)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Thumbnail Strip (alt)
+                        if (filteredItems.size > 1) {
+                            val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+
+                            LaunchedEffect(pagerState.currentPage) {
+                                val listInfo = listState.layoutInfo
+                                val viewportWidth = listInfo.viewportEndOffset - listInfo.viewportStartOffset
+                                if (viewportWidth > 0) {
+                                    val itemWidthPx = with(density) { (if (isLandscape) 40.dp else 52.dp).roundToPx() }
+                                    val targetOffset = (viewportWidth - itemWidthPx) / 2
+                                    listState.animateScrollToItem(pagerState.currentPage, -targetOffset)
+                                } else {
+                                    listState.animateScrollToItem(pagerState.currentPage)
+                                }
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color.Transparent,
+                                                KitsugiColors.Background.copy(alpha = if (isLandscape) 0.8f else 0.9f),
+                                                KitsugiColors.Surface.copy(alpha = if (isLandscape) 0.90f else 0.96f)
                                             )
-                                            .tvClickable(shape = RoundedCornerShape(10.dp)) {
-                                                scope.launch { pagerState.animateScrollToPage(index) }
-                                            },
-                                        contentScale = ContentScale.Crop
+                                        )
                                     )
-                                    // Seçili sayfa indikatörü (küçük nokta)
-                                    if (isSelected) {
+                                    .navigationBarsPadding()
+                                    .padding(
+                                        bottom = if (isLandscape) 8.dp else 20.dp,
+                                        top = if (isLandscape) 12.dp else 24.dp
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                LazyRow(
+                                    state = listState,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    contentPadding = PaddingValues(horizontal = 20.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    itemsIndexed(filteredItems) { index, item ->
+                                        val isSelected = pagerState.currentPage == index
+                                        val thumbScale by animateFloatAsState(
+                                            targetValue = if (isSelected) 1.12f else 0.88f,
+                                            animationSpec = spring(dampingRatio = 0.6f),
+                                            label = "thumb_scale_$index"
+                                        )
+                                        val thumbAlpha by animateFloatAsState(
+                                            targetValue = if (isSelected) 1f else 0.38f,
+                                            label = "thumb_alpha_$index"
+                                        )
+
                                         Box(
                                             modifier = Modifier
-                                                .width(if (isLandscape) 12.dp else 16.dp)
-                                                .height(if (isLandscape) 2.dp else 3.dp)
-                                                .clip(RoundedCornerShape(2.dp))
-                                                .background(accentColor)
-                                                .align(Alignment.BottomCenter)
-                                                .offset(y = if (isLandscape) 4.dp else 6.dp)
-                                        )
+                                                .graphicsLayer(scaleX = thumbScale, scaleY = thumbScale, alpha = thumbAlpha)
+                                        ) {
+                                            AsyncImage(
+                                                model = item.url,
+                                                contentDescription = "Thumbnail $index",
+                                                modifier = Modifier
+                                                    .size(
+                                                        width = if (isLandscape) 40.dp else 48.dp,
+                                                        height = if (isLandscape) 52.dp else 64.dp
+                                                    )
+                                                    .clip(RoundedCornerShape(10.dp))
+                                                    .border(
+                                                        width = if (isSelected) 2.dp else 0.dp,
+                                                        color = if (isSelected) accentColor else Color.Transparent,
+                                                        shape = RoundedCornerShape(10.dp)
+                                                    )
+                                                    .tvClickable(shape = RoundedCornerShape(10.dp)) {
+                                                        scope.launch { pagerState.animateScrollToPage(index) }
+                                                    },
+                                                contentScale = ContentScale.Crop
+                                            )
+                                            // Seçili sayfa indikatörü (küçük nokta)
+                                            if (isSelected) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .width(if (isLandscape) 12.dp else 16.dp)
+                                                        .height(if (isLandscape) 2.dp else 3.dp)
+                                                        .clip(RoundedCornerShape(2.dp))
+                                                        .background(accentColor)
+                                                        .align(Alignment.BottomCenter)
+                                                        .offset(y = if (isLandscape) 4.dp else 6.dp)
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -314,7 +427,25 @@ fun KitsugiImageGalleryDialog(
             }
         }
     }
+}
+
+@JvmName("KitsugiImageGalleryDialogFromUrls")
+@Composable
+fun KitsugiImageGalleryDialog(
+    imageUrls: List<String>,
+    initialIndex: Int = 0,
+    title: String,
+    onDismiss: () -> Unit
+) {
+    val items = remember(imageUrls) {
+        imageUrls.map { GalleryItem(url = it, source = "Kitsugi", category = GalleryCategory.OTHER) }
     }
+    KitsugiImageGalleryDialog(
+        galleryItems = items,
+        initialIndex = initialIndex,
+        title = title,
+        onDismiss = onDismiss
+    )
 }
 
 // Custom gesture detector helper to allow page swipes when not zoomed in

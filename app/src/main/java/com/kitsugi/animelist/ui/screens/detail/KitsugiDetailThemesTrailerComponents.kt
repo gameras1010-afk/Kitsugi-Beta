@@ -53,6 +53,13 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.kitsugi.animelist.ui.screens.fullscreen.KitsugiFullscreenPlayerActivity
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
+import com.kitsugi.animelist.core.player.engine.PlayerEngine
+import com.kitsugi.animelist.core.player.engine.PlayerEngineType
+import com.kitsugi.animelist.core.player.engine.Media3PlayerEngine
+import com.kitsugi.animelist.core.player.engine.MpvPlayerEngine
+import androidx.compose.runtime.collectAsState
+import kotlinx.coroutines.delay
+
 
 // ---------------------------------------------------------------------------
 //  Fragman Kartı (tıklanınca inline player açılır; tam ekran butonu ile overlay)
@@ -206,58 +213,86 @@ fun ThemePlayerContainer(
     if (videoId != null) {
         KitsugiYouTubePlayer(videoId = videoId, modifier = modifier)
     } else {
-        // animethemes.moe CDN için tarayıcı User-Agent zorunlu.
-        val browserUserAgent = "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.144 Mobile Safari/537.36"
-        
-        val exoPlayer = remember(url) {
-            val factory = DefaultHttpDataSource.Factory()
-                .setUserAgent(browserUserAgent)
-                .setConnectTimeoutMs(5_000)
-                .setReadTimeoutMs(8_000)
-                .setAllowCrossProtocolRedirects(true)
-            androidx.media3.exoplayer.ExoPlayer.Builder(context)
-                .setMediaSourceFactory(DefaultMediaSourceFactory(factory))
-                .build()
-        }
+        val dataStore = remember { com.kitsugi.animelist.data.settings.SettingsDataStore(context.applicationContext) }
+        val appSettingsState = dataStore.settingsFlow.collectAsState(initial = null)
+        val appSettings = appSettingsState.value
+        val safeSettings = remember(appSettings) { appSettings ?: com.kitsugi.animelist.data.settings.AppSettings() }
 
-        // Composable yok edildiğinde veya url değiştiğinde player'ı serbest bırak
-        DisposableEffect(exoPlayer) {
-            onDispose {
-                exoPlayer.stop()
-                exoPlayer.clearMediaItems()
-                exoPlayer.release()
+        var activeEngineType by remember(url) { mutableStateOf(PlayerEngineType.MEDIA3) }
+        val playerEngine = remember(context, activeEngineType, url) {
+            when (activeEngineType) {
+                PlayerEngineType.MPV -> MpvPlayerEngine(context, safeSettings)
+                else -> Media3PlayerEngine(context, safeSettings)
             }
         }
 
-        // Hata dinleyicisi ve oynatma durumu takibi
-        DisposableEffect(exoPlayer) {
-            val listener = object : androidx.media3.common.Player.Listener {
-                override fun onPlaybackStateChanged(playbackState: Int) {
-                    isPlayerLoading = playbackState == androidx.media3.common.Player.STATE_BUFFERING
+        var isPlayingState by remember { mutableStateOf(true) }
+        var currentPosition by remember { mutableStateOf(0L) }
+        var duration by remember { mutableStateOf(0L) }
+
+        DisposableEffect(playerEngine) {
+            val listener = object : PlayerEngine.Listener {
+                override fun onStateChanged(state: PlayerEngine.State) {
+                    isPlayingState = playerEngine.isPlaying
+                    isPlayerLoading = state == PlayerEngine.State.BUFFERING
                 }
 
-                override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                override fun onPlaybackError(errorCode: Int, errorMsg: String, cause: Throwable?) {
                     isPlayerLoading = false
-                    Log.e("ThemePlayerContainer", "Oynatma hatası: ${error.message}")
-                    isPlayerError = true
+                    Log.e("ThemePlayerContainer", "Oynatma hatası: $errorMsg (kod: $errorCode)")
+                    if (activeEngineType == PlayerEngineType.MEDIA3) {
+                        Log.d("ThemePlayerContainer", "ExoPlayer failed, switching to MPV")
+                        activeEngineType = PlayerEngineType.MPV
+                    } else {
+                        isPlayerError = true
+                    }
                 }
+
+                override fun onPositionChanged(positionMs: Long, durationMs: Long) {
+                    currentPosition = positionMs
+                    duration = durationMs
+                }
+
+                override fun onTracksChanged(
+                    audioTracks: List<com.kitsugi.animelist.ui.screens.fullscreen.components.TrackOption>,
+                    subtitleTracks: List<com.kitsugi.animelist.ui.screens.fullscreen.components.TrackOption>
+                ) {}
             }
-            exoPlayer.addListener(listener)
+            playerEngine.addListener(listener)
             onDispose {
-                exoPlayer.removeListener(listener)
+                playerEngine.removeListener(listener)
+                playerEngine.release()
             }
         }
 
-        // Tema geçişi veya yeniden deneme durumunda oynatıcı kontrolü
-        LaunchedEffect(url, retryTrigger) {
-            exoPlayer.stop()
-            exoPlayer.clearMediaItems()
+        LaunchedEffect(url, retryTrigger, activeEngineType) {
             isPlayerError = false
             isPlayerLoading = true
+            try {
+                playerEngine.prepare(
+                    videoUrl = url,
+                    startPositionMs = currentPosition
+                )
+                playerEngine.play()
+            } catch (e: Exception) {
+                Log.e("ThemePlayerContainer", "Prepare error", e)
+                if (activeEngineType == PlayerEngineType.MEDIA3) {
+                    activeEngineType = PlayerEngineType.MPV
+                } else {
+                    isPlayerError = true
+                    isPlayerLoading = false
+                }
+            }
+        }
 
-            exoPlayer.setMediaItem(androidx.media3.common.MediaItem.fromUri(Uri.parse(url)))
-            exoPlayer.prepare()
-            exoPlayer.playWhenReady = true
+        LaunchedEffect(playerEngine, isPlayingState) {
+            if (isPlayingState) {
+                while (true) {
+                    currentPosition = playerEngine.currentPosition
+                    duration = playerEngine.duration.coerceAtLeast(0L)
+                    delay(1000)
+                }
+            }
         }
 
         Box(
@@ -305,10 +340,18 @@ fun ThemePlayerContainer(
                 }
             } else {
                 KitsugiPlayerGestureWrapper(
-                    exoPlayer = exoPlayer,
+                    isPlaying = isPlayingState,
+                    currentPosition = currentPosition,
+                    duration = duration,
+                    onPlayPause = {
+                        if (isPlayingState) playerEngine.pause() else playerEngine.play()
+                    },
+                    onSeek = { target ->
+                        playerEngine.seekTo(target)
+                    },
                     modifier = Modifier.fillMaxSize(),
                     onFullscreen = {
-                        exoPlayer.pause()
+                        playerEngine.pause()
                         KitsugiFullscreenPlayerActivity.startWithStreamUrls(
                             context = context,
                             videoUrl = url
@@ -317,12 +360,7 @@ fun ThemePlayerContainer(
                 ) {
                     AndroidView(
                         factory = { ctx ->
-                            android.view.LayoutInflater.from(ctx)
-                                .inflate(com.kitsugi.animelist.R.layout.trailer_player_view, null)
-                        },
-                        update = { view ->
-                            val pv = view.findViewById<androidx.media3.ui.PlayerView>(com.kitsugi.animelist.R.id.trailer_player_view)
-                            pv.player = exoPlayer
+                            playerEngine.createVideoView(ctx)
                         },
                         modifier = Modifier.fillMaxSize()
                     )

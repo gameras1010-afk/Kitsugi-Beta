@@ -645,6 +645,10 @@ private fun SettingsIntegrationsDialogWrapper(
         onAniSkipAutoSkipChanged = integrations.onAniSkipAutoSkipChanged,
         animeSkipClientId = integrations.animeSkipClientId,
         onAnimeSkipClientIdChanged = integrations.onAnimeSkipClientIdChanged,
+        fanartTvEnabled = integrations.fanartTvEnabled,
+        onFanartTvEnabledChanged = integrations.onFanartTvEnabledChanged,
+        fanartTvApiKey = integrations.fanartTvApiKey,
+        onFanartTvApiKeyChanged = integrations.onFanartTvApiKeyChanged,
         onDismiss = onDismiss
     )
 }

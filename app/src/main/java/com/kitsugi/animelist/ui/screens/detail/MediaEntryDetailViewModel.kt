@@ -16,6 +16,8 @@ import com.kitsugi.animelist.data.remote.KitsugiStaff
 import com.kitsugi.animelist.data.remote.KitsugiStats
 import com.kitsugi.animelist.data.remote.KitsugiStreamingEpisode
 import com.kitsugi.animelist.model.MediaEntry
+import com.kitsugi.animelist.data.remote.GalleryItem
+import com.kitsugi.animelist.data.remote.GalleryCategory
 import com.kitsugi.animelist.model.MediaType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -102,6 +104,10 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
     private val _mdbListLoading = MutableStateFlow(false)
     val mdbListLoading: StateFlow<Boolean> = _mdbListLoading.asStateFlow()
 
+    /** Fanart.tv + TMDB + Jikan kaynaklarından gelen zengin galeri öğeleri */
+    private val _galleryItems = MutableStateFlow<List<GalleryItem>>(emptyList())
+    val galleryItems: StateFlow<List<GalleryItem>> = _galleryItems.asStateFlow()
+
     // --- Cache / Lock Key ---
     private var currentFetchKey: String? = null
     private var mangaMappingJob: Job? = null
@@ -157,6 +163,7 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
         _logoUrl.value = null
         _episodeRatings.value = emptyMap()
         _resolvedTmdbId.value = null
+        _galleryItems.value = emptyList()
 
         // Reset tab states to either cached values or Loading
         val malId = entry.malId ?: 0
@@ -232,6 +239,14 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
                 fetchLogo(entry, showAnimeLogos)
             } catch (e: Exception) {
                 Log.e(TAG, "Error fetching logo: ${e.message}", e)
+            }
+        }
+
+        viewModelScope.launch {
+            try {
+                fetchFanartGallery(entry)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching Fanart gallery: ${e.message}", e)
             }
         }
     }
@@ -374,6 +389,60 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
             }
         }
         _logoUrl.value = logo
+    }
+
+    /**
+     * Fanart.tv galerisi + mevcut TMDB/Jikan resimlerini birleştirir.
+     * Sonuçlar [_galleryItems] akışına yazılır; UI reaktif güncelleme alır.
+     */
+    private suspend fun fetchFanartGallery(entry: MediaEntry) {
+        val tmdbId = withContext(Dispatchers.IO) {
+            when {
+                entry.tmdbId != null && entry.tmdbId > 0 -> entry.tmdbId
+                entry.source.equals("tmdb", ignoreCase = true) -> entry.malId?.takeIf { it > 0 }
+                entry.source.equals("anilist", ignoreCase = true) -> {
+                    val stableId = entry.malId ?: 0
+                    if (stableId >= 100_000_000) {
+                        val aniListId = stableId - 100_000_000
+                        KitsugiEpisodeRatingsRepository.resolveTmdbIdFromAniList(aniListId)
+                    } else {
+                        KitsugiEpisodeRatingsRepository.resolveTmdbIdFromMal(stableId)
+                    }
+                }
+                else -> entry.malId?.let { KitsugiEpisodeRatingsRepository.resolveTmdbIdFromMal(it) }
+            }
+        } ?: return
+
+        val isMovie = entry.type == MediaType.Movie
+
+        val fanartItems = withContext(Dispatchers.IO) {
+            KitsugiEpisodeRatingsRepository.getFanartGalleryItems(tmdbId, isMovie)
+        }
+
+        // Mevcut TMDB/Jikan resimlerini de GalleryItem'a çevir ve birleştir
+        val currentDetail = _detailState.value
+        val existingItems = buildList {
+            val entryImageUrl = entry.imageUrl
+            if (!entryImageUrl.isNullOrBlank()) {
+                add(GalleryItem(url = entryImageUrl, source = "Jikan", category = GalleryCategory.POSTER))
+            }
+            currentDetail?.pictures?.forEach { url ->
+                if (url.isNotBlank()) {
+                    val category = when {
+                        url.contains("/w1280") || url.contains("backdrop") -> GalleryCategory.BACKDROP
+                        url.contains("/w780") -> GalleryCategory.POSTER
+                        else -> GalleryCategory.OTHER
+                    }
+                    val source = if (url.contains("image.tmdb.org")) "TMDB" else "Jikan"
+                    add(GalleryItem(url = url, source = source, category = category))
+                }
+            }
+        }
+
+        // Fanart.tv önce (yüksek kalite), sonra mevcut kaynaklar; duplicate'leri temizle
+        val merged = (fanartItems + existingItems)
+            .distinctBy { it.url }
+        _galleryItems.value = merged
     }
 
     private suspend fun fetchSynopsis(entry: MediaEntry) {

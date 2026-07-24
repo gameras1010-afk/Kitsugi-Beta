@@ -72,6 +72,10 @@ data class AppSettings(
     val mdbListShowLetterboxd: Boolean = false,
     val mdbListShowTmdb: Boolean = false,
     val mdbListShowTrakt: Boolean = false,
+    // Fanart.tv: Yüksek kaliteli logo/artwork kaynağı (TVDB ID bazlı)
+    // Proje API anahtarı: https://fanart.tv/get-an-api-key/ adresinden alınır
+    val fanartTvApiKey: String = "",
+    val fanartTvEnabled: Boolean = false,
     // AniSkip: Anime intro/outro zaman damgalarını otomatik çekme
     val aniSkipEnabled: Boolean = true,
     val aniSkipAutoSkip: Boolean = false,

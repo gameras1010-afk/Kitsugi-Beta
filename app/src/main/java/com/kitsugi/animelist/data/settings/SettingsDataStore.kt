@@ -96,6 +96,9 @@ class SettingsDataStore(
         val MdbListShowLetterboxd = booleanPreferencesKey("mdblist_show_letterboxd")
         val MdbListShowTmdb = booleanPreferencesKey("mdblist_show_tmdb")
         val MdbListShowTrakt = booleanPreferencesKey("mdblist_show_trakt")
+        // Fanart.tv yüksek kaliteli logo/backdrop/poster kaynağı
+        val FanartTvApiKey = stringPreferencesKey("fanart_tv_api_key")
+        val FanartTvEnabled = booleanPreferencesKey("fanart_tv_enabled")
         // AniSkip intro/outro atlama
         val AniSkipEnabled = booleanPreferencesKey("aniskip_enabled")
         val AniSkipAutoSkip = booleanPreferencesKey("aniskip_auto_skip")
@@ -239,6 +242,8 @@ class SettingsDataStore(
                     mdbListShowLetterboxd = preferences[Keys.MdbListShowLetterboxd] ?: false,
                     mdbListShowTmdb = preferences[Keys.MdbListShowTmdb] ?: false,
                     mdbListShowTrakt = preferences[Keys.MdbListShowTrakt] ?: false,
+                    fanartTvApiKey = preferences[Keys.FanartTvApiKey] ?: "",
+                    fanartTvEnabled = preferences[Keys.FanartTvEnabled] ?: false,
                     aniSkipEnabled = preferences[Keys.AniSkipEnabled] ?: true,
                     aniSkipAutoSkip = preferences[Keys.AniSkipAutoSkip] ?: false,
                     animeSkipClientId = preferences[Keys.AnimeSkipClientId] ?: "",
@@ -675,6 +680,14 @@ class SettingsDataStore(
 
     suspend fun setMdbListShowTrakt(show: Boolean) {
         context.settingsDataStore.edit { it[Keys.MdbListShowTrakt] = show }
+    }
+
+    suspend fun setFanartTvApiKey(key: String) {
+        context.settingsDataStore.edit { it[Keys.FanartTvApiKey] = key }
+    }
+
+    suspend fun setFanartTvEnabled(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.FanartTvEnabled] = enabled }
     }
 
     suspend fun setAniSkipEnabled(enabled: Boolean) {

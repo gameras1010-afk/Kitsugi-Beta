@@ -350,7 +350,11 @@ internal fun SettingsContext.buildSettingsParams() =
             onPreferredTranslatorSelected = { onPreferredTranslatorSelected(it) },
             onOpenStats = { onOpenStats() },
             onOpenFavourites = { onOpenFavourites() },
-            onOpenAbout = { onOpenAbout() }
+            onOpenAbout = { onOpenAbout() },
+            fanartTvEnabled = appSettings.fanartTvEnabled,
+            onFanartTvEnabledChanged = { onFanartTvEnabledChanged(it) },
+            fanartTvApiKey = appSettings.fanartTvApiKey,
+            onFanartTvApiKeyChanged = { onFanartTvApiKeyChanged(it) }
         )
     )
 
@@ -829,5 +833,13 @@ internal fun SettingsContext.onSyncEnabledMalChanged(enabled: Boolean) {
     }
 }
 
+internal fun SettingsContext.onFanartTvEnabledChanged(enabled: Boolean) {
+    coroutineScope.launch {
+        settingsDataStore.setFanartTvEnabled(enabled)
+        appViewModel.showSnackbarMessage(if (enabled) "Fanart.tv entegrasyonu etkin" else "Fanart.tv entegrasyonu devre dışı")
+    }
+}
 
-
+internal fun SettingsContext.onFanartTvApiKeyChanged(key: String) {
+    coroutineScope.launch { settingsDataStore.setFanartTvApiKey(key) }
+}
