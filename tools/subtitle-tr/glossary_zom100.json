@@ -1,0 +1,231 @@
+{
+  "_meta": {
+    "series_en": "Zom 100: Bucket List of the Dead",
+    "series_jp": "ゾン100〜ゾンビになるまでにしたい100のこと〜",
+    "series_romaji": "Zom 100: Zombie ni Naru made ni Shitai 100 no Koto",
+    "series_tr": "Zom 100: Ölmeden Önce Yapılacaklar Listesi",
+    "episodes": 12,
+    "studio": "Bug Films",
+    "source": "Haro Aso (yazar) / Kotaro Takata (çizer) — Shogakukan, Monthly Sunday Gene-X",
+    "note": "Bu sözlük EN→TR çeviride özel adların TUTARLI kalması için kullanılır. Kişi adları ÇEVRİLMEZ, Japonca ad sırası (Ad Soyad) korunur ve Türkçe ekler kesme işaretiyle ayrılır: Akira'nın, Kencho'yla, Shizuka'ya.",
+    "references": [
+      "https://en.wikipedia.org/wiki/Zom_100:_Bucket_List_of_the_Dead",
+      "https://zombie-100.fandom.com/wiki/Zom_100:_Bucket_List_of_the_Dead_(anime)",
+      "https://toonami.fandom.com/wiki/Zom_100:_Bucket_List_of_the_Dead/Episodes"
+    ]
+  },
+
+  "characters": [
+    {
+      "en": "Akira Tendo",
+      "jp": "天道 輝 (Tendō Akira)",
+      "tr": "Akira Tendo",
+      "role": "Baş karakter. 24 yaşında, sömürücü bir pazarlama şirketinde çalışan eski bir 'salaryman'. Üniversitede ragbi oynamış.",
+      "notes": "ASLA çevrilmez. Ek alırken: Akira'nın, Akira'ya, Akira'yla. Soyadıyla anıldığında 'Tendo' (Tendō uzatması altyazıda kullanılmaz)."
+    },
+    {
+      "en": "Shizuka Mikazuki",
+      "jp": "三日月 閑 (Mikazuki Shizuka)",
+      "tr": "Shizuka Mikazuki",
+      "role": "Baş kadın karakter. Eski üst düzey muhasebeci; aşırı mantıklı, mesafeli, hayatta kalma odaklı.",
+      "notes": "Ek: Shizuka'nın, Shizuka'ya, Shizuka'yla. Konuşma üslubu kısa, kesik, alaycı-soğuk; Türkçede de kısa ve net cümlelerle verilmeli."
+    },
+    {
+      "en": "Kenichiro Ryuzaki",
+      "jp": "竜崎 憲一朗 (Ryūzaki Ken'ichirō)",
+      "tr": "Kenichiro Ryuzaki",
+      "role": "Akira'nın üniversiteden en yakın arkadaşı, eski ragbi takım arkadaşı. Emlakçı; hayali stand-up komedyeni olmak.",
+      "notes": "Neredeyse hep takma adıyla 'Kencho' diye anılır. Ek: Kencho'nun, Kencho'yla. Şakacı, laubali, argoya kaçan bir üslubu var."
+    },
+    {
+      "en": "Kencho",
+      "jp": "ケンチョ",
+      "tr": "Kencho",
+      "role": "Kenichiro Ryuzaki'nin takma adı.",
+      "notes": "Takma ad olduğu gibi bırakılır, 'Kenço' diye yazılmaz."
+    },
+    {
+      "en": "Beatrix Amerhauser",
+      "jp": "ベアトリクス・アメルハウザー (Beatorikusu Ameruhauzā)",
+      "tr": "Beatrix Amerhauser",
+      "role": "Japon kültürüne hayran Alman kadın. Samuray zırhı, naginata, katana ve yay kullanır; gruptaki en güçlü dövüşçü.",
+      "notes": "Almanca ad — Türkçeleştirilmez. Ek: Beatrix'in, Beatrix'e. Kısaca 'Bea' (ベア) denir."
+    },
+    {
+      "en": "Bea",
+      "jp": "ベア",
+      "tr": "Bea",
+      "role": "Beatrix Amerhauser'in kısa adı.",
+      "notes": "Ek: Bea'nın, Bea'ya."
+    },
+    {
+      "en": "Takeru Minakata",
+      "jp": "南方 健 (Minakata Takeru)",
+      "tr": "Takeru Minakata",
+      "role": "Akira ve Kencho'nun üniversiteden eski arkadaşı. Kendini hippi ilan etmiş; grubun keskin nişancısı.",
+      "notes": "Takma adı 'Takemina' (タケミナ)."
+    },
+    {
+      "en": "Takemina",
+      "jp": "タケミナ",
+      "tr": "Takemina",
+      "role": "Takeru Minakata'nın takma adı.",
+      "notes": ""
+    },
+    {
+      "en": "Izuna Tokage",
+      "jp": "戸加下 泉奈 (Tokage Izuna)",
+      "tr": "Izuna Tokage",
+      "role": "Virüse doğal bağışıklığı olan eski lise öğrencisi; aşının anahtarı.",
+      "notes": "Ek: Izuna'nın, Izuna'ya."
+    },
+    {
+      "en": "Kanta Higurashi",
+      "jp": "日暮 貫太 (Higurashi Kanta)",
+      "tr": "Kanta Higurashi",
+      "role": "1. sezonun baş kötüsü (Hometown arkı).",
+      "notes": "Ek: Kanta'nın, Kanta'yla."
+    },
+    {
+      "en": "Akiko Tendo",
+      "jp": "天道 明子 (Tendō Akiko)",
+      "tr": "Akiko Tendo",
+      "role": "Akira'nın annesi.",
+      "notes": "Ek: Akiko'nun."
+    },
+    {
+      "en": "Teruo Tendo",
+      "jp": "天道 光男 (Tendō Teruo)",
+      "tr": "Teruo Tendo",
+      "role": "Akira'nın babası; arası açık olduğu ebeveyni.",
+      "notes": ""
+    },
+    {
+      "en": "Mikio Kousaka",
+      "jp": "高坂 幹夫 (Kōsaka Mikio)",
+      "tr": "Mikio Kosaka",
+      "role": "Yan karakter; Sumire'nin eşi.",
+      "notes": "Altyazıda uzatmasız 'Kosaka' tercih edilir; dosya içinde hangi biçim geçiyorsa tüm bölümlerde AYNI biçim korunur."
+    },
+    {
+      "en": "Sumire Kousaka",
+      "jp": "香坂 すみれ (Kōsaka Sumire)",
+      "tr": "Sumire Kosaka",
+      "role": "Yan karakter; Mikio'nun eşi.",
+      "notes": ""
+    },
+    {
+      "en": "Gonzo Kosugi",
+      "jp": "小杉 ゴンゾ",
+      "tr": "Gonzo Kosugi",
+      "role": "Yan karakter.",
+      "notes": ""
+    },
+    {
+      "en": "Yudai Tsurumi",
+      "jp": "鶴見 雄大",
+      "tr": "Yudai Tsurumi",
+      "role": "Aşıyı geliştiren araştırmacı.",
+      "notes": ""
+    },
+    { "en": "Saori Ohtori", "jp": "鳳 沙織", "tr": "Saori Otori", "role": "Yan karakter.", "notes": "" },
+    { "en": "Kurumi", "jp": "くるみ", "tr": "Kurumi", "role": "Yan karakter.", "notes": "" },
+    { "en": "Akemi", "jp": "アケミ", "tr": "Akemi", "role": "Yan karakter.", "notes": "" },
+    { "en": "Anju", "jp": "アンジュ", "tr": "Anju", "role": "Yan karakter.", "notes": "" },
+    { "en": "Ayumi", "jp": "アユミ", "tr": "Ayumi", "role": "Yan karakter.", "notes": "" },
+    { "en": "Tatsuya", "jp": "タツヤ", "tr": "Tatsuya", "role": "Yan karakter.", "notes": "" },
+    { "en": "Kaito", "jp": "カイト", "tr": "Kaito", "role": "Yan karakter.", "notes": "" },
+    { "en": "Takahashi", "jp": "高橋", "tr": "Takahashi", "role": "Akira'nın iş yerinden.", "notes": "" },
+    { "en": "John", "jp": "ジョン", "tr": "John", "role": "Yan karakter.", "notes": "" }
+  ],
+
+  "terms": [
+    {
+      "en": "Bucket List",
+      "tr": "Yapılacaklar Listesi",
+      "notes": "Dizinin ana kavramı. Bağlama göre 'ölmeden önce yapılacaklar listesi'. Bölüm başlıklarında ve tekrar eden replikte AYNI karşılık kullanılmalı. 'Kova listesi' KESİNLİKLE yanlış."
+    },
+    {
+      "en": "of the Dead",
+      "tr": "of the Dead",
+      "notes": "Bölüm başlığı kalıbı ('Akira of the Dead'). Bu bir marka kalıbıdır; başlıklarda İngilizce bırakmak yaygın ve tercih edilen yaklaşımdır. Alternatif olarak tüm bölümlerde tutarlı biçimde '... of the Dead' korunur."
+    },
+    {
+      "en": "Akirager",
+      "jp": "アキラジャー",
+      "tr": "Akirager",
+      "notes": "Akira'nın süper kahraman kimliği (sentai parodisi). Olduğu gibi bırakılır."
+    },
+    {
+      "en": "zombie",
+      "tr": "zombi",
+      "notes": "Türkçede tek 'i' ile: zombi, zombiler, zombinin. 'Zombie' yazımı kullanılmaz."
+    },
+    {
+      "en": "black company",
+      "tr": "kara şirket / insan öğüten şirket",
+      "notes": "Japonya'ya özgü sömürücü iş yeri kavramı. İlk geçtiği yerde 'insanı öğüten şirket' gibi açıklayıcı, sonrasında kısa karşılık."
+    },
+    {
+      "en": "salaryman",
+      "tr": "beyaz yakalı / şirket çalışanı",
+      "notes": "Bağlama göre 'maaşlı çalışan'. Aşağılayıcı tonda 'şirket kölesi' (corporate slave) ayrı terimdir."
+    },
+    {
+      "en": "corporate slave",
+      "tr": "şirket kölesi",
+      "notes": "Akira'nın kendini tanımlamasında sık geçer; sabit karşılık."
+    },
+    { "en": "overtime", "tr": "mesai / fazla mesai", "notes": "" },
+    { "en": "karoshi", "tr": "karōshi (aşırı çalışmaktan ölüm)", "notes": "İlk geçişte parantezli açıklama, sonra sadece terim." },
+    { "en": "RV / camper", "tr": "karavan", "notes": "6. bölüm başlığı: 'RV of the Dead'." },
+    { "en": "service area / truck stop", "tr": "dinlenme tesisi", "notes": "7. bölüm. Japon otoyol 'SA' kavramı." },
+    { "en": "hot spring / onsen", "tr": "kaplıca / onsen", "notes": "8. bölüm. 'Onsen' korunabilir; tutarlı olun." },
+    { "en": "treehouse", "tr": "ağaç ev", "notes": "9. bölüm." },
+    { "en": "hometown", "tr": "memleket", "notes": "10-12. bölümler." },
+    { "en": "flight attendant", "tr": "kabin görevlisi", "notes": "4. bölüm. 'Hostes' yerine 'kabin görevlisi' tercih edilir." },
+    { "en": "shopping district / shotengai", "tr": "çarşı / esnaf sokağı", "notes": "" },
+    { "en": "convenience store", "tr": "market", "notes": "Japon 'konbini' bağlamı." },
+    { "en": "Umbriel", "tr": "Umbriel", "notes": "Salgından sorumlu ilaç şirketi. Özel ad, çevrilmez." },
+    { "en": "naginata", "tr": "naginata", "notes": "Japon kargısı. Korunur." },
+    { "en": "katana", "tr": "katana", "notes": "Korunur." },
+    { "en": "senpai", "tr": "senpai / abi-abla", "notes": "Hitap. Genelde korunur ya da bağlama göre düşürülür." },
+    { "en": "Nippon", "tr": "Nippon", "notes": "Beatrix'in Japonya'ya verdiği ad; hayranlık tonunu korumak için çevrilmez." }
+  ],
+
+  "places": [
+    { "en": "Tokyo", "tr": "Tokyo", "notes": "" },
+    { "en": "Gunma", "tr": "Gunma", "notes": "Akira'nın memleketinin bulunduğu vilayet." },
+    { "en": "Shibuya", "tr": "Shibuya", "notes": "" },
+    { "en": "Shinjuku", "tr": "Shinjuku", "notes": "" },
+    { "en": "Ikebukuro", "tr": "Ikebukuro", "notes": "" }
+  ],
+
+  "episode_titles": [
+    { "no": 1,  "en": "Akira of the Dead",                "tr": "Akira of the Dead" },
+    { "no": 2,  "en": "Bucket List of the Dead",          "tr": "Bucket List of the Dead" },
+    { "no": 3,  "en": "Best Friend of the Dead",          "tr": "Best Friend of the Dead" },
+    { "no": 4,  "en": "Flight Attendant of the Dead",     "tr": "Flight Attendant of the Dead" },
+    { "no": 5,  "en": "Hero of the Dead",                 "tr": "Hero of the Dead" },
+    { "no": 6,  "en": "RV of the Dead",                   "tr": "RV of the Dead" },
+    { "no": 7,  "en": "Truck Stop of the Dead",           "tr": "Truck Stop of the Dead" },
+    { "no": 8,  "en": "Sushi & Hot Springs of the Dead",  "tr": "Sushi & Hot Springs of the Dead" },
+    { "no": 9,  "en": "Treehouse of the Dead",            "tr": "Treehouse of the Dead" },
+    { "no": 10, "en": "Hometown of the Dead I",           "tr": "Hometown of the Dead I" },
+    { "no": 11, "en": "Hometown of the Dead II",          "tr": "Hometown of the Dead II" },
+    { "no": 12, "en": "Hometown of the Dead III",         "tr": "Hometown of the Dead III" }
+  ],
+
+  "style_rules": [
+    "Kişi ve yer adları çevrilmez; Türkçe ekler kesme işaretiyle ayrılır (Akira'nın, Kencho'yla, Shizuka'ya, Beatrix'in).",
+    "Makron/uzatma işaretleri altyazıda kullanılmaz: Tendō -> Tendo, Ryūzaki -> Ryuzaki, Kōsaka -> Kosaka.",
+    "'zombie' -> 'zombi' (tek i).",
+    "Satır uzunluğu: satır başına en fazla ~42 karakter, replik başına en fazla 2 satır.",
+    "Okuma hızı: saniyede en fazla ~20 karakter; uzun İngilizce cümleler Türkçede kısaltılarak sıkıştırılır.",
+    "Kelimesi kelimesine değil, anlam ve ton odaklı çevrilir; Akira coşkulu/samimi, Shizuka kısa ve soğuk, Kencho laubali/şakacı, Beatrix aşırı kibar ve kitabi Türkçe konuşur.",
+    "Küfür ve argo bağlama göre yumuşatılmadan ama abartılmadan aktarılır.",
+    "Ünlemler (Ah, Hmm, Uh) gereksizse atılır; Türkçe altyazıda doldurma sesler yer kaplar.",
+    "Ekran yazıları (tabela, mesaj, pankart) varsa italik/üst konum etiketi korunarak çevrilir.",
+    "Şarkı sözleri (OP/ED) telif nedeniyle atlanır ya da dosyada zaten çevrilmiş biçimde bırakılır."
+  ]
+}
