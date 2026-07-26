@@ -711,7 +711,9 @@ fun MyListScreen(
                 }
 
                 val alreadyExists = entries.any { entry ->
-                    entry.matches(result)
+                    val entrySrc = entry.source.lowercase()
+                    val targetSrc = resolvedSource.lowercase()
+                    (entrySrc == targetSrc || (entrySrc == "mal" && targetSrc == "jikan") || (entrySrc == "jikan" && targetSrc == "mal")) && entry.matches(result)
                 }
 
                 if (alreadyExists) {

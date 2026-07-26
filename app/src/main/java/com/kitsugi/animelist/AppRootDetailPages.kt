@@ -60,7 +60,13 @@ fun AppRootDetailPages(
                     source = key.source,
                     onBackClick = { navState.popDetailStack() },
                     onMediaClick = { mediaId, mediaType, mediaSource ->
-                        val existingEntry = mediaEntries.firstMatching(mediaId, mediaSource)
+                        val existingEntry = mediaEntries.firstMatching(
+                            mediaId = mediaId,
+                            mediaSource = mediaSource,
+                            isAniListConnected = authViewModel.isAniListConnected,
+                            isMalConnected = authViewModel.isMalConnected,
+                            isSimklConnected = authViewModel.isSimklConnected
+                        )
                         if (existingEntry != null) {
                             navState.navigateToDetail(DetailScreen.MediaDetail(existingEntry.id))
                         } else {
@@ -97,7 +103,13 @@ fun AppRootDetailPages(
                         navState.navigateToDetail(DetailScreen.CharacterDetail(charId, charSource, charName, charImageUrl))
                     },
                     onMediaClick = { mediaId, mediaType, mediaSource ->
-                        val existingEntry = mediaEntries.firstMatching(mediaId, mediaSource)
+                        val existingEntry = mediaEntries.firstMatching(
+                            mediaId = mediaId,
+                            mediaSource = mediaSource,
+                            isAniListConnected = authViewModel.isAniListConnected,
+                            isMalConnected = authViewModel.isMalConnected,
+                            isSimklConnected = authViewModel.isSimklConnected
+                        )
                         if (existingEntry != null) {
                             navState.navigateToDetail(DetailScreen.MediaDetail(existingEntry.id))
                         } else {
@@ -138,7 +150,13 @@ fun AppRootDetailPages(
                         navState.navigateToDetail(DetailScreen.CharacterDetail(charId, charSource, charName, charImageUrl))
                     },
                     onMediaClick = { mediaId, mediaType, mediaSource ->
-                        val existingEntry = mediaEntries.firstMatching(mediaId, mediaSource)
+                        val existingEntry = mediaEntries.firstMatching(
+                            mediaId = mediaId,
+                            mediaSource = mediaSource,
+                            isAniListConnected = authViewModel.isAniListConnected,
+                            isMalConnected = authViewModel.isMalConnected,
+                            isSimklConnected = authViewModel.isSimklConnected
+                        )
                         if (existingEntry != null) {
                             navState.navigateToDetail(DetailScreen.MediaDetail(existingEntry.id))
                         } else {
@@ -168,7 +186,12 @@ fun AppRootDetailPages(
 
         is AppStateKey.ApiResultDetail -> {
             navState.stateHolder.SaveableStateProvider(key = "api_${key.depth}_${key.result.source}_${key.result.malId}") {
-                val existingApiEntry = mediaEntries.firstMatching(key.result)
+                val existingApiEntry = mediaEntries.firstMatching(
+                    result = key.result,
+                    isAniListConnected = authViewModel.isAniListConnected,
+                    isMalConnected = authViewModel.isMalConnected,
+                    isSimklConnected = authViewModel.isSimklConnected
+                )
                 ApiResultDetailPage(
                     result = key.result,
                     existingEntry = existingApiEntry,
@@ -180,7 +203,12 @@ fun AppRootDetailPages(
                         onEditEntry(entry)
                     },
                     onRelationClick = { result ->
-                        val existingEntry = mediaEntries.firstMatching(result)
+                        val existingEntry = mediaEntries.firstMatching(
+                            result = result,
+                            isAniListConnected = authViewModel.isAniListConnected,
+                            isMalConnected = authViewModel.isMalConnected,
+                            isSimklConnected = authViewModel.isSimklConnected
+                        )
                         if (existingEntry != null) {
                             navState.navigateToDetail(DetailScreen.MediaDetail(existingEntry.id))
                         } else {
@@ -231,7 +259,12 @@ fun AppRootDetailPages(
                     mdbListShowTrakt = appSettings.mdbListShowTrakt,
                     settingsDataStore = settingsDataStore,
                     onToggleFavoriteClick = { selection ->
-                        val entry = mediaEntries.firstMatching(selection.result)
+                        val entry = mediaEntries.firstMatching(
+                            result = selection.result,
+                            isAniListConnected = authViewModel.isAniListConnected,
+                            isMalConnected = authViewModel.isMalConnected,
+                            isSimklConnected = authViewModel.isSimklConnected
+                        )
                         if (entry != null) {
                             // Toggle existing entry
                             val updatedEntry = entry.copy(isFavorite = !entry.isFavorite)
@@ -303,7 +336,12 @@ fun AppRootDetailPages(
                             onDeleteEntry(entry)
                         },
                         onRelationClick = { result ->
-                            val existingEntry = mediaEntries.firstMatching(result)
+                            val existingEntry = mediaEntries.firstMatching(
+                                result = result,
+                                isAniListConnected = authViewModel.isAniListConnected,
+                                isMalConnected = authViewModel.isMalConnected,
+                                isSimklConnected = authViewModel.isSimklConnected
+                            )
                             if (existingEntry != null) {
                                 navState.navigateToDetail(DetailScreen.MediaDetail(existingEntry.id))
                             } else {
@@ -346,7 +384,12 @@ fun AppRootDetailPages(
                     preferredSource = key.preferredSource ?: "anilist",
                     onOpenAiringEntry = { airingEntry ->
                         val result = airingEntry.toJikanSearchResult(preferredSource = key.preferredSource)
-                        val existingEntry = mediaEntries.firstMatching(result)
+                        val existingEntry = mediaEntries.firstMatching(
+                            result = result,
+                            isAniListConnected = authViewModel.isAniListConnected,
+                            isMalConnected = authViewModel.isMalConnected,
+                            isSimklConnected = authViewModel.isSimklConnected
+                        )
                         if (existingEntry != null) {
                             navState.navigateToDetail(DetailScreen.MediaDetail(existingEntry.id))
                         } else {
@@ -439,7 +482,12 @@ fun AppRootDetailPages(
                             year = null,
                             source = source
                         )
-                        val existingEntry = mediaEntries.firstMatching(searchResult)
+                        val existingEntry = mediaEntries.firstMatching(
+                            result = searchResult,
+                            isAniListConnected = authViewModel.isAniListConnected,
+                            isMalConnected = authViewModel.isMalConnected,
+                            isSimklConnected = authViewModel.isSimklConnected
+                        )
                         if (existingEntry != null) {
                             navState.navigateToDetail(DetailScreen.MediaDetail(existingEntry.id))
                         } else {
@@ -503,7 +551,13 @@ fun AppRootDetailPages(
                         } else {
                             mediaId
                         }
-                        val existingEntry = mediaEntries.firstMatching(stableId, source)
+                        val existingEntry = mediaEntries.firstMatching(
+                            mediaId = stableId,
+                            mediaSource = source,
+                            isAniListConnected = authViewModel.isAniListConnected,
+                            isMalConnected = authViewModel.isMalConnected,
+                            isSimklConnected = authViewModel.isSimklConnected
+                        )
                         if (existingEntry != null) {
                             navState.navigateToDetail(DetailScreen.MediaDetail(existingEntry.id))
                         } else {

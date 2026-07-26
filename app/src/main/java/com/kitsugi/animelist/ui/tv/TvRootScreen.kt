@@ -442,7 +442,12 @@ fun TvRootScreen(
                 when (detail) {
                     is TvDetailTarget.Media -> {
                         val mediaResult = detail.result
-                        val existingApiEntry = mediaEntries.firstMatching(mediaResult)
+                        val existingApiEntry = mediaEntries.firstMatching(
+                            result = mediaResult,
+                            isAniListConnected = authViewModel.isAniListConnected,
+                            isMalConnected = authViewModel.isMalConnected,
+                            isSimklConnected = authViewModel.isSimklConnected
+                        )
 
                         TvDetailScreen(
                             result = mediaResult,

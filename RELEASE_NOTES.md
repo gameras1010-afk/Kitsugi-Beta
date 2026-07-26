@@ -1,29 +1,49 @@
-# Kitsugi v2.4.103 Release Notes 🚀
+# Kitsugi v2.4.104 Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### 🔗 MyAnimeList Kaynak Atama Düzeltmesi (KRİTİK)
+### 🎬 Sezonluk Akış Düzeltmeleri (KRİTİK)
 
-- **MAL Anime Artık MAL Editörüyle Açılıyor:** Önceki sürümlerde MyAnimeList'ten (Jikan) gelen animeleri düzenlemek veya listeye eklemek istediğinde, her iki hesap (AniList + MAL) bağlıysa bile uygulama yanlışlıkla **AniList düzenleme ekranını** açıyordu. Animenin MAL verisini AniList'e kaydediyordu; bu nedenle MAL hesabına hiç yansımıyordu. Artık MAL/Jikan kaynaklı animeler her zaman doğru servise yönlendiriliyor.
+- **Doğru Sezon Araması:** 2. sezon ve sonrasındaki bölümleri akış eklentilerinde ararken artık önce "2. Sezon", "Season 2", "S2" gibi mevsim-özelleştirilmiş sorgular deneniyor. Böylece eklentiler doğru sezonu buluyor; 1. sezon içerikleri varsayılan olarak yüklenmiyor.
 
-- **Arama Sonuçlarında Kaynak Önceliği Düzeltildi (`AppViewModel`):** `addApiSelectionToList` fonksiyonu artık `result.source` bilgisini esas alıyor. `jikan` ve `mal` kaynaklı sonuçlar `"mal"` olarak işleniyor; AniList bağlı olup olmamasından bağımsız olarak MAL tercih ediliyor. Servis bağlı değilse diğerine **graceful fallback** yapılıyor.
+- **Akıllı Sezon Eşleştirme (`CsTitleMatcher`):** Arama sonuçlarındaki başlıklar artık sezon bilgisine göre ödüllendiriliyor/cezalandırılıyor. "Jujutsu Kaisen 2. Sezon" gibi bir sonuç istenilen sezon 2 ise **+0.35 puan** alıyor; yanlış sezon ise **-0.60 puan** cezalandırılıyor. Sezon içermeyen başlıklar (örtük S1) istenilen sezon >1 ise **-0.50 puan** ceza alıyor.
 
-- **Düzenleme Ekranı Kaynak Çözümlemesi Düzeltildi (`AppDialogHost`):** Var olan bir kaydı düzenlerken açılan `resolvedSource` mantığı düzeltildi. `jikan` ve `mal` kaynakları tek bir dalda birleştirildi: MAL bağlıysa her zaman MAL editörü, yalnızca MAL bağlı değil ve AniList bağlıysa AniList editörü açılıyor.
+- **Başlık Benzerliği İyileştirmesi:** Arama sonuçlarında sezon metni ("2. Sezon", "II", "2" vb.) temizlenmiş hali de artık benzerlik hesabına katılıyor; "Jujutsu Kaisen 2. Sezon" ile "Jujutsu Kaisen" benzerliği artık ~1.0 çıkıyor.
 
-- **"Listeme Ekle" Butonu Kaynak Sorunu Düzeltildi (`MyListScreen`):** Kütüphane ekranındaki arama diyaloğu, seçilen animenin kaynağını tab index'ine (0=AniList, 1=MAL) bakarak değil, `result.source` alanından okuyarak belirliyor. `jikan` → `mal` olarak normalize ediliyor.
+- **Roman Rakam ve Sondaki Sayı Tespiti:** "Anime II", "Anime III", "Anime 2" gibi sezon belirten sondaki ifadeler otomatik olarak sezon numarasına dönüştürülüyor.
+
+### 🔗 MAL / AniList Yönlendirme Düzeltmeleri
+
+- **MAL Anime Artık MAL Editörüyle Açılıyor:** MyAnimeList (Jikan) kaynaklı animeleri düzenlerken AniList değil, MAL editörü açılıyor. Her kaynağın verisi kendi servisine kaydediliyor.
+
+- **Kaynak Öncelikli Çözümleme (`AppViewModel`, `AppDialogHost`):** `addApiSelectionToList` fonksiyonu artık `result.source` bilgisini esas alıyor. Jikan/MAL kaynakları daima `"mal"` olarak işleniyor; AniList yalnızca fallback olarak devreye giriyor.
+
+- **Yinelenen Kayıt Engeli Kaynak Uyumlu Hale Getirildi:** Listeye ekleme sırasında tekrar engeli artık sadece aynı kaynak içinde çalışıyor; AniList ve MAL kayıtları birbirini engellemiyor.
+
+- **`firstMatching` Çağrıları Kaynak Farkındası Yapıldı:** Navigasyon ve düzenleme akışlarında AniList/MAL çapraz kirlenmesi önlendi.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### 🔗 MyAnimeList Source Assignment Fix (CRITICAL)
+### 🎬 Seasonal Stream Fixes (CRITICAL)
 
-- **MAL Anime Now Opens in the MAL Editor:** In previous versions, when editing or adding an anime from MyAnimeList (Jikan) with both AniList and MAL accounts connected, the app incorrectly opened the **AniList editor** — saving MAL data to AniList instead of MyAnimeList. Entries now always route to the correct service based on their declared source.
+- **Correct Season Search:** When fetching episodes from streaming plugins for Season 2+, the app now prepends season-specific query variants ("2. Sezon", "Season 2", "S2") so that plugins locate the right season instead of defaulting to Season 1 content.
 
-- **Search Result Source Priority Fixed (`AppViewModel`):** `addApiSelectionToList` now uses `result.source` as the authoritative signal. `jikan` and `mal` results map to `"mal"` regardless of which services are connected. Graceful fallback to the other connected service happens only if the preferred one is not linked.
+- **Smart Season Matching (`CsTitleMatcher`):** Search result titles are now rewarded or penalized based on season alignment. A result explicitly matching the target season earns **+0.35**, a wrong season gets **-0.60**, and an unlabeled (implicit Season 1) result gets **-0.50** when a Season >1 is requested.
 
-- **Edit Dialog Source Resolution Fixed (`AppDialogHost`):** The `resolvedSource` logic when opening an existing entry for editing has been corrected. `"jikan"` and `"mal"` cases are consolidated: if MAL is connected it always opens the MAL editor; AniList is only used as a fallback when MAL is not connected.
+- **Title Similarity Improvement:** Season suffixes ("2. Sezon", "II", "2") are stripped before similarity scoring, so "Jujutsu Kaisen 2. Sezon" vs "Jujutsu Kaisen" now resolves to ~1.0 similarity.
 
-- **"Add to List" Button Source Fix (`MyListScreen`):** The search dialog inside the Library screen now reads `result.source` directly instead of guessing from the active tab index. `"jikan"` is normalized to `"mal"` so stored entries always have a canonical source string.
+- **Roman Numeral & Trailing Number Detection:** Season indicators like "Anime II", "Anime III", "Anime 2" are automatically parsed into season numbers for accurate matching.
+
+### 🔗 MAL / AniList Routing Fixes
+
+- **MAL Anime Now Opens in the MAL Editor:** Editing an anime sourced from MyAnimeList (Jikan) now always opens the MAL editor, preventing data from being saved to AniList by mistake.
+
+- **Source-Priority Resolution (`AppViewModel`, `AppDialogHost`):** `addApiSelectionToList` uses `result.source` as the authoritative signal. `jikan`/`mal` results always map to `"mal"` regardless of which services are authenticated; AniList is used only as a fallback.
+
+- **Duplicate Entry Check Is Now Source-Aware:** The duplicate guard when adding entries now checks within the same resolved target service. AniList and MAL entries no longer block each other.
+
+- **`firstMatching` Calls Made Source-Aware:** Cross-contamination between AniList and MAL in navigation and editing flows has been eliminated.

@@ -309,7 +309,7 @@ object CsStreamRunner {
             api.name.contains("TrAnimeIzle", ignoreCase = true)
 
         // Build title variants: original + normalized + alts
-        val titleVariants = buildTitleVariants(title, alternativeTitles)
+        val titleVariants = buildTitleVariants(title, alternativeTitles, season)
         Log.d(TAG, "[${api.name}] Arama varyantları (${titleVariants.size}): ${titleVariants.take(6)}")
 
         // Search all variants sequentially until we get results
@@ -772,8 +772,8 @@ object CsStreamRunner {
     // Delegated to CsLanguageDetector — see CsLanguageDetector.kt
     private fun detectLanguageCode(lang: String): String =
         CsLanguageDetector.detectLanguageCode(lang)
-    private fun buildTitleVariants(main: String, alts: List<String>): List<String> =
-        CsTitleMatcher.buildTitleVariants(main, alts)
+    private fun buildTitleVariants(main: String, alts: List<String>, season: Int): List<String> =
+        CsTitleMatcher.buildTitleVariants(main, alts, season)
 
     private suspend fun safeSearch(api: MainAPI, query: String): List<SearchResponse> {
         // Session bloklist kontrolü

@@ -364,7 +364,11 @@ class AppViewModel : ViewModel() {
             else -> preferredSource
         }
 
-        val alreadyExists = currentEntries.any { entry -> entry.matches(result) }
+        val alreadyExists = currentEntries.any { entry ->
+            val entrySrc = entry.source.lowercase()
+            val targetSrc = finalSource.lowercase()
+            (entrySrc == targetSrc || (entrySrc == "mal" && targetSrc == "jikan") || (entrySrc == "jikan" && targetSrc == "mal")) && entry.matches(result)
+        }
         if (alreadyExists) {
             showSnackbarMessage("\"${result.title}\" zaten listende var.")
             return

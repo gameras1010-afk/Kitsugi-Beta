@@ -18,8 +18,33 @@ internal object CsTitleMatcher {
      * Verilen ana başlık ve alternatif başlıklardan arama varyantları listesi oluşturur.
      * Türkçe anime siteleri için romaji, ASCII, kısmi isim gibi varyantlar üretilir.
      */
-    fun buildTitleVariants(main: String, alts: List<String>): List<String> {
+    fun buildTitleVariants(main: String, alts: List<String>, season: Int? = null): List<String> {
         val variants = linkedSetOf<String>()
+
+        // Prioritize season-specific queries if we are fetching a later season
+        if (season != null && season > 1) {
+            val seasonSuffixes = listOf(
+                "$season. Sezon",
+                "Season $season",
+                "$season",
+                "S$season"
+            )
+            for (suffix in seasonSuffixes) {
+                val q = "$main $suffix"
+                variants.add(q)
+                variants.add(simplifyTitle(q))
+                variants.add(toAsciiTitle(q))
+            }
+            for (alt in alts) {
+                for (suffix in seasonSuffixes) {
+                    val q = "$alt $suffix"
+                    variants.add(q)
+                    variants.add(simplifyTitle(q))
+                    variants.add(toAsciiTitle(q))
+                }
+            }
+        }
+
         variants.add(main)
         variants.add(simplifyTitle(main))
         variants.add(toAsciiTitle(main))
@@ -109,17 +134,56 @@ internal object CsTitleMatcher {
             toAsciiTitle(t).lowercase(Locale.ROOT).split(Regex("\\s+")).filter { it.length >= 3 }.toSet()
         }.filter { it.isNotEmpty() }
 
+        val seasonRegex = Regex("(\\d+)\\s*(?:st|nd|rd|th)?\\s*(?:sezon|season|s\\b)|\\b(?:sezon|season|s\\b)\\s*\\.?\\s*(\\d+)", RegexOption.IGNORE_CASE)
+
         for (result in results) {
             val resultName = result.name.lowercase(Locale.ROOT).trim()
             val resultNameSimple = toAsciiTitle(result.name).lowercase(Locale.ROOT).trim()
             val resultNameNoYear = resultName.replace(Regex("\\s*\\(?(19|20)\\d{2}\\)?"), "").trim()
+
+            var foundSeason: Int? = null
+            if (targetSeason != null) {
+                val seasonMatch = seasonRegex.find(resultName)
+                if (seasonMatch != null) {
+                    foundSeason = seasonMatch.groupValues.firstOrNull { it.toIntOrNull() != null }?.toIntOrNull()
+                        ?: seasonMatch.groupValues.getOrNull(1)?.toIntOrNull()
+                        ?: seasonMatch.groupValues.getOrNull(2)?.toIntOrNull()
+                }
+
+                // Trailing number fallback (e.g. "Anime Name 2" or roman numeral "Anime Name II")
+                if (foundSeason == null) {
+                    val trailingNumMatch = Regex("\\b(\\d+)\\s*$").find(resultName)
+                    if (trailingNumMatch != null) {
+                        val num = trailingNumMatch.groupValues[1].toInt()
+                        if (num in 2..10) {
+                            foundSeason = num
+                        }
+                    } else if (resultName.endsWith(" ii")) {
+                        foundSeason = 2
+                    } else if (resultName.endsWith(" iii")) {
+                        foundSeason = 3
+                    } else if (resultName.endsWith(" iv")) {
+                        foundSeason = 4
+                    } else if (resultName.endsWith(" v")) {
+                        foundSeason = 5
+                    }
+                }
+            }
+
+            val resultNameNoSeason = resultName
+                .replace(seasonRegex, "")
+                .replace(Regex("\\b(ii|iii|iv|v)\\s*$"), "")
+                .replace(Regex("\\b(\\d+)\\s*$"), "")
+                .replace(Regex("\\s+"), " ")
+                .trim()
 
             var maxSimilarity = 0.0
             for (t in titlesToCompare) {
                 val sim1 = getSimilarity(resultName, t)
                 val sim2 = getSimilarity(resultNameSimple, t)
                 val sim3 = getSimilarity(resultNameNoYear, t)
-                val sim = maxOf(sim1, sim2, sim3)
+                val sim4 = getSimilarity(resultNameNoSeason, t)
+                val sim = maxOf(sim1, sim2, sim3, sim4)
                 if (sim > maxSimilarity) maxSimilarity = sim
             }
 
@@ -175,20 +239,22 @@ internal object CsTitleMatcher {
                 }
             }
 
-            // Benzer şekilde Sezon tespiti yapalım
             if (targetSeason != null) {
-                val seasonRegex = Regex("(\\d+)\\s*(?:\\.?\\s*(?:sezon|season|s\\b))|\\b(?:sezon|season|s\\b)\\s*\\.?\\s*(\\d+)", RegexOption.IGNORE_CASE)
-                val seasonMatch = seasonRegex.find(resultName)
-                val foundSeason = seasonMatch?.groupValues?.firstOrNull { it.toIntOrNull() != null }?.toIntOrNull()
-                    ?: seasonMatch?.groupValues?.getOrNull(1)?.toIntOrNull()
-                    ?: seasonMatch?.groupValues?.getOrNull(2)?.toIntOrNull()
-
                 if (foundSeason != null) {
                     if (foundSeason == targetSeason) {
-                        score += 0.15 // Sezon eşleşti ödülü
+                        score += 0.35 // Sezon eşleşti ödülü
+                        Log.d(TAG, "  -> Sezon Eşleşti: '${result.name}' (Sezon $foundSeason) +0.35")
                     } else {
                         score -= 0.60 // Farklı sezon uyuşmazlığı cezası
                         Log.d(TAG, "  -> Farklı Sezon Uyuşmazlığı: '${result.name}' (Bulunan: $foundSeason, Aranan: $targetSeason) -0.60")
+                    }
+                } else {
+                    // Implicit season 1
+                    if (targetSeason == 1) {
+                        score += 0.10
+                    } else {
+                        score -= 0.50 // Penalty because we wanted season > 1 but this result has no season (implicit season 1)
+                        Log.d(TAG, "  -> İmzasız Sezon Uyuşmazlığı (Sezon 1 varsayıldı): '${result.name}' (Aranan: $targetSeason) -0.50")
                     }
                 }
             }

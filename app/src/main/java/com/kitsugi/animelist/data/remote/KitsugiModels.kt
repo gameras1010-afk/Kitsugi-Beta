@@ -402,22 +402,59 @@ fun MediaEntry.matches(mediaId: Int, mediaSource: String): Boolean {
     return false
 }
 
-fun List<MediaEntry>.firstMatching(result: JikanSearchResult): MediaEntry? {
+fun List<MediaEntry>.firstMatching(
+    result: JikanSearchResult,
+    isAniListConnected: Boolean = false,
+    isMalConnected: Boolean = false,
+    isSimklConnected: Boolean = false
+): MediaEntry? {
     val src = result.source.lowercase()
-    return this.firstOrNull { entry ->
+    val exactMatch = this.firstOrNull { entry ->
         val entrySrc = entry.source.lowercase()
         (entrySrc == src || (entrySrc == "mal" && src == "jikan") || (entrySrc == "jikan" && src == "mal")) && entry.matches(result)
-    } ?: this.firstOrNull { entry ->
+    }
+    if (exactMatch != null) return exactMatch
+
+    val isResultSourceConnected = when {
+        src == "anilist" -> isAniListConnected
+        src == "mal" || src == "jikan" -> isMalConnected
+        src == "simkl" || src == "tmdb" -> isSimklConnected
+        else -> false
+    }
+    if (isResultSourceConnected) {
+        return null
+    }
+
+    return this.firstOrNull { entry ->
         entry.matches(result)
     }
 }
 
-fun List<MediaEntry>.firstMatching(mediaId: Int, mediaSource: String): MediaEntry? {
+fun List<MediaEntry>.firstMatching(
+    mediaId: Int,
+    mediaSource: String,
+    isAniListConnected: Boolean = false,
+    isMalConnected: Boolean = false,
+    isSimklConnected: Boolean = false
+): MediaEntry? {
     val src = mediaSource.lowercase()
-    return this.firstOrNull { entry ->
+    val exactMatch = this.firstOrNull { entry ->
         val entrySrc = entry.source.lowercase()
         (entrySrc == src || (entrySrc == "mal" && src == "jikan") || (entrySrc == "jikan" && src == "mal")) && entry.matches(mediaId, mediaSource)
-    } ?: this.firstOrNull { entry ->
+    }
+    if (exactMatch != null) return exactMatch
+
+    val isResultSourceConnected = when {
+        src == "anilist" -> isAniListConnected
+        src == "mal" || src == "jikan" -> isMalConnected
+        src == "simkl" || src == "tmdb" -> isSimklConnected
+        else -> false
+    }
+    if (isResultSourceConnected) {
+        return null
+    }
+
+    return this.firstOrNull { entry ->
         entry.matches(mediaId, mediaSource)
     }
 }
