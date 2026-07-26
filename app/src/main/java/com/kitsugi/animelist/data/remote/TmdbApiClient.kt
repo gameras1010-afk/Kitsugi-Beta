@@ -53,6 +53,12 @@ class TmdbApiClient(
          *  3. Bu fallback (açık kaynak — rate-limit paylaşımlı)
          */
         private const val FALLBACK_KEY = "8265bd1679663a7ea12ac168da84d2e8"
+
+        // Bellek içi önbellek — OkHttp thread pool'unu bloke etmemek için
+        // runBlocking kullanmak yerine son bilinen değer tutulur.
+        @Volatile private var cachedApiKey: String? = null
+        @Volatile private var cachedLanguage: String? = null
+
         val BUILT_IN_API_KEY: String get() {
             val fromBuild = com.kitsugi.animelist.BuildConfig.TMDB_API_KEY
             return if (fromBuild.isBlank() || fromBuild == "YOUR_TMDB_API_KEY_HERE") {
@@ -64,24 +70,25 @@ class TmdbApiClient(
 
         fun resolveApiKey(userKey: String): String = userKey.trim().ifBlank { BUILT_IN_API_KEY }
 
-        fun getActiveApiKey(): String {
-            val context = com.kitsugi.animelist.KitsugiApplication.getInstance()?.applicationContext ?: return BUILT_IN_API_KEY
-            val userKey = runCatching {
-                kotlinx.coroutines.runBlocking {
-                    com.kitsugi.animelist.data.settings.SettingsDataStore(context).settingsFlow.first().tmdbUserApiKey
-                }
-            }.getOrDefault("")
-            return resolveApiKey(userKey)
-        }
+        /**
+         * Cache'lenmiş API key'i döner. runBlocking KULLANILMAZ.
+         * İlk çağrıda varsayılan döner; ViewModel/Repository katmanı
+         * [updateCache] ile arka planda güncel değeri enjekte eder.
+         */
+        fun getActiveApiKey(): String = cachedApiKey ?: BUILT_IN_API_KEY
 
-        fun getActiveLanguage(): String {
-            val context = com.kitsugi.animelist.KitsugiApplication.getInstance()?.applicationContext ?: return "tr-TR"
-            val lang = runCatching {
-                kotlinx.coroutines.runBlocking {
-                    com.kitsugi.animelist.data.settings.SettingsDataStore(context).settingsFlow.first().tmdbLanguage
-                }
-            }.getOrDefault("tr")
-            return when (lang.lowercase()) {
+        /**
+         * Cache'lenmiş dil ayarını döner. runBlocking KULLANILMAZ.
+         */
+        fun getActiveLanguage(): String = cachedLanguage ?: "tr-TR"
+
+        /**
+         * ViewModel veya Repository katmanından, coroutine içinden çağrılır.
+         * OkHttp thread'ini bloke etmez.
+         */
+        fun updateCache(apiKey: String, language: String) {
+            cachedApiKey = resolveApiKey(apiKey)
+            cachedLanguage = when (language.lowercase()) {
                 "tr" -> "tr-TR"
                 "en" -> "en-US"
                 "ja" -> "ja-JP"
@@ -91,7 +98,7 @@ class TmdbApiClient(
                 "it" -> "it-IT"
                 "ru" -> "ru-RU"
                 "zh" -> "zh-CN"
-                else -> lang
+                else -> language.ifBlank { "tr-TR" }
             }
         }
     }

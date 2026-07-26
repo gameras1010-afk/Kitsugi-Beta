@@ -17,6 +17,8 @@ import com.kitsugi.animelist.data.repository.EpisodeStreamFilter
 import com.kitsugi.animelist.data.repository.StreamSorter
 import com.kitsugi.animelist.data.repository.StreamSource
 import com.kitsugi.animelist.ui.screens.fullscreen.components.MetaCastMember
+import com.lagradost.cloudstream3.Prerelease
+import com.lagradost.cloudstream3.UnsafeSSL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -487,6 +489,27 @@ class StreamViewModel(application: Application) : AndroidViewModel(application) 
                 error     = error
             )
             _addonStates.value = current
+        }
+    }
+
+    @OptIn(Prerelease::class, UnsafeSSL::class)
+    override fun onCleared() {
+        super.onCleared()
+        Log.i(TAG, "onCleared: Watch screen closed. Cancelling all ongoing network calls for stream resolution.")
+        try {
+            com.lagradost.cloudstream3.app.baseClient.dispatcher.cancelAll()
+        } catch (e: Throwable) {
+            Log.e(TAG, "Failed to cancel app.baseClient calls: ${e.message}")
+        }
+        try {
+            com.lagradost.cloudstream3.insecureApp.baseClient.dispatcher.cancelAll()
+        } catch (e: Throwable) {
+            Log.e(TAG, "Failed to cancel insecureApp.baseClient calls: ${e.message}")
+        }
+        try {
+            com.kitsugi.animelist.core.network.KitsugiHttpClient.client.dispatcher.cancelAll()
+        } catch (e: Throwable) {
+            Log.e(TAG, "Failed to cancel KitsugiHttpClient calls: ${e.message}")
         }
     }
 }

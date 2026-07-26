@@ -130,6 +130,7 @@ class CloudflareKiller : Interceptor {
         val isCfChallenge = response.header("Server") in CLOUDFLARE_SERVERS && response.code in ERROR_CODES
 
         if (isCfChallenge || isWafChallenge) {
+            if (chain.call().isCanceled()) throw java.io.IOException("Canceled")
             val cooldownUntil = hostFailureCooldown.getOrDefault(host, 0L)
             if (cooldownUntil > System.currentTimeMillis()) {
                 Log.d(TAG, "Skipping WAF/Cloudflare WebView solve for $host due to active failure cooldown")
@@ -152,15 +153,19 @@ class CloudflareKiller : Interceptor {
                 }
             }
 
+            if (chain.call().isCanceled()) throw java.io.IOException("Canceled")
             val solvedCookies = getLockForHost(host).withLock {
+                if (chain.call().isCanceled()) throw java.io.IOException("Canceled")
                 // Double check if another thread resolved it while we were waiting for the host lock
                 val cookiesAfterLock = savedCookies[host]
                 if (cookiesAfterLock != null) {
                     cookiesAfterLock
                 } else {
+                    if (chain.call().isCanceled()) throw java.io.IOException("Canceled")
                     Log.d(TAG, "Entering serialized WAF/Cloudflare bypass for host: $host")
                     hostBypassStartTime[host] = System.currentTimeMillis()
                     runBlocking(Dispatchers.Main) {
+                        if (chain.call().isCanceled()) return@runBlocking
                         try {
                             if (!trySolveWithSavedCookies(request, host)) {
                                 Log.d(TAG, "Loading webview to solve WAF/Cloudflare for ${request.url}")
@@ -170,13 +175,15 @@ class CloudflareKiller : Interceptor {
                                     useOkhttp = false,
                                     additionalUrls = listOf(Regex("."))
                                 ).resolveUsingWebView(request.url.toString()) {
-                                    trySolveWithSavedCookies(request, host)
+                                    if (chain.call().isCanceled()) false
+                                    else trySolveWithSavedCookies(request, host)
                                 }
                             }
                         } catch (e: Exception) {
                             Log.e(TAG, "Error during WAF/Cloudflare WebView resolution", e)
                         }
                     }
+                    if (chain.call().isCanceled()) throw java.io.IOException("Canceled")
                     savedCookies[host]
                 }
             }

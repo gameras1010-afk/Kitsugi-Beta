@@ -148,12 +148,20 @@ class KitsugiApplication : Application(), SingletonImageLoader.Factory {
         applicationScope.launch {
             try {
                 val dataStore = com.kitsugi.animelist.data.settings.SettingsDataStore(this@KitsugiApplication)
-                val savedDns = dataStore.settingsFlow.first().dnsChoice
-                if (savedDns != 0) {
-                    com.kitsugi.animelist.core.network.DnsManager.init(this@KitsugiApplication, savedDns)
+                val settings = dataStore.settingsFlow.first()
+
+                // DNS init
+                if (settings.dnsChoice != 0) {
+                    com.kitsugi.animelist.core.network.DnsManager.init(this@KitsugiApplication, settings.dnsChoice)
                 }
+
+                // TMDB önbelleği — runBlocking kullanımını ortadan kaldırır
+                com.kitsugi.animelist.data.remote.TmdbApiClient.updateCache(
+                    apiKey  = settings.tmdbUserApiKey,
+                    language = settings.tmdbLanguage
+                )
             } catch (e: Exception) {
-                android.util.Log.w("KitsugiApplication", "DNS init async failed: ${e.message}")
+                android.util.Log.w("KitsugiApplication", "Init async failed: ${e.message}")
             }
         }
 

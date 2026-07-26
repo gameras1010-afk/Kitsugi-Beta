@@ -34,6 +34,7 @@ class CloudflareInterceptor(private val context: Context) : Interceptor {
 
     companion object {
         private const val TAG = "CloudflareInterceptor"
+        // 15s: slow hosts need more time, but we will cancel immediately on exit
         private const val TIMEOUT_MS = 15_000L
         private const val CF_CLEARANCE_COOKIE = "cf_clearance"
     }
@@ -51,7 +52,7 @@ class CloudflareInterceptor(private val context: Context) : Interceptor {
         response.close()
 
         // WebView ile cookie'yi çöz
-        val cookie = resolveWithWebView(request.url.toString())
+        val cookie = resolveWithWebView(request.url.toString(), chain.call())
         if (cookie == null) {
             Log.w(TAG, "Cloudflare cookie alınamadı (timeout). Orijinal isteği tekrarlıyoruz.")
             // Cookie olmadan tekrar dene (en azından bazı kaynaklarda çalışır)
@@ -79,10 +80,11 @@ class CloudflareInterceptor(private val context: Context) : Interceptor {
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private fun resolveWithWebView(url: String): String? {
+    private fun resolveWithWebView(url: String, call: okhttp3.Call): String? {
         val latch = CountDownLatch(1)
         var cfClearance: String? = null
         val handler = Handler(Looper.getMainLooper())
+        var webViewRef: WebView? = null
 
         handler.post {
             try {
@@ -124,6 +126,7 @@ class CloudflareInterceptor(private val context: Context) : Interceptor {
                         }
                     }
                 }
+                webViewRef = webView
                 webView.loadUrl(url)
 
                 // Timeout: latch 15s içinde indirilmezse iptal
@@ -142,7 +145,26 @@ class CloudflareInterceptor(private val context: Context) : Interceptor {
             }
         }
 
-        latch.await(TIMEOUT_MS + 1000L, TimeUnit.MILLISECONDS)
+        // Wait in a cancellation-aware loop
+        val deadline = System.currentTimeMillis() + TIMEOUT_MS + 1000L
+        while (System.currentTimeMillis() < deadline && latch.count > 0) {
+            if (call.isCanceled()) {
+                Log.w(TAG, "Call was canceled, destroying WebView resolver.")
+                handler.post {
+                    try {
+                        webViewRef?.stopLoading()
+                        webViewRef?.destroy()
+                    } catch (t: Throwable) { /* ignore */ }
+                }
+                break
+            }
+            try {
+                Thread.sleep(100L)
+            } catch (ie: InterruptedException) {
+                break
+            }
+        }
+
         return cfClearance
     }
 }
