@@ -1,41 +1,57 @@
-# Kitsugi v2.4.100 Release Notes 🚀
+# Kitsugi v2.4.101 Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
+### 🔗 AniList & MyAnimeList Senkronizasyon Düzeltmesi (KRİTİK)
+
+- **Senkronizasyon Artık Otomatik Çalışıyor:** Daha önceki sürümlerde AniList veya MyAnimeList hesabın bağlı olsa bile düzenleme/kaydetme işlemleri sessizce eşitleme yapılmadan geçiyordu. Bunun nedeni `syncEnabledAnilist` ve `syncEnabledMal` flaglarının varsayılan değerinin `false` olmasıydı; kullanıcı bu gizli toggle'ı ayarlardan açmadığı sürece sync hiç çalışmıyordu. Artık hesabın bağlıysa sync **otomatik olarak** çalışır.
+
+- **Anime Ekleme, Düzenleme, Silme Eşitleniyor:** Listene yeni anime ekleyince, durum/puan/bölüm güncelleyince veya silince, yapılan değişiklik anında AniList ve/veya MyAnimeList'e yansıtılıyor.
+
+- **Çevrimdışı Kuyruğu Düzeltildi:** İnternetin olmadığı an yapılan değişiklikler kuyruğa alınıp online olunca otomatik gönderiliyordu; bu akış settings parse hatası nedeniyle de bozuluyordu. Artık settings okunamazsa bile sync atlanmıyor.
+
 ### 🎬 Akış (Stream) Sistemi İyileştirmeleri
 
-- **IMDb ID Zorunluluğu Kaldırıldı:** Daha önce IMDb ID çözümlenemediğinde video akış sayfası tamamen bloklanıyor ve "ID bulunamadı" hata ekranı gösteriliyordu. Artık ID çözümleme başarısız olsa bile CS eklentileri başlık (isim) bazlı aramaya devam ediyor; video kaynakları yine de listeleniyor.
+- **IMDb ID Zorunluluğu Kaldırıldı:** ID çözümlenemediğinde video akış sayfası bloklanmıyor; CS eklentileri başlık bazlı aramaya devam ediyor.
 
-- **Yanlış Sezon/Bölüm Eşleştirmesi Düzeltildi:** Birden fazla sezonlu animelerde (örn. Wistoria: Wand and Sword S2) yanlış sezonun (S1E1) çekilmesine neden olan mantık hatası giderildi. Sezon numarası artık bölüm listesinden doğru şekilde aktarılıyor.
+- **Yanlış Sezon/Bölüm Eşleştirmesi Düzeltildi:** Çok sezonlu animelerde (ör. S2, S3) yanlış sezonun getirilmesine neden olan mantık hatası giderildi.
 
-- **Sezon Parametresi Düzeltildi:** Bölüm seçim diyaloğunda sezon numarası daha önce her zaman `1` olarak gönderiliyordu. Artık kullanıcının o an baktığı gerçek sezon numarası (örn. S2, S3) Cloudstream plugin aramasına doğru şekilde iletiliyor.
+- **Sezon Parametresi Düzeltildi:** Bölüm seçim diyaloğunda artık her zaman `1` yerine gerçek sezon numarası iletiliyor.
 
-### 🔍 CS Eklenti Bölüm Eşleştirmesi Güçlendirildi
+### 🔍 CS Eklenti Bölüm Eşleştirmesi
 
-- **Reflection Hiyerarşisi Genişletildi:** `CsEpisodeMatcher` artık sadece doğrudan sınıf alanlarını değil, tüm üst sınıf (superclass) hiyerarşisini tarayarak episode/season alanlarını buluyor. Bazı Cloudstream eklentilerinde alanlar alt sınıflarda tanımlandığından bu durum daha önce eşleştirme başarısızlığına yol açıyordu.
+- **Reflection Hiyerarşisi Genişletildi:** `CsEpisodeMatcher` artık tüm üst sınıf zincirini tarayarak episode/season alanlarını buluyor.
 
-- **Akıllı İndeks-Bazlı Fallback:** Episode meta verisi (season/episode numaraları) hiç doldurulmamış eklentilerde (yaygın Türkçe eklentilerde görülen durum), bölüm numarası artık preferred bucket (Subbed → Dubbed → None) içinde liste indeksi olarak yorumlanıyor. Bu sayede S2E1 isteği, yanlışlıkla S1'in ilk bölümüne gitmiyor.
+- **Akıllı İndeks-Bazlı Fallback:** Episode meta verisi olmayan Türkçe eklentilerde bölüm numarası liste indeksinden türetiliyor.
 
-- **Preferred Bucket Önceliği:** Sezon-bağımsız fallback aramalarda artık önce Subbed bucket aranıyor, bulunamazsa diğer bucket'lara geçiliyor. Bu daha doğru dil/senkron önceliği sağlıyor.
+- **Preferred Bucket Önceliği:** Subbed → Dubbed → None sırasıyla arama yapılıyor.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
+### 🔗 AniList & MyAnimeList Sync Fix (CRITICAL)
+
+- **Sync Now Works Automatically:** In previous versions, even with AniList or MAL connected, edits and updates were silently skipped. The root cause was `syncEnabledAnilist` and `syncEnabledMal` defaulting to `false` — sync was never triggered unless a hidden toggle was manually enabled in settings. Now sync runs **automatically** whenever an account is connected.
+
+- **Add, Edit, Delete All Sync Correctly:** Adding a new anime, updating status/score/episode progress, or deleting an entry now correctly propagates to AniList and/or MyAnimeList in real time.
+
+- **Offline Queue Fixed:** Changes made while offline are queued and sent when connectivity is restored. This queue was also broken by the same settings parse issue and is now fixed.
+
 ### 🎬 Stream System Improvements
 
-- **Removed IMDb ID Requirement Block:** Previously, if IMDb ID resolution failed, the stream picker screen would display a full-page error and prevent users from seeing any sources. Now, CS plugins continue with title-based searching even when ID resolution fails — streams are still found and displayed.
+- **Removed IMDb ID Requirement Block:** CS plugins now fall back to title-based search when ID resolution fails; stream sources are still listed.
 
-- **Fixed Incorrect Season/Episode Mapping:** A logic error that caused multi-season anime (e.g. Wistoria: Wand and Sword S2) to fetch the wrong season (S1E1) has been resolved. The correct season number is now properly propagated through the streaming pipeline.
+- **Fixed Incorrect Season/Episode Mapping:** Multi-season anime (e.g. S2, S3) no longer fall back to S1E1 due to a propagation bug.
 
-- **Fixed Hardcoded Season Parameter:** The episode options dialog was always passing `season = 1` to the stream activity. It now correctly passes the actual season number the user is currently viewing (e.g. S2, S3).
+- **Fixed Hardcoded Season Parameter:** The episode options dialog now passes the actual current season number instead of always using `1`.
 
-### 🔍 CS Plugin Episode Matching Improvements
+### 🔍 CS Plugin Episode Matching
 
-- **Reflection Now Traverses Full Class Hierarchy:** `CsEpisodeMatcher` now walks the entire superclass chain when looking for `episode` and `season` fields via reflection. Previously, fields defined in parent classes of episode types were silently missed, causing match failures on some plugins.
+- **Reflection Traverses Full Class Hierarchy:** `CsEpisodeMatcher` now walks the entire superclass chain to find episode/season fields.
 
-- **Smart Index-Based Fallback:** For plugins that store episodes as flat lists with no season/episode metadata (common in Turkish plugins), the episode number is now interpreted as a 1-based index within the preferred bucket (Subbed → Dubbed → None). This prevents S2 requests from incorrectly resolving to the first episode of S1.
+- **Smart Index-Based Fallback:** For flat-list plugins with no metadata (common in Turkish plugins), episode number is resolved via 1-based index within the preferred bucket.
 
-- **Preferred Bucket Priority in Fallbacks:** Season-agnostic fallback searches now prioritize the Subbed bucket first before checking all episodes, ensuring better language/sync accuracy.
+- **Preferred Bucket Priority:** Fallback searches now check Subbed → Dubbed → None in order for better accuracy.

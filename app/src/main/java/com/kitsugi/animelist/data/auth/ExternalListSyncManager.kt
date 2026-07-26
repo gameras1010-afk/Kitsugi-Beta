@@ -22,8 +22,8 @@ object ExternalListSyncManager {
             var resolvedAniListEntryId: Int? = null
 
             val settings = runCatching { SettingsDataStore(context).settingsFlow.first() }.getOrNull()
-            val syncEnabledAniList = settings?.syncEnabledAnilist ?: false
-            val syncEnabledMal = settings?.syncEnabledMal ?: false
+            val syncEnabledAniList = settings?.syncEnabledAnilist ?: true
+            val syncEnabledMal = settings?.syncEnabledMal ?: true
 
             val aniListToken = ExternalAuthManager.getAniListToken(context)
             val malToken = ExternalAuthManager.getOrRefreshMalToken(context)
@@ -119,8 +119,8 @@ object ExternalListSyncManager {
             val deletedSources = mutableListOf<String>()
 
             val settings = runCatching { SettingsDataStore(context).settingsFlow.first() }.getOrNull()
-            val syncEnabledAniList = settings?.syncEnabledAnilist ?: false
-            val syncEnabledMal = settings?.syncEnabledMal ?: false
+            val syncEnabledAniList = settings?.syncEnabledAnilist ?: true
+            val syncEnabledMal = settings?.syncEnabledMal ?: true
 
             val aniListToken = ExternalAuthManager.getAniListToken(context)
             val malToken = ExternalAuthManager.getOrRefreshMalToken(context)

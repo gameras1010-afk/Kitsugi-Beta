@@ -312,8 +312,8 @@ class SettingsDataStore(
                     enableAssExtractor = preferences[Keys.EnableAssExtractor] ?: false,
                     autoUpdateCheckEnabled = preferences[Keys.AutoUpdateCheckEnabled] ?: true,
                     customImageDownloadUri = preferences[Keys.CustomImageDownloadUri] ?: "",
-                    syncEnabledAnilist = preferences[Keys.SyncEnabledAnilist] ?: false,
-                    syncEnabledMal = preferences[Keys.SyncEnabledMal] ?: false
+                    syncEnabledAnilist = preferences[Keys.SyncEnabledAnilist] ?: true,
+                    syncEnabledMal = preferences[Keys.SyncEnabledMal] ?: true
                 )
             )
         }
