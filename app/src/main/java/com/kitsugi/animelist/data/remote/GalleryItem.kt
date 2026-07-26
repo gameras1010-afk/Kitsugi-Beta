@@ -19,5 +19,7 @@ enum class GalleryCategory(val label: String) {
     CHARACTER("Karakter"),
     THUMBNAIL("Küçük Resim"),
     BANNER("Afiş"),
+    CLEARART("ClearART"),   // Fanart.tv: HD ClearART (şeffaf zemin, sanatsal kesim)
+    SQUARE("Kare Poster"),  // Fanart.tv: Square Poster
     OTHER("Diğer")
 }

@@ -40,6 +40,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.SearchOff
+import com.kitsugi.animelist.data.settings.SettingsDataStore
+import com.kitsugi.animelist.data.settings.AppSettings
+import com.kitsugi.animelist.ui.components.KitsugiIntegrationsSettingsDialog
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * Shared pill/chip composable used across all detail pages within this package.
@@ -316,4 +321,84 @@ internal fun DataUnavailableScreen(
             }
         }
     }
+}
+
+sealed class SynopsisState {
+    data object Loading : SynopsisState()
+    data object Error : SynopsisState()
+    data class Success(val text: String) : SynopsisState()
+}
+
+@Composable
+fun DetailIntegrationsSettingsDialog(
+    settingsDataStore: SettingsDataStore,
+    settingsState: AppSettings,
+    coroutineScope: CoroutineScope,
+    onDismiss: () -> Unit
+) {
+    KitsugiIntegrationsSettingsDialog(
+        tmdbEnabled = settingsState.tmdbEnabled,
+        onTmdbEnabledChanged = { coroutineScope.launch { settingsDataStore.setTmdbEnabled(it) } },
+        tmdbApiKey = settingsState.tmdbUserApiKey,
+        onTmdbApiKeyChanged = { coroutineScope.launch { settingsDataStore.setTmdbUserApiKey(it) } },
+        tmdbModernHomeEnabled = settingsState.tmdbModernHomeEnabled,
+        onTmdbModernHomeEnabledChanged = { coroutineScope.launch { settingsDataStore.setTmdbModernHomeEnabled(it) } },
+        tmdbEnrichContinueWatching = settingsState.tmdbEnrichContinueWatching,
+        onTmdbEnrichContinueWatchingChanged = { coroutineScope.launch { settingsDataStore.setTmdbEnrichContinueWatching(it) } },
+        tmdbLanguage = settingsState.tmdbLanguage,
+        onTmdbLanguageChanged = { coroutineScope.launch { settingsDataStore.setTmdbLanguage(it) } },
+        tmdbUseArtwork = settingsState.tmdbUseArtwork,
+        onTmdbUseArtworkChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseArtwork(it) } },
+        tmdbUseBasicInfo = settingsState.tmdbUseBasicInfo,
+        onTmdbUseBasicInfoChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseBasicInfo(it) } },
+        tmdbUseDetails = settingsState.tmdbUseDetails,
+        onTmdbUseDetailsChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseDetails(it) } },
+        tmdbUseReleaseDates = settingsState.tmdbUseReleaseDates,
+        onTmdbUseReleaseDatesChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseReleaseDates(it) } },
+        tmdbUseCredits = settingsState.tmdbUseCredits,
+        onTmdbUseCreditsChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseCredits(it) } },
+        tmdbUseProductions = settingsState.tmdbUseProductions,
+        onTmdbUseProductionsChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseProductions(it) } },
+        tmdbUseNetworks = settingsState.tmdbUseNetworks,
+        onTmdbUseNetworksChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseNetworks(it) } },
+        tmdbUseEpisodes = settingsState.tmdbUseEpisodes,
+        onTmdbUseEpisodesChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseEpisodes(it) } },
+        tmdbUseTrailers = settingsState.tmdbUseTrailers,
+        onTmdbUseTrailersChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseTrailers(it) } },
+        tmdbUseMoreLikeThis = settingsState.tmdbUseMoreLikeThis,
+        onTmdbUseMoreLikeThisChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseMoreLikeThis(it) } },
+        tmdbUseCollections = settingsState.tmdbUseCollections,
+        onTmdbUseCollectionsChanged = { coroutineScope.launch { settingsDataStore.setTmdbUseCollections(it) } },
+        
+        mdbListEnabled = settingsState.mdbListEnabled,
+        onMdbListEnabledChanged = { coroutineScope.launch { settingsDataStore.setMdbListEnabled(it) } },
+        mdbListApiKey = settingsState.mdbListApiKey,
+        onMdbListApiKeyChanged = { coroutineScope.launch { settingsDataStore.setMdbListApiKey(it) } },
+        mdbListShowImdb = settingsState.mdbListShowImdb,
+        onMdbListShowImdbChanged = { coroutineScope.launch { settingsDataStore.setMdbListShowImdb(it) } },
+        mdbListShowTomatoes = settingsState.mdbListShowTomatoes,
+        onMdbListShowTomatoesChanged = { coroutineScope.launch { settingsDataStore.setMdbListShowTomatoes(it) } },
+        mdbListShowMetacritic = settingsState.mdbListShowMetacritic,
+        onMdbListShowMetacriticChanged = { coroutineScope.launch { settingsDataStore.setMdbListShowMetacritic(it) } },
+        mdbListShowAudience = settingsState.mdbListShowAudience,
+        onMdbListShowAudienceChanged = { coroutineScope.launch { settingsDataStore.setMdbListShowAudience(it) } },
+        mdbListShowLetterboxd = settingsState.mdbListShowLetterboxd,
+        onMdbListShowLetterboxdChanged = { coroutineScope.launch { settingsDataStore.setMdbListShowLetterboxd(it) } },
+        mdbListShowTmdb = settingsState.mdbListShowTmdb,
+        onMdbListShowTmdbChanged = { coroutineScope.launch { settingsDataStore.setMdbListShowTmdb(it) } },
+        mdbListShowTrakt = settingsState.mdbListShowTrakt,
+        onMdbListShowTraktChanged = { coroutineScope.launch { settingsDataStore.setMdbListShowTrakt(it) } },
+        
+        aniSkipEnabled = settingsState.aniSkipEnabled,
+        onAniSkipEnabledChanged = { coroutineScope.launch { settingsDataStore.setAniSkipEnabled(it) } },
+        aniSkipAutoSkip = settingsState.aniSkipAutoSkip,
+        onAniSkipAutoSkipChanged = { coroutineScope.launch { settingsDataStore.setAniSkipAutoSkip(it) } },
+        animeSkipClientId = settingsState.animeSkipClientId,
+        onAnimeSkipClientIdChanged = { coroutineScope.launch { settingsDataStore.setAnimeSkipClientId(it) } },
+        fanartTvEnabled = settingsState.fanartTvEnabled,
+        onFanartTvEnabledChanged = { coroutineScope.launch { settingsDataStore.setFanartTvEnabled(it) } },
+        fanartTvApiKey = settingsState.fanartTvApiKey,
+        onFanartTvApiKeyChanged = { coroutineScope.launch { settingsDataStore.setFanartTvApiKey(it) } },
+        onDismiss = onDismiss
+    )
 }

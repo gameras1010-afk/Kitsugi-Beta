@@ -56,6 +56,12 @@ import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.utils.tvClickable
 import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+
 
 /**
  * Tab 0 — Overview (Bilgi) content for MediaEntryDetailPage.
@@ -84,6 +90,7 @@ internal fun EntryDetailOverviewTab(
     preferredTranslator: String = "DEFAULT",
     onImageGalleryRequest: ((urls: List<String>, index: Int) -> Unit)? = null,
     galleryItems: List<GalleryItem> = emptyList(),
+    galleryLoading: Boolean = false,
     onGalleryItemRequest: ((items: List<GalleryItem>, index: Int) -> Unit)? = null
 ) {
     val context = LocalContext.current
@@ -107,7 +114,10 @@ internal fun EntryDetailOverviewTab(
         )
 
         // Fanart.tv + çok kaynaklı galeri
-        if (galleryItems.isNotEmpty()) {
+        if (galleryLoading && galleryItems.isEmpty()) {
+            // Galeri yüklenirken skeleton placeholder göster
+            DetailGalleryLoadingCard()
+        } else if (galleryItems.isNotEmpty()) {
             DetailGalleryCard(
                 items = galleryItems,
                 onItemClick = { index ->
@@ -230,7 +240,7 @@ internal fun EntryDetailOverviewTab(
  * kaynak (Fanart.tv / TMDB / Jikan) ve kategori (Logo / Arka Plan…) pill badge'leri gösterilir.
  */
 @Composable
-private fun DetailGalleryCard(
+internal fun DetailGalleryCard(
     items: List<GalleryItem>,
     onItemClick: (index: Int) -> Unit,
     onOpenGallery: ((category: GalleryCategory?) -> Unit)? = null
@@ -252,8 +262,10 @@ private fun DetailGalleryCard(
         val availableCategories = remember(items) {
             val order = listOf(
                 GalleryCategory.LOGO,
+                GalleryCategory.CLEARART,
                 GalleryCategory.BACKDROP,
                 GalleryCategory.POSTER,
+                GalleryCategory.SQUARE,
                 GalleryCategory.CHARACTER,
                 GalleryCategory.THUMBNAIL,
                 GalleryCategory.BANNER,
@@ -327,8 +339,10 @@ private fun DetailGalleryCard(
                         val count = items.count { it.category == category }
                         val emoji = when (category) {
                             GalleryCategory.LOGO      -> "🎨"
+                            GalleryCategory.CLEARART  -> "✨"
                             GalleryCategory.BACKDROP  -> "🖼"
                             GalleryCategory.POSTER    -> "📋"
+                            GalleryCategory.SQUARE    -> "🟩"
                             GalleryCategory.CHARACTER -> "🎭"
                             GalleryCategory.THUMBNAIL -> "🌐"
                             GalleryCategory.BANNER    -> "🎫"
@@ -336,8 +350,10 @@ private fun DetailGalleryCard(
                         }
                         val label = when (category) {
                             GalleryCategory.LOGO      -> "Logo"
+                            GalleryCategory.CLEARART  -> "ClearART"
                             GalleryCategory.BACKDROP  -> "Arka Plan"
                             GalleryCategory.POSTER    -> "Poster"
+                            GalleryCategory.SQUARE    -> "Kare Poster"
                             GalleryCategory.CHARACTER -> "Karakter"
                             GalleryCategory.THUMBNAIL -> "Küçük Resim"
                             GalleryCategory.BANNER    -> "Afiş"
@@ -372,8 +388,10 @@ private fun DetailGalleryCard(
 
         val orderedCategories = listOf(
             GalleryCategory.LOGO,
+            GalleryCategory.CLEARART,
             GalleryCategory.BACKDROP,
             GalleryCategory.POSTER,
+            GalleryCategory.SQUARE,
             GalleryCategory.CHARACTER,
             GalleryCategory.THUMBNAIL,
             GalleryCategory.BANNER,
@@ -394,8 +412,10 @@ private fun DetailGalleryCard(
                 ) {
                     val emoji = when (category) {
                         GalleryCategory.LOGO -> "🎨"
+                        GalleryCategory.CLEARART -> "✨"
                         GalleryCategory.BACKDROP -> "🖼"
                         GalleryCategory.POSTER -> "📋"
+                        GalleryCategory.SQUARE -> "🟩"
                         GalleryCategory.CHARACTER -> "🎭"
                         GalleryCategory.THUMBNAIL -> "🌐"
                         GalleryCategory.BANNER -> "🎫"
@@ -404,8 +424,10 @@ private fun DetailGalleryCard(
 
                     val turkishLabel = when (category) {
                         GalleryCategory.LOGO -> "Logo"
+                        GalleryCategory.CLEARART -> "ClearART"
                         GalleryCategory.BACKDROP -> "Arka Plan"
                         GalleryCategory.POSTER -> "Poster"
+                        GalleryCategory.SQUARE -> "Kare Poster"
                         GalleryCategory.CHARACTER -> "Karakter"
                         GalleryCategory.THUMBNAIL -> "Küçük Resim"
                         GalleryCategory.BANNER -> "Afiş"
@@ -429,8 +451,10 @@ private fun DetailGalleryCard(
 
                             val aspectRatio = when (item.category) {
                                 GalleryCategory.BACKDROP -> 16f / 9f
+                                GalleryCategory.CLEARART -> 16f / 9f
                                 GalleryCategory.BANNER   -> 5.4f / 1f
                                 GalleryCategory.POSTER   -> 2f / 3f
+                                GalleryCategory.SQUARE   -> 1f
                                 GalleryCategory.LOGO     -> 3f / 1.4f
                                 else                     -> 1f
                             }
@@ -492,6 +516,56 @@ private fun DetailGalleryCard(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Gallery veri gelene kadar gösterilen pulse shimmer placeholder.
+ */
+@Composable
+internal fun DetailGalleryLoadingCard() {
+    val infiniteTransition = rememberInfiniteTransition(label = "gallery_shimmer")
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 0.7f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 900),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "alpha"
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(KitsugiColors.SurfaceSoft)
+            .border(1.dp, KitsugiColors.Border, RoundedCornerShape(18.dp))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Başlık placeholder
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.4f)
+                .height(16.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(KitsugiColors.TextMuted.copy(alpha = alpha))
+        )
+        // Resim kartları placeholder
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            repeat(4) {
+                Box(
+                    modifier = Modifier
+                        .height(90.dp)
+                        .width(120.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(KitsugiColors.TextMuted.copy(alpha = alpha))
+                )
             }
         }
     }

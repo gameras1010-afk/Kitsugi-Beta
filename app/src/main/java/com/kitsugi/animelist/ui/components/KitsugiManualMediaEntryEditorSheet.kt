@@ -481,7 +481,10 @@ internal fun KitsugiManualMediaEntryEditorSheet(
                     value = startDateText.ifBlank { "Tarih Seçilmemiş" },
                     onClick = {
                         selectDate(startDateText) { startDateText = it }
-                    }
+                    },
+                    onClearClick = if (startDateText.isNotBlank()) {
+                        { startDateText = "" }
+                    } else null
                 )
 
                 SheetRow(
@@ -490,7 +493,10 @@ internal fun KitsugiManualMediaEntryEditorSheet(
                     value = endDateText.ifBlank { "Tarih Seçilmemiş" },
                     onClick = {
                         selectDate(endDateText) { endDateText = it }
-                    }
+                    },
+                    onClearClick = if (endDateText.isNotBlank()) {
+                        { endDateText = "" }
+                    } else null
                 )
 
                 // 5. Notes

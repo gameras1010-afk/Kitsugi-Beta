@@ -244,176 +244,25 @@ fun CharacterDetailPage(
                     KitsugiPageEnter {
                         Box(modifier = Modifier.fillMaxSize()) {
                             Row(modifier = Modifier.fillMaxSize()) {
-                                // Sol panel: Hero image + karakter bilgileri
-                                Column(
-                                    modifier = Modifier
-                                        .weight(leftPanelWeight)
-                                        .fillMaxSize()
-                                        .verticalScroll(rememberScrollState())
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(300.dp)
-                                    ) {
-                                        if (!detail.imageUrl.isNullOrBlank()) {
-                                            AsyncImage(
-                                                model = detail.imageUrl,
-                                                contentDescription = detail.name,
-                                             modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .focusRequester(leftPanelFocusRequester)
-                                                    .focusProperties { right = tabBarFocusRequester }
-                                                    .tvClickable {
-                                                        activeGalleryItems = galleryItems
-                                                        activeGalleryIndex = 0
-                                                    },
-                                                contentScale = ContentScale.Crop
-                                            )
-                                        } else {
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .background(accentColor.copy(alpha = 0.15f)),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text(
-                                                    text = detail.name.take(2).uppercase(),
-                                                    color = accentColor,
-                                                    style = MaterialTheme.typography.displayLarge,
-                                                    fontWeight = FontWeight.Black
-                                                )
-                                            }
-                                        }
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .background(
-                                                    Brush.verticalGradient(
-                                                        colors = listOf(
-                                                            KitsugiColors.Background.copy(alpha = 0.05f),
-                                                            KitsugiColors.Background.copy(alpha = 0.30f),
-                                                            KitsugiColors.Background.copy(alpha = 0.72f),
-                                                            KitsugiColors.Background
-                                                        )
-                                                    )
-                                                )
-                                        )
-                                        // Top action bar: Back (left) + Share/Favourite (right)
-                                        Row(
-                                            modifier = Modifier
-                                                .align(Alignment.TopStart)
-                                                .fillMaxWidth()
-                                                .padding(start = 12.dp, end = 12.dp, top = 24.dp),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(40.dp)
-                                                    .clip(CircleShape)
-                                                    .background(KitsugiColors.Background.copy(alpha = 0.45f)),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                IconButton(onClick = onBackClick) {
-                                                    Icon(
-                                                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                                                        contentDescription = "Geri",
-                                                        tint = KitsugiColors.TextPrimary
-                                                    )
-                                                }
-                                            }
-
-                                            Row(
-                                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-
-                                                if (!detail.imageUrl.isNullOrBlank()) {
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .size(40.dp)
-                                                            .clip(CircleShape)
-                                                            .background(accentColor.copy(alpha = 0.22f))
-                                                            .then(
-                                                                Modifier.padding(1.dp)
-                                                            ),
-                                                        contentAlignment = Alignment.Center
-                                                    ) {
-                                                        IconButton(onClick = {
-                                                            activeGalleryItems = galleryItems
-                                                            activeGalleryIndex = 0
-                                                        }) {
-                                                            Icon(
-                                                                imageVector = Icons.Rounded.Image,
-                                                                contentDescription = "Galeri",
-                                                                tint = accentColor
-                                                            )
-                                                        }
-                                                    }
-                                                }
-
-                                                Box(
-                                                    modifier = Modifier
-                                                        .size(40.dp)
-                                                        .clip(CircleShape)
-                                                        .background(KitsugiColors.Background.copy(alpha = 0.45f)),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    IconButton(onClick = {
-                                                        val url = com.kitsugi.animelist.utils.ShareUtils.buildCharacterUrl(source, characterId)
-                                                        com.kitsugi.animelist.utils.ShareUtils.shareText(context, detail.name, url)
-                                                    }) {
-                                                        Icon(
-                                                            imageVector = Icons.Rounded.Share,
-                                                            contentDescription = "Paylaş",
-                                                            tint = KitsugiColors.TextPrimary
-                                                        )
-                                                    }
-                                                }
-
-                                                if (showFavouriteButton) {
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .size(40.dp)
-                                                            .clip(CircleShape)
-                                                            .background(KitsugiColors.Background.copy(alpha = 0.45f)),
-                                                        contentAlignment = Alignment.Center
-                                                    ) {
-                                                        IconButton(onClick = { viewModel.toggleFavourite() }) {
-                                                            Icon(
-                                                                imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                                                                contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
-                                                                tint = if (isFavourite) accentColor else KitsugiColors.TextPrimary
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    // İsim + native name + pill
-                                    Column(modifier = Modifier.padding(16.dp)) {
-                                         DetailPill(text = source.toFriendlySourceLabel().uppercase(), color = accentColor)
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        Text(
-                                            text = detail.name,
-                                            modifier = Modifier.copyOnDoubleTap(context, detail.name),
-                                            color = KitsugiColors.TextPrimary,
-                                            style = MaterialTheme.typography.headlineSmall,
-                                            fontWeight = FontWeight.Black
-                                        )
-                                        if (!detail.nativeName.isNullOrBlank()) {
-                                            Spacer(modifier = Modifier.height(4.dp))
-                                            Text(
-                                                text = detail.nativeName,
-                                                modifier = Modifier.copyOnDoubleTap(context, detail.nativeName),
-                                                color = KitsugiColors.TextSecondary,
-                                                style = MaterialTheme.typography.bodyMedium
-                                            )
-                                        }
-                                    }
-                                }
+                                // Sol panel: CharacterDetailLeftPanel
+                                CharacterDetailLeftPanel(
+                                    detail = detail,
+                                    source = source,
+                                    characterId = characterId,
+                                    accentColor = accentColor,
+                                    isFavourite = isFavourite,
+                                    showFavouriteButton = showFavouriteButton,
+                                    galleryItems = galleryItems,
+                                    leftPanelFocusRequester = leftPanelFocusRequester,
+                                    tabBarFocusRequester = tabBarFocusRequester,
+                                    onBackClick = onBackClick,
+                                    onToggleFavourite = { viewModel.toggleFavourite() },
+                                    onGalleryClick = { items, idx ->
+                                        activeGalleryItems = items
+                                        activeGalleryIndex = idx
+                                    },
+                                    modifier = Modifier.weight(leftPanelWeight)
+                                )
 
                                 // Sağ panel: Tab seçici + içerik
                                 Column(
@@ -471,102 +320,30 @@ fun CharacterDetailPage(
                                             .padding(horizontal = 16.dp, vertical = 8.dp)
                                     ) {
                                         when (currentTab) {
-                                            "Hakkında" -> {
-                                                SelectionContainer {
-                                                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                                                    if (detail.alternativeNames.isNotEmpty()) {
-                                                        Column(
-                                                            modifier = Modifier
-                                                                .fillMaxWidth()
-                                                                .clip(RoundedCornerShape(18.dp))
-                                                                .background(KitsugiColors.Surface)
-                                                                .padding(16.dp)
-                                                        ) {
-                                                            Text("Diğer İsimler", color = KitsugiColors.TextPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                                                            Spacer(modifier = Modifier.height(8.dp))
-                                                            Text(detail.alternativeNames.joinToString(", "), color = KitsugiColors.TextSecondary, style = MaterialTheme.typography.bodyMedium)
-                                                        }
+                                            "HakkÄ±nda" -> {
+                                                CharacterAboutTabContent(
+                                                    detail = detail,
+                                                    translatedBio = translatedBio,
+                                                    preferredTranslator = preferredTranslator,
+                                                    accentColor = accentColor,
+                                                    onGalleryClick = { items, idx ->
+                                                        activeGalleryItems = items
+                                                        activeGalleryIndex = idx
                                                     }
-                                                    val hasDemographics = detail.gender != null || detail.age != null || detail.birthday != null || detail.bloodType != null
-                                                    if (hasDemographics) {
-                                                        Column(
-                                                            modifier = Modifier
-                                                                .fillMaxWidth()
-                                                                .clip(RoundedCornerShape(18.dp))
-                                                                .background(KitsugiColors.Surface)
-                                                                .padding(16.dp)
-                                                        ) {
-                                                            Text("Bilgiler", color = KitsugiColors.TextPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                                                            Spacer(modifier = Modifier.height(12.dp))
-                                                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                                                if (detail.gender != null) InfoRow(label = "Cinsiyet", value = detail.gender)
-                                                                if (detail.age != null) InfoRow(label = "Yaş", value = detail.age)
-                                                                if (detail.birthday != null) InfoRow(label = "Doğum Günü", value = detail.birthday)
-                                                                if (detail.bloodType != null) InfoRow(label = "Kan Grubu", value = detail.bloodType)
-                                                            }
-                                                        }
-                                                    }
-                                                    val displayBio = translatedBio ?: detail.biography
-                                                    Column(
-                                                        modifier = Modifier
-                                                            .fillMaxWidth()
-                                                            .clip(RoundedCornerShape(18.dp))
-                                                            .background(KitsugiColors.Surface)
-                                                            .padding(16.dp)
-                                                    ) {
-                                                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                                                            Text("Biyografi", color = KitsugiColors.TextPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                                                            if (!detail.biography.isNullOrBlank()) {
-                                                                IconButton(onClick = { context.openTranslator(detail.biography, preferredTranslator) }, modifier = Modifier.size(36.dp)) {
-                                                                    Icon(Icons.Rounded.Translate, contentDescription = "Çevir", tint = accentColor)
-                                                                }
-                                                                Spacer(modifier = Modifier.width(6.dp))
-                                                                IconButton(onClick = {
-                                                                    val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                                                    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("biography", displayBio))
-                                                                    android.widget.Toast.makeText(context, "Panoya kopyalandı", android.widget.Toast.LENGTH_SHORT).show()
-                                                                }, modifier = Modifier.size(36.dp)) {
-                                                                    Icon(Icons.Rounded.ContentCopy, contentDescription = "Kopyala", tint = KitsugiColors.TextSecondary)
-                                                                }
-                                                            }
-                                                        }
-                                                        Spacer(modifier = Modifier.height(8.dp))
-                                                        if (displayBio.isNullOrBlank()) {
-                                                            Text("Biyografi bulunmuyor.", color = KitsugiColors.TextMuted, style = MaterialTheme.typography.bodyMedium)
-                                                        } else {
-                                                            KitsugiMarkdownText(
-                                                                text = displayBio,
-                                                                onImageGalleryRequest = { urls, idx ->
-                                                                    activeGalleryItems = urls.map { url -> GalleryItem(url = url, category = GalleryCategory.OTHER, source = "Biyografi") }
-                                                                    activeGalleryIndex = idx
-                                                                }
-                                                            )
-                                                        }
-                                                    }
-                                                }
+                                                )
                                             }
-                                            }
-                                            "Yapımlar" -> {
-                                                if (detail.mediaAppearances.isEmpty()) {
-                                                    Text("Yapım bilgisi bulunmuyor.", color = KitsugiColors.TextSecondary, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 16.dp))
-                                                } else {
-                                                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                                        detail.mediaAppearances.forEach { appearance ->
-                                                            MediaAppearanceRow(appearance = appearance, titleLanguage = titleLanguage, onMediaClick = onMediaClick)
-                                                        }
-                                                    }
-                                                }
+                                            "YapÄ±mlar" -> {
+                                                CharacterAppearancesTabContent(
+                                                    detail = detail,
+                                                    titleLanguage = titleLanguage,
+                                                    onMediaClick = onMediaClick
+                                                )
                                             }
                                             "Seslendirenler" -> {
-                                                if (detail.voiceActors.isEmpty()) {
-                                                    Text("Seslendiren sanatçı bulunmuyor.", color = KitsugiColors.TextSecondary, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 16.dp))
-                                                } else {
-                                                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                                        detail.voiceActors.forEach { actor ->
-                                                            VoiceActorRow(actor = actor, onClick = { onStaffClick(actor.id, actor.source, actor.name, actor.imageUrl) })
-                                                        }
-                                                    }
-                                                }
+                                                CharacterVoiceActorsTabContent(
+                                                    detail = detail,
+                                                    onStaffClick = onStaffClick
+                                                )
                                             }
                                         }
                                         Spacer(modifier = Modifier.height(32.dp))
@@ -595,296 +372,44 @@ fun CharacterDetailPage(
                         ) {
                             // Hero image section
                             item(key = "hero") {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(380.dp)
-                                ) {
-                                    if (!detail.imageUrl.isNullOrBlank()) {
-                                        AsyncImage(
-                                            model = detail.imageUrl,
-                                            contentDescription = detail.name,
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .tvClickable {
-                                                    if (galleryItems.isNotEmpty()) {
-                                                        activeGalleryItems = galleryItems
-                                                        activeGalleryIndex = 0
-                                                    } else {
-                                                        activeGalleryItems = listOfNotNull(detail.imageUrl).map { url -> GalleryItem(url = url, category = GalleryCategory.POSTER, source = "Jikan") }
-                                                        activeGalleryIndex = 0
-                                                    }
-                                                },
-                                            contentScale = ContentScale.Crop
-                                        )
-                                    } else {
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .background(accentColor.copy(alpha = 0.15f)),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text(
-                                                text = detail.name.take(2).uppercase(),
-                                                color = accentColor,
-                                                style = MaterialTheme.typography.displayLarge,
-                                                fontWeight = FontWeight.Black
-                                            )
-                                        }
+                                CharacterPortraitHeroSection(
+                                    detail = detail,
+                                    source = source,
+                                    characterId = characterId,
+                                    accentColor = accentColor,
+                                    isFavourite = isFavourite,
+                                    isAniListSource = isAniListSource,
+                                    galleryItems = galleryItems,
+                                    onBackClick = onBackClick,
+                                    onToggleFavourite = { viewModel.toggleFavourite() },
+                                    onGalleryOpen = { items, idx ->
+                                        activeGalleryItems = items
+                                        activeGalleryIndex = idx
                                     }
-
-                                    // Gradient overlay
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .background(
-                                                Brush.verticalGradient(
-                                                    colors = listOf(
-                                                        KitsugiColors.Background.copy(alpha = 0.05f),
-                                                        KitsugiColors.Background.copy(alpha = 0.30f),
-                                                        KitsugiColors.Background.copy(alpha = 0.72f),
-                                                        KitsugiColors.Background
-                                                    )
-                                                )
-                                            )
-                                    )
-
-                                    // Top Action Bar: Back (left) + Share & Favourite (right)
-                                    Row(
-                                        modifier = Modifier
-                                            .align(Alignment.TopStart)
-                                            .fillMaxWidth()
-                                            .padding(start = 12.dp, end = 12.dp, top = 24.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(40.dp)
-                                                .clip(CircleShape)
-                                                .background(KitsugiColors.Background.copy(alpha = 0.45f)),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            IconButton(onClick = onBackClick) {
-                                                Icon(
-                                                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                                                    contentDescription = "Geri",
-                                                    tint = KitsugiColors.TextPrimary
-                                                )
-                                            }
-                                        }
-
-                                        Row(
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-
-                                            if (!detail.imageUrl.isNullOrBlank()) {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .size(40.dp)
-                                                        .clip(CircleShape)
-                                                        .background(accentColor.copy(alpha = 0.22f)),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    IconButton(onClick = {
-                                                        activeGalleryItems = galleryItems
-                                                        activeGalleryIndex = 0
-                                                    }) {
-                                                        Icon(
-                                                            imageVector = Icons.Rounded.Image,
-                                                            contentDescription = "Galeri",
-                                                            tint = accentColor
-                                                        )
-                                                    }
-                                                }
-                                            }
-
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(40.dp)
-                                                    .clip(CircleShape)
-                                                    .background(KitsugiColors.Background.copy(alpha = 0.45f)),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                IconButton(onClick = {
-                                                    val url = com.kitsugi.animelist.utils.ShareUtils.buildCharacterUrl(source, characterId)
-                                                    com.kitsugi.animelist.utils.ShareUtils.shareText(context, detail.name, url)
-                                                }) {
-                                                    Icon(
-                                                        imageVector = Icons.Rounded.Share,
-                                                        contentDescription = "Paylaş",
-                                                        tint = KitsugiColors.TextPrimary
-                                                    )
-                                                }
-                                            }
-
-                                            if (isAniListSource) {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .size(40.dp)
-                                                        .clip(CircleShape)
-                                                        .background(KitsugiColors.Background.copy(alpha = 0.45f)),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    IconButton(onClick = { viewModel.toggleFavourite() }) {
-                                                        Icon(
-                                                            imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                                                            contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
-                                                            tint = if (isFavourite) accentColor else KitsugiColors.TextPrimary
-                                                        )
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    // Character Header Info
-                                    Column(
-                                        modifier = Modifier
-                                            .align(Alignment.BottomStart)
-                                            .padding(20.dp)
-                                    ) {
-                                        // Source tag/pill
-                                         DetailPill(
-                                             text = source.toFriendlySourceLabel().uppercase(),
-                                             color = accentColor
-                                         )
-
-                                        Spacer(modifier = Modifier.height(10.dp))
-
-                                        Text(
-                                            text = detail.name,
-                                            modifier = Modifier.copyOnDoubleTap(context, detail.name),
-                                            color = KitsugiColors.TextPrimary,
-                                            style = MaterialTheme.typography.headlineMedium,
-                                            fontWeight = FontWeight.Black,
-                                            maxLines = 2,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-
-                                        if (!detail.nativeName.isNullOrBlank()) {
-                                            Spacer(modifier = Modifier.height(4.dp))
-                                            Text(
-                                                text = detail.nativeName,
-                                                modifier = Modifier.copyOnDoubleTap(context, detail.nativeName),
-                                                color = KitsugiColors.TextSecondary,
-                                                style = MaterialTheme.typography.bodyLarge,
-                                                fontWeight = FontWeight.Medium
-                                            )
-                                        }
-                                    }
-                                }
+                                )
                             }
-
-                            // Tabs row
+                            // Tabs sticky header
                             stickyHeader(key = "tabs") {
-                                LaunchedEffect(selectedTab) {
-                                    if (listState.firstVisibleItemIndex > 1) {
-                                        listState.scrollToItem(1)
-                                    }
-                                    tabListState.animateScrollToItem(selectedTab)
-                                }
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(KitsugiColors.Surface.copy(alpha = 0.97f))
-                                ) {
-                                    AnimatedVisibility(
-                                        visible = showFloatingHeader,
-                                        enter = expandVertically() + fadeIn(),
-                                        exit = shrinkVertically() + fadeOut()
-                                    ) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .height(64.dp)
-                                                .background(KitsugiColors.Surface.copy(alpha = 0.92f))
-                                                .padding(horizontal = 8.dp)
-                                        ) {
-                                            IconButton(onClick = onBackClick) {
-                                                Icon(
-                                                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                                                    contentDescription = "Geri",
-                                                    tint = KitsugiColors.TextPrimary
-                                                )
-                                            }
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Text(
-                                                text = detail.name,
-                                                color = KitsugiColors.TextPrimary,
-                                                style = MaterialTheme.typography.titleMedium,
-                                                fontWeight = FontWeight.Black,
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis,
-                                                modifier = Modifier.weight(1f)
-                                            )
-                                            if (!detail.imageUrl.isNullOrBlank()) {
-                                                IconButton(onClick = {
-                                                    activeGalleryItems = galleryItems
-                                                    activeGalleryIndex = 0
-                                                }) {
-                                                    Icon(
-                                                        imageVector = Icons.Rounded.Image,
-                                                        contentDescription = "Galeri",
-                                                        tint = accentColor
-                                                    )
-                                                }
-                                            }
-                                            IconButton(onClick = {
-                                                val url = com.kitsugi.animelist.utils.ShareUtils.buildCharacterUrl(source, characterId)
-                                                com.kitsugi.animelist.utils.ShareUtils.shareText(context, detail.name, url)
-                                            }) {
-                                                Icon(
-                                                    imageVector = Icons.Rounded.Share,
-                                                    contentDescription = "Paylaş",
-                                                    tint = KitsugiColors.TextSecondary
-                                                )
-                                            }
-                                            if (showFavouriteButton) {
-                                                IconButton(onClick = { viewModel.toggleFavourite() }) {
-                                                    Icon(
-                                                        imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                                                        contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
-                                                        tint = if (isFavourite) accentColor else KitsugiColors.TextSecondary
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    LazyRow(
-                                        state = tabListState,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 20.dp, vertical = 10.dp),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        items(tabs.size) { index ->
-                                            val title = tabs[index]
-                                            val isSelected = selectedTab == index
-                                            val bgColor = if (isSelected) accentColor else KitsugiColors.Surface
-                                            val textColor = if (isSelected) KitsugiColors.Background else KitsugiColors.TextSecondary
-
-                                            Box(
-                                                modifier = Modifier
-                                                    .clip(RoundedCornerShape(999.dp))
-                                                    .background(bgColor)
-                                                    .tvClickable(shape = RoundedCornerShape(999.dp)) { coroutineScope.launch { pagerState.animateScrollToPage(index) } }
-                                                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text(
-                                                    text = title,
-                                                    color = textColor,
-                                                    style = MaterialTheme.typography.labelLarge,
-                                                    fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
+                                CharacterDetailStickyHeader(
+                                    detail = detail,
+                                    source = source,
+                                    characterId = characterId,
+                                    tabs = tabs,
+                                    selectedTab = selectedTab,
+                                    showFloatingHeader = showFloatingHeader,
+                                    isFavourite = isFavourite,
+                                    showFavouriteButton = showFavouriteButton,
+                                    galleryItems = galleryItems,
+                                    tabListState = tabListState,
+                                    accentColor = accentColor,
+                                    onBackClick = onBackClick,
+                                    onToggleFavourite = { viewModel.toggleFavourite() },
+                                    onGalleryOpen = { items, idx ->
+                                        activeGalleryItems = items
+                                        activeGalleryIndex = idx
+                                    },
+                                    onTabSelected = { coroutineScope.launch { pagerState.animateScrollToPage(it) } }
+                                )
                             }
 
                             // Tab contents - swipeable HorizontalPager
@@ -950,139 +475,30 @@ fun CharacterDetailPage(
                                                 }
                                         ) {
                                             when (currentTab) {
-                                                "Hakkında" -> { // Hakkında
-                                                    SelectionContainer {
-                                                        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                                                        // Alternative Names if present
-                                                        if (detail.alternativeNames.isNotEmpty()) {
-                                                            Column(
-                                                                modifier = Modifier
-                                                                    .fillMaxWidth()
-                                                                    .clip(RoundedCornerShape(18.dp))
-                                                                    .background(KitsugiColors.Surface)
-                                                                    .padding(16.dp)
-                                                            ) {
-                                                                Text(
-                                                                    text = "Diğer İsimler",
-                                                                    color = KitsugiColors.TextPrimary,
-                                                                    style = MaterialTheme.typography.titleMedium,
-                                                                    fontWeight = FontWeight.Bold
-                                                                )
-                                                                Spacer(modifier = Modifier.height(8.dp))
-                                                                Text(
-                                                                    text = detail.alternativeNames.joinToString(", "),
-                                                                    color = KitsugiColors.TextSecondary,
-                                                                    style = MaterialTheme.typography.bodyMedium
-                                                                )
-                                                            }
+                                                "HakkÄ±nda" -> {
+                                                    CharacterAboutTabContent(
+                                                        detail = detail,
+                                                        translatedBio = translatedBio,
+                                                        preferredTranslator = preferredTranslator,
+                                                        accentColor = accentColor,
+                                                        onGalleryClick = { items, idx ->
+                                                            activeGalleryItems = items
+                                                            activeGalleryIndex = idx
                                                         }
-
-                                                        // Stats/demographics Card (Gender, Age, Birthday, Blood Type)
-                                                        val hasDemographics = detail.gender != null || detail.age != null || detail.birthday != null || detail.bloodType != null
-                                                        if (hasDemographics) {
-                                                            Column(
-                                                                modifier = Modifier
-                                                                    .fillMaxWidth()
-                                                                    .clip(RoundedCornerShape(18.dp))
-                                                                    .background(KitsugiColors.Surface)
-                                                                    .padding(16.dp)
-                                                            ) {
-                                                                Text(
-                                                                    text = "Bilgiler",
-                                                                    color = KitsugiColors.TextPrimary,
-                                                                    style = MaterialTheme.typography.titleMedium,
-                                                                    fontWeight = FontWeight.Bold
-                                                                )
-                                                                Spacer(modifier = Modifier.height(12.dp))
-
-                                                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                                                    if (detail.gender != null) InfoRow(label = "Cinsiyet", value = detail.gender)
-                                                                    if (detail.age != null) InfoRow(label = "Yaş", value = detail.age)
-                                                                    if (detail.birthday != null) InfoRow(label = "Doğum Günü", value = detail.birthday)
-                                                                    if (detail.bloodType != null) InfoRow(label = "Kan Grubu", value = detail.bloodType)
-                                                                }
-                                                            }
-                                                        }
-
-                                                        // Biography/About Card
-                                                        val displayBio = translatedBio ?: detail.biography
-                                                        Column(
-                                                            modifier = Modifier
-                                                                .fillMaxWidth()
-                                                                .clip(RoundedCornerShape(18.dp))
-                                                                .background(KitsugiColors.Surface)
-                                                                .padding(16.dp)
-                                                        ) {
-                                                            Row(
-                                                                modifier = Modifier.fillMaxWidth(),
-                                                                horizontalArrangement = Arrangement.SpaceBetween,
-                                                                verticalAlignment = Alignment.CenterVertically
-                                                            ) {
-                                                                Text(
-                                                                    text = "Biyografi",
-                                                                    color = KitsugiColors.TextPrimary,
-                                                                    style = MaterialTheme.typography.titleMedium,
-                                                                    fontWeight = FontWeight.Bold,
-                                                                    modifier = Modifier.weight(1f)
-                                                                )
-
-                                                                if (!detail.biography.isNullOrBlank()) {
-                                                                    IconButton(
-                                                                        onClick = { context.openTranslator(detail.biography, preferredTranslator) },
-                                                                        modifier = Modifier.size(36.dp)
-                                                                    ) {
-                                                                        Icon(Icons.Rounded.Translate, contentDescription = "Çevir", tint = accentColor)
-                                                                    }
-                                                                    Spacer(modifier = Modifier.width(6.dp))
-                                                                    IconButton(
-                                                                        onClick = {
-                                                                            val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                                                            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("biography", displayBio))
-                                                                            android.widget.Toast.makeText(context, "Panoya kopyalandı", android.widget.Toast.LENGTH_SHORT).show()
-                                                                        },
-                                                                        modifier = Modifier.size(36.dp)
-                                                                    ) {
-                                                                        Icon(Icons.Rounded.ContentCopy, contentDescription = "Kopyala", tint = KitsugiColors.TextSecondary)
-                                                                    }
-                                                                }
-                                                            }
-                                                            Spacer(modifier = Modifier.height(8.dp))
-                                                            if (displayBio.isNullOrBlank()) {
-                                                                Text("Biyografi bulunmuyor.", color = KitsugiColors.TextMuted, style = MaterialTheme.typography.bodyMedium)
-                                                            } else {
-                                                                KitsugiMarkdownText(
-                                                                    text = displayBio,
-                                                                    onImageGalleryRequest = { urls, idx ->
-                                                                        activeGalleryItems = urls.map { url -> GalleryItem(url = url, category = GalleryCategory.OTHER, source = "Biyografi") }
-                                                                        activeGalleryIndex = idx
-                                                                    }
-                                                                )
-                                                            }
-                                                        }
-                                                    }
+                                                    )
                                                 }
+                                                "YapÄ±mlar" -> {
+                                                    CharacterAppearancesTabContent(
+                                                        detail = detail,
+                                                        titleLanguage = titleLanguage,
+                                                        onMediaClick = onMediaClick
+                                                    )
                                                 }
-                                                "Yapımlar" -> { // Yapımlar
-                                                    if (detail.mediaAppearances.isEmpty()) {
-                                                        Text("Yapım bilgisi bulunmuyor.", color = KitsugiColors.TextSecondary, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 16.dp))
-                                                    } else {
-                                                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                                            detail.mediaAppearances.forEach { appearance ->
-                                                                MediaAppearanceRow(appearance = appearance, titleLanguage = titleLanguage, onMediaClick = onMediaClick)
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                "Seslendirenler" -> { // Seslendirenler
-                                                    if (detail.voiceActors.isEmpty()) {
-                                                        Text("Seslendiren sanatçı bulunmuyor.", color = KitsugiColors.TextSecondary, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 16.dp))
-                                                    } else {
-                                                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                                            detail.voiceActors.forEach { actor ->
-                                                                VoiceActorRow(actor = actor, onClick = { onStaffClick(actor.id, actor.source, actor.name, actor.imageUrl) })
-                                                            }
-                                                        }
-                                                    }
+                                                "Seslendirenler" -> {
+                                                    CharacterVoiceActorsTabContent(
+                                                        detail = detail,
+                                                        onStaffClick = onStaffClick
+                                                    )
                                                 }
                                             }
                                             Spacer(modifier = Modifier.height(50.dp))

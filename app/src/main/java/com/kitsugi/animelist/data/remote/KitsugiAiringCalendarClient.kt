@@ -103,9 +103,10 @@ class KitsugiAiringCalendarClient {
 
     private fun parseDateToAiringAtAndDayOfWeek(dateStr: String, shiftToCurrentWeek: Boolean = false): Pair<Long, Int> {
         if (dateStr.isBlank()) {
+            // Tarihi bilinmeyen içerikler: çok uzak gelecek olarak işaretle ki filtrelensin
             val now = System.currentTimeMillis()
             val day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
-            return Pair(now / 1000L, day)
+            return Pair((now / 1000L) + 365 * 24 * 3600L, day)
         }
         return try {
             val parts = dateStr.split("-")
@@ -113,19 +114,22 @@ class KitsugiAiringCalendarClient {
                 val year = parts[0].toInt()
                 val month = parts[1].toInt() - 1
                 val day = parts[2].toInt()
-                
+
+                // Kesin saat bilinmediğinden gün başlangıcını (00:00) epoch olarak kullan
+                // Bu sayede aynı gün içindeki tüm içerikler birbirinden farklı epoch'a sahip olmaz
                 val cal = Calendar.getInstance().apply {
                     clear()
-                    set(year, month, day, 20, 0, 0)
+                    set(year, month, day, 0, 0, 0)
+                    set(Calendar.MILLISECOND, 0)
                 }
                 val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
-                
+
                 if (shiftToCurrentWeek) {
                     val thisWeekCal = Calendar.getInstance()
                     val today = thisWeekCal.get(Calendar.DAY_OF_WEEK)
                     val diff = dayOfWeek - today
                     thisWeekCal.add(Calendar.DAY_OF_YEAR, diff)
-                    thisWeekCal.set(Calendar.HOUR_OF_DAY, 20)
+                    thisWeekCal.set(Calendar.HOUR_OF_DAY, 0)
                     thisWeekCal.set(Calendar.MINUTE, 0)
                     thisWeekCal.set(Calendar.SECOND, 0)
                     thisWeekCal.set(Calendar.MILLISECOND, 0)
@@ -136,6 +140,7 @@ class KitsugiAiringCalendarClient {
             } else {
                 val now = System.currentTimeMillis()
                 val day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
+                // Bilinmeyen format — filtrelenebilmesi için şimdiki zaman döndür
                 Pair(now / 1000L, day)
             }
         } catch (e: Exception) {
@@ -175,13 +180,22 @@ class KitsugiAiringCalendarClient {
         val apiKey = TmdbApiClient.getActiveApiKey()
         val language = TmdbApiClient.getActiveLanguage()
         val list = mutableListOf<AiringEntry>()
-        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
+        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+        val today = sdf.format(java.util.Date())
+        val cal90 = java.util.Calendar.getInstance().apply { add(java.util.Calendar.DAY_OF_YEAR, 90) }
+        val maxDate = sdf.format(cal90.time)
 
-        val tvUrl = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&first_air_date.gte=$today&sort_by=first_air_date.asc&page=1"
-        val movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&primary_release_date.gte=$today&sort_by=primary_release_date.asc&page=1"
+        // Fetch upcoming TV shows — 2 pages for variety
+        val tvUrl1 = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&first_air_date.gte=$today&first_air_date.lte=$maxDate&sort_by=first_air_date.asc&page=1"
+        val tvUrl2 = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=$language&first_air_date.gte=$today&first_air_date.lte=$maxDate&sort_by=first_air_date.asc&page=2"
+        // Fetch upcoming movies — 2 pages for variety
+        val movieUrl1 = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&primary_release_date.gte=$today&primary_release_date.lte=$maxDate&sort_by=primary_release_date.asc&page=1"
+        val movieUrl2 = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=$language&primary_release_date.gte=$today&primary_release_date.lte=$maxDate&sort_by=primary_release_date.asc&page=2"
 
-        parseTmdbList(tvUrl, isMovie = false, outList = list)
-        parseTmdbList(movieUrl, isMovie = true, outList = list)
+        parseTmdbList(tvUrl1, isMovie = false, outList = list)
+        parseTmdbList(tvUrl2, isMovie = false, outList = list)
+        parseTmdbList(movieUrl1, isMovie = true, outList = list)
+        parseTmdbList(movieUrl2, isMovie = true, outList = list)
 
         val nowSeconds = System.currentTimeMillis() / 1000L
         return list

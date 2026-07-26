@@ -44,7 +44,7 @@ class ApiResultDetailViewModel(application: Application) : AndroidViewModel(appl
     private val _detailState = MutableStateFlow<KitsugiMediaDetail?>(null)
     val detailState: StateFlow<KitsugiMediaDetail?> = _detailState.asStateFlow()
 
-    private val _detailLoading = MutableStateFlow(false)
+    private val _detailLoading = MutableStateFlow(true)
     val detailLoading: StateFlow<Boolean> = _detailLoading.asStateFlow()
 
     private val _translatedSynopsis = MutableStateFlow<String?>(null)
@@ -93,8 +93,12 @@ class ApiResultDetailViewModel(application: Application) : AndroidViewModel(appl
     private val _galleryItems = MutableStateFlow<List<GalleryItem>>(emptyList())
     val galleryItems: StateFlow<List<GalleryItem>> = _galleryItems.asStateFlow()
 
-    private val _galleryLoading = MutableStateFlow(false)
+    private val _galleryLoading = MutableStateFlow(true)
     val galleryLoading: StateFlow<Boolean> = _galleryLoading.asStateFlow()
+
+    /** Her yeni sonuç navigasyonunda artar — UI bu trigger’ı izleyerek tab’ı 0’a sıfırlar. */
+    private val _pageResetTrigger = MutableStateFlow(0)
+    val pageResetTrigger: StateFlow<Int> = _pageResetTrigger.asStateFlow()
 
     // --- Cache / Lock Key ---
     private var currentFetchKey: String? = null
@@ -109,6 +113,7 @@ class ApiResultDetailViewModel(application: Application) : AndroidViewModel(appl
             DetailCache.removeMediaRecommendations(result.source, result.malId)
             DetailCache.removeMediaReviews(result.source, result.malId)
             DetailCache.removeMediaEpisodes(result.source, result.malId)
+            DetailCache.clearFanartCache() // Fanart galeri önbelleğini temizle
         }
 
         val newKey = "${result.source}:${result.malId}:${result.type.name}"
@@ -119,6 +124,7 @@ class ApiResultDetailViewModel(application: Application) : AndroidViewModel(appl
 
         Log.d(TAG, "loadResult: New key=$newKey (was $currentFetchKey)")
         currentFetchKey = newKey
+        _pageResetTrigger.value += 1 // Signal UI to scroll back to first tab
 
         val cachedDetail = DetailCache.getMediaDetail(result.source, result.malId)
         val cachedSynopsisTranslation = DetailCache.getTranslation("synopsis", result.source, result.malId)
@@ -130,7 +136,7 @@ class ApiResultDetailViewModel(application: Application) : AndroidViewModel(appl
         _episodeRatings.value = emptyMap()
         _resolvedTmdbId.value = null
         _galleryItems.value = emptyList()
-        _galleryLoading.value = false
+        _galleryLoading.value = true
 
         val cachedCharacters = DetailCache.getMediaCharacters(result.source, result.malId)
         if (cachedCharacters != null && cachedCharacters.isEmpty()) {
@@ -179,6 +185,7 @@ class ApiResultDetailViewModel(application: Application) : AndroidViewModel(appl
             _episodesState.value = if (cachedEpisodes != null) DetailTabState.Success(cachedEpisodes) else DetailTabState.Loading
         }
 
+        // Detail fetch — sayfa render için kritik; öncelikli coroutine
         viewModelScope.launch {
             try {
                 fetchDetail(result)
@@ -186,6 +193,11 @@ class ApiResultDetailViewModel(application: Application) : AndroidViewModel(appl
                 Log.e(TAG, "Error fetching detail: ${e.message}", e)
                 _detailLoading.value = false
             }
+        }
+
+        // Galeri + Fanart.tv — detail ile paralel; tamamlandığında sayfa
+        // zaten açık olduğundan sadece galeri bölümü güncellenir.
+        viewModelScope.launch {
             try {
                 _galleryLoading.value = true
                 fetchFanartGallery(result)
@@ -194,6 +206,10 @@ class ApiResultDetailViewModel(application: Application) : AndroidViewModel(appl
             } finally {
                 _galleryLoading.value = false
             }
+        }
+
+        // MDBList puanları — bağımsız, gecikme kabul edilebilir
+        viewModelScope.launch {
             try {
                 fetchMdbListRatings(result)
             } catch (e: Exception) {
@@ -201,6 +217,7 @@ class ApiResultDetailViewModel(application: Application) : AndroidViewModel(appl
             }
         }
 
+        // Logo — bağımsız, en düşük öncelikli
         viewModelScope.launch {
             try {
                 fetchLogo(result, showAnimeLogos)

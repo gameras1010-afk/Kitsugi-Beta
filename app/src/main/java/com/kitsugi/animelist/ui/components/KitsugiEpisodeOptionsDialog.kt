@@ -53,6 +53,7 @@ fun KitsugiEpisodeOptionsDialog(
     titleNative: String? = null,
     startYear: Int? = null,
     isMovie: Boolean = false,
+    seasonNumber: Int = 1,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
@@ -126,7 +127,7 @@ fun KitsugiEpisodeOptionsDialog(
                                 aniListId = aniListId,
                                 tmdbId = tmdbId,
                                 episode = episodeNumber,
-                                season = 1,
+                                season = seasonNumber,
                                 isMovie = isMovie,
                                 title = animeTitle,
                                 posterUrl = posterUrl,

@@ -3,6 +3,33 @@ package com.kitsugi.animelist.data.remote
 import java.util.concurrent.ConcurrentHashMap
 
 object DetailCache {
+
+    // ─── Episode Ratings (tmdbId → CacheEntry) ───────────────────────────────
+    data class RatingCacheEntry(
+        val ratings: Map<Pair<Int, Int>, Double>,
+        val expiresAtMs: Long
+    )
+    val episodeRatingsCache = ConcurrentHashMap<Int, RatingCacheEntry>()
+
+    // ─── MAL ID → TMDB ID mapping ────────────────────────────────────────────
+    // Negative keys = AniList IDs (stored as -aniListId)
+    val malToTmdbCache = ConcurrentHashMap<Int, Int?>()
+
+    // ─── TMDB ID → TVDB ID mapping ───────────────────────────────────────────
+    val tmdbToTvdbCache = ConcurrentHashMap<Int, Int?>()
+
+    // ─── TMDB ID → Logo URL mapping ──────────────────────────────────────────
+    val logoCache = ConcurrentHashMap<Int, String?>()
+
+    // ─── TMDB (tmdbId, season) → episode DTOs ────────────────────────────────
+    data class TmdbEpisodeDtoCached(
+        val episodeNumber: Int,
+        val name: String?,
+        val overview: String?,
+        val stillPath: String?,
+        val airDate: String?
+    )
+    val tmdbEpisodesCache = ConcurrentHashMap<Pair<Int, Int>, List<TmdbEpisodeDtoCached>>()
     private val mediaDetails = ConcurrentHashMap<String, KitsugiMediaDetail>()
     private val mediaCharacters = ConcurrentHashMap<String, List<KitsugiCharacter>>()
     private val mediaStaff = ConcurrentHashMap<String, List<KitsugiStaff>>()
@@ -161,6 +188,8 @@ object DetailCache {
         studioDetails[makeKey(source, id)] = detail
     }
 
+    private val fanartGalleryCache = ConcurrentHashMap<String, List<GalleryItem>>()
+
     // Translations (Synopsis / Biography)
     fun getTranslation(type: String, source: String, id: Int): String? {
         val key = "${type.lowercase()}_${makeKey(source, id)}"
@@ -172,7 +201,27 @@ object DetailCache {
         translations[key] = translation
     }
 
-    // Clear all
+    // Fanart.tv Gallery Cache
+    fun getFanartGallery(isMovie: Boolean, id: Int): List<GalleryItem>? {
+        val key = "${if (isMovie) "movie" else "tv"}_$id"
+        return fanartGalleryCache[key]
+    }
+
+    fun putFanartGallery(isMovie: Boolean, id: Int, list: List<GalleryItem>) {
+        val key = "${if (isMovie) "movie" else "tv"}_$id"
+        fanartGalleryCache[key] = list
+    }
+
+    fun removeFanartGallery(isMovie: Boolean, id: Int) {
+        val key = "${if (isMovie) "movie" else "tv"}_$id"
+        fanartGalleryCache.remove(key)
+    }
+
+    fun clearFanartCache() {
+        fanartGalleryCache.clear()
+    }
+
+    // Clear all (called on app-level reset / force refresh from settings)
     fun clear() {
         mediaDetails.clear()
         mediaCharacters.clear()
@@ -186,5 +235,11 @@ object DetailCache {
         staffDetails.clear()
         studioDetails.clear()
         translations.clear()
+        fanartGalleryCache.clear()
+        episodeRatingsCache.clear()
+        malToTmdbCache.clear()
+        tmdbToTvdbCache.clear()
+        logoCache.clear()
+        tmdbEpisodesCache.clear()
     }
 }

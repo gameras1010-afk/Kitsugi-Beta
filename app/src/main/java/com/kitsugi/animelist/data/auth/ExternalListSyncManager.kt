@@ -31,9 +31,11 @@ object ExternalListSyncManager {
 
             val realMalId = entry.malId?.takeIf { it.isRealMalId() }
 
-            // Desteklenen platformlara göre senkronizasyon kararı ver
-            val shouldSyncAniList = syncEnabledAniList && !aniListToken.isNullOrBlank() && (entry.source == "anilist" || realMalId != null)
-            val shouldSyncMal = syncEnabledMal && !malToken.isNullOrBlank() && (entry.source == "mal" || entry.source == "jikan" || (entry.source == "anilist" && realMalId != null))
+            // AniList: source anilist ise, gerçek malId varsa VEYA daha önce kaydedilmiş aniListEntryId varsa sync yap
+            val shouldSyncAniList = syncEnabledAniList && !aniListToken.isNullOrBlank() &&
+                (entry.source == "anilist" || realMalId != null || entry.aniListEntryId != null)
+            val shouldSyncMal = syncEnabledMal && !malToken.isNullOrBlank() &&
+                (entry.source == "mal" || entry.source == "jikan" || (entry.source == "anilist" && realMalId != null))
             val shouldSyncSimkl = !simklToken.isNullOrBlank() && entry.source == "simkl" && entry.simklId != null && entry.simklId > 0
 
             if (shouldSyncAniList) {
@@ -126,9 +128,11 @@ object ExternalListSyncManager {
 
             val realMalId = entry.malId?.takeIf { it.isRealMalId() }
 
-            // Desteklenen platformlara göre silme kararı ver
-            val shouldDeleteAniList = syncEnabledAniList && !aniListToken.isNullOrBlank() && (entry.source == "anilist" || realMalId != null)
-            val shouldDeleteMal = syncEnabledMal && !malToken.isNullOrBlank() && (entry.source == "mal" || entry.source == "jikan" || (entry.source == "anilist" && realMalId != null))
+            // AniList: source anilist ise, gerçek malId varsa VEYA daha önce kaydedilmiş aniListEntryId varsa sil
+            val shouldDeleteAniList = syncEnabledAniList && !aniListToken.isNullOrBlank() &&
+                (entry.source == "anilist" || realMalId != null || entry.aniListEntryId != null)
+            val shouldDeleteMal = syncEnabledMal && !malToken.isNullOrBlank() &&
+                (entry.source == "mal" || entry.source == "jikan" || (entry.source == "anilist" && realMalId != null))
             val shouldDeleteSimkl = !simklToken.isNullOrBlank() && entry.source == "simkl" && entry.simklId != null && entry.simklId > 0
 
             if (shouldDeleteAniList) {

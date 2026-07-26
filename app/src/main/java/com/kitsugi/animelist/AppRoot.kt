@@ -178,10 +178,10 @@ fun AppRoot(
     }
 
     val mediaRepository = remember {
+        val db = KitsugiDatabase.getDatabase(context.applicationContext)
         MediaEntryRepository(
-            dao = KitsugiDatabase
-                .getDatabase(context.applicationContext)
-                .mediaEntryDao(),
+            dao = db.mediaEntryDao(),
+            pendingSyncDao = db.pendingSyncDao(),
             context = context.applicationContext,
             onExternalSyncMessage = { message ->
                 appViewModel.showSnackbarMessage(message)

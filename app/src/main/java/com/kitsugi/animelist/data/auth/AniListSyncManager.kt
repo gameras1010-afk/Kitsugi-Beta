@@ -582,7 +582,12 @@ object AniListSyncManager {
     }
 
     private fun String?.toAniListFuzzyDate(): JSONObject? {
-        if (this.isNullOrBlank()) return null
+        if (this.isNullOrBlank()) {
+            return JSONObject()
+                .put("year", 0)
+                .put("month", 0)
+                .put("day", 0)
+        }
 
         val parts = split("-")
         if (parts.size != 3) return null

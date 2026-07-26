@@ -79,7 +79,15 @@ internal object CsEpisodeMatcher {
             }
         }
 
-        // Fallback 2: match by episode number only (season-agnostic)
+        // Fallback 2: match by episode number only (season-agnostic) within preferred bucket
+        if (match == null) {
+            match = preferredEpisodes.find { ep ->
+                (getEpisodeNumber(ep) ?: -1) == episode
+            }
+            if (match != null) Log.d(TAG, "Preferred bucket sezon-bağımsız eşleşme: ep=$episode")
+        }
+
+        // Fallback 3: match by episode number across all buckets
         if (match == null) {
             match = allEpisodes.find { ep ->
                 (getEpisodeNumber(ep) ?: -1) == episode
@@ -87,7 +95,24 @@ internal object CsEpisodeMatcher {
             if (match != null) Log.d(TAG, "Sezon bağımsız bölüm eşleşmesi kullanıldı: ep=$episode")
         }
 
-        // Fallback 3: if there's exactly 1 episode and we want ep 1
+        // Fallback 4: none of the episodes have season/episode fields set at all
+        // (common in Turkish plugins) — use 1-based index within preferred bucket.
+        // This avoids S2 requests falling back to S1 episodes when episodes are
+        // stored as a flat list without metadata.
+        if (match == null && preferredEpisodes.isNotEmpty()) {
+            val allHaveNoMeta = preferredEpisodes.all { ep ->
+                getEpisodeNumber(ep) == null && getEpisodeSeason(ep) == null
+            }
+            if (allHaveNoMeta) {
+                val idx = episode - 1  // episode is 1-based
+                if (idx in preferredEpisodes.indices) {
+                    match = preferredEpisodes[idx]
+                    Log.d(TAG, "İndeks-bazlı fallback kullanıldı (meta yok): bucket[${idx}] → ep=$episode")
+                }
+            }
+        }
+
+        // Fallback 5: if there's exactly 1 episode and we want ep 1
         if (match == null && episode == 1 && allEpisodes.size == 1) {
             match = allEpisodes.first()
             Log.d(TAG, "Tek bölüm fallback kullanıldı")
@@ -141,25 +166,33 @@ internal object CsEpisodeMatcher {
     }
 
     private fun getField(obj: Any, name: String): Int? {
+        // Walk the class hierarchy to find the field
+        var clazz: Class<*>? = obj.javaClass
+        while (clazz != null) {
+            try {
+                val field = clazz.getDeclaredField(name)
+                field.isAccessible = true
+                val value = field.get(obj)
+                return when (value) {
+                    is Number -> value.toInt()
+                    is String -> value.toIntOrNull()
+                    else -> value?.toString()?.toIntOrNull()
+                }
+            } catch (_: NoSuchFieldException) {
+                clazz = clazz.superclass
+            } catch (_: Exception) {
+                break
+            }
+        }
+        // Fallback: try getter method
         return try {
-            val field = obj.javaClass.getDeclaredField(name)
-            field.isAccessible = true
-            val value = field.get(obj)
+            val getter = obj.javaClass.getMethod("get${name.replaceFirstChar { it.uppercase() }}")
+            val value = getter.invoke(obj)
             when (value) {
                 is Number -> value.toInt()
                 is String -> value.toIntOrNull()
                 else -> value?.toString()?.toIntOrNull()
             }
-        } catch (_: Exception) {
-            try {
-                val method = obj.javaClass.getMethod("get${name.replaceFirstChar { it.uppercase() }}")
-                val value = method.invoke(obj)
-                when (value) {
-                    is Number -> value.toInt()
-                    is String -> value.toIntOrNull()
-                    else -> value?.toString()?.toIntOrNull()
-                }
-            } catch (_: Exception) { null }
-        }
+        } catch (_: Exception) { null }
     }
 }

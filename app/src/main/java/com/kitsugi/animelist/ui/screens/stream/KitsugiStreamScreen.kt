@@ -119,6 +119,9 @@ fun KitsugiStreamScreen(
     val playerPrefs    = remember { context.getSharedPreferences("MyWebViewPrefs", Context.MODE_PRIVATE) }
     val appSettings    by dataStore.settingsFlow.collectAsState(initial = AppSettings())
 
+    // ── Race condition guard: her yeni stream seçiminde öncekini iptal et ──────
+    var activeStreamJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
+
     var selectedAddonFilter by remember { mutableStateOf<String?>(null) }
     var resolvingSource     by remember { mutableStateOf<StreamSource?>(null) }
     var resolvingError      by remember { mutableStateOf<String?>(null) }
@@ -264,8 +267,18 @@ fun KitsugiStreamScreen(
                 resolvingError = "Debrid API anahtarı gerekli."
                 return@StreamScreenContent
             }
-            resolvingSource = source; resolvingError = null
-            scope.launch {
+
+            // Önceki işlemi iptal et (ikinci video tıklamasında crash'i önler)
+            activeStreamJob?.cancel()
+
+            // Direkt URL'si olan kaynaklar (CS3 dahil) için çözümleme overlay'i gerekmez
+            val needsResolve = source.url.isNullOrBlank() && !source.infoHash.isNullOrBlank()
+            if (needsResolve) {
+                resolvingSource = source
+            }
+            resolvingError = null
+
+            val job = scope.launch {
                 val resolvedUrlDeferred = async(Dispatchers.IO) {
                     repository.resolveStreamUrl(source)
                 }
@@ -363,6 +376,7 @@ fun KitsugiStreamScreen(
 
                 handlePlayStream(updatedSource, resolvedUrl)
             }
+            activeStreamJob = job
         },
         onBack = onBack,
         resolvingSource = resolvingSource, resolvingError = resolvingError,

@@ -25,7 +25,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         ExploreCacheEntity::class,           // 📂 Explore page cache
         PersistentDetailCacheEntity::class   // 📂 Media details cache
     ],
-    version = 24,
+    version = 25,
     exportSchema = true  // T3-03/TASK-106: KSP → $projectDir/schemas/ konumuna yazar
 )
 abstract class KitsugiDatabase : RoomDatabase() {
@@ -356,6 +356,13 @@ abstract class KitsugiDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_24_25 = object : Migration(24, 25) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE media_meta_cache ADD COLUMN tvdbId INTEGER DEFAULT NULL")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_media_meta_cache_tvdbId ON media_meta_cache(tvdbId)")
+            }
+        }
+
         fun getDatabase(context: Context): KitsugiDatabase {
             return INSTANCE ?: synchronized(this) {
                 val builder = Room.databaseBuilder(
@@ -385,7 +392,8 @@ abstract class KitsugiDatabase : RoomDatabase() {
                         MIGRATION_20_21,    // ✨ Arama geçmişi
                         MIGRATION_21_22,   // 🎬 İzleme geçmişi
                         MIGRATION_22_23,   // 📹 Video cache/çözümleme
-                        MIGRATION_23_24    // 📂 Üçlü Fallback / Explore Cache
+                        MIGRATION_23_24,    // 📂 Üçlü Fallback / Explore Cache
+                        MIGRATION_24_25    // 📂 TVDB ID Caching
                     )
                 
                 // T3-03: Güvenlik sertleştirmesi — Üretim sürümünde verilerin kazara sıfırlanmasını engeller.

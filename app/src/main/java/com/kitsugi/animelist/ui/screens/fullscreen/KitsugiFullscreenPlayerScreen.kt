@@ -1017,9 +1017,9 @@ fun KitsugiFullscreenPlayerScreen(
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // PauseOverlay
+                    // PauseOverlay — buffering veya çözümleme sırasında gösterme
                     PauseOverlay(
-                        visible = !isPlayingState && activePanel == PlayerPanel.NONE && !isInPipMode,
+                        visible = !isPlayingState && !isBufferingState && !isResolvingStream && activePanel == PlayerPanel.NONE && !isInPipMode,
                         onClose = { playerEngine.play() },
                         title = animeTitle.ifBlank { currentTitle },
                         posterUrl = posterUrl,
@@ -1394,7 +1394,17 @@ fun KitsugiFullscreenPlayerScreen(
 
                     // Buffering overlay
                     if (isBufferingState && !isInPipMode) {
-                        PlayerBufferingView()
+                        PlayerBufferingView(
+                            isPlaying = isPlayingState,
+                            onPlayPauseClick = {
+                                if (playerEngine.isPlaying) {
+                                    playerEngine.pause()
+                                } else {
+                                    playerEngine.play()
+                                }
+                                resetHideTimer()
+                            }
+                        )
                     }
 
                     // Slide-out Settings Panels

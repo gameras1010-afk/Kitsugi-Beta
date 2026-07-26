@@ -28,9 +28,10 @@ class MyListViewModel(application: Application) : AndroidViewModel(application) 
     // ─── Repository & Flow ───────────────────────────────────────────────────
     // Repository hemen oluşturuluyor; entriesFlow her zaman non-null ve hazır.
     private val repository: MediaEntryRepository = run {
-        val dao = KitsugiDatabase.getDatabase(context).mediaEntryDao()
+        val db = KitsugiDatabase.getDatabase(context)
         MediaEntryRepository(
-            dao = dao,
+            dao = db.mediaEntryDao(),
+            pendingSyncDao = db.pendingSyncDao(),
             context = context,
             onExternalSyncMessage = { msg ->
                 viewModelScope.launch { _syncMessages.send(msg) }

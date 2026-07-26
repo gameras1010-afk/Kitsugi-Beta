@@ -53,7 +53,7 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
     private val _detailState = MutableStateFlow<KitsugiMediaDetail?>(null)
     val detailState: StateFlow<KitsugiMediaDetail?> = _detailState.asStateFlow()
 
-    private val _detailLoading = MutableStateFlow(false)
+    private val _detailLoading = MutableStateFlow(true)
     val detailLoading: StateFlow<Boolean> = _detailLoading.asStateFlow()
 
     private val _synopsisState = MutableStateFlow<SynopsisState>(SynopsisState.Loading)
@@ -108,8 +108,12 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
     private val _galleryItems = MutableStateFlow<List<GalleryItem>>(emptyList())
     val galleryItems: StateFlow<List<GalleryItem>> = _galleryItems.asStateFlow()
 
-    private val _galleryLoading = MutableStateFlow(false)
+    private val _galleryLoading = MutableStateFlow(true)
     val galleryLoading: StateFlow<Boolean> = _galleryLoading.asStateFlow()
+
+    /** Her yeni entry navigasyonunda artar — UI bu trigger’ı izleyerek tab’ı 0’a sıfırlar. */
+    private val _pageResetTrigger = MutableStateFlow(0)
+    val pageResetTrigger: StateFlow<Int> = _pageResetTrigger.asStateFlow()
 
     // --- Cache / Lock Key ---
     private var currentFetchKey: String? = null
@@ -137,6 +141,7 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
             DetailCache.removeMediaRecommendations(entry.source, stableId)
             DetailCache.removeMediaReviews(entry.source, stableId)
             DetailCache.removeMediaEpisodes(entry.source, stableId)
+            DetailCache.clearFanartCache() // Fanart galeri önbelleğini temizle
         }
 
         val newKey = "${entry.id}:${entry.source}:${entry.malId}"
@@ -147,6 +152,7 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
 
         Log.d(TAG, "loadEntry: New key=$newKey (was $currentFetchKey)")
         currentFetchKey = newKey
+        _pageResetTrigger.value += 1 // Signal UI to scroll back to first tab
 
         // Reset states
         val cachedDetail = DetailCache.getMediaDetail(entry.source, entry.malId ?: 0)
@@ -167,7 +173,7 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
         _episodeRatings.value = emptyMap()
         _resolvedTmdbId.value = null
         _galleryItems.value = emptyList()
-        _galleryLoading.value = false
+        _galleryLoading.value = true
 
         // Reset tab states to either cached values or Loading
         val malId = entry.malId ?: 0
@@ -217,8 +223,7 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
             _episodesState.value = if (cachedEpisodes != null) DetailTabState.Success(cachedEpisodes) else DetailTabState.Loading
         }
 
-        // Run fetches in view model scope
-        // fetchDetail önce tamamlanır; TMDB'den Türkçe synopsis gelirse fetchSynopsis onu görür.
+        // Detail fetch — sayfa render için kritik; öncelikli coroutine
         viewModelScope.launch {
             try {
                 fetchDetail(entry)
@@ -226,6 +231,11 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
                 Log.e(TAG, "Error fetching detail: ${e.message}", e)
                 _detailLoading.value = false
             }
+        }
+
+        // Galeri + Fanart.tv — detail ile paralel; tamamlandığında sayfa
+        // zaten açık olduğundan sadece galeri bölümü güncellenir.
+        viewModelScope.launch {
             try {
                 _galleryLoading.value = true
                 fetchFanartGallery(entry)
@@ -234,11 +244,19 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
             } finally {
                 _galleryLoading.value = false
             }
+        }
+
+        // Synopsis — bağımsız
+        viewModelScope.launch {
             try {
                 fetchSynopsis(entry)
             } catch (e: Exception) {
                 Log.e(TAG, "Error fetching synopsis: ${e.message}", e)
             }
+        }
+
+        // MDBList puanları — bağımsız, gecikme kabul edilebilir
+        viewModelScope.launch {
             try {
                 fetchMdbListRatingsForEntry(entry)
             } catch (e: Exception) {
@@ -246,6 +264,7 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
             }
         }
 
+        // Logo — bağımsız, en düşük öncelikli
         viewModelScope.launch {
             try {
                 fetchLogo(entry, showAnimeLogos)
@@ -492,12 +511,14 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
     private fun determineCategory(url: String, defaultCategory: GalleryCategory): GalleryCategory {
         val lowerUrl = url.lowercase()
         return when {
-            lowerUrl.contains("logo") || lowerUrl.contains("clearart") -> GalleryCategory.LOGO
+            lowerUrl.contains("clearart")                                                                       -> GalleryCategory.CLEARART
+            lowerUrl.contains("logo")                                                                           -> GalleryCategory.LOGO
             lowerUrl.contains("backdrop") || lowerUrl.contains("background") || lowerUrl.contains("/w1280") || lowerUrl.contains("showbackground") -> GalleryCategory.BACKDROP
+            lowerUrl.contains("square")                                                                         -> GalleryCategory.SQUARE
             lowerUrl.contains("poster") || lowerUrl.contains("/w780") || lowerUrl.contains("/w500") || lowerUrl.contains("/w342") || lowerUrl.contains("coverimage") || lowerUrl.contains("large_image_url") -> GalleryCategory.POSTER
-            lowerUrl.contains("character") || lowerUrl.contains("actor") || lowerUrl.contains("voiceactor") -> GalleryCategory.CHARACTER
+            lowerUrl.contains("character") || lowerUrl.contains("actor") || lowerUrl.contains("voiceactor")    -> GalleryCategory.CHARACTER
             lowerUrl.contains("thumb") || lowerUrl.contains("still") || lowerUrl.contains("/w300") || lowerUrl.contains("/w185") -> GalleryCategory.THUMBNAIL
-            lowerUrl.contains("banner") -> GalleryCategory.BANNER
+            lowerUrl.contains("banner")                                                                         -> GalleryCategory.BANNER
             else -> defaultCategory
         }
     }

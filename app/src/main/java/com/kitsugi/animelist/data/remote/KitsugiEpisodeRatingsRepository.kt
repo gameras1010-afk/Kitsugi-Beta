@@ -34,10 +34,7 @@ object KitsugiEpisodeRatingsRepository {
     private const val TAG = "KitsugiEpisodeRatings"
     private const val CACHE_TTL_MS = 30L * 60L * 1000L // 30 dakika
 
-    private data class CacheEntry(
-        val ratings: Map<Pair<Int, Int>, Double>,
-        val expiresAtMs: Long
-    )
+
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val mutex = Mutex()
@@ -78,18 +75,19 @@ object KitsugiEpisodeRatingsRepository {
         }
     }
 
-    // tmdbId → ratings önbelleği
-    private val ratingsCache = mutableMapOf<Int, CacheEntry>()
+    // ── All caches are consolidated in DetailCache (app-lifetime singleton) ──
+    // References kept as local aliases for readability
+    private val ratingsCache get() = DetailCache.episodeRatingsCache
     private val inFlight = mutableMapOf<Int, Deferred<Map<Pair<Int, Int>, Double>>>()
 
     // malId → tmdbId önbelleği (ARM API sonuçları)
-    private val malToTmdbCache = mutableMapOf<Int, Int?>()
+    private val malToTmdbCache get() = DetailCache.malToTmdbCache
 
-    // tmdbId → tvdbId önbelleği (ARM API üzerinden alınan thetvdb alanı)
-    private val tmdbToTvdbCache = mutableMapOf<Int, Int?>()
+    // tmdbId → tvdbId önbelleği
+    private val tmdbToTvdbCache get() = DetailCache.tmdbToTvdbCache
 
-    // tmdbId → logo URL önbelleği (SeriesGraph /api/shows/{id} → logo_path → TMDB CDN)
-    private val logoCache = mutableMapOf<Int, String?>()
+    // tmdbId → logo URL önbelleği
+    private val logoCache get() = DetailCache.logoCache
     private val logoInFlight = mutableMapOf<Int, Deferred<String?>>()
 
     data class TmdbEpisodeDto(
@@ -100,8 +98,17 @@ object KitsugiEpisodeRatingsRepository {
         val airDate: String?
     )
 
-    private val tmdbEpisodesCache = mutableMapOf<Pair<Int, Int>, List<TmdbEpisodeDto>>()
     private val tmdbEpisodesInFlight = mutableMapOf<Pair<Int, Int>, Deferred<List<TmdbEpisodeDto>>>()
+
+    // Helper to convert between TmdbEpisodeDto and DetailCache.TmdbEpisodeDtoCached
+    private fun TmdbEpisodeDto.toCached() = DetailCache.TmdbEpisodeDtoCached(
+        episodeNumber = episodeNumber, name = name, overview = overview,
+        stillPath = stillPath, airDate = airDate
+    )
+    private fun DetailCache.TmdbEpisodeDtoCached.toDto() = TmdbEpisodeDto(
+        episodeNumber = episodeNumber, name = name, overview = overview,
+        stillPath = stillPath, airDate = airDate
+    )
 
 
     /**
@@ -145,6 +152,9 @@ object KitsugiEpisodeRatingsRepository {
         if (cachedEntity != null) {
             val id = cachedEntity.tmdbId
             mutex.withLock { malToTmdbCache[cacheKey] = id }
+            if (cachedEntity.tvdbId != null && cachedEntity.tvdbId > 0) {
+                mutex.withLock { tmdbToTvdbCache[id] = cachedEntity.tvdbId }
+            }
             Log.d(TAG, "Room hit: aniListId=$aniListId → tmdbId=$id")
             return@withContext id
         }
@@ -153,6 +163,13 @@ object KitsugiEpisodeRatingsRepository {
             val url = URL("https://arm.haglund.dev/api/v2/ids?source=anilist&id=$aniListId")
             val response = KitsugiApiBase.executeGetRequest(url) ?: return@runCatching null
             val json = JSONObject(response)
+            val tvdbVal = json.optInt("thetvdb", -1).takeIf { it > 0 }
+            if (tvdbVal != null) {
+                val tmdbVal = json.optInt("themoviedb", -1)
+                if (tmdbVal > 0) {
+                    mutex.withLock { tmdbToTvdbCache[tmdbVal] = tvdbVal }
+                }
+            }
             if (json.isNull("themoviedb")) {
                 if (!json.isNull("myanimelist")) {
                     val malId = json.optInt("myanimelist", -1)
@@ -160,12 +177,13 @@ object KitsugiEpisodeRatingsRepository {
                         val resolved = resolveTmdbIdFromMal(malId)
                         if (resolved != null) {
                             val existing = dao?.getByTmdbId(resolved)
-                            val updated = existing?.copy(aniListId = aniListId, malId = malId) ?: MediaMetaCacheEntity(
+                            val updated = existing?.copy(aniListId = aniListId, malId = malId, tvdbId = tvdbVal ?: existing.tvdbId) ?: MediaMetaCacheEntity(
                                 tmdbId = resolved,
                                 malId = malId,
                                 aniListId = aniListId,
                                 logoUrl = null,
-                                logoNotFound = false
+                                logoNotFound = false,
+                                tvdbId = tvdbVal
                             )
                             dao?.insert(updated)
                             Log.d(TAG, "Room write (both MAL & AniList): tmdbId=$resolved")
@@ -179,12 +197,13 @@ object KitsugiEpisodeRatingsRepository {
                     val malId = if (!json.isNull("myanimelist")) json.optInt("myanimelist", -1) else null
                     val cleanMalId = if (malId != null && malId > 0) malId else null
                     val existing = dao?.getByTmdbId(value)
-                    val updated = existing?.copy(aniListId = aniListId, malId = cleanMalId ?: existing.malId) ?: MediaMetaCacheEntity(
+                    val updated = existing?.copy(aniListId = aniListId, malId = cleanMalId ?: existing.malId, tvdbId = tvdbVal ?: existing.tvdbId) ?: MediaMetaCacheEntity(
                         tmdbId = value,
                         malId = cleanMalId,
                         aniListId = aniListId,
                         logoUrl = null,
-                        logoNotFound = false
+                        logoNotFound = false,
+                        tvdbId = tvdbVal
                     )
                     dao?.insert(updated)
                     Log.d(TAG, "Room write (AniList): aniListId=$aniListId → tmdbId=$value")
@@ -203,15 +222,20 @@ object KitsugiEpisodeRatingsRepository {
                 val response = KitsugiApiBase.executeGetRequest(url) ?: return@runCatching null
                 val json = JSONObject(response)
                 val value = json.optInt("themoviedb", -1)
+                val tvdbVal = json.optInt("thetvdb", -1).takeIf { it > 0 }
                 if (value > 0) {
+                    if (tvdbVal != null) {
+                        mutex.withLock { tmdbToTvdbCache[value] = tvdbVal }
+                    }
                     val malId = if (json.isNull("myanimelist")) null else json.optInt("myanimelist", -1).takeIf { it > 0 }
                     val existing = dao?.getByTmdbId(value)
-                    val updated = existing?.copy(aniListId = aniListId, malId = malId ?: existing.malId) ?: MediaMetaCacheEntity(
+                    val updated = existing?.copy(aniListId = aniListId, malId = malId ?: existing.malId, tvdbId = tvdbVal ?: existing.tvdbId) ?: MediaMetaCacheEntity(
                         tmdbId = value,
                         malId = malId,
                         aniListId = aniListId,
                         logoUrl = null,
-                        logoNotFound = false
+                        logoNotFound = false,
+                        tvdbId = tvdbVal
                     )
                     dao?.insert(updated)
                     Log.d(TAG, "Room write (AnimeAPI AniList): aniListId=$aniListId → tmdbId=$value")
@@ -235,15 +259,11 @@ object KitsugiEpisodeRatingsRepository {
         fetchWithCache(tmdbId)
     }
 
-    /** Önbelleği temizler */
+    /** Tüm önbellekleri temizler — DetailCache.clear() ile yapılır */
     fun clearCache() {
-        ratingsCache.clear()
+        DetailCache.clear()
         inFlight.clear()
-        malToTmdbCache.clear()
-        tmdbToTvdbCache.clear()
-        logoCache.clear()
         logoInFlight.clear()
-        tmdbEpisodesCache.clear()
         tmdbEpisodesInFlight.clear()
     }
 
@@ -427,29 +447,58 @@ object KitsugiEpisodeRatingsRepository {
     /**
      * Verilen TMDB ID'nin TVDB ID'sini çözer.
      *
-     * ARM API artık `source=themoviedb` sorgusunu desteklemiyor (400 Bad Request).
-     * Bunun yerine Room önbelleğindeki malId veya aniListId üzerinden
-     * animeapi.my.id'yi kullanarak TVDB ID'yi çözüyoruz.
+     * Çözümleme zinciri:
+     *  1. Bellek önbelleği (tmdbToTvdbCache)
+     *  2. Room önbelleğindeki tvdbId sütunu (önceki ARM/AnimeAPI sorgularından doldurulmuş)
+     *  3. TMDB external_ids endpoint'i (doğrudan tvdb_id alanı)
+     *  4. Room'daki malId üzerinden animeapi.my.id
+     *  5. Room'daki aniListId üzerinden animeapi.my.id
      */
-    private suspend fun resolveTvdbIdFromTmdb(tmdbId: Int): Int? = withContext(Dispatchers.IO) {
+    private suspend fun resolveTvdbIdFromTmdb(
+        tmdbId: Int,
+        fallbackMalId: Int? = null,
+        fallbackAniListId: Int? = null
+    ): Int? = withContext(Dispatchers.IO) {
         // 1. Bellek önbelleği kontrolü
         if (tmdbToTvdbCache.containsKey(tmdbId)) {
             return@withContext mutex.withLock { tmdbToTvdbCache[tmdbId] }
         }
 
-        // 2. Room'dan bu tmdbId için bilinen malId veya aniListId'yi çek
+        // 2. Room'daki tvdbId sütununu doğrudan oku (ARM/AnimeAPI önceden kaydetmiş olabilir)
         val cachedEntity = runCatching { dao?.getByTmdbId(tmdbId) }.getOrNull()
+        if (cachedEntity?.tvdbId != null && cachedEntity.tvdbId > 0) {
+            val cached = cachedEntity.tvdbId
+            mutex.withLock { tmdbToTvdbCache[tmdbId] = cached }
+            Log.d(TAG, "Room tvdbId hit: tmdbId=$tmdbId → tvdbId=$cached")
+            return@withContext cached
+        }
 
-        // 3. malId üzerinden TVDB ID çöz
+        // 3. TMDB external_ids endpoint → tvdb_id
+        val isTv = true // Fanart.tv TV endpoint için; movie de denenebilir
+        val extIds = runCatching { KitsugiIdResolver.fetchExternalIds(tmdbId, isTv) }.getOrNull()
+        val tvdbFromTmdb = extIds?.tvdbId?.takeIf { it > 0 }
+            ?: runCatching { KitsugiIdResolver.fetchExternalIds(tmdbId, false) }.getOrNull()?.tvdbId?.takeIf { it > 0 }
+        if (tvdbFromTmdb != null) {
+            mutex.withLock { tmdbToTvdbCache[tmdbId] = tvdbFromTmdb }
+            // Kalıcı olarak Room'a yaz
+            runCatching {
+                val existing = dao?.getByTmdbId(tmdbId)
+                if (existing != null) dao?.insert(existing.copy(tvdbId = tvdbFromTmdb))
+            }
+            Log.d(TAG, "TVDB resolve (TMDB ext_ids): tmdbId=$tmdbId → tvdbId=$tvdbFromTmdb")
+            return@withContext tvdbFromTmdb
+        }
+
+        // 4. malId üzerinden TVDB ID çöz (Room'dan veya caller fallback)
         var tvdbId: Int? = null
-        val malId = cachedEntity?.malId
+        val malId = cachedEntity?.malId ?: fallbackMalId
         if (malId != null && malId > 0) {
             tvdbId = resolveTvdbIdFromMal(malId)
         }
 
-        // 4. malId başarısız olursa aniListId üzerinden dene
+        // 5. aniListId üzerinden dene (Room'dan veya caller fallback)
         if (tvdbId == null) {
-            val aniListId = cachedEntity?.aniListId
+            val aniListId = cachedEntity?.aniListId ?: fallbackAniListId
             if (aniListId != null && aniListId > 0) {
                 tvdbId = resolveTvdbIdFromAniList(aniListId)
             }
@@ -521,7 +570,15 @@ object KitsugiEpisodeRatingsRepository {
         val (fanartEnabled, fanartApiKey) = getFanartSettings()
         if (!fanartEnabled || fanartApiKey.isBlank()) return@withContext emptyList()
 
-        return@withContext if (isMovie) {
+        // Bellek önbelleği: aynı sayfa tekrar açılırsa anında döner
+        val cacheId = if (isMovie) tmdbId else tmdbId
+        val cached = DetailCache.getFanartGallery(isMovie, cacheId)
+        if (cached != null) {
+            Log.d(TAG, "Fanart memory cache hit: isMovie=$isMovie id=$cacheId → ${cached.size} items")
+            return@withContext cached
+        }
+
+        val result = if (isMovie) {
             if (tmdbId <= 0) return@withContext emptyList()
             // Film: TMDB ID doğrudan kullanılır
             runCatching {
@@ -531,11 +588,10 @@ object KitsugiEpisodeRatingsRepository {
                 emptyList()
             }
         } else {
-            // TV/Anime: TVDB ID çözümlenir
-            // Önce Room+animeapi.my.id zincirini dene
-            var tvdbId = if (tmdbId > 0) resolveTvdbIdFromTmdb(tmdbId) else null
+            // TV/Anime: TVDB ID çözümleme zinciri (fallback ID'leri ileterek)
+            var tvdbId = if (tmdbId > 0) resolveTvdbIdFromTmdb(tmdbId, fallbackMalId, fallbackAniListId) else null
 
-            // Hâlâ bulunamazsa caller'dan gelen fallback id'leri dene
+            // Hâlâ bulunamazsa caller'dan gelen fallback id'leri doğrudan dene
             if (tvdbId == null || tvdbId <= 0) {
                 if (fallbackMalId != null && fallbackMalId > 0) {
                     tvdbId = resolveTvdbIdFromMal(fallbackMalId)
@@ -558,6 +614,12 @@ object KitsugiEpisodeRatingsRepository {
                 emptyList()
             }
         }
+
+        if (result.isNotEmpty()) {
+            DetailCache.putFanartGallery(isMovie, cacheId, result)
+            Log.d(TAG, "Fanart memory cache write: isMovie=$isMovie id=$cacheId → ${result.size} items")
+        }
+        result
     }
 
     /**
@@ -597,7 +659,7 @@ object KitsugiEpisodeRatingsRepository {
                 try {
                     fetchFromSeriesGraph(tmdbId).also { ratings ->
                         mutex.withLock {
-                            ratingsCache[tmdbId] = CacheEntry(
+                            ratingsCache[tmdbId] = DetailCache.RatingCacheEntry(
                                 ratings = ratings,
                                 expiresAtMs = System.currentTimeMillis() + CACHE_TTL_MS
                             )
@@ -632,6 +694,9 @@ object KitsugiEpisodeRatingsRepository {
         if (cachedEntity != null) {
             val id = cachedEntity.tmdbId
             mutex.withLock { malToTmdbCache[malId] = id }
+            if (cachedEntity.tvdbId != null && cachedEntity.tvdbId > 0) {
+                mutex.withLock { tmdbToTvdbCache[id] = cachedEntity.tvdbId }
+            }
             Log.d(TAG, "Room hit: malId=$malId → tmdbId=$id")
             return@withContext id
         }
@@ -640,17 +705,25 @@ object KitsugiEpisodeRatingsRepository {
             val url = URL("https://arm.haglund.dev/api/v2/ids?source=myanimelist&id=$malId")
             val response = KitsugiApiBase.executeGetRequest(url) ?: return@runCatching null
             val json = JSONObject(response)
+            val tvdbVal = json.optInt("thetvdb", -1).takeIf { it > 0 }
+            if (tvdbVal != null) {
+                val tmdbVal = json.optInt("themoviedb", -1)
+                if (tmdbVal > 0) {
+                    mutex.withLock { tmdbToTvdbCache[tmdbVal] = tvdbVal }
+                }
+            }
             if (json.isNull("themoviedb")) null
             else {
                 val value = json.optInt("themoviedb", -1)
                 if (value > 0) {
                     val existing = dao?.getByTmdbId(value)
-                    val updated = existing?.copy(malId = malId) ?: MediaMetaCacheEntity(
+                    val updated = existing?.copy(malId = malId, tvdbId = tvdbVal ?: existing.tvdbId) ?: MediaMetaCacheEntity(
                         tmdbId = value,
                         malId = malId,
                         aniListId = null,
                         logoUrl = null,
-                        logoNotFound = false
+                        logoNotFound = false,
+                        tvdbId = tvdbVal
                     )
                     dao?.insert(updated)
                     Log.d(TAG, "Room write (MAL): malId=$malId → tmdbId=$value")
@@ -669,15 +742,20 @@ object KitsugiEpisodeRatingsRepository {
                 val response = KitsugiApiBase.executeGetRequest(url) ?: return@runCatching null
                 val json = JSONObject(response)
                 val value = json.optInt("themoviedb", -1)
+                val tvdbVal = json.optInt("thetvdb", -1).takeIf { it > 0 }
                 if (value > 0) {
+                    if (tvdbVal != null) {
+                        mutex.withLock { tmdbToTvdbCache[value] = tvdbVal }
+                    }
                     val aniListId = if (json.isNull("anilist")) null else json.optInt("anilist", -1).takeIf { it > 0 }
                     val existing = dao?.getByTmdbId(value)
-                    val updated = existing?.copy(malId = malId, aniListId = aniListId ?: existing.aniListId) ?: MediaMetaCacheEntity(
+                    val updated = existing?.copy(malId = malId, aniListId = aniListId ?: existing.aniListId, tvdbId = tvdbVal ?: existing.tvdbId) ?: MediaMetaCacheEntity(
                         tmdbId = value,
                         malId = malId,
                         aniListId = aniListId,
                         logoUrl = null,
-                        logoNotFound = false
+                        logoNotFound = false,
+                        tvdbId = tvdbVal
                     )
                     dao?.insert(updated)
                     Log.d(TAG, "Room write (AnimeAPI MAL): malId=$malId → tmdbId=$value")
@@ -795,7 +873,7 @@ object KitsugiEpisodeRatingsRepository {
         if (tmdbId <= 0 || seasonNumber <= 0) return@withContext emptyList()
         val cacheKey = tmdbId to seasonNumber
 
-        val cached = mutex.withLock { tmdbEpisodesCache[cacheKey] }
+        val cached = mutex.withLock { DetailCache.tmdbEpisodesCache[cacheKey]?.map { it.toDto() } }
         if (cached != null) return@withContext cached
 
         val deferred = mutex.withLock {
@@ -812,7 +890,9 @@ object KitsugiEpisodeRatingsRepository {
                     val responseText = KitsugiApiBase.executeGetRequest(url) ?: return@async emptyList<TmdbEpisodeDto>()
                     val parsed = parseTmdbEpisodes(responseText)
                     if (parsed.isNotEmpty()) {
-                        mutex.withLock { tmdbEpisodesCache[cacheKey] = parsed }
+                        mutex.withLock {
+                            DetailCache.tmdbEpisodesCache[cacheKey] = parsed.map { it.toCached() }
+                        }
                     }
                     parsed
                 } catch (e: Exception) {

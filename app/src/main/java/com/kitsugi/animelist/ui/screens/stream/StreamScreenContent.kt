@@ -530,9 +530,6 @@ private fun LandscapeLayout(
                 isResolvingId -> {
                     item(key = "land_resolving_id") { ResolvingIdState() }
                 }
-                idResolveFailed -> {
-                    item(key = "land_id_failed") { ErrorState("Bu içerik için IMDb ID'si bulunamadı.\nLütfen farklı bir kaynak deneyin.", null) }
-                }
                 addonStates.isEmpty() && !isResolvingId -> {
                     item(key = "land_no_addons") { NoAddonsState(onOpenSettings = onOpenSettings) }
                 }
@@ -712,9 +709,6 @@ private fun PortraitLayout(
             when {
                 isResolvingId -> {
                     item(key = "resolving_id") { ResolvingIdState() }
-                }
-                idResolveFailed -> {
-                    item(key = "id_failed") { ErrorState("Bu içerik için IMDb ID'si bulunamadı.\nLütfen farklı bir kaynak deneyin.", null) }
                 }
                 addonStates.isEmpty() && !isResolvingId -> {
                     item(key = "no_addons") { NoAddonsState(onOpenSettings = onOpenSettings) }

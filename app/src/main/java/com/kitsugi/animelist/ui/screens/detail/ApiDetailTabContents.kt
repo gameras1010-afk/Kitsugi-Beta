@@ -12,6 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
+import com.kitsugi.animelist.data.remote.GalleryCategory
+import com.kitsugi.animelist.data.remote.GalleryItem
 import com.kitsugi.animelist.data.remote.MdbListRatings
 import com.kitsugi.animelist.data.remote.KitsugiMediaDetail
 import com.kitsugi.animelist.data.remote.KitsugiStreamingEpisode
@@ -47,7 +49,10 @@ internal fun ApiDetailOverviewTab(
     mdbListShowTmdb: Boolean = false,
     mdbListShowTrakt: Boolean = false,
     onSettingsClick: (() -> Unit)? = null,
-    onImageGalleryRequest: ((urls: List<String>, index: Int) -> Unit)? = null
+    onImageGalleryRequest: ((urls: List<String>, index: Int) -> Unit)? = null,
+    galleryItems: List<GalleryItem> = emptyList(),
+    galleryLoading: Boolean = false,
+    onGalleryItemRequest: ((items: List<GalleryItem>, index: Int) -> Unit)? = null
 ) {
     Column(
         modifier = Modifier.padding(horizontal = 0.dp, vertical = 14.dp)
@@ -59,6 +64,22 @@ internal fun ApiDetailOverviewTab(
             onCopyClick = onCopyClick,
             onImageGalleryRequest = onImageGalleryRequest
         )
+
+        // Galeri — Fanart.tv + TMDB + diğer kaynaklar (paralel çekiliyor, sayfa açıkken güncellenir)
+        Spacer(modifier = Modifier.height(14.dp))
+        if (galleryLoading && galleryItems.isEmpty()) {
+            DetailGalleryLoadingCard()
+        } else if (galleryItems.isNotEmpty()) {
+            DetailGalleryCard(
+                items = galleryItems,
+                onItemClick = { index -> onGalleryItemRequest?.invoke(galleryItems, index) },
+                onOpenGallery = { category ->
+                    val startIndex = if (category == null) 0
+                    else galleryItems.indexOfFirst { it.category == category }.coerceAtLeast(0)
+                    onGalleryItemRequest?.invoke(galleryItems, startIndex)
+                }
+            )
+        }
 
         if (detail != null) {
             Spacer(modifier = Modifier.height(14.dp))

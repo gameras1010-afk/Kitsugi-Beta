@@ -38,12 +38,12 @@ object MalSyncManager {
             append("&score=${entry.score ?: 0}")
             append("&$progressKey=${entry.progress}")
 
-            val startDate = entry.startDate?.takeIf { it.isNotBlank() }
+            val startDate = entry.startDate
             if (startDate != null) {
                 append("&start_date=${URLEncoder.encode(startDate, "UTF-8")}")
             }
 
-            val endDate = entry.endDate?.takeIf { it.isNotBlank() }
+            val endDate = entry.endDate
             if (endDate != null) {
                 append("&finish_date=${URLEncoder.encode(endDate, "UTF-8")}")
             }

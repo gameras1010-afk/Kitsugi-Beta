@@ -1,19 +1,41 @@
-# Kitsugi v2.4.99 Release Notes 🚀
+# Kitsugi v2.4.100 Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### 🖼️ Fanart.tv & Galeri Senkronizasyonu Düzeltmeleri
-- **API Anahtarı Entegrasyonu Giderildi:** Fanart.tv tarafında geçersiz olan gömülü (built-in) API anahtarı yerine, kullanıcının ayarlardan girdiği kişisel anahtarın doğrudan kullanılması sağlandı. Bu sayede tüm Fanart.tv istekleri başarıyla sonuçlanmaktadır.
-- **Akıllı TVDB ID Fallback Desteği:** TV şovları ve animelerde TMDB ID'si bulunmadığında veya 0 olduğunda, MAL ve AniList ID'leri üzerinden TVDB kimliğini çözmek için `animeapi.my.id` fallback zinciri uygulandı.
-- **Sinematik Yükleme & Galeri Senkronizasyonu:** Detay sayfalarında arka planda resimler yüklenirken yükleme ekranının erken kapanma hatası giderildi. `KitsugiCinematicLoadingScreen` artık galeri ögeleri de yüklenene kadar açık kalır, böylece galeri butonu doğrudan dolu ve aktif olarak açılır.
+### 🎬 Akış (Stream) Sistemi İyileştirmeleri
+
+- **IMDb ID Zorunluluğu Kaldırıldı:** Daha önce IMDb ID çözümlenemediğinde video akış sayfası tamamen bloklanıyor ve "ID bulunamadı" hata ekranı gösteriliyordu. Artık ID çözümleme başarısız olsa bile CS eklentileri başlık (isim) bazlı aramaya devam ediyor; video kaynakları yine de listeleniyor.
+
+- **Yanlış Sezon/Bölüm Eşleştirmesi Düzeltildi:** Birden fazla sezonlu animelerde (örn. Wistoria: Wand and Sword S2) yanlış sezonun (S1E1) çekilmesine neden olan mantık hatası giderildi. Sezon numarası artık bölüm listesinden doğru şekilde aktarılıyor.
+
+- **Sezon Parametresi Düzeltildi:** Bölüm seçim diyaloğunda sezon numarası daha önce her zaman `1` olarak gönderiliyordu. Artık kullanıcının o an baktığı gerçek sezon numarası (örn. S2, S3) Cloudstream plugin aramasına doğru şekilde iletiliyor.
+
+### 🔍 CS Eklenti Bölüm Eşleştirmesi Güçlendirildi
+
+- **Reflection Hiyerarşisi Genişletildi:** `CsEpisodeMatcher` artık sadece doğrudan sınıf alanlarını değil, tüm üst sınıf (superclass) hiyerarşisini tarayarak episode/season alanlarını buluyor. Bazı Cloudstream eklentilerinde alanlar alt sınıflarda tanımlandığından bu durum daha önce eşleştirme başarısızlığına yol açıyordu.
+
+- **Akıllı İndeks-Bazlı Fallback:** Episode meta verisi (season/episode numaraları) hiç doldurulmamış eklentilerde (yaygın Türkçe eklentilerde görülen durum), bölüm numarası artık preferred bucket (Subbed → Dubbed → None) içinde liste indeksi olarak yorumlanıyor. Bu sayede S2E1 isteği, yanlışlıkla S1'in ilk bölümüne gitmiyor.
+
+- **Preferred Bucket Önceliği:** Sezon-bağımsız fallback aramalarda artık önce Subbed bucket aranıyor, bulunamazsa diğer bucket'lara geçiliyor. Bu daha doğru dil/senkron önceliği sağlıyor.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### 🖼️ Fanart.tv & Gallery Sync Fixes
-- **API Key Integration Resolved:** Fixed a critical bug where an invalid built-in project API key was prioritized over the user's personal key. The user's own key is now correctly passed as the primary `api_key` parameter for all Fanart.tv requests.
-- **Smart TVDB ID Fallbacks:** Implemented an fallback lookup chain using `animeapi.my.id` to resolve the required TVDB ID via MAL and AniList identifiers when TMDB ID mappings are incomplete or missing (0).
-- **Cinematic Loading & Gallery Synchronization:** Resolved premature dismissal of the detail loading screen. The `KitsugiCinematicLoadingScreen` is now kept active until both detail metadata and Fanart gallery items are successfully retrieved, ensuring the "Gallery" action button displays instantly with fully loaded content.
+### 🎬 Stream System Improvements
+
+- **Removed IMDb ID Requirement Block:** Previously, if IMDb ID resolution failed, the stream picker screen would display a full-page error and prevent users from seeing any sources. Now, CS plugins continue with title-based searching even when ID resolution fails — streams are still found and displayed.
+
+- **Fixed Incorrect Season/Episode Mapping:** A logic error that caused multi-season anime (e.g. Wistoria: Wand and Sword S2) to fetch the wrong season (S1E1) has been resolved. The correct season number is now properly propagated through the streaming pipeline.
+
+- **Fixed Hardcoded Season Parameter:** The episode options dialog was always passing `season = 1` to the stream activity. It now correctly passes the actual season number the user is currently viewing (e.g. S2, S3).
+
+### 🔍 CS Plugin Episode Matching Improvements
+
+- **Reflection Now Traverses Full Class Hierarchy:** `CsEpisodeMatcher` now walks the entire superclass chain when looking for `episode` and `season` fields via reflection. Previously, fields defined in parent classes of episode types were silently missed, causing match failures on some plugins.
+
+- **Smart Index-Based Fallback:** For plugins that store episodes as flat lists with no season/episode metadata (common in Turkish plugins), the episode number is now interpreted as a 1-based index within the preferred bucket (Subbed → Dubbed → None). This prevents S2 requests from incorrectly resolving to the first episode of S1.
+
+- **Preferred Bucket Priority in Fallbacks:** Season-agnostic fallback searches now prioritize the Subbed bucket first before checking all episodes, ensuring better language/sync accuracy.

@@ -218,9 +218,11 @@ fun ApiResultDetailPage(
     val mdbListRatings by viewModel.mdbListRatings.collectAsState()
     val mdbListLoading by viewModel.mdbListLoading.collectAsState()
     val galleryLoading by viewModel.galleryLoading.collectAsState()
+    val pageResetTrigger by viewModel.pageResetTrigger.collectAsState()
 
-    // Galeri ve detay her ikisi de hazır olana kadar yükleme ekranı göster
-    val isLoading = detailLoading || galleryLoading
+    // Sadece detay verisi hazır olana kadar yükleme ekranı göster.
+    // Galeri (fanart.tv) arka planda yüklenirken sayfa zaten açık kalır.
+    val isLoading = detailLoading
 
     val displayResult = remember(result, detailState) {
         val detail = detailState
@@ -317,6 +319,13 @@ fun ApiResultDetailPage(
     val leftPanelFocusRequester = remember { FocusRequester() }
     val tabBarFocusRequester = remember { FocusRequester() }
 
+    // Yeni bir sonuç'a geçildiğinde (geri tuşuyla aynı sayfaya dönüldüğünde dahil) tab’ı sıfırla
+    LaunchedEffect(pageResetTrigger) {
+        if (pageResetTrigger > 0) {
+            pagerState.scrollToPage(0)
+        }
+    }
+
     // Call loadTab when tab changes
     LaunchedEffect(
         result.source,
@@ -346,1005 +355,266 @@ fun ApiResultDetailPage(
     val displaySynopsis = translatedSynopsis ?: detailState?.synopsis
 
     KitsugiPageEnter {
-        if (isLoading) {
-            KitsugiCinematicLoadingScreen(
-                title = displayResult.title,
-                imageUrl = displayResult.imageUrl,
-                onBackClick = onBackClick,
-                logoUrl = if (showAnimeLogos) logoUrl else null,
-                isAdult = displayResult.isAdult,
-                blurAdultMedia = blurAdultMedia
-            )
-        } else if (detailState == null) {
-            DataUnavailableScreen(
-                title = displayResult.title,
-                onBackClick = onBackClick,
-                onRetryClick = { viewModel.loadResult(result, showAnimeLogos) }
-            )
-        } else {
-            val pullRefreshState = rememberPullToRefreshState()
-            PullToRefreshBox(
-                isRefreshing = detailLoading,
-                onRefresh = { viewModel.loadResult(displayResult, showAnimeLogos, forceRefresh = true) },
-                modifier = Modifier.fillMaxSize(),
-                state = pullRefreshState,
-                indicator = {
-                    PullToRefreshDefaults.Indicator(
-                        state = pullRefreshState,
-                        isRefreshing = detailLoading,
-                        modifier = Modifier.align(Alignment.TopCenter),
-                        containerColor = KitsugiColors.Surface,
-                        color = accentColor
+        DetailPageScaffold(
+            title = displayResult.title,
+            isLoading = isLoading,
+            isError = !detailLoading && detailState == null,
+            isRefreshing = detailLoading,
+            onRefresh = { viewModel.loadResult(displayResult, showAnimeLogos, forceRefresh = true) },
+            onBackClick = onBackClick,
+            tabs = tabs,
+            pagerState = pagerState,
+            listState = listState,
+            tabListState = tabListState,
+            loadingScreen = {
+                KitsugiCinematicLoadingScreen(
+                    title = displayResult.title,
+                    imageUrl = displayResult.imageUrl,
+                    onBackClick = onBackClick,
+                    logoUrl = if (showAnimeLogos) logoUrl else null,
+                    isAdult = displayResult.isAdult,
+                    blurAdultMedia = blurAdultMedia
+                )
+            },
+            errorScreen = {
+                DataUnavailableScreen(
+                    title = displayResult.title,
+                    onBackClick = onBackClick,
+                    onRetryClick = { viewModel.loadResult(result, showAnimeLogos) }
+                )
+            },
+            leftPanel = { lpFocus, tbFocus ->
+                ApiDetailLeftPanel(
+                    displayResult = displayResult,
+                    detailState = detailState,
+                    resolvedTmdbId = resolvedTmdbId,
+                    galleryItems = galleryItems,
+                    existingEntry = existingEntry,
+                    isConnected = isConnected,
+                    isFavorite = isFavorite,
+                    showFavouriteButton = showFavouriteButton,
+                    synopsisForSave = synopsisForSave,
+                    titleLanguage = titleLanguage,
+                    scoreFormat = scoreFormat,
+                    hideScores = hideScores,
+                    showAnimeLogos = showAnimeLogos,
+                    logoUrl = logoUrl,
+                    blurAdultMedia = blurAdultMedia,
+                    onBackClick = onBackClick,
+                    onAddClick = onAddClick,
+                    onEditClick = onEditClick,
+                    onToggleFavoriteClick = onToggleFavoriteClick,
+                    onReadMangaClick = onReadMangaClick,
+                    onGalleryOpen = { items, idx ->
+                        activeGalleryItems = items
+                        activeGalleryIndex = idx
+                    },
+                    onShowAuthWarning = { showAuthWarningDialog = true },
+                    leftPanelFocusRequester = lpFocus,
+                    tabBarFocusRequester = tbFocus
+                )
+            },
+            floatingHeaderActions = {
+                IconButton(onClick = {
+                    val url = buildExternalUrl(displayResult)
+                    if (!url.isNullOrBlank()) {
+                        com.kitsugi.animelist.utils.ShareUtils.shareText(context, displayResult.title, url)
+                    }
+                }) {
+                    Icon(
+                        imageVector = Icons.Rounded.Share,
+                        contentDescription = "Paylaş",
+                        tint = KitsugiColors.TextSecondary
                     )
                 }
-            ) {
-                val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-                if (isLandscape) {
-                    val configuration = LocalConfiguration.current
-                    val screenWidth = configuration.screenWidthDp
-                    val leftPanelWeight = when {
-                        screenWidth >= 1200 -> 0.28f
-                        screenWidth >= 840  -> 0.32f
-                        else                -> 0.38f
-                    }
-                    val rightPanelWeight = 1f - leftPanelWeight
-                // ── LANDSCAPE: Sol panel (Hero + Actions + Stats), Sağ panel (Tablar + İçerik) ──
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Row(modifier = Modifier.fillMaxSize()) {
-                        // Sol Panel
-                        val leftScrollState = rememberScrollState()
-                        val tvSpec = KitsugiScrollDefaults.rememberTvCenteredSpec()
-                        CompositionLocalProvider(
-                            LocalBringIntoViewSpec provides if (isTvDevice) tvSpec else LocalBringIntoViewSpec.current
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .weight(leftPanelWeight)
-                                    .fillMaxSize()
-                                    .then(if (isTvDevice) Modifier.dpadVerticalFastScroll(leftScrollState) else Modifier)
-                                    .verticalScroll(leftScrollState)
-                            ) {
-                            KitsugiDetailHero(
-                                title = displayResult.getDisplayTitle(titleLanguage),
-                                subtitle = displayResult.subtitle,
-                                imageUrl = displayResult.imageUrl,
-                                logoUrl = if (showAnimeLogos) logoUrl else null,
-                                source = displayResult.source,
-                                typeLabel = when (displayResult.type) {
-                                    MediaType.Anime -> "ANIME"
-                                    MediaType.Movie -> "FİLM"
-                                    MediaType.TvShow -> "DİZİ"
-                                    else -> "MANGA"
-                                },
-                                year = displayResult.year?.toString(),
-                                isAdult = displayResult.isAdult,
-                                onBackClick = onBackClick,
-                                blurAdultMedia = blurAdultMedia,
-                                onPosterClick = {
-                                    if (galleryItems.isNotEmpty()) {
-                                        activeGalleryItems = galleryItems
-                                        activeGalleryIndex = 0
-                                    } else {
-                                        val posterUrl = displayResult.imageUrl
-                                        if (!posterUrl.isNullOrBlank()) {
-                                            activeGalleryItems = listOf(
-                                                GalleryItem(
-                                                    url = posterUrl,
-                                                    category = GalleryCategory.POSTER,
-                                                    source = displayResult.source
-                                                )
-                                            )
-                                            activeGalleryIndex = 0
-                                        }
-                                    }
-                                },
-                                onGalleryClick = if (galleryItems.isNotEmpty()) {{
-                                    activeGalleryItems = galleryItems
-                                    activeGalleryIndex = 0
-                                }} else null,
-                                scoreLabel = if (!hideScores) displayResult.getDisplayScore(scoreFormat, hideScores) else null,
-                                alreadyInList = existingEntry != null,
-                                isFavorite = isFavorite,
-                                showFavoriteButton = showFavouriteButton,
-                                onToggleFavoriteClick = if (onToggleFavoriteClick != null) {
-                                    { onToggleFavoriteClick(ApiSearchSelection(result = displayResult, synopsis = synopsisForSave)) }
-                                } else null,
-                                totalEpisodes = displayResult.total,
-                                nextAiring = detailState?.nextAiringEpisode
-                            )
-                            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                                Spacer(modifier = Modifier.height(12.dp))
-                                FlowRow(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    if (displayResult.type == MediaType.Anime || displayResult.type == MediaType.TvShow || displayResult.type == MediaType.Movie) {
-                                        val accentColor = LocalKitsugiAccent.current
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clip(RoundedCornerShape(18.dp))
-                                                .background(accentColor)
-                                                .focusRequester(leftPanelFocusRequester)
-                                                .focusProperties { right = tabBarFocusRequester }
-                                                .tvClickable(shape = RoundedCornerShape(18.dp)) {
-                                                    val streamMalId = if (displayResult.source.lowercase() == "anilist") {
-                                                        displayResult.realMalId
-                                                    } else {
-                                                        displayResult.malId
-                                                    }
-                                                    val rawStableId = if (displayResult.source.lowercase() == "anilist") displayResult.malId else null
-                                                    val streamAniListId = rawStableId?.let {
-                                                        if (it >= 100_000_000) it - 100_000_000 else it
-                                                    }
-                                                    KitsugiStreamActivity.start(
-                                                        context = context,
-                                                        malId = streamMalId,
-                                                        aniListId = streamAniListId,
-                                                        tmdbId = detailState?.tmdbId ?: resolvedTmdbId,
-                                                        episode = 1,
-                                                        isMovie = displayResult.type == MediaType.Movie,
-                                                        season = 1,
-                                                        title = displayResult.title,
-                                                        posterUrl = displayResult.imageUrl,
-                                                        titleEnglish = displayResult.titleEnglish,
-                                                        titleRomaji = detailState?.titleRomaji,
-                                                        titleNative = detailState?.titleNative,
-                                                        startYear = displayResult.year
-                                                    )
-                                                }
-                                                .padding(vertical = 14.dp),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Rounded.PlayArrow,
-                                                    contentDescription = null,
-                                                    tint = KitsugiColors.Background
-                                                )
-                                                androidx.compose.material3.Text(
-                                                    text = "İzle",
-                                                    color = KitsugiColors.Background,
-                                                    fontWeight = FontWeight.Black,
-                                                    fontSize = 16.sp
-                                                )
-                                            }
-                                        }
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                    }
-
-                                    if (displayResult.type == MediaType.Manga && onReadMangaClick != null) {
-                                        val accentColor = LocalKitsugiAccent.current
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clip(RoundedCornerShape(18.dp))
-                                                .background(accentColor)
-                                                .focusRequester(leftPanelFocusRequester)
-                                                .focusProperties { right = tabBarFocusRequester }
-                                                .tvClickable(shape = RoundedCornerShape(18.dp), onClick = onReadMangaClick)
-                                                .padding(vertical = 14.dp),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.AutoStories,
-                                                    contentDescription = null,
-                                                    tint = KitsugiColors.Background
-                                                )
-                                                androidx.compose.material3.Text(
-                                                    text = "Oku",
-                                                    color = KitsugiColors.Background,
-                                                    fontWeight = FontWeight.Black,
-                                                    fontSize = 16.sp
-                                                )
-                                            }
-                                        }
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                    }
-
-                                    val fallbackFocusMod = if (displayResult.type != MediaType.Anime && displayResult.type != MediaType.TvShow && displayResult.type != MediaType.Movie && displayResult.type != MediaType.Manga) {
-                                        Modifier.focusRequester(leftPanelFocusRequester)
-                                    } else Modifier
-
-                                    if (existingEntry != null) {
-                                        ApiActionButton(
-                                            text = "✎ Düzenle",
-                                            primary = true,
-                                            enabled = true,
-                                            modifier = fallbackFocusMod.focusProperties { right = tabBarFocusRequester },
-                                            onClick = { onEditClick(existingEntry) }
-                                        )
-                                    } else {
-                                        ApiActionButton(
-                                            text = "Listeye Ekle",
-                                            primary = true,
-                                            enabled = true,
-                                            modifier = fallbackFocusMod.focusProperties { right = tabBarFocusRequester },
-                                            onClick = {
-                                                if (isConnected) {
-                                                    onAddClick(
-                                                        ApiSearchSelection(
-                                                            result = displayResult,
-                                                            synopsis = synopsisForSave
-                                                        )
-                                                    )
-                                                } else {
-                                                    showAuthWarningDialog = true
-                                                }
-                                            }
-                                        )
-                                    }
-
-                                    if (externalUrl != null) {
-                                        val sourceLinkLabel = when (displayResult.source.lowercase()) {
-                                            "anilist" -> "AniList'te Aç"
-                                            "jikan", "mal" -> "MAL'da Gör"
-                                            "tmdb" -> "TMDB'de Aç"
-                                            else -> "Kaynakta Aç"
-                                        }
-                                        ApiActionButton(
-                                            text = sourceLinkLabel,
-                                            primary = false,
-                                            enabled = true,
-                                            modifier = Modifier.focusProperties { right = tabBarFocusRequester },
-                                            onClick = { uriHandler.openUri(externalUrl) }
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.height(32.dp))
-                            }
-                        }
-                        }
-
-                        // Sağ Panel
-                        Column(
-                            modifier = Modifier
-                                .weight(rightPanelWeight)
-                                .fillMaxSize()
-                        ) {
-                            // Tablar
-                            LaunchedEffect(selectedTab) {
-                                tabListState.animateScrollToItem(selectedTab)
-                            }
-                            LazyRow(
-                                state = tabListState,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .focusRequester(tabBarFocusRequester)
-                                    .focusProperties { left = leftPanelFocusRequester }
-                                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                itemsIndexed(tabs) { index, title ->
-                                    val isSelected = selectedTab == index
-                                    val bgColor = if (isSelected) accentColor else KitsugiColors.Surface
-                                    val textColor = if (isSelected) KitsugiColors.Background else KitsugiColors.TextSecondary
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(999.dp))
-                                            .background(bgColor)
-                                            .tvClickable(shape = RoundedCornerShape(999.dp)) {
-                                                coroutineScope.launch {
-                                                    pagerState.animateScrollToPage(index)
-                                                }
-                                            }
-                                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = title,
-                                            color = textColor,
-                                            style = MaterialTheme.typography.labelLarge,
-                                            fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold
-                                        )
-                                    }
-                                }
-                            }
-                            // Tab İçeriği
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(KitsugiColors.Background)
-                            ) {
-                                HorizontalPager(
-                                    state = pagerState,
-                                    userScrollEnabled = !isTvDevice,
-                                    beyondViewportPageCount = 1,
-                                    pageSpacing = 12.dp,
-                                    modifier = Modifier.fillMaxSize().clipToBounds()
-                                ) { page ->
-                                    val pageScrollState = rememberScrollState()
-                                    val pageTvSpec = KitsugiScrollDefaults.rememberTvCenteredSpec()
-                                    CompositionLocalProvider(
-                                        LocalBringIntoViewSpec provides if (isTvDevice) pageTvSpec else LocalBringIntoViewSpec.current
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .then(if (isTvDevice) Modifier.dpadVerticalFastScroll(pageScrollState) else Modifier)
-                                                .verticalScroll(pageScrollState)
-                                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                                        ) {
-                                        when (page) {
-                                            0 -> {
-                                                ApiDetailOverviewTab(
-                                                    result = result,
-                                                    detail = detailState,
-                                                    displaySynopsis = displaySynopsis,
-                                                    isDetailLoading = detailLoading,
-                                                    isTranslating = (translatedSynopsis == null && detailState?.synopsis != null),
-                                                    onSearchQuery = onSearchQuery,
-                                                    onStudioClick = onStudioClick,
-                                                    onGenreClick = onSearchByGenre,
-                                                    onTagClick = onSearchByTag,
-                                                    onTranslateClick = {
-                                                        val raw = detailState?.synopsis
-                                                        if (!raw.isNullOrBlank()) context.openTranslator(raw, settingsState?.preferredTranslator ?: "DEFAULT")
-                                                    },
-                                                    onCopyClick = {
-                                                        val text = displaySynopsis ?: detailState?.synopsis
-                                                        if (!text.isNullOrBlank()) {
-                                                            val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                                            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("synopsis", text))
-                                                            android.widget.Toast.makeText(context, "Panoya kopyalandı", android.widget.Toast.LENGTH_SHORT).show()
-                                                        }
-                                                    },
-                                                    mdbListRatings = mdbListRatings,
-                                                    mdbListLoading = mdbListLoading,
-                                                    mdbListShowImdb = settingsState?.mdbListShowImdb ?: mdbListShowImdb,
-                                                    mdbListShowTomatoes = settingsState?.mdbListShowTomatoes ?: mdbListShowTomatoes,
-                                                    mdbListShowMetacritic = settingsState?.mdbListShowMetacritic ?: mdbListShowMetacritic,
-                                                    mdbListShowAudience = settingsState?.mdbListShowAudience ?: mdbListShowAudience,
-                                                    mdbListShowLetterboxd = settingsState?.mdbListShowLetterboxd ?: mdbListShowLetterboxd,
-                                                    mdbListShowTmdb = settingsState?.mdbListShowTmdb ?: mdbListShowTmdb,
-                                                    mdbListShowTrakt = settingsState?.mdbListShowTrakt ?: mdbListShowTrakt,
-                                                    onSettingsClick = if (settingsDataStore != null) {
-                                                        { showIntegrationsDialog = true }
-                                                    } else null,
-                                                    onImageGalleryRequest = { urls, index ->
-                                                        activeGalleryItems = urls.map { url ->
-                                                            GalleryItem(
-                                                                url = url,
-                                                                category = GalleryCategory.POSTER,
-                                                                source = displayResult.source
-                                                            )
-                                                        }
-                                                        activeGalleryIndex = index
-                                                    }
-                                                )
-                                            }
-                                            1 -> CharactersTabContent(state = charactersState, onCharacterClick = onCharacterClick, onStaffClick = onStaffClick, onMediaClick = onMediaClick)
-                                            2 -> StaffTabContent(state = staffState, onStaffClick = onStaffClick)
-                                            3 -> RecommendationsTabContent(state = recommendationsState, titleLanguage = titleLanguage, blurAdultMedia = blurAdultMedia, onRecommendationClick = { rel ->
-                                                val typeLabel = when (rel.mediaType) {
-                                                    MediaType.Anime -> "Anime"
-                                                    MediaType.Movie -> "Film"
-                                                    MediaType.TvShow -> "Dizi"
-                                                    MediaType.Manga -> "Manga"
-                                                }
-                                                val relResult = JikanSearchResult(
-                                                    malId = rel.malId,
-                                                    title = rel.title,
-                                                    subtitle = "${rel.relationType}, $typeLabel",
-                                                    type = rel.mediaType,
-                                                    total = null,
-                                                    score = null,
-                                                    isAdult = rel.isAdult,
-                                                    imageUrl = rel.imageUrl,
-                                                    year = null,
-                                                    source = rel.source,
-                                                    titleEnglish = rel.titleEnglish,
-                                                    titleJapanese = rel.titleJapanese
-                                                )
-                                                onRelationClick(relResult)
-                                            })
-                                            4 -> RelationsTabContent(state = relationsState, titleLanguage = titleLanguage, blurAdultMedia = blurAdultMedia, onRelationClick = { rel ->
-                                                val typeLabel = when (rel.mediaType) {
-                                                    MediaType.Anime -> "Anime"
-                                                    MediaType.Movie -> "Film"
-                                                    MediaType.TvShow -> "Dizi"
-                                                    MediaType.Manga -> "Manga"
-                                                }
-                                                val relResult = JikanSearchResult(
-                                                    malId = rel.malId,
-                                                    title = rel.title,
-                                                    subtitle = "${rel.relationType}, $typeLabel",
-                                                    type = rel.mediaType,
-                                                    total = null,
-                                                    score = null,
-                                                    isAdult = rel.isAdult,
-                                                    imageUrl = rel.imageUrl,
-                                                    year = null,
-                                                    source = rel.source,
-                                                    titleEnglish = rel.titleEnglish,
-                                                    titleJapanese = rel.titleJapanese
-                                                )
-                                                onRelationClick(relResult)
-                                            })
-                                            5 -> StatsTabContent(state = statsState)
-                                            6 -> ReviewsTabContent(
-                                                state = reviewsState,
-                                                source = result.source,
-                                                externalId = result.malId,
-                                                mediaType = result.type,
-                                                apiClient = apiClient,
-                                                titleLanguage = titleLanguage,
-                                                onUserProfileClick = onUserProfileClick,
-                                                preferredTranslator = settingsState?.preferredTranslator ?: "DEFAULT"
-                                            )
-                                            7 -> {
-                                                ApiDetailEpisodesTab(
-                                                    state = episodesState,
-                                                    episodeRatings = episodeRatings,
-                                                    targetSeason = targetSeason,
-                                                    totalSeasons = detailState?.totalSeasons,
-                                                    resolvedTmdbId = detailState?.tmdbId,
-                                                    displayTitle = displayResult.title,
-                                                    displaySource = displayResult.source,
-                                                    displayMalId = displayResult.malId,
-                                                    displayRealMalId = displayResult.realMalId,
-                                                    displayImageUrl = displayResult.imageUrl,
-                                                    displayTitleEnglish = displayResult.titleEnglish,
-                                                    displayTitleRomaji = detailState?.titleRomaji,
-                                                    displayTitleNative = detailState?.titleNative,
-                                                    displayYear = displayResult.year,
-                                                    isMovie = displayResult.type == MediaType.Movie,
-                                                    onSeasonSelected = { newSeason ->
-                                                        viewModel.setTargetSeason(newSeason, result, displayResult.realMalId)
-                                                    },
-                                                    onEpisodeOptionsRequested = { episode ->
-                                                        activeEpisodeForOptions = episode
-                                                    }
-                                                )
-                                            }
-                                        }
-                                    }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                // ── PORTRAIT ──
-                Box(modifier = Modifier.fillMaxSize()) {
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier
-                        .fillMaxSize()
-                        .background(KitsugiColors.Background)
-                ) {
-                    // Hero
-                    item(key = "hero") {
-                        KitsugiDetailHero(
-                            title = displayResult.getDisplayTitle(titleLanguage),
-                            subtitle = displayResult.subtitle,
-                            imageUrl = displayResult.imageUrl,
-                            logoUrl = if (showAnimeLogos) logoUrl else null,
-                            source = displayResult.source,
-                            typeLabel = when (displayResult.type) {
-                                    MediaType.Anime -> "ANIME"
-                                    MediaType.Movie -> "FİLM"
-                                    MediaType.TvShow -> "DİZİ"
-                                    else -> "MANGA"
-                                },
-                            year = displayResult.year?.toString(),
-                            isAdult = displayResult.isAdult,
-                            onBackClick = onBackClick,
-                            blurAdultMedia = blurAdultMedia,
-                            onPosterClick = {
-                                if (galleryItems.isNotEmpty()) {
-                                    activeGalleryItems = galleryItems
-                                    activeGalleryIndex = 0
-                                } else {
-                                    val posterUrl = displayResult.imageUrl
-                                    if (!posterUrl.isNullOrBlank()) {
-                                        activeGalleryItems = listOf(
-                                            GalleryItem(
-                                                url = posterUrl,
-                                                category = GalleryCategory.POSTER,
-                                                source = displayResult.source
-                                            )
-                                        )
-                                        activeGalleryIndex = 0
-                                    }
-                                }
-                            },
-                            onGalleryClick = if (galleryItems.isNotEmpty()) {{
-                                activeGalleryItems = galleryItems
-                                activeGalleryIndex = 0
-                            }} else null,
-                            scoreLabel = if (!hideScores) displayResult.getDisplayScore(scoreFormat, hideScores) else null,
-                            alreadyInList = existingEntry != null,
-                            totalEpisodes = displayResult.total,
-                            nextAiring = detailState?.nextAiringEpisode,
-                            isFavorite = isFavorite,
-                            showFavoriteButton = showFavouriteButton,
-                            onToggleFavoriteClick = if (onToggleFavoriteClick != null) {{
-                                onToggleFavoriteClick(ApiSearchSelection(result = displayResult, synopsis = synopsisForSave))
-                            }} else null
+                if (showFavouriteButton && onToggleFavoriteClick != null) {
+                    IconButton(onClick = {
+                        onToggleFavoriteClick(ApiSearchSelection(result = displayResult, synopsis = synopsisForSave))
+                    }) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                            contentDescription = if (isFavorite) "Favoriden Çıkar" else "Favori Yap",
+                            tint = if (isFavorite) accentColor else KitsugiColors.TextSecondary
                         )
                     }
-
-                    // Butonlar + İstatistikler
-                    item(key = "info") {
-                        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                            Spacer(modifier = Modifier.height(18.dp))
-
-                            FlowRow(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                if (displayResult.type == MediaType.Anime || displayResult.type == MediaType.TvShow || displayResult.type == MediaType.Movie) {
-                                    val accentColor = LocalKitsugiAccent.current
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clip(RoundedCornerShape(18.dp))
-                                            .background(accentColor)
-                                            .tvClickable(shape = RoundedCornerShape(18.dp)) {
-                                                val streamMalId = if (displayResult.source.lowercase() == "anilist") {
-                                                    displayResult.realMalId
-                                                } else {
-                                                    displayResult.malId
-                                                }
-                                                val rawStableId = if (displayResult.source.lowercase() == "anilist") displayResult.malId else null
-                                                val streamAniListId = rawStableId?.let {
-                                                    if (it >= 100_000_000) it - 100_000_000 else it
-                                                }
-                                                KitsugiStreamActivity.start(
-                                                    context = context,
-                                                    malId = streamMalId,
-                                                    aniListId = streamAniListId,
-                                                    tmdbId = detailState?.tmdbId ?: resolvedTmdbId,
-                                                    episode = 1,
-                                                    season = 1,
-                                                    isMovie = displayResult.type == MediaType.Movie,
-                                                    title = displayResult.title,
-                                                    posterUrl = displayResult.imageUrl,
-                                                    titleEnglish = displayResult.titleEnglish,
-                                                    titleRomaji = detailState?.titleRomaji,
-                                                    titleNative = detailState?.titleNative,
-                                                    startYear = displayResult.year
-                                                )
-                                            }
-                                            .padding(vertical = 14.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.PlayArrow,
-                                                contentDescription = null,
-                                                tint = KitsugiColors.Background
-                                            )
-                                            androidx.compose.material3.Text(
-                                                text = "İzle",
-                                                color = KitsugiColors.Background,
-                                                fontWeight = FontWeight.Black,
-                                                fontSize = 16.sp
-                                            )
-                                        }
-                                    }
-                                    Spacer(modifier = Modifier.height(4.dp))
+                }
+            },
+            portraitTopItems = { _, lpFocus, tbFocus ->
+                item(key = "hero") {
+                    ApiDetailLeftPanel(
+                        displayResult = displayResult,
+                        detailState = detailState,
+                        resolvedTmdbId = resolvedTmdbId,
+                        galleryItems = galleryItems,
+                        existingEntry = existingEntry,
+                        isConnected = isConnected,
+                        isFavorite = isFavorite,
+                        showFavouriteButton = showFavouriteButton,
+                        synopsisForSave = synopsisForSave,
+                        titleLanguage = titleLanguage,
+                        scoreFormat = scoreFormat,
+                        hideScores = hideScores,
+                        showAnimeLogos = showAnimeLogos,
+                        logoUrl = logoUrl,
+                        blurAdultMedia = blurAdultMedia,
+                        onBackClick = onBackClick,
+                        onAddClick = onAddClick,
+                        onEditClick = onEditClick,
+                        onToggleFavoriteClick = onToggleFavoriteClick,
+                        onReadMangaClick = onReadMangaClick,
+                        onGalleryOpen = { items, idx ->
+                            activeGalleryItems = items
+                            activeGalleryIndex = idx
+                        },
+                        onShowAuthWarning = { showAuthWarningDialog = true },
+                        leftPanelFocusRequester = lpFocus,
+                        tabBarFocusRequester = tbFocus
+                    )
+                }
+            },
+            pageContent = { page ->
+                when (page) {
+                    0 -> {
+                        ApiDetailOverviewTab(
+                            result = result,
+                            detail = detailState,
+                            displaySynopsis = displaySynopsis,
+                            isDetailLoading = detailLoading,
+                            isTranslating = (translatedSynopsis == null && detailState?.synopsis != null),
+                            onSearchQuery = onSearchQuery,
+                            onStudioClick = onStudioClick,
+                            onGenreClick = onSearchByGenre,
+                            onTagClick = onSearchByTag,
+                            onTranslateClick = {
+                                val raw = detailState?.synopsis
+                                if (!raw.isNullOrBlank()) context.openTranslator(raw, settingsState?.preferredTranslator ?: "DEFAULT")
+                            },
+                            onCopyClick = {
+                                val text = displaySynopsis ?: detailState?.synopsis
+                                if (!text.isNullOrBlank()) {
+                                    val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("synopsis", text))
+                                    android.widget.Toast.makeText(context, "Panoya kopyalandı", android.widget.Toast.LENGTH_SHORT).show()
                                 }
-
-                                if (displayResult.type == MediaType.Manga && onReadMangaClick != null) {
-                                    val accentColor = LocalKitsugiAccent.current
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clip(RoundedCornerShape(18.dp))
-                                            .background(accentColor)
-                                            .tvClickable(shape = RoundedCornerShape(18.dp), onClick = onReadMangaClick)
-                                            .padding(vertical = 14.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.AutoStories,
-                                                contentDescription = null,
-                                                tint = KitsugiColors.Background
-                                            )
-                                            androidx.compose.material3.Text(
-                                                text = "Oku",
-                                                color = KitsugiColors.Background,
-                                                fontWeight = FontWeight.Black,
-                                                fontSize = 16.sp
-                                            )
-                                        }
-                                    }
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                }
-
-                                if (existingEntry != null) {
-                                    // Listede var — "Düzenle" butonu
-                                    ApiActionButton(
-                                        text = "✎ Düzenle",
-                                        primary = true,
-                                        enabled = true,
-                                        onClick = { onEditClick(existingEntry) }
-                                    )
-                                } else {
-                                    // Listede yok — "Listeye Ekle" butonu
-                                    ApiActionButton(
-                                        text = "Listeye Ekle",
-                                        primary = true,
-                                        enabled = true,
-                                        onClick = {
-                                            if (isConnected) {
-                                                onAddClick(
-                                                    ApiSearchSelection(
-                                                        result = displayResult,
-                                                        synopsis = synopsisForSave
-                                                     )
-                                                 )
-                                            } else {
-                                                 showAuthWarningDialog = true
-                                            }
-                                        }
+                            },
+                            mdbListRatings = mdbListRatings,
+                            mdbListLoading = mdbListLoading,
+                            mdbListShowImdb = settingsState?.mdbListShowImdb ?: mdbListShowImdb,
+                            mdbListShowTomatoes = settingsState?.mdbListShowTomatoes ?: mdbListShowTomatoes,
+                            mdbListShowMetacritic = settingsState?.mdbListShowMetacritic ?: mdbListShowMetacritic,
+                            mdbListShowAudience = settingsState?.mdbListShowAudience ?: mdbListShowAudience,
+                            mdbListShowLetterboxd = settingsState?.mdbListShowLetterboxd ?: mdbListShowLetterboxd,
+                            mdbListShowTmdb = settingsState?.mdbListShowTmdb ?: mdbListShowTmdb,
+                            mdbListShowTrakt = settingsState?.mdbListShowTrakt ?: mdbListShowTrakt,
+                            onSettingsClick = if (settingsDataStore != null) {
+                                { showIntegrationsDialog = true }
+                            } else null,
+                            onImageGalleryRequest = { urls, index ->
+                                activeGalleryItems = urls.map { url ->
+                                    GalleryItem(
+                                        url = url,
+                                        category = GalleryCategory.POSTER,
+                                        source = displayResult.source
                                     )
                                 }
-
-                                if (externalUrl != null) {
-                                    val sourceLinkLabel = when (displayResult.source.lowercase()) {
-                                        "anilist" -> "AniList'te Aç"
-                                        "jikan", "mal" -> "MAL'da Gör"
-                                        "tmdb" -> "TMDB'de Aç"
-                                        else -> "Kaynakta Aç"
-                                    }
-                                    ApiActionButton(
-                                        text = sourceLinkLabel,
-                                        primary = false,
-                                        enabled = true,
-                                        onClick = { uriHandler.openUri(externalUrl) }
-                                    )
-                                }
+                                activeGalleryIndex = index
+                            },
+                            galleryItems = galleryItems,
+                            galleryLoading = galleryLoading,
+                            onGalleryItemRequest = { items, idx ->
+                                activeGalleryItems = items
+                                activeGalleryIndex = idx
                             }
-
-                            Spacer(modifier = Modifier.height(18.dp))
-                        }
+                        )
                     }
-
-                    // Sekme Barı — NATIVE STICKY HEADER
-                    stickyHeader(key = "tabs") {
-                        val accentColor = LocalKitsugiAccent.current
-                        LaunchedEffect(selectedTab) {
-                            // Sekme değiştiğinde eğer aşağı kaydırılmışsa sekmeleri üste sabitleyecek şekilde yukarı kaydır
-                            if (listState.firstVisibleItemIndex > 2) {
-                                listState.scrollToItem(2)
-                            }
-                            val itemInfo = tabListState.layoutInfo.visibleItemsInfo
-                                .firstOrNull { it.index == selectedTab }
-                            if (itemInfo != null) {
-                                val centerOffset = (tabListState.layoutInfo.viewportEndOffset - itemInfo.size) / 2
-                                tabListState.animateScrollToItem(selectedTab, -centerOffset)
-                            } else {
-                                tabListState.animateScrollToItem(selectedTab)
-                            }
+                    1 -> CharactersTabContent(state = charactersState, onCharacterClick = onCharacterClick, onStaffClick = onStaffClick, onMediaClick = onMediaClick)
+                    2 -> StaffTabContent(state = staffState, onStaffClick = onStaffClick)
+                    3 -> RecommendationsTabContent(state = recommendationsState, titleLanguage = titleLanguage, blurAdultMedia = blurAdultMedia, onRecommendationClick = { rel ->
+                        val typeLabel = when (rel.mediaType) {
+                            MediaType.Anime -> "Anime"
+                            MediaType.Movie -> "Film"
+                            MediaType.TvShow -> "Dizi"
+                            MediaType.Manga -> "Manga"
                         }
-
-                        val showFloatingHeader = listState.firstVisibleItemIndex >= 2
-
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(KitsugiColors.Surface.copy(alpha = 0.97f))
-                        ) {
-                            AnimatedVisibility(
-                                visible = showFloatingHeader,
-                                enter = expandVertically() + fadeIn(),
-                                exit = shrinkVertically() + fadeOut()
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(64.dp)
-                                        .background(KitsugiColors.Surface.copy(alpha = 0.92f))
-                                        .padding(horizontal = 8.dp)
-                                ) {
-                                    IconButton(onClick = onBackClick) {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                                            contentDescription = "Geri",
-                                            tint = KitsugiColors.TextPrimary
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = displayResult.title,
-                                        color = KitsugiColors.TextPrimary,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Black,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    IconButton(onClick = {
-                                        val url = buildExternalUrl(displayResult)
-                                        if (!url.isNullOrBlank()) {
-                                            com.kitsugi.animelist.utils.ShareUtils.shareText(context, displayResult.title, url)
-                                        }
-                                    }) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Share,
-                                            contentDescription = "Paylaş",
-                                            tint = KitsugiColors.TextSecondary
-                                        )
-                                    }
-                                    if (showFavouriteButton && onToggleFavoriteClick != null) {
-                                        IconButton(onClick = {
-                                            onToggleFavoriteClick(ApiSearchSelection(result = displayResult, synopsis = synopsisForSave))
-                                        }) {
-                                            Icon(
-                                                imageVector = if (isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                                                contentDescription = if (isFavorite) "Favoriden Çıkar" else "Favori Yap",
-                                                tint = if (isFavorite) accentColor else KitsugiColors.TextSecondary
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-
-                            LazyRow(
-                                state = tabListState,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 8.dp, vertical = 10.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                itemsIndexed(tabs) { index, title ->
-                                    val isSelected = selectedTab == index
-                                    val bgColor = if (isSelected) accentColor else KitsugiColors.Background
-                                    val textColor = if (isSelected) KitsugiColors.Background else KitsugiColors.TextSecondary
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(999.dp))
-                                            .background(bgColor)
-                                            .tvClickable(shape = RoundedCornerShape(999.dp)) {
-                                                coroutineScope.launch {
-                                                    pagerState.animateScrollToPage(index)
-                                                }
-                                            }
-                                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = title,
-                                            color = textColor,
-                                            style = MaterialTheme.typography.labelLarge,
-                                            fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold
-                                        )
-                                    }
-                                }
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(1.dp)
-                                    .background(KitsugiColors.SurfaceSoft)
-                            )
+                        val relResult = JikanSearchResult(
+                            malId = rel.malId,
+                            title = rel.title,
+                            subtitle = "${rel.relationType}, $typeLabel",
+                            type = rel.mediaType,
+                            total = null,
+                            score = null,
+                            isAdult = rel.isAdult,
+                            imageUrl = rel.imageUrl,
+                            year = null,
+                            source = rel.source,
+                            titleEnglish = rel.titleEnglish,
+                            titleJapanese = rel.titleJapanese
+                        )
+                        onRelationClick(relResult)
+                    })
+                    4 -> RelationsTabContent(state = relationsState, titleLanguage = titleLanguage, blurAdultMedia = blurAdultMedia, onRelationClick = { rel ->
+                        val typeLabel = when (rel.mediaType) {
+                            MediaType.Anime -> "Anime"
+                            MediaType.Movie -> "Film"
+                            MediaType.TvShow -> "Dizi"
+                            MediaType.Manga -> "Manga"
                         }
+                        val relResult = JikanSearchResult(
+                            malId = rel.malId,
+                            title = rel.title,
+                            subtitle = "${rel.relationType}, $typeLabel",
+                            type = rel.mediaType,
+                            total = null,
+                            score = null,
+                            isAdult = rel.isAdult,
+                            imageUrl = rel.imageUrl,
+                            year = null,
+                            source = rel.source,
+                            titleEnglish = rel.titleEnglish,
+                            titleJapanese = rel.titleJapanese
+                        )
+                        onRelationClick(relResult)
+                    })
+                    5 -> StatsTabContent(state = statsState)
+                    6 -> ReviewsTabContent(
+                        state = reviewsState,
+                        source = result.source,
+                        externalId = result.malId,
+                        mediaType = result.type,
+                        apiClient = apiClient,
+                        titleLanguage = titleLanguage,
+                        onUserProfileClick = onUserProfileClick,
+                        preferredTranslator = settingsState?.preferredTranslator ?: "DEFAULT"
+                    )
+                    7 -> {
+                        ApiDetailEpisodesTab(
+                            state = episodesState,
+                            episodeRatings = episodeRatings,
+                            targetSeason = targetSeason,
+                            totalSeasons = detailState?.totalSeasons,
+                            resolvedTmdbId = detailState?.tmdbId,
+                            displayTitle = displayResult.title,
+                            displaySource = displayResult.source,
+                            displayMalId = displayResult.malId,
+                            displayRealMalId = displayResult.realMalId,
+                            displayImageUrl = displayResult.imageUrl,
+                            displayTitleEnglish = displayResult.titleEnglish,
+                            displayTitleRomaji = detailState?.titleRomaji,
+                            displayTitleNative = detailState?.titleNative,
+                            displayYear = displayResult.year,
+                            isMovie = displayResult.type == MediaType.Movie,
+                            onSeasonSelected = { newSeason ->
+                                viewModel.setTargetSeason(newSeason, result, displayResult.realMalId)
+                            },
+                            onEpisodeOptionsRequested = { episode ->
+                                activeEpisodeForOptions = episode
+                            }
+                        )
                     }
-
-                    // Sekme İçerikleri
-                    item(key = "content") {
-                        val pageHeights = remember { androidx.compose.runtime.mutableStateMapOf<Int, Int>() }
-                        val density = androidx.compose.ui.platform.LocalDensity.current
-                        val currentPage = pagerState.currentPage
-                        val currentPageOffset = pagerState.currentPageOffsetFraction
-                        val targetPage = if (currentPageOffset > 0f) currentPage + 1 else if (currentPageOffset < 0f) currentPage - 1 else currentPage
-
-                        val currentHeightPx = pageHeights[currentPage] ?: 0
-                        val targetHeightPx = pageHeights[targetPage] ?: currentHeightPx
-
-                        val interpolatedHeightDp = remember(currentHeightPx, targetHeightPx, currentPageOffset) {
-                            val heightPx = if (currentHeightPx > 0 && targetHeightPx > 0) {
-                                currentHeightPx + (targetHeightPx - currentHeightPx) * kotlin.math.abs(currentPageOffset)
-                            } else if (currentHeightPx > 0) {
-                                currentHeightPx.toFloat()
-                            } else {
-                                0f
-                            }
-                            if (heightPx > 0f) with(density) { heightPx.toDp() } else null
-                        }
-
-                        val screenHeightDp = androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp
-
-                        HorizontalPager(
-                            state = pagerState,
-                            userScrollEnabled = !isTv,
-                            beyondViewportPageCount = 1,
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
-                            pageSpacing = 12.dp,
-                            verticalAlignment = Alignment.Top,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .layout { measurable, constraints ->
-                                    val minPagerHeightPx = with(density) { (screenHeightDp - 64).dp.roundToPx() }
-                                    val placeable = measurable.measure(
-                                        constraints.copy(
-                                            minHeight = minPagerHeightPx,
-                                            maxHeight = androidx.compose.ui.unit.Constraints.Infinity
-                                        )
-                                    )
-                                    val height = interpolatedHeightDp?.roundToPx()?.coerceAtLeast(minPagerHeightPx) ?: placeable.height
-                                    layout(placeable.width, height) {
-                                        placeable.placeRelative(0, 0)
-                                    }
-                                }
-                                .clipToBounds()
-                        ) { page ->
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(min = 600.dp)
-                            ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .onGloballyPositioned { coordinates ->
-                                            pageHeights[page] = coordinates.size.height
-                                        }
-                                ) {
-                                    when (page) {
-                                    0 -> {
-                                        ApiDetailOverviewTab(
-                                            result = result,
-                                            detail = detailState,
-                                            displaySynopsis = displaySynopsis,
-                                            isDetailLoading = detailLoading,
-                                            isTranslating = (translatedSynopsis == null && detailState?.synopsis != null),
-                                            onSearchQuery = onSearchQuery,
-                                            onStudioClick = onStudioClick,
-                                            onGenreClick = onSearchByGenre,
-                                            onTagClick = onSearchByTag,
-                                            onTranslateClick = {
-                                                val raw = detailState?.synopsis
-                                                if (!raw.isNullOrBlank()) context.openTranslator(raw, settingsState?.preferredTranslator ?: "DEFAULT")
-                                            },
-                                            onCopyClick = {
-                                                val text = displaySynopsis ?: detailState?.synopsis
-                                                if (!text.isNullOrBlank()) {
-                                                    val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                                    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("synopsis", text))
-                                                    android.widget.Toast.makeText(context, "Panoya kopyalandı", android.widget.Toast.LENGTH_SHORT).show()
-                                                }
-                                            },
-                                                                                        mdbListRatings = mdbListRatings,
-                                            mdbListLoading = mdbListLoading,
-                                            mdbListShowImdb = settingsState?.mdbListShowImdb ?: mdbListShowImdb,
-                                            mdbListShowTomatoes = settingsState?.mdbListShowTomatoes ?: mdbListShowTomatoes,
-                                            mdbListShowMetacritic = settingsState?.mdbListShowMetacritic ?: mdbListShowMetacritic,
-                                            mdbListShowAudience = settingsState?.mdbListShowAudience ?: mdbListShowAudience,
-                                            mdbListShowLetterboxd = settingsState?.mdbListShowLetterboxd ?: mdbListShowLetterboxd,
-                                            mdbListShowTmdb = settingsState?.mdbListShowTmdb ?: mdbListShowTmdb,
-                                            mdbListShowTrakt = settingsState?.mdbListShowTrakt ?: mdbListShowTrakt,
-                                            onSettingsClick = if (settingsDataStore != null) {
-                                                { showIntegrationsDialog = true }
-                                            } else null,
-                                            onImageGalleryRequest = { urls, index ->
-                                                activeGalleryItems = urls.map { url ->
-                                                    GalleryItem(
-                                                        url = url,
-                                                        category = GalleryCategory.POSTER,
-                                                        source = displayResult.source
-                                                    )
-                                                }
-                                                activeGalleryIndex = index
-                                            }
-                                        )
-                                    }
-                                    1 -> CharactersTabContent(state = charactersState, onCharacterClick = onCharacterClick, onStaffClick = onStaffClick, onMediaClick = onMediaClick)
-                                    2 -> StaffTabContent(state = staffState, onStaffClick = onStaffClick)
-                                    3 -> RecommendationsTabContent(state = recommendationsState, titleLanguage = titleLanguage, blurAdultMedia = blurAdultMedia, onRecommendationClick = { rel ->
-                                        val typeLabel = when (rel.mediaType) {
-                                            MediaType.Anime -> "Anime"
-                                            MediaType.Movie -> "Film"
-                                            MediaType.TvShow -> "Dizi"
-                                            MediaType.Manga -> "Manga"
-                                        }
-                                        val relResult = JikanSearchResult(
-                                            malId = rel.malId,
-                                            title = rel.title,
-                                            subtitle = "${rel.relationType}, $typeLabel",
-                                            type = rel.mediaType,
-                                            total = null,
-                                            score = null,
-                                            isAdult = rel.isAdult,
-                                            imageUrl = rel.imageUrl,
-                                            year = null,
-                                            source = rel.source,
-                                            titleEnglish = rel.titleEnglish,
-                                            titleJapanese = rel.titleJapanese
-                                        )
-                                        onRelationClick(relResult)
-                                    })
-                                    4 -> RelationsTabContent(state = relationsState, titleLanguage = titleLanguage, blurAdultMedia = blurAdultMedia, onRelationClick = { rel ->
-                                        val typeLabel = when (rel.mediaType) {
-                                            MediaType.Anime -> "Anime"
-                                            MediaType.Movie -> "Film"
-                                            MediaType.TvShow -> "Dizi"
-                                            MediaType.Manga -> "Manga"
-                                        }
-                                        val relResult = JikanSearchResult(
-                                            malId = rel.malId,
-                                            title = rel.title,
-                                            subtitle = "${rel.relationType}, $typeLabel",
-                                            type = rel.mediaType,
-                                            total = null,
-                                            score = null,
-                                            isAdult = rel.isAdult,
-                                            imageUrl = rel.imageUrl,
-                                            year = null,
-                                            source = rel.source,
-                                            titleEnglish = rel.titleEnglish,
-                                            titleJapanese = rel.titleJapanese
-                                        )
-                                        onRelationClick(relResult)
-                                    })
-                                    5 -> StatsTabContent(state = statsState)
-                                    6 -> ReviewsTabContent(
-                                        state = reviewsState,
-                                        source = result.source,
-                                        externalId = result.malId,
-                                        mediaType = result.type,
-                                        apiClient = apiClient,
-                                        titleLanguage = titleLanguage,
-                                        onUserProfileClick = onUserProfileClick,
-                                        preferredTranslator = settingsState?.preferredTranslator ?: "DEFAULT"
-                                    )
-                                    7 -> {
-                                        ApiDetailEpisodesTab(
-                                            state = episodesState,
-                                            episodeRatings = episodeRatings,
-                                            targetSeason = targetSeason,
-                                            totalSeasons = detailState?.totalSeasons,
-                                            resolvedTmdbId = detailState?.tmdbId,
-                                            displayTitle = displayResult.title,
-                                            displaySource = displayResult.source,
-                                            displayMalId = displayResult.malId,
-                                            displayRealMalId = displayResult.realMalId,
-                                            displayImageUrl = displayResult.imageUrl,
-                                            displayTitleEnglish = displayResult.titleEnglish,
-                                            displayTitleRomaji = detailState?.titleRomaji,
-                                            displayTitleNative = detailState?.titleNative,
-                                            displayYear = displayResult.year,
-                                                                                        isMovie = displayResult.type == MediaType.Movie,
-                                            onSeasonSelected = { newSeason ->
-                                                viewModel.setTargetSeason(newSeason, result, displayResult.realMalId)
-                                            },
-                                            onEpisodeOptionsRequested = { episode ->
-                                                activeEpisodeForOptions = episode
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                        Spacer(modifier = Modifier.height(90.dp))
-                    } // end item
-                } // end LazyColumn
-            } // end portrait Box
-        } // end portrait else
-            } // end PullToRefreshBox
-    } // end else (non-loading)
+                }
+            }
+        )
+    }
 
     activeEpisodeForOptions?.let { ep ->
         val resultMalId = if (displayResult.source.lowercase() == "anilist") displayResult.realMalId else displayResult.malId
@@ -1365,6 +635,7 @@ fun ApiResultDetailPage(
             titleNative = detailState?.titleNative,
             startYear = displayResult.year,
             isMovie = displayResult.type == MediaType.Movie,
+            seasonNumber = ep.seasonNumber ?: targetSeason,
             onDismiss = { activeEpisodeForOptions = null }
         )
     }
@@ -1588,8 +859,6 @@ fun ApiResultDetailPage(
             onDismiss = { showIntegrationsDialog = false }
         )
     }
-
-    } // KitsugiPageEnter
 } // ApiResultDetailPage
 
 /**

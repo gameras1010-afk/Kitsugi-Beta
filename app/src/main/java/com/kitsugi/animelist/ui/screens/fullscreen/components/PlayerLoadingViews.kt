@@ -18,6 +18,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.kitsugi.animelist.R
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.material.icons.rounded.PlayArrow
+import com.kitsugi.animelist.ui.utils.tvClickable
+
 // ─────────────────────────────────────────────────────────────
 // Full-screen loading spinner
 // ─────────────────────────────────────────────────────────────
@@ -41,18 +47,43 @@ fun PlayerLoadingView(modifier: Modifier = Modifier) {
 // Full-screen buffering view
 // ─────────────────────────────────────────────────────────────
 @Composable
-fun PlayerBufferingView(modifier: Modifier = Modifier) {
+fun PlayerBufferingView(
+    isPlaying: Boolean,
+    onPlayPauseClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Box(
-        modifier = modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)),
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.55f))
+            .tvClickable(onClick = onPlayPauseClick),
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            if (isPlaying) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(72.dp)
+                        .clip(CircleShape)
+                        .background(Color.Black.copy(alpha = 0.6f))
+                        .border(1.dp, Color.White.copy(alpha = 0.18f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.PlayArrow,
+                        contentDescription = "Oynat",
+                        tint = Color.White,
+                        modifier = Modifier.size(38.dp)
+                    )
+                }
+            }
             Text(
-                stringResource(R.string.player_buffering),
+                text = if (isPlaying) stringResource(R.string.player_buffering) else "Duraklatıldı",
                 color = Color.White,
                 fontWeight = FontWeight.Medium
             )

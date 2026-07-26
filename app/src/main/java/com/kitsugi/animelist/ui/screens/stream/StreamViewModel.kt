@@ -248,6 +248,9 @@ class StreamViewModel(application: Application) : AndroidViewModel(application) 
         val resolvedImdbId = resolvedIds.imdbId
         val resolvedKitsuId = resolvedIds.kitsuId
         if (resolvedImdbId == null && resolvedKitsuId == null) {
+            // ID çözümlenemedi — yine de CS plugin'leri başlık bazlı aramaya devam edecek.
+            // idResolveFailed sadece bilgilendirme amaçlı set ediliyor, bloklamıyor.
+            Log.w(TAG, "ID çözümleme başarısız — title-based fallback ile devam ediliyor. title='$title'")
             _idResolveFailed.value = true
         }
         _imdbId.value = resolvedImdbId

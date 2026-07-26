@@ -15,7 +15,9 @@ data class ResolvedIds(
     val kitsuId: Int? = null,
     val tmdbId: Int? = null,
     val aniListId: Int? = null,
-    val malId: Int? = null
+    val malId: Int? = null,
+    val tvdbId: Int? = null,
+    val wikidataId: String? = null
 )
 
 object KitsugiIdResolver {
@@ -89,21 +91,51 @@ object KitsugiIdResolver {
             val v = it.optInt("myanimelist", -1)
             if (v > 0) v else null
         }
+        val tvdbFromArm = armJson?.let {
+            val v = it.optInt("thetvdb", -1)
+            if (v > 0) v else null
+        }
+        val wikidataFromArm = armJson?.optNullableString("wikidata")
+
         // Use provided tmdbId directly if ARM didn't find one
         val finalTmdbId = tmdbFromArm ?: tmdbId ?: resolveTmdbId(malId, aniListId)
 
         // If ARM didn't give us an IMDb ID, fall back through TMDB
-        val finalImdb = if (!imdbFromArm.isNullOrBlank()) {
-            imdbFromArm
-        } else {
-            finalTmdbId?.let { fetchImdbFromTmdb(it) }
+        var finalImdb = if (!imdbFromArm.isNullOrBlank()) imdbFromArm else null
+        var finalTvdb = tvdbFromArm
+        var finalWikidata = wikidataFromArm
+
+        if (finalTmdbId != null && finalTmdbId > 0) {
+            val isTv = mediaType == MediaType.TvShow || (mediaType != MediaType.Movie && !isNonAnime)
+            var extIds = fetchExternalIdsFromTmdb(finalTmdbId, isTv)
+            if (extIds.imdbId.isNullOrBlank() && extIds.tvdbId == null && extIds.wikidataId.isNullOrBlank()) {
+                // Try the other type just in case
+                extIds = fetchExternalIdsFromTmdb(finalTmdbId, !isTv)
+            }
+            if (!extIds.imdbId.isNullOrBlank()) {
+                finalImdb = extIds.imdbId
+            }
+            if (extIds.tvdbId != null && extIds.tvdbId > 0) {
+                finalTvdb = extIds.tvdbId
+            }
+            if (!extIds.wikidataId.isNullOrBlank()) {
+                finalWikidata = extIds.wikidataId
+            }
         }
 
         val finalAniList = aniListFromArm ?: aniListId
         val finalMal = malFromArm ?: malId
 
-        Log.d(TAG, "resolveIds complete → imdb=$finalImdb kitsu=$kitsuFromArm tmdb=$finalTmdbId anilist=$finalAniList mal=$finalMal")
-        ResolvedIds(imdbId = finalImdb, kitsuId = kitsuFromArm, tmdbId = finalTmdbId, aniListId = finalAniList, malId = finalMal)
+        Log.d(TAG, "resolveIds complete → imdb=$finalImdb kitsu=$kitsuFromArm tmdb=$finalTmdbId anilist=$finalAniList mal=$finalMal tvdb=$finalTvdb wikidata=$finalWikidata")
+        ResolvedIds(
+            imdbId = finalImdb,
+            kitsuId = kitsuFromArm,
+            tmdbId = finalTmdbId,
+            aniListId = finalAniList,
+            malId = finalMal,
+            tvdbId = finalTvdb,
+            wikidataId = finalWikidata
+        )
     }
 
     /**
@@ -196,6 +228,36 @@ object KitsugiIdResolver {
 
         return null
     }
+
+    data class TmdbExternalIds(
+        val imdbId: String? = null,
+        val tvdbId: Int? = null,
+        val wikidataId: String? = null
+    )
+
+    private fun fetchExternalIdsFromTmdb(tmdbId: Int, isTv: Boolean): TmdbExternalIds {
+        val apiKey = TmdbApiClient.getActiveApiKey()
+        val typePath = if (isTv) "tv" else "movie"
+        return try {
+            val url = URL("https://api.themoviedb.org/3/$typePath/$tmdbId/external_ids?api_key=$apiKey")
+            val response = KitsugiApiBase.executeGetRequest(url) ?: return TmdbExternalIds()
+            val json = JSONObject(response)
+            val imdbId = json.optNullableString("imdb_id")
+            val tvdbId = json.optInt("tvdb_id", -1).takeIf { it > 0 }
+            val wikidataId = json.optNullableString("wikidata_id")
+            TmdbExternalIds(imdbId = imdbId, tvdbId = tvdbId, wikidataId = wikidataId)
+        } catch (e: Exception) {
+            Log.w(TAG, "fetchExternalIdsFromTmdb failed for tmdbId=$tmdbId isTv=$isTv: ${e.message}")
+            TmdbExternalIds()
+        }
+    }
+
+    /**
+     * KitsugiEpisodeRatingsRepository gibi dış sınıflar için TMDB external_ids erişimi.
+     * isTv=true → /tv/{id}/external_ids, isTv=false → /movie/{id}/external_ids
+     */
+    fun fetchExternalIds(tmdbId: Int, isTv: Boolean): TmdbExternalIds =
+        fetchExternalIdsFromTmdb(tmdbId, isTv)
 
     // JSON Helper
     private fun JSONObject.optNullableString(key: String): String? {

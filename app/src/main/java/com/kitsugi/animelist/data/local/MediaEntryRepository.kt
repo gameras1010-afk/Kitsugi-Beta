@@ -85,8 +85,15 @@ class MediaEntryRepository(
 
     private suspend fun syncEntryIfPossible(entry: MediaEntry, advancedScores: List<Double>? = null) {
         val appContext = context ?: return
-        // Simkl kaydı (simklId var) veya MAL/AniList kaydı (malId var) ise sync yap
-        if (entry.malId == null && (entry.simklId == null || entry.simklId <= 0)) return
+        // Senkronizasyon için geçerli koşullar:
+        // 1) malId var (MAL veya gerçek bir MAL ID'si olan AniList kaydı)
+        // 2) aniListEntryId var (kaynak ne olursa olsun AniList liste kaydı)
+        // 3) kaynak anilist (mediaId henüz bilinmese bile AniList'e push edilebilir)
+        // 4) simklId var (Simkl kaydı)
+        val hasAniListLink = entry.aniListEntryId != null || entry.source == "anilist"
+        val hasMalLink = entry.malId != null
+        val hasSimklLink = entry.simklId != null && entry.simklId > 0
+        if (!hasAniListLink && !hasMalLink && !hasSimklLink) return
 
         val result = runCatching {
             ExternalListSyncManager.syncEntry(
@@ -127,8 +134,11 @@ class MediaEntryRepository(
 
     private suspend fun syncDeleteIfPossible(entry: MediaEntry) {
         val appContext = context ?: return
-        // Simkl kaydı (simklId var) veya MAL/AniList kaydı (malId var) ise sil
-        if (entry.malId == null && (entry.simklId == null || entry.simklId <= 0)) return
+        // Silme için geçerli koşullar (syncEntryIfPossible ile aynı mantık)
+        val hasAniListLink = entry.aniListEntryId != null || entry.source == "anilist"
+        val hasMalLink = entry.malId != null
+        val hasSimklLink = entry.simklId != null && entry.simklId > 0
+        if (!hasAniListLink && !hasMalLink && !hasSimklLink) return
 
         val result = runCatching {
             ExternalListSyncManager.deleteEntry(

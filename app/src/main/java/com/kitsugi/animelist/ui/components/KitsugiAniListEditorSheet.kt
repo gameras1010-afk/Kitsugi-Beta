@@ -368,13 +368,15 @@ internal fun KitsugiAniListMediaEntryEditorSheet(
                     icon = Icons.Rounded.CalendarToday,
                     label = "Başlangıç Tarihi",
                     value = startDateText.ifBlank { "Tarih Seçilmemiş" },
-                    onClick = { selectDate(startDateText) { startDateText = it } }
+                    onClick = { selectDate(startDateText) { startDateText = it } },
+                    onClearClick = if (startDateText.isNotBlank()) { { startDateText = "" } } else null
                 )
                 SheetRow(
                     icon = Icons.Rounded.EventAvailable,
                     label = "Bitiş Tarihi",
                     value = endDateText.ifBlank { "Tarih Seçilmemiş" },
-                    onClick = { selectDate(endDateText) { endDateText = it } }
+                    onClick = { selectDate(endDateText) { endDateText = it } },
+                    onClearClick = if (endDateText.isNotBlank()) { { endDateText = "" } } else null
                 )
                 SheetRow(
                     icon = Icons.Rounded.Repeat,
