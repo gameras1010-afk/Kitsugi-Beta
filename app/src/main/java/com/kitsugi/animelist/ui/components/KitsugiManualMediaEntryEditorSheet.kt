@@ -154,6 +154,7 @@ internal fun KitsugiManualMediaEntryEditorSheet(
     var notes by rememberSaveable(initialEntry?.id) {
         mutableStateOf(initialEntry?.notes.orEmpty())
     }
+    val scrollState = rememberScrollState()
 
     val parsedProgress = progressText.toIntOrNull()?.coerceAtLeast(0) ?: 0
     val parsedTotal = totalText.toIntOrNull()?.takeIf { it > 0 }
@@ -181,7 +182,8 @@ internal fun KitsugiManualMediaEntryEditorSheet(
             endDateText.trim().isValidDateOrBlank()
 
     KitsugiSheetOrDialog(
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
+        innerColumnScrollState = scrollState
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             // Top Bar
@@ -192,7 +194,7 @@ internal fun KitsugiManualMediaEntryEditorSheet(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(onClick = onDismiss) {
+                TextButton(onClick = LocalDismissAnimated.current) {
                     Text(text = "İptal", color = KitsugiColors.TextSecondary, fontWeight = FontWeight.Medium)
                 }
 
@@ -247,7 +249,7 @@ internal fun KitsugiManualMediaEntryEditorSheet(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(scrollState)
                     .padding(bottom = 32.dp)
             ) {
                 // 1. Status row

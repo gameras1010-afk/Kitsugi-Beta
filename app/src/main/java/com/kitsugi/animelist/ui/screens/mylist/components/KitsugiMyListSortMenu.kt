@@ -41,7 +41,7 @@ val myListSortMenuItems = listOf(
     SortMenuItem("newest", "oldest", "Eklenme tarihi"),
     SortMenuItem("start_date_desc", "start_date_asc", "Başlangıç tarihi"),
     SortMenuItem("end_date_desc", "end_date_asc", "Bitiş tarihi"),
-    SortMenuItem("priority_desc", "priority_asc", "Tekrar Sayısı")
+    SortMenuItem("repeat_desc", "repeat_asc", "Tekrar Sayısı")
 )
 
 @Composable

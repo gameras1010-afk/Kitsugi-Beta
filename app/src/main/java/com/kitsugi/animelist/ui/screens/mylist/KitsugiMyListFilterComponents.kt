@@ -11,11 +11,21 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowDownward
+import androidx.compose.material.icons.rounded.ArrowUpward
+import androidx.compose.material.icons.rounded.FilterList
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,9 +33,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kitsugi.animelist.model.MediaType
 import com.kitsugi.animelist.model.WatchStatus
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.FilterList
 import com.kitsugi.animelist.ui.components.KitsugiEmptyState
+import com.kitsugi.animelist.ui.screens.mylist.components.myListSortMenuItems
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 
@@ -377,6 +386,58 @@ internal fun RichMyListFilterPanel(
             )
         }
 
+        // Section: Sort (Sıralama)
+        Column {
+            FilterLabel(text = "Sıralama")
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                myListSortMenuItems.forEach { item ->
+                    val isDescActive = selectedSortId == item.descId
+                    val isAscActive = selectedSortId == item.ascId
+                    val isSelected = isDescActive || isAscActive
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(999.dp))
+                            .background(
+                                if (isSelected) accentColor else KitsugiColors.Surface
+                            )
+                            .tvClickable(shape = RoundedCornerShape(999.dp), onClick = {
+                                val nextId = if (isDescActive) item.ascId else item.descId
+                                onSortSelected(nextId)
+                            })
+                            .padding(horizontal = 14.dp, vertical = 9.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = item.title,
+                                color = if (isSelected) KitsugiColors.Background else KitsugiColors.TextSecondary,
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1
+                            )
+                            if (isSelected) {
+                                Icon(
+                                    imageVector = if (isAscActive) Icons.Rounded.ArrowUpward else Icons.Rounded.ArrowDownward,
+                                    contentDescription = null,
+                                    tint = KitsugiColors.Background,
+                                    modifier = Modifier.size(12.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // Action Buttons: Hide & Reset Filters
         Row(
             modifier = Modifier
@@ -493,7 +554,7 @@ internal fun EmptyListResultCard(
     val activeScoreTitle = scoreFilters.firstOrNull { it.id == selectedScoreFilterId }?.title ?: "Tümü"
     val activeYearTitle = yearFilters.firstOrNull { it.id == selectedYearFilterId }?.title ?: "Tümü"
     val activeExtraTitle = extraFilters.firstOrNull { it.id == selectedExtraFilterId }?.title ?: "Tümü"
-    val activeSortTitle = sortOptions.firstOrNull { it.id == selectedSortId }?.title ?: "Son eklenen"
+    val activeSortTitle = getSortTitle(selectedSortId)
 
     KitsugiEmptyState(
         title = "Sonuç bulunamadı",

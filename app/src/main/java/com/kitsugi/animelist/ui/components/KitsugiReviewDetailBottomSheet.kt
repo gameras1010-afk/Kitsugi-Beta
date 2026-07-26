@@ -113,9 +113,11 @@ fun KitsugiReviewDetailBottomSheet(
             isTranslating = false
         }
     }
+    val scrollState = rememberScrollState()
 
     KitsugiSheetOrDialog(
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
+        innerColumnScrollState = scrollState
     ) {
         Column(
             modifier = Modifier
@@ -218,7 +220,7 @@ fun KitsugiReviewDetailBottomSheet(
                     }
 
                     IconButton(
-                        onClick = onDismiss,
+                        onClick = LocalDismissAnimated.current,
                         colors = IconButtonDefaults.iconButtonColors(
                             containerColor = KitsugiColors.SurfaceStrong
                         )
@@ -300,7 +302,7 @@ fun KitsugiReviewDetailBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(max = 350.dp)
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(scrollState)
                     .padding(vertical = 4.dp)
             ) {
                 if (isTranslating) {

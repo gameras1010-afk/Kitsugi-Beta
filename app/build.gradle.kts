@@ -25,7 +25,7 @@ android {
     val simklSecret       = localProperties.getProperty("simkl_client_secret")   ?: "81d3253f90d1f2c0c4ea55af6ca317861e5f40d43c16255eeabd57fc51c73f1c"
     val animeSkipClientId = localProperties.getProperty("anime_skip_client_id")  ?: "5mpKIMeowxmJ4UvAWacdPEzNbfXEjZDv"
 
-    val appVersionName = "2.4.106"
+    val appVersionName = "2.4.107"
 
     compileSdk = 36
 
@@ -123,7 +123,12 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
-        freeCompilerArgs += "-Xskip-metadata-version-check"
+        freeCompilerArgs += listOf(
+            "-Xskip-metadata-version-check",
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
+            "-opt-in=androidx.compose.material.ExperimentalMaterialApi",
+            "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi"
+        )
     }
 
     testOptions {
@@ -345,6 +350,14 @@ dependencies {
 
     // mpv-android-lib
     implementation("io.github.abdallahmehiz:mpv-android-lib:0.1.12")
+
+    // ── Aniyomi Player Components ──────────────────────────────────────────────
+    // ConstraintLayout for Compose — used by panel side overlays
+    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
+    // Seeker — Aniyomi-style seekbar with chapter markers and read-ahead
+    implementation("io.github.2307vivek:seeker:1.2.2")
+    // kotlinx-collections-immutable — ImmutableList<Segment> in SeekBar
+    implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.7")
 
     // â”€â”€ T1.10 â€“ Libass / ASS Extractor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // peerless2012/ass-android: Media3-uyumlu libass JNI wrapper.

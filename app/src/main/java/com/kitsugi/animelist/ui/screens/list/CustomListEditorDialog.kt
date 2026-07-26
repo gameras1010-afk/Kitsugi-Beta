@@ -3,6 +3,7 @@ package com.kitsugi.animelist.ui.screens.list
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -38,8 +39,9 @@ fun CustomListEditorDialog(
     var newListName by remember { mutableStateOf("") }
     var editingList by remember { mutableStateOf<String?>(null) }
     var editedName by remember { mutableStateOf("") }
+    val listState = rememberLazyListState()
 
-    KitsugiSheetOrDialog(onDismiss = onDismiss, heightFraction = 0.75f) {
+    KitsugiSheetOrDialog(onDismiss = onDismiss, heightFraction = 0.75f, innerScrollState = listState) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -108,6 +110,7 @@ fun CustomListEditorDialog(
                 )
             } else {
                 LazyColumn(
+                    state = listState,
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.weight(1f, fill = false)
                 ) {

@@ -170,6 +170,30 @@ class SettingsDataStore(
         val CustomImageDownloadUri = stringPreferencesKey("custom_image_download_uri")
         val SyncEnabledAnilist = booleanPreferencesKey("sync_enabled_anilist")
         val SyncEnabledMal = booleanPreferencesKey("sync_enabled_mal")
+        // ─── MPV Gelişmiş Oynatıcı Ayarları ───────────────────────────────────────
+        val MpvGpuRenderer = stringPreferencesKey("mpv_gpu_renderer")
+        val MpvHwdecMode = stringPreferencesKey("mpv_hwdec_mode")
+        val MpvDebandMode = stringPreferencesKey("mpv_deband_mode")
+        val MpvForceYuv420p = booleanPreferencesKey("mpv_force_yuv420p")
+        val MpvDemuxerCacheMb = intPreferencesKey("mpv_demuxer_cache_mb")
+        // ─── İkincil Altyazı ────────────────────────────────────────────────────
+        val SecondarySubtitleTrackId = intPreferencesKey("secondary_subtitle_track_id")
+        val SecondarySubtitleDelayMs = longPreferencesKey("secondary_subtitle_delay_ms")
+        // ─── Altyazı Gelişmiş Stil ───────────────────────────────────────────────────
+        val SubtitleItalic = booleanPreferencesKey("subtitle_italic")
+        val SubtitleJustification = stringPreferencesKey("subtitle_justification")
+        val SubtitleBackgroundColor = intPreferencesKey("subtitle_background_color")
+        val SubtitleShadowOffset = floatPreferencesKey("subtitle_shadow_offset")
+        val SubtitleBorderColor = intPreferencesKey("subtitle_border_color")
+        val SubtitleBorderSize = floatPreferencesKey("subtitle_border_size")
+        // ─── Uyku Zamanlayıcısı ──────────────────────────────────────────────────
+        val SleepTimerSeconds = intPreferencesKey("sleep_timer_seconds")
+        // ─── Ses Boost Sınırı ─────────────────────────────────────────────────────
+        val VolumeBoostCap = intPreferencesKey("volume_boost_cap")
+        // ─── Gesture genisleme ───────────────────────────────────────────────────
+        val SwipeVolumeBrightnessSides = booleanPreferencesKey("swipe_volume_brightness_sides")
+        val HorizontalSeekGestureEnabled = booleanPreferencesKey("horizontal_seek_gesture_enabled")
+        val PreciseSeeking = booleanPreferencesKey("precise_seeking")
     }
 
     val settingsFlow: Flow<AppSettings> = kotlinx.coroutines.flow.flow {
@@ -313,7 +337,31 @@ class SettingsDataStore(
                     autoUpdateCheckEnabled = preferences[Keys.AutoUpdateCheckEnabled] ?: true,
                     customImageDownloadUri = preferences[Keys.CustomImageDownloadUri] ?: "",
                     syncEnabledAnilist = preferences[Keys.SyncEnabledAnilist] ?: true,
-                    syncEnabledMal = preferences[Keys.SyncEnabledMal] ?: true
+                    syncEnabledMal = preferences[Keys.SyncEnabledMal] ?: true,
+                    // ─── MPV Gelişmiş Ayarları
+                    mpvGpuRenderer = preferences[Keys.MpvGpuRenderer] ?: "gpu",
+                    mpvHwdecMode = preferences[Keys.MpvHwdecMode] ?: "auto-safe",
+                    mpvDebandMode = preferences[Keys.MpvDebandMode] ?: "none",
+                    mpvForceYuv420p = preferences[Keys.MpvForceYuv420p] ?: false,
+                    mpvDemuxerCacheMb = preferences[Keys.MpvDemuxerCacheMb] ?: 64,
+                    // ─── İkincil Altyazı
+                    secondarySubtitleTrackId = preferences[Keys.SecondarySubtitleTrackId] ?: -1,
+                    secondarySubtitleDelayMs = preferences[Keys.SecondarySubtitleDelayMs] ?: 0L,
+                    // ─── Altyazı Gelişmiş Stil
+                    subtitleItalic = preferences[Keys.SubtitleItalic] ?: false,
+                    subtitleJustification = preferences[Keys.SubtitleJustification] ?: "center",
+                    subtitleBackgroundColor = preferences[Keys.SubtitleBackgroundColor] ?: 0,
+                    subtitleShadowOffset = preferences[Keys.SubtitleShadowOffset] ?: 1.5f,
+                    subtitleBorderColor = preferences[Keys.SubtitleBorderColor] ?: 0xFF000000.toInt(),
+                    subtitleBorderSize = preferences[Keys.SubtitleBorderSize] ?: 1.5f,
+                    // ─── Uyku Zamanlayıcısı
+                    sleepTimerSeconds = preferences[Keys.SleepTimerSeconds] ?: 0,
+                    // ─── Ses Boost Sınırı
+                    volumeBoostCap = preferences[Keys.VolumeBoostCap] ?: 200,
+                    // ─── Gesture genişleme
+                    swipeVolumeBrightnessSides = preferences[Keys.SwipeVolumeBrightnessSides] ?: true,
+                    horizontalSeekGestureEnabled = preferences[Keys.HorizontalSeekGestureEnabled] ?: true,
+                    preciseSeeking = preferences[Keys.PreciseSeeking] ?: false
                 )
             )
         }
@@ -1000,6 +1048,90 @@ class SettingsDataStore(
 
     suspend fun setSyncEnabledMal(enabled: Boolean) {
         context.settingsDataStore.edit { it[Keys.SyncEnabledMal] = enabled }
+    }
+
+    // ─── MPV Gelişmiş Oynatıcı Ayarları ─────────────────────────────────────
+
+    suspend fun setMpvGpuRenderer(renderer: String) {
+        context.settingsDataStore.edit { it[Keys.MpvGpuRenderer] = renderer }
+    }
+
+    suspend fun setMpvHwdecMode(mode: String) {
+        context.settingsDataStore.edit { it[Keys.MpvHwdecMode] = mode }
+    }
+
+    suspend fun setMpvDebandMode(mode: String) {
+        context.settingsDataStore.edit { it[Keys.MpvDebandMode] = mode }
+    }
+
+    suspend fun setMpvForceYuv420p(force: Boolean) {
+        context.settingsDataStore.edit { it[Keys.MpvForceYuv420p] = force }
+    }
+
+    suspend fun setMpvDemuxerCacheMb(mb: Int) {
+        context.settingsDataStore.edit { it[Keys.MpvDemuxerCacheMb] = mb.coerceIn(8, 512) }
+    }
+
+    // ─── İkincil Altyazı ──────────────────────────────────────────────────────
+
+    suspend fun setSecondarySubtitleTrackId(trackId: Int) {
+        context.settingsDataStore.edit { it[Keys.SecondarySubtitleTrackId] = trackId }
+    }
+
+    suspend fun setSecondarySubtitleDelayMs(delayMs: Long) {
+        context.settingsDataStore.edit { it[Keys.SecondarySubtitleDelayMs] = delayMs }
+    }
+
+    // ─── Altyazı Gelişmiş Stil ───────────────────────────────────────────────────
+
+    suspend fun setSubtitleItalic(italic: Boolean) {
+        context.settingsDataStore.edit { it[Keys.SubtitleItalic] = italic }
+    }
+
+    suspend fun setSubtitleJustification(justification: String) {
+        context.settingsDataStore.edit { it[Keys.SubtitleJustification] = justification }
+    }
+
+    suspend fun setSubtitleBackgroundColor(color: Int) {
+        context.settingsDataStore.edit { it[Keys.SubtitleBackgroundColor] = color }
+    }
+
+    suspend fun setSubtitleShadowOffset(offset: Float) {
+        context.settingsDataStore.edit { it[Keys.SubtitleShadowOffset] = offset.coerceIn(0f, 8f) }
+    }
+
+    suspend fun setSubtitleBorderColor(color: Int) {
+        context.settingsDataStore.edit { it[Keys.SubtitleBorderColor] = color }
+    }
+
+    suspend fun setSubtitleBorderSize(size: Float) {
+        context.settingsDataStore.edit { it[Keys.SubtitleBorderSize] = size.coerceIn(0f, 6f) }
+    }
+
+    // ─── Uyku Zamanlayıcısı ─────────────────────────────────────────────────────
+
+    suspend fun setSleepTimerSeconds(seconds: Int) {
+        context.settingsDataStore.edit { it[Keys.SleepTimerSeconds] = seconds.coerceAtLeast(0) }
+    }
+
+    // ─── Ses Boost Sınırı ───────────────────────────────────────────────────────
+
+    suspend fun setVolumeBoostCap(cap: Int) {
+        context.settingsDataStore.edit { it[Keys.VolumeBoostCap] = cap.coerceIn(100, 200) }
+    }
+
+    // ─── Gesture genişleme ───────────────────────────────────────────────────
+
+    suspend fun setSwipeVolumeBrightnessSides(normalSides: Boolean) {
+        context.settingsDataStore.edit { it[Keys.SwipeVolumeBrightnessSides] = normalSides }
+    }
+
+    suspend fun setHorizontalSeekGestureEnabled(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.HorizontalSeekGestureEnabled] = enabled }
+    }
+
+    suspend fun setPreciseSeeking(precise: Boolean) {
+        context.settingsDataStore.edit { it[Keys.PreciseSeeking] = precise }
     }
 }
 

@@ -157,8 +157,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 }
                 AniListImportManager.fetchAllLists(token)
             }.onSuccess { importedEntries ->
-                repository.deleteBySource("anilist")
-                repository.insertAll(importedEntries)
+                repository.smartImport("anilist", importedEntries)
 
                 onShowMessage?.invoke(
                     "${importedEntries.size} AniList kaydı başarıyla aktarıldı"
@@ -208,8 +207,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 val showAdult = settingsDataStore.settingsFlow.first().showAdultContent
                 MalImportManager.fetchAllLists(token, showAdult)
             }.onSuccess { importedEntries ->
-                repository.deleteBySource("mal")
-                repository.insertAll(importedEntries)
+                repository.smartImport("mal", importedEntries)
 
                 onShowMessage?.invoke(
                     "${importedEntries.size} MyAnimeList kaydı başarıyla aktarıldı"
@@ -295,9 +293,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     }
                 }
 
-                repository.deleteBySource("anilist")
-                repository.deleteBySource("mal")
-                repository.insertAll(finalEntries)
+                repository.smartImport("anilist", finalEntries.filter { it.source == "anilist" })
+                repository.smartImport("mal", finalEntries.filter { it.source == "jikan" || it.source == "mal" })
 
                 onShowMessage?.invoke("$syncCount anime başarıyla eşitlendi!")
             }.onFailure { error ->
@@ -340,8 +337,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 }
                 SimklImportManager.fetchAllLists(token)
             }.onSuccess { importedEntries ->
-                repository.deleteBySource("simkl")
-                repository.insertAll(importedEntries)
+                repository.smartImport("simkl", importedEntries)
 
                 onShowMessage?.invoke(
                     "${importedEntries.size} Simkl kaydı başarıyla aktarıldı"

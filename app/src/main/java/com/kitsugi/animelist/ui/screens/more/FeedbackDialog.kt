@@ -37,7 +37,8 @@ fun FeedbackDialog(
 
     KitsugiSheetOrDialog(
         onDismiss = onDismiss,
-        heightFraction = 0.85f
+        heightFraction = 0.85f,
+        innerColumnScrollState = scrollState
     ) {
         Column(
             modifier = Modifier

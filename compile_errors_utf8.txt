@@ -1,0 +1,688 @@
+﻿> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preFossDebugBuild UP-TO-DATE
+> Task :app:generateFossDebugBuildConfig
+> Task :app:checkFossDebugAarMetadata UP-TO-DATE
+> Task :app:processFossDebugNavigationResources UP-TO-DATE
+> Task :app:compileFossDebugNavigationResources UP-TO-DATE
+> Task :app:generateFossDebugResValues UP-TO-DATE
+> Task :app:mapFossDebugSourceSetPaths UP-TO-DATE
+> Task :app:extractFossDebugSupportedLocales UP-TO-DATE
+> Task :app:generateFossDebugLocaleConfig UP-TO-DATE
+> Task :app:generateFossDebugResources UP-TO-DATE
+> Task :app:mergeFossDebugResources UP-TO-DATE
+> Task :app:packageFossDebugResources UP-TO-DATE
+> Task :app:parseFossDebugLocalResources UP-TO-DATE
+> Task :app:createFossDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksFossDebug UP-TO-DATE
+> Task :app:processFossDebugMainManifest
+> Task :app:processFossDebugManifest
+> Task :app:processFossDebugManifestForPackage
+> Task :app:processFossDebugResources
+
+> Task :app:kspFossDebugKotlin
+w: Opt-in requirement marker androidx.compose.material.ExperimentalMaterialApi is unresolved. Please make sure it's present in the module dependencies
+
+> Task :app:compileFossDebugKotlin
+.\gradlew.bat : e: Daemon compilation failed: null
+At line:1 char:1
++ .\gradlew.bat :app:compileFossDebugKotlin > compile_errors.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (e: Daemon compilation failed: null:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+java.lang.Exception
+	at org.jetbrains.kotlin.daemon.common.CompileService$CallResult$Error.get(CompileService.kt:69)
+	at org.jetbrains.kotlin.daemon.common.CompileService$CallResult$Error.get(CompileService.kt:65)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.compileWithDaemon(GradleKotlinCompilerWork.kt:240)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.compileWithDaemonOrFallbackImpl(GradleKotlinCompilerWo
+rk.kt:159)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.run(GradleKotlinCompilerWork.kt:111)
+	at org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction.execute(GradleCo
+mpilerRunnerWithWorkers.kt:76)
+	at org.gradle.workers.internal.DefaultWorkerServer.execute(DefaultWorkerServer.java:63)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:66)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:62)
+	at org.gradle.internal.classloader.ClassLoaderUtils.executeInClassloader(ClassLoaderUtils.java:100)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.lambda$execute$0(NoIsolationWorkerFactory.java:62)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:44)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:41)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperati
+onRunner.java:210)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperati
+onRunner.java:205)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+	at org.gradle.workers.internal.AbstractWorker.executeWrappedInBuildOperation(AbstractWorker.java:41)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.execute(NoIsolationWorkerFactory.java:59)
+	at org.gradle.workers.internal.DefaultWorkerExecutor.lambda$submitWork$0(DefaultWorkerExecutor.java:174)
+	at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runExecution(DefaultConditionalExecutionQ
+ueue.java:194)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.access$700(DefaultConditionalExecutionQue
+ue.java:127)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner$1.run(DefaultConditionalExecutionQueue.ja
+va:169)
+	at org.gradle.internal.Factories$1.create(Factories.java:31)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:263)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:127)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:132)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runBatch(DefaultConditionalExecutionQueue
+.java:164)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.run(DefaultConditionalExecutionQueue.java
+:133)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+Caused by: java.lang.AssertionError: Couldn't load KotlinClass from C:\Kitsugi-Beta\app\build\tmp\kotlin-classes\fossDe
+bug\com\kitsugi\animelist\core\recommendations\TvChannelPreferences$getChannelId$$inlined$map$1.class; it may happen be
+cause class doesn't have valid Kotlin annotations
+	at org.jetbrains.kotlin.build.GeneratedJvmClass.<init>(generatedFiles.kt:45)
+	at org.jetbrains.kotlin.compilerRunner.SimpleOutputItemKt.toGeneratedFile(SimpleOutputItem.kt:31)
+	at org.jetbrains.kotlin.incremental.IncrementalCompilerRunner.doCompile(IncrementalCompilerRunner.kt:521)
+	at org.jetbrains.kotlin.incremental.IncrementalCompilerRunner.compileImpl(IncrementalCompilerRunner.kt:423)
+	at org.jetbrains.kotlin.incremental.IncrementalCompilerRunner.compileNonIncrementally(IncrementalCompilerRunner.kt:301
+)
+	at org.jetbrains.kotlin.incremental.IncrementalCompilerRunner.compile(IncrementalCompilerRunner.kt:129)
+	at org.jetbrains.kotlin.daemon.CompileServiceImplBase.execIncrementalCompiler(CompileServiceImpl.kt:675)
+	at org.jetbrains.kotlin.daemon.CompileServiceImplBase.access$execIncrementalCompiler(CompileServiceImpl.kt:92)
+	at org.jetbrains.kotlin.daemon.CompileServiceImpl.compile(CompileServiceImpl.kt:1660)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source)
+	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+	at java.rmi/sun.rmi.server.UnicastServerRef.dispatch(Unknown Source)
+	at java.rmi/sun.rmi.transport.Transport$1.run(Unknown Source)
+	at java.rmi/sun.rmi.transport.Transport$1.run(Unknown Source)
+	at java.base/java.security.AccessController.doPrivileged(Unknown Source)
+	at java.rmi/sun.rmi.transport.Transport.serviceCall(Unknown Source)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport.handleMessages(Unknown Source)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run0(Unknown Source)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.lambda$run$0(Unknown Source)
+	at java.base/java.security.AccessController.doPrivileged(Unknown Source)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(Unknown Source)
+	... 3 more
+
+Failed to compile with Kotlin daemon: java.lang.Exception
+	at org.jetbrains.kotlin.daemon.common.CompileService$CallResult$Error.get(CompileService.kt:69)
+	at org.jetbrains.kotlin.daemon.common.CompileService$CallResult$Error.get(CompileService.kt:65)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.compileWithDaemon(GradleKotlinCompilerWork.kt:240)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.compileWithDaemonOrFallbackImpl(GradleKotlinCompilerWork.kt:159)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.run(GradleKotlinCompilerWork.kt:111)
+	at org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction.execute(GradleCompilerRunnerWithWorkers.kt:76)
+	at org.gradle.workers.internal.DefaultWorkerServer.execute(DefaultWorkerServer.java:63)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:66)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:62)
+	at org.gradle.internal.classloader.ClassLoaderUtils.executeInClassloader(ClassLoaderUtils.java:100)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.lambda$execute$0(NoIsolationWorkerFactory.java:62)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:44)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:41)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+	at org.gradle.workers.internal.AbstractWorker.executeWrappedInBuildOperation(AbstractWorker.java:41)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.execute(NoIsolationWorkerFactory.java:59)
+	at org.gradle.workers.internal.DefaultWorkerExecutor.lambda$submitWork$0(DefaultWorkerExecutor.java:174)
+	at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runExecution(DefaultConditionalExecutionQueue.java:194)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.access$700(DefaultConditionalExecutionQueue.java:127)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner$1.run(DefaultConditionalExecutionQueue.java:169)
+	at org.gradle.internal.Factories$1.create(Factories.java:31)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:263)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:127)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:132)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runBatch(DefaultConditionalExecutionQueue.java:164)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.run(DefaultConditionalExecutionQueue.java:133)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+Caused by: java.lang.AssertionError: Couldn't load KotlinClass from C:\Kitsugi-Beta\app\build\tmp\kotlin-classes\fossDebug\com\kitsugi\animelist\core\recommendations\TvChannelPreferences$getChannelId$$inlined$map$1.class; it may happen because class doesn't have valid Kotlin annotations
+	at org.jetbrains.kotlin.build.GeneratedJvmClass.<init>(generatedFiles.kt:45)
+	at org.jetbrains.kotlin.compilerRunner.SimpleOutputItemKt.toGeneratedFile(SimpleOutputItem.kt:31)
+	at org.jetbrains.kotlin.incremental.IncrementalCompilerRunner.doCompile(IncrementalCompilerRunner.kt:521)
+	at org.jetbrains.kotlin.incremental.IncrementalCompilerRunner.compileImpl(IncrementalCompilerRunner.kt:423)
+	at org.jetbrains.kotlin.incremental.IncrementalCompilerRunner.compileNonIncrementally(IncrementalCompilerRunner.kt:301)
+	at org.jetbrains.kotlin.incremental.IncrementalCompilerRunner.compile(IncrementalCompilerRunner.kt:129)
+	at org.jetbrains.kotlin.daemon.CompileServiceImplBase.execIncrementalCompiler(CompileServiceImpl.kt:675)
+	at org.jetbrains.kotlin.daemon.CompileServiceImplBase.access$execIncrementalCompiler(CompileServiceImpl.kt:92)
+	at org.jetbrains.kotlin.daemon.CompileServiceImpl.compile(CompileServiceImpl.kt:1660)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source)
+	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+	at java.rmi/sun.rmi.server.UnicastServerRef.dispatch(Unknown Source)
+	at java.rmi/sun.rmi.transport.Transport$1.run(Unknown Source)
+	at java.rmi/sun.rmi.transport.Transport$1.run(Unknown Source)
+	at java.base/java.security.AccessController.doPrivileged(Unknown Source)
+	at java.rmi/sun.rmi.transport.Transport.serviceCall(Unknown Source)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport.handleMessages(Unknown Source)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run0(Unknown Source)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.lambda$run$0(Unknown Source)
+	at java.base/java.security.AccessController.doPrivileged(Unknown Source)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(Unknown Source)
+	... 3 more
+Using fallback strategy: Compile without Kotlin daemon
+Try ./gradlew --stop if this issue persists
+If it does not look related to your configuration, please file an issue with logs to https://kotl.in/issue
+exception: warning: opt-in requirement marker androidx.compose.material.ExperimentalMaterialApi is unresolved. Please m
+ake sure it's present in the module dependencies
+exception: app\src\main\java\com\kitsugi\animelist\KitsugiApplication.kt:512:27: warning: 'fun updateConfiguration(p0: 
+Configuration!, p1: DisplayMetrics!): Unit' is deprecated. Deprecated in Java.
+exception:         context.resources.updateConfiguration(config, context.resources.displayMetrics)
+exception:                           ^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\KitsugiSplashActivity.kt:61:40: warning: 'static field FLAG_FULLSCRE
+EN: Int' is deprecated. Deprecated in Java.
+exception:             WindowManager.LayoutParams.FLAG_FULLSCREEN,
+exception:                                        ^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\KitsugiSplashActivity.kt:62:40: warning: 'static field FLAG_FULLSCRE
+EN: Int' is deprecated. Deprecated in Java.
+exception:             WindowManager.LayoutParams.FLAG_FULLSCREEN
+exception:                                        ^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\KitsugiSplashActivity.kt:152:13: warning: 'fun setRenderPriority(p0:
+ WebSettings.RenderPriority!): Unit' is deprecated. Deprecated in Java.
+exception:             setRenderPriority(WebSettings.RenderPriority.HIGH)
+exception:             ^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\KitsugiSplashActivity.kt:203:9: warning: 'fun overridePendingTransit
+ion(p0: Int, p1: Int): Unit' is deprecated. Deprecated in Java.
+exception:         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+exception:         ^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\KitsugiSplashActivity.kt:230:18: warning: this declaration overrides
+ a deprecated member but is not marked as deprecated itself. Please add the '@Deprecated' annotation or suppress the di
+agnostic.
+exception:     override fun onBackPressed() {
+exception:                  ^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\core\diagnostics\StreamSpeedTester.kt:129:25: warning: condition is 
+always 'true'.
+exception:                     if (body != null) {
+exception:                         ^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\core\player\PlayerMediaSessionHelper.kt:56:32: warning: 'static fiel
+d FLAG_HANDLES_MEDIA_BUTTONS: Int' is deprecated. Deprecated in Java.
+exception:             MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
+exception:                                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\core\player\PlayerMediaSessionHelper.kt:57:32: warning: 'static fiel
+d FLAG_HANDLES_TRANSPORT_CONTROLS: Int' is deprecated. Deprecated in Java.
+exception:             MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
+exception:                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\core\player\engine\Media3PlayerEngine.kt:203:31: warning: 'field una
+ppliedRotationDegrees: Int' is deprecated. Deprecated in Java.
+exception:                     videoSize.unappliedRotationDegrees,
+exception:                               ^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\core\player\engine\Media3PlayerEngine.kt:364:78: warning: 'static fu
+n getCapabilities(p0: Context): AudioCapabilities' is deprecated. Deprecated in Java.
+exception:                 val caps = androidx.media3.exoplayer.audio.AudioCapabilities.getCapabilities(context)
+exception:                                                                              ^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\core\player\engine\Media3PlayerEngine.kt:366:22: warning: 'fun setAu
+dioCapabilities(p0: AudioCapabilities): DefaultAudioSink.Builder' is deprecated. Deprecated in Java.
+exception:                     .setAudioCapabilities(caps)
+exception:                      ^^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\core\update\ApkInstallerHelper.kt:47:17: warning: condition is alway
+s 'false'.
+exception:             if (body == null) {
+exception:                 ^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\core\update\KitsugiUpdateRepository.kt:120:71: warning: 'constructor
+(p0: String!, p1: String!): Locale' is deprecated. Deprecated in Java.
+exception:             val outputFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale("tr", "TR"))
+exception:                                                                       ^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\data\auth\ExternalListSyncManager.kt:72:34: warning: condition is al
+ways 'true'.
+exception:             if (shouldSyncMal && realMalId != null) {
+exception:                                  ^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\data\auth\ExternalListSyncManager.kt:150:36: warning: condition is a
+lways 'true'.
+exception:             if (shouldDeleteMal && realMalId != null) {
+exception:                                    ^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\data\manga\KotatsuExtensionAdapter.kt:258:26: warning: this declarat
+ion overrides a deprecated member but is not marked as deprecated itself. Please add the '@Deprecated' annotation or su
+ppress the diagnostic.
+exception:     override suspend fun evaluateJs(script: String): String? = null
+exception:                          ^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\data\manga\MangaTitleMatcher.kt:18:29: warning: 'constructor(p0: Str
+ing!): Locale' is deprecated. Deprecated in Java.
+exception:     private val TR_LOCALE = Locale("tr")
+exception:                             ^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\data\remote\KitsugiMediaTabsClient.kt:63:28: warning: condition is a
+lways 'false'.
+exception:                     ?: if (realMalId != null) DetailCache.getMediaDetail("anilist", realMalId) else null
+exception:                            ^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\data\remote\KitsugiMediaTabsClient.kt:186:28: warning: condition is 
+always 'false'.
+exception:                     ?: if (realMalId != null) DetailCache.getMediaDetail("anilist", realMalId) else null
+exception:                            ^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\data\remote\TvMazeClient.kt:70:51: warning: Java type mismatch: infe
+rred type is 'kotlin.Nothing?', but 'kotlin.String' was expected.
+exception:         val imdbId = externals?.optString("imdb", null)
+exception:                                                   ^^^^
+exception: app\src\main\java\com\kitsugi\animelist\data\settings\AppLanguage.kt:117:28: warning: 'constructor(p0: Strin
+g!): Locale' is deprecated. Deprecated in Java.
+exception:         else            -> Locale(code.take(2))
+exception:                            ^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\KitsugiBackupDialog.kt:47:28: warning: 'val LocalClipb
+oardManager: ProvidableCompositionLocal<ClipboardManager>' is deprecated. Use LocalClipboard instead which supports sus
+pend functions.
+exception:     val clipboardManager = LocalClipboardManager.current
+exception:                            ^^^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\KitsugiEditMediaSheet.kt:675:50: warning: 'val Icons.R
+ounded.List: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.List.
+exception:                             icon = Icons.Rounded.List,
+exception:                                                  ^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\KitsugiHorizontalMediaSection.kt:127:38: warning: 'fun
+ Modifier.focusRestorer(onRestoreFailed: (() -> FocusRequester)?): Modifier' is deprecated. Use focusRestorer(FocusRequ
+ester) instead.
+exception:                                     .focusRestorer {
+exception:                                      ^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\KitsugiRankingMediaCard.kt:379:24: warning: 'construct
+or(p0: String!, p1: String!): Locale' is deprecated. Deprecated in Java.
+exception: private val trLocale = Locale("tr", "TR")
+exception:                        ^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\KitsugiReplyEditorBottomSheet.kt:41:66: warning: 'val 
+Icons.Rounded.FormatListBulleted: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounde
+d.FormatListBulleted.
+exception:     UNORDERED_LIST("\n- text", 0, "Madde Listesi", Icons.Rounded.FormatListBulleted),
+exception:                                                                  ^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\KitsugiSimklLoginDialog.kt:54:21: warning: 'val LocalC
+lipboardManager: ProvidableCompositionLocal<ClipboardManager>' is deprecated. Use LocalClipboard instead which supports
+ suspend functions.
+exception:     val clipboard = LocalClipboardManager.current
+exception:                     ^^^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\KitsugiWebViewDialog.kt:147:37: warning: 'var database
+Enabled: Boolean' is deprecated. Deprecated in Java.
+exception:                                     databaseEnabled = true
+exception:                                     ^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\addons\CloudstreamExtensionTab.kt:63:28: warning: 'val
+ LocalClipboardManager: ProvidableCompositionLocal<ClipboardManager>' is deprecated. Use LocalClipboard instead which s
+upports suspend functions.
+exception:     val clipboardManager = LocalClipboardManager.current
+exception:                            ^^^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\addons\MangaExtensionTab.kt:111:28: warning: 'val Loca
+lClipboardManager: ProvidableCompositionLocal<ClipboardManager>' is deprecated. Use LocalClipboard instead which suppor
+ts suspend functions.
+exception:     val clipboardManager = LocalClipboardManager.current
+exception:                            ^^^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\addons\MangaExtensionTab.kt:836:44: warning: 'val Icon
+s.Rounded.MenuBook: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.MenuBook.
+exception:                         Icon(Icons.Rounded.MenuBook, null, tint = KitsugiColors.TextMuted, modifier = Modifi
+er.size(48.dp))
+exception:                                            ^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\player\PlayerGeneralTab.kt:212:50: warning: 'val Icons
+.Rounded.Launch: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.Launch.
+exception:                             icon = Icons.Rounded.Launch,
+exception:                                                  ^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\player\PlayerGeneralTab.kt:438:42: warning: 'val Icons
+.Rounded.Help: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.Help.
+exception:                     icon = Icons.Rounded.Help,
+exception:                                          ^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\player\PlayerGeneralTab.kt:565:46: warning: 'val Icons
+.Rounded.Forward: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.Forward.
+exception:                         icon = Icons.Rounded.Forward,
+exception:                                              ^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\player\PlayerGeneralTab.kt:721:42: warning: 'val Icons
+.Rounded.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.VolumeUp.
+exception:                     icon = Icons.Rounded.VolumeUp,
+exception:                                          ^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\player\PlayerSubtitleAudioTab.kt:216:46: warning: 'val
+ Icons.Rounded.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.VolumeU
+p.
+exception:                         icon = Icons.Rounded.VolumeUp,
+exception:                                              ^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\player\PlayerSubtitleAudioTab.kt:242:46: warning: 'val
+ Icons.Rounded.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.VolumeU
+p.
+exception:                         icon = Icons.Rounded.VolumeUp,
+exception:                                              ^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\player\PlayerSubtitleAudioTab.kt:404:46: warning: 'val
+ Icons.Rounded.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.VolumeU
+p.
+exception:                         icon = Icons.Rounded.VolumeUp,
+exception:                                              ^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\player\PlayerSubtitleAudioTab.kt:432:46: warning: 'val
+ Icons.Rounded.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.VolumeU
+p.
+exception:                         icon = Icons.Rounded.VolumeUp,
+exception:                                              ^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\player\PlayerSubtitleAudioTab.kt:460:46: warning: 'val
+ Icons.Rounded.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.VolumeU
+p.
+exception:                         icon = Icons.Rounded.VolumeUp,
+exception:                                              ^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\posteroptions\PosterOptionsDialog.kt:88:51: warning: '
+val Icons.Rounded.PlaylistAdd: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.P
+laylistAdd.
+exception:         PosterOption.ADD_TO_LIST -> Icons.Rounded.PlaylistAdd to "Listeye Ekle"
+exception:                                                   ^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\components\posteroptions\PosterOptionsDialog.kt:92:55: warning: '
+val Icons.Rounded.OpenInNew: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.Ope
+nInNew.
+exception:         PosterOption.OPEN_IN_BROWSER -> Icons.Rounded.OpenInNew to "Taray´┐¢c´┐¢da A´┐¢"
+exception:                                                       ^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\collection\CollectionManagementScreen.kt:49:44: warning: 
+'val Icons.Rounded.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.Ar
+rowBack.
+exception:                         Icon(Icons.Rounded.ArrowBack, contentDescription = "Geri")
+exception:                                            ^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\collection\FolderDetailScreen.kt:58:44: warning: 'val Ico
+ns.Rounded.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.ArrowBack.
+exception:                         Icon(Icons.Rounded.ArrowBack, contentDescription = "Geri")
+exception:                                            ^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\detail\ApiResultDetailPage.kt:252:64: warning: condition 
+is always 'true'.
+exception:         val hasRealMalId = displayResult.realMalId != null || (displayResult.malId != null && displayResult.
+malId > 0 && displayResult.malId < 100_000_000)
+exception:                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\detail\ApiResultDetailViewModel.kt:314:22: warning: check
+ for instance is always 'true'.
+exception:                     (epState is DetailTabState.Success && epState.data.isEmpty())
+exception:                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\detail\ApiResultDetailViewModel.kt:540:30: warning: check
+ for instance is always 'true'.
+exception:                             (currentEpisodes is DetailTabState.Success && currentEpisodes.data.isEmpty())
+exception:                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\detail\KitsugiDetailHero.kt:300:64: warning: 'val Icons.R
+ounded.MenuBook: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.MenuBook.
+exception:                 val countIcon = if (isMangaType) Icons.Rounded.MenuBook else Icons.Rounded.Schedule
+exception:                                                                ^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\detail\KitsugiDetailHeroSection.kt:292:82: warning: 'val 
+Icons.Rounded.MenuBook: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.MenuBook
+.
+exception:                 val countIcon = if (entry.type == MediaType.Manga) Icons.Rounded.MenuBook else Icons.Rounded
+.Schedule
+exception:                                                                                  ^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\detail\KitsugiDetailInfoSection.kt:514:32: warning: 'cons
+tructor(p0: String!, p1: String!): Locale' is deprecated. Deprecated in Java.
+exception:     val javaLocale = java.util.Locale("tr", "TR")
+exception:                                ^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\detail\MediaEntryDetailViewModel.kt:693:30: warning: chec
+k for instance is always 'true'.
+exception:                             (currentEpisodes is DetailTabState.Success && currentEpisodes.data.isEmpty())
+exception:                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\detail\StatsTab.kt:442:43: warning: 'constructor(p0: Stri
+ng!, p1: String!): Locale' is deprecated. Deprecated in Java.
+exception:     val locale = if (isTurkish) java.util.Locale("tr", "TR") else java.util.Locale.US
+exception:                                           ^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\explore\KitsugiAiringCalendarComponents.kt:171:69: warnin
+g: 'val Icons.Rounded.PlaylistAddCheck: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.
+Rounded.PlaylistAddCheck.
+exception:                     imageVector = if (showOnlyMyList) Icons.Rounded.PlaylistAddCheck else Icons.Rounded.Play
+listPlay,
+exception:                                                                     ^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\explore\KitsugiAiringCalendarComponents.kt:171:105: warni
+ng: 'val Icons.Rounded.PlaylistPlay: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rou
+nded.PlaylistPlay.
+exception:                     imageVector = if (showOnlyMyList) Icons.Rounded.PlaylistAddCheck else Icons.Rounded.Play
+listPlay,
+exception:                                                                                                         ^^^^
+^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\explore\KitsugiAiringCalendarComponents.kt:190:61: warnin
+g: 'val Icons.Rounded.ViewList: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.
+ViewList.
+exception:                 imageVector = if (isGridView) Icons.Rounded.ViewList else Icons.Rounded.GridView,
+exception:                                                             ^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\fullscreen\components\PlayerControls.kt:314:38: warning: 
+'val Icons.Rounded.ViewList: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.Vie
+wList.
+exception:                 icon = Icons.Rounded.ViewList,
+exception:                                      ^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\fullscreen\components\PlayerGestureHelper.kt:149:60: warn
+ing: 'val Icons.Rounded.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounde
+d.VolumeUp.
+exception:             imageVector = if (volume > 0.5f) Icons.Rounded.VolumeUp
+exception:                                                            ^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\fullscreen\components\PlayerGestureHelper.kt:150:63: warn
+ing: 'val Icons.Rounded.VolumeDown: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Roun
+ded.VolumeDown.
+exception:                           else if (volume > 0f) Icons.Rounded.VolumeDown
+exception:                                                               ^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\fullscreen\components\PlayerGestureHelper.kt:151:46: warn
+ing: 'val Icons.Rounded.VolumeOff: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Round
+ed.VolumeOff.
+exception:                           else Icons.Rounded.VolumeOff,
+exception:                                              ^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\fullscreen\components\PlayerGestureHelper.kt:309:46: warn
+ing: 'val Icons.Rounded.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounde
+d.VolumeUp.
+exception:             newLevel > 0.5f -> Icons.Rounded.VolumeUp
+exception:                                              ^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\fullscreen\components\PlayerGestureHelper.kt:310:46: warn
+ing: 'val Icons.Rounded.VolumeDown: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Roun
+ded.VolumeDown.
+exception:             newLevel > 0f   -> Icons.Rounded.VolumeDown
+exception:                                              ^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\fullscreen\components\PlayerGestureHelper.kt:311:46: warn
+ing: 'val Icons.Rounded.VolumeOff: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Round
+ed.VolumeOff.
+exception:             else            -> Icons.Rounded.VolumeOff
+exception:                                              ^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\fullscreen\components\PlayerGestureHelper.kt:343:46: warn
+ing: 'val Icons.Rounded.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounde
+d.VolumeUp.
+exception:             newLevel > 0.5f -> Icons.Rounded.VolumeUp
+exception:                                              ^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\fullscreen\components\PlayerGestureHelper.kt:344:46: warn
+ing: 'val Icons.Rounded.VolumeDown: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Roun
+ded.VolumeDown.
+exception:             newLevel > 0f   -> Icons.Rounded.VolumeDown
+exception:                                              ^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\fullscreen\components\PlayerGestureHelper.kt:345:46: warn
+ing: 'val Icons.Rounded.VolumeOff: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Round
+ed.VolumeOff.
+exception:             else            -> Icons.Rounded.VolumeOff
+exception:                                              ^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\manga\MangaSourceHealthScreen.kt:64:28: warning: 'val Loc
+alClipboardManager: ProvidableCompositionLocal<ClipboardManager>' is deprecated. Use LocalClipboard instead which suppo
+rts suspend functions.
+exception:     val clipboardManager = LocalClipboardManager.current
+exception:                            ^^^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\manga\MangaSourceHealthScreen.kt:402:48: warning: 'val Ic
+ons.Rounded.List: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.List.
+exception:                             Icon(Icons.Rounded.List, null, tint = KitsugiColors.TextSecondary, modifier = Mo
+difier.size(18.dp))
+exception:                                                ^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\manga\MangaSourceHealthScreen.kt:463:23: warning: 'interf
+ace ClipboardManager : Any' is deprecated. Use Clipboard instead, which supports suspend functions.
+exception:     clipboardManager: androidx.compose.ui.platform.ClipboardManager,
+exception:                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\more\AboutScreen.kt:180:25: warning: 'fun Divider(modifie
+r: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
+exception:                         Divider(color = KitsugiColors.surfaceStrong, thickness = 1.dp)
+exception:                         ^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\mylist\MyListComponents.kt:155:60: warning: 'val Icons.Ro
+unded.FormatListBulleted: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.Format
+ListBulleted.
+exception:                             "comfortable" -> Icons.Rounded.FormatListBulleted
+exception:                                                            ^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\mylist\MyListComponents.kt:158:51: warning: 'val Icons.Ro
+unded.FormatListBulleted: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.Format
+ListBulleted.
+exception:                             else -> Icons.Rounded.FormatListBulleted
+exception:                                                   ^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\mylist\MyListEmptyState.kt:63:30: warning: 'val Icons.Rou
+nded.FormatListBulleted: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.FormatL
+istBulleted.
+exception:         icon = Icons.Rounded.FormatListBulleted
+exception:                              ^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\mylist\MyListScreen.kt:569:57: warning: 'val Icons.Rounde
+d.FormatListBulleted: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.FormatList
+Bulleted.
+exception:                             imageVector = Icons.Rounded.FormatListBulleted,
+exception:                                                         ^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\mylist\components\KitsugiListStatusBottomSheet.kt:68:53: 
+warning: 'val Icons.Rounded.FormatListBulleted: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoM
+irrored.Rounded.FormatListBulleted.
+exception:         StatusItemData("all", "T´┐¢m´┐¢", Icons.Rounded.FormatListBulleted, totalCount),
+exception:                                                     ^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\profile\KitsugiUserMediaListScreen.kt:314:77: warning: 'v
+al Icons.Rounded.List: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.List.
+exception:                                 imageVector = if (isGridView) Icons.Rounded.List else Icons.Rounded.GridView
+,
+exception:                                                                             ^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\profile\KitsugiUserMediaListScreen.kt:602:57: warning: 'v
+al Icons.Rounded.List: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.List.
+exception:                             imageVector = Icons.Rounded.List,
+exception:                                                         ^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\profile\UserMediaListCards.kt:254:44: warning: 'val Icons
+.Rounded.FormatListBulleted: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.For
+matListBulleted.
+exception:         Triple(null, "T´┐¢m´┐¢", Icons.Rounded.FormatListBulleted to totalCount),
+exception:                                            ^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\profile\UserProfileHeaderComponents.kt:152:40: warning: '
+val Icons.Rounded.ListAlt: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.ListA
+lt.
+exception:                     Icon(Icons.Rounded.ListAlt, contentDescription = null, tint = tint, modifier = Modifier.
+size(16.dp))
+exception:                                        ^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\settings\DeveloperLogsDialog.kt:47:28: warning: 'val Loca
+lClipboardManager: ProvidableCompositionLocal<ClipboardManager>' is deprecated. Use LocalClipboard instead which suppor
+ts suspend functions.
+exception:     val clipboardManager = LocalClipboardManager.current
+exception:                            ^^^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\screens\stats\StatsScreen.kt:102:50: warning: 'val Icons.Rounded.
+MenuBook: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.MenuBook.
+exception:                             icon = Icons.Rounded.MenuBook,
+exception:                                                  ^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\tv\ModernSidebarBlurPanel.kt:86:18: warning: 'fun Modifier.hazeCh
+ild(state: HazeState, shape: Shape = ..., tint: Color = ..., blurRadius: Dp = ..., noiseFactor: Float = ...): Modifier'
+ is deprecated. Deprecated. Replaced with new HazeStyle object.
+exception:         Modifier.hazeChild(
+exception:                  ^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\tv\TvRootScreen.kt:117:52: warning: 'val Icons.Filled.MenuBook: I
+mageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.MenuBook.
+exception:     TvNavItem(TvDestination.MANGA,    Icons.Filled.MenuBook,      "Manga"),
+exception:                                                    ^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\tv\detail\TvActivityDetailDialog.kt:160:25: warning: 'fun Divider
+(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
+exception:                         Divider(color = KitsugiColors.SurfaceSoft)
+exception:                         ^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\tv\detail\TvReviewDetailDialog.kt:143:21: warning: 'fun Divider(m
+odifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
+exception:                     Divider(color = KitsugiColors.SurfaceSoft)
+exception:                     ^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\tv\detail\TvTopicDetailDialog.kt:195:21: warning: 'fun Divider(mo
+difier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
+exception:                     Divider(color = KitsugiColors.SurfaceSoft)
+exception:                     ^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\tv\manga\TvMangaExtensionScreen.kt:223:42: warning: 'val Icons.Ro
+unded.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.ArrowBack.
+exception:                     icon = Icons.Rounded.ArrowBack,
+exception:                                          ^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\tv\manga\TvMangaExtensionScreen.kt:1049:31: warning: 'val Icons.R
+ounded.MenuBook: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.MenuBook.
+exception:                 Icons.Rounded.MenuBook,
+exception:                               ^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\tv\manga\TvMangaSourceHealthScreen.kt:158:50: warning: 'val Icons
+.Rounded.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.ArrowBack.
+exception:                             icon = Icons.Rounded.ArrowBack,
+exception:                                                  ^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\tv\manga\TvMangaSourceHealthScreen.kt:446:35: warning: 'val Icons
+.Rounded.MenuBook: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.MenuBook.
+exception:                     Icons.Rounded.MenuBook,
+exception:                                   ^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\tv\player\TvPlayerActivity.kt:114:40: warning: 'fun getSerializab
+leExtra(p0: String!): Serializable?' is deprecated. Deprecated in Java.
+exception:         val initialSubtitles = (intent.getSerializableExtra(EXTRA_SUBTITLES) as? ArrayList<SubtitleInput>) ?
+: emptyList()
+exception:                                        ^^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\tv\player\TvPlayerActivity.kt:117:37: warning: 'fun getSerializab
+leExtra(p0: String!): Serializable?' is deprecated. Deprecated in Java.
+exception:         val streamSources = (intent.getSerializableExtra(EXTRA_STREAM_SOURCES) as? ArrayList<StreamSource>) 
+?: emptyList()
+exception:                                     ^^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\tv\player\TvPlayerActivity.kt:133:32: warning: 'fun getSerializab
+leExtra(p0: String!): Serializable?' is deprecated. Deprecated in Java.
+exception:         val castList = (intent.getSerializableExtra(EXTRA_CAST) as? ArrayList<MetaCastMember>) ?: emptyList(
+)
+exception:                                ^^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\utils\AirDateUtils.kt:17:64: warning: 'constructor(p0: String!, p
+1: String!): Locale' is deprecated. Deprecated in Java.
+exception:     private val fullTrFormat = SimpleDateFormat("d MMMM yyyy", Locale("tr", "TR"))
+exception:                                                                ^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\utils\AirDateUtils.kt:18:64: warning: 'constructor(p0: String!, p
+1: String!): Locale' is deprecated. Deprecated in Java.
+exception:     private val shortTrFormat = SimpleDateFormat("d MMM yyyy", Locale("tr", "TR"))
+exception:                                                                ^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\utils\LanguageUtils.kt:22:30: warning: 'constructor(p0: String!):
+ Locale' is deprecated. Deprecated in Java.
+exception:             ?: runCatching { Locale(code).getDisplayLanguage(Locale("tr")) }
+exception:                              ^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\utils\LanguageUtils.kt:22:62: warning: 'constructor(p0: String!):
+ Locale' is deprecated. Deprecated in Java.
+exception:             ?: runCatching { Locale(code).getDisplayLanguage(Locale("tr")) }
+exception:                                                              ^^^^^^
+exception: app\src\main\java\com\kitsugi\animelist\ui\utils\TypeLabelFormatter.kt:40:9: warning: duplicate branch condi
+tion in 'when'.
+exception:         "ONE_SHOT"              -> "Tek B´┐¢l´┐¢m"
+exception:         ^^^^^^^^^^
+exception: app\src\main\java\eu\kanade\tachiyomi\network\OkHttpExtensions.kt:16:23: warning: 'static fun <T : Any!> cre
+ate(p0: Observable.OnSubscribe<T!>!): Observable<T!>!' is deprecated. Deprecated in Java.
+exception:     return Observable.create(Observable.OnSubscribe<Response> { subscriber ->
+exception:                       ^^^^^^
+exception: app\src\main\java\eu\kanade\tachiyomi\network\OkHttpExtensions.kt:111:17: warning: condition is always 'true
+'.
+exception:             if (originalBody != null) {
+exception:                 ^^^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\eu\kanade\tachiyomi\source\CatalogueSource.kt:17:67: warning: 'fun fetchPopularManga(page:
+ Int): Observable<MangasPage>' is deprecated. Use the suspend API instead.
+exception:     override suspend fun getPopularManga(page: Int): MangasPage = fetchPopularManga(page).awaitSingle()
+exception:                                                                   ^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\eu\kanade\tachiyomi\source\CatalogueSource.kt:19:68: warning: 'fun fetchLatestUpdates(page
+: Int): Observable<MangasPage>' is deprecated. Use the suspend API instead.
+exception:     override suspend fun getLatestUpdates(page: Int): MangasPage = fetchLatestUpdates(page).awaitSingle()
+exception:                                                                    ^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\eu\kanade\tachiyomi\source\CatalogueSource.kt:25:21: warning: 'fun fetchSearchManga(page: 
+Int, query: String, filters: FilterList): Observable<MangasPage>' is deprecated. Use the suspend API instead.
+exception:     ): MangasPage = fetchSearchManga(page, query, filters).awaitSingle()
+exception:                     ^^^^^^^^^^^^^^^^
+exception: app\src\main\java\eu\kanade\tachiyomi\source\CatalogueSource.kt:33:52: warning: 'fun fetchMangaDetails(manga
+: SManga): Observable<SManga>' is deprecated. Use the combined suspend API instead.
+exception:         val asyncManga = if (fetchDetails) async { fetchMangaDetails(manga).awaitSingle() } else null
+exception:                                                    ^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\eu\kanade\tachiyomi\source\CatalogueSource.kt:34:56: warning: 'fun fetchChapterList(manga:
+ SManga): Observable<List<SChapter>>' is deprecated. Use the combined suspend API instead.
+exception:         val asyncChapters = if (fetchChapters) async { fetchChapterList(manga).awaitSingle() } else null
+exception:                                                        ^^^^^^^^^^^^^^^^
+exception: app\src\main\java\eu\kanade\tachiyomi\source\CatalogueSource.kt:38:71: warning: 'fun fetchPageList(chapter: 
+SChapter): Observable<List<Page>>' is deprecated. Use the suspend API instead.
+exception:     override suspend fun getPageList(chapter: SChapter): List<Page> = fetchPageList(chapter).awaitSingle()
+exception:                                                                       ^^^^^^^^^^^^^
+exception: app\src\main\java\eu\kanade\tachiyomi\source\online\HttpSource.kt:52:18: warning: this declaration overrides
+ a deprecated member but is not marked as deprecated itself. Please add the '@Deprecated' annotation or suppress the di
+agnostic.
+exception:     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
+exception:                  ^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\eu\kanade\tachiyomi\source\online\HttpSource.kt:63:18: warning: this declaration overrides
+ a deprecated member but is not marked as deprecated itself. Please add the '@Deprecated' annotation or suppress the di
+agnostic.
+exception:     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+exception:                  ^^^^^^^^^^^^^^^^
+exception: app\src\main\java\eu\kanade\tachiyomi\source\online\HttpSource.kt:79:18: warning: this declaration overrides
+ a deprecated member but is not marked as deprecated itself. Please add the '@Deprecated' annotation or suppress the di
+agnostic.
+exception:     override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
+exception:                  ^^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\eu\kanade\tachiyomi\source\online\HttpSource.kt:90:18: warning: this declaration overrides
+ a deprecated member but is not marked as deprecated itself. Please add the '@Deprecated' annotation or suppress the di
+agnostic.
+exception:     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
+exception:                  ^^^^^^^^^^^^^^^^^
+exception: app\src\main\java\eu\kanade\tachiyomi\source\online\HttpSource.kt:104:18: warning: this declaration override
+s a deprecated member but is not marked as deprecated itself. Please add the '@Deprecated' annotation or suppress the d
+iagnostic.
+exception:     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
+exception:                  ^^^^^^^^^^^^^^^^
+exception: app\src\main\java\eu\kanade\tachiyomi\source\online\HttpSource.kt:118:18: warning: this declaration override
+s a deprecated member but is not marked as deprecated itself. Please add the '@Deprecated' annotation or suppress the d
+iagnostic.
+exception:     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
+exception:                  ^^^^^^^^^^^^^
+
+BUILD SUCCESSFUL in 2m 48s
+20 actionable tasks: 8 executed, 12 up-to-date

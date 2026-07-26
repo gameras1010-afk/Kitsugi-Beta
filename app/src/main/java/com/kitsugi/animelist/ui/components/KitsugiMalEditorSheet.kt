@@ -127,6 +127,7 @@ internal fun KitsugiMalMediaEntryEditorSheet(
     var repeatCount by rememberSaveable(initialEntry?.id) { mutableStateOf(initialEntry?.repeatCount ?: 0) }
     var repeatValue by rememberSaveable(initialEntry?.id) { mutableStateOf(initialEntry?.repeatValue ?: 0) }
     var volumeProgress by rememberSaveable(initialEntry?.id) { mutableStateOf(initialEntry?.volumeProgress ?: 0) }
+    val scrollState = rememberScrollState()
 
     val parsedProgress = progressText.toIntOrNull()?.coerceAtLeast(0) ?: 0
     val parsedTotal = totalText.toIntOrNull()?.takeIf { it > 0 }
@@ -150,7 +151,8 @@ internal fun KitsugiMalMediaEntryEditorSheet(
     val canSave = startDateText.trim().isValidDateOrBlank() && endDateText.trim().isValidDateOrBlank()
 
     KitsugiSheetOrDialog(
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
+        innerColumnScrollState = scrollState
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Row(
@@ -158,7 +160,7 @@ internal fun KitsugiMalMediaEntryEditorSheet(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(onClick = onDismiss) {
+                TextButton(onClick = LocalDismissAnimated.current) {
                     Text(text = "İptal", color = KitsugiColors.TextSecondary, fontWeight = FontWeight.Medium)
                 }
                 Text(
@@ -195,7 +197,7 @@ internal fun KitsugiMalMediaEntryEditorSheet(
             HorizontalDivider(color = KitsugiColors.Border, modifier = Modifier.padding(horizontal = 16.dp))
 
             Column(
-                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)
+                modifier = Modifier.fillMaxWidth().verticalScroll(scrollState).padding(bottom = 32.dp)
             ) {
                 val selectedType = initialEntry?.type ?: MediaType.Anime
 

@@ -3,6 +3,8 @@ package com.kitsugi.animelist.ui.components.player
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material.icons.rounded.NetworkCheck
@@ -37,7 +39,8 @@ internal fun PlayerBufferTab(
     parallelRangeEnabled: Boolean,
     accentColor: Color,
     onBufferSettingsChanged: (min: Int, max: Int, playback: Int, rebuffer: Int, back: Int) -> Unit,
-    onParallelRangeEnabledChanged: (Boolean) -> Unit
+    onParallelRangeEnabledChanged: (Boolean) -> Unit,
+    listState: LazyListState = rememberLazyListState()
 ) {
     var minExp by remember { mutableStateOf(false) }
     var maxExp by remember { mutableStateOf(false) }
@@ -96,6 +99,7 @@ internal fun PlayerBufferTab(
     val currentBackStr = backOptions.find { it.first == backBufferDurationMs }?.second ?: "${backBufferDurationMs / 1000} Saniye"
 
     LazyColumn(
+        state = listState,
         modifier = Modifier.fillMaxWidth().fillMaxHeight(),
         verticalArrangement = Arrangement.spacedBy(20.dp),
         contentPadding = PaddingValues(vertical = 12.dp)

@@ -5,7 +5,9 @@ import androidx.compose.foundation.background
 import com.kitsugi.animelist.ui.utils.tvClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
@@ -34,12 +36,14 @@ internal fun StremioTab(
     onAddAddon: (String) -> Unit,
     onToggleAddon: (ManagedAddonEntity, Boolean) -> Unit,
     onDeleteAddon: (ManagedAddonEntity) -> Unit,
-    onSaveDebridToken: (String) -> Unit
+    onSaveDebridToken: (String) -> Unit,
+    listState: LazyListState = rememberLazyListState()
 ) {
     var newManifestUrl by rememberSaveable { mutableStateOf("") }
     var debridToken by rememberSaveable(initialDebridToken) { mutableStateOf(initialDebridToken) }
 
     LazyColumn(
+        state = listState,
         modifier = Modifier.fillMaxWidth().fillMaxHeight(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {

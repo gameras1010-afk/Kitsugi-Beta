@@ -8,7 +8,9 @@ import androidx.compose.foundation.border
 import com.kitsugi.animelist.ui.utils.tvClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -79,6 +81,7 @@ internal fun MangaExtensionsTab(
     onOpenSourceHealthScreen: () -> Unit = {},
     onForceCheckUpdates: (onResult: (String) -> Unit) -> Unit = {},
     onVerifySource: ((String, String) -> Unit)? = null,
+    listState: LazyListState = rememberLazyListState()
 ) {
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -121,6 +124,7 @@ internal fun MangaExtensionsTab(
     }
 
     LazyColumn(
+        state = listState,
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)

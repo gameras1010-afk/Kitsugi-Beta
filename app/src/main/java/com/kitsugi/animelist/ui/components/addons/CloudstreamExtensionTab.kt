@@ -5,7 +5,9 @@ import androidx.compose.foundation.border
 import com.kitsugi.animelist.ui.utils.tvClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
@@ -50,7 +52,8 @@ internal fun CloudstreamExtensionsTab(
     bulkInstallCurrentName: String,
     onToggleCsPlugin: (CsPluginEntity, Boolean) -> Unit,
     onUninstallCsPlugin: (CsPluginEntity) -> Unit,
-    onVerifyPlugin: (pluginId: String, pluginName: String) -> Unit
+    onVerifyPlugin: (pluginId: String, pluginName: String) -> Unit,
+    listState: LazyListState = rememberLazyListState()
 ) {
     var activeSection by rememberSaveable { mutableStateOf(CsTabSection.REPOS) }
     var newRepoUrl by rememberSaveable { mutableStateOf("") }
@@ -77,6 +80,7 @@ internal fun CloudstreamExtensionsTab(
     }
 
     LazyColumn(
+        state = listState,
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)

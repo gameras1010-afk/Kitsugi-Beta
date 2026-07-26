@@ -154,7 +154,7 @@ fun KitsugiStreamSelectorBottomSheet(
                             )
                         }
                         IconButton(
-                            onClick = onDismiss,
+                            onClick = LocalDismissAnimated.current,
                             colors = IconButtonDefaults.iconButtonColors(
                                 containerColor = KitsugiColors.SurfaceStrong
                             )
@@ -321,12 +321,20 @@ fun KitsugiStreamSelectorBottomSheet(
                                             }
                                             resolvingSource = stream
                                             coroutineScope.launch {
-                                                val resolvedUrl = repository.resolveStreamUrl(stream)
+                                                val resolvedUrl = try {
+                                                    kotlinx.coroutines.withTimeoutOrNull(30000L) {
+                                                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                                            repository.resolveStreamUrl(stream)
+                                                        }
+                                                    }
+                                                } catch (e: Exception) {
+                                                    null
+                                                }
+                                                resolvingSource = null
                                                 if (resolvedUrl != null) {
                                                     onStreamSelected(resolvedUrl, stream.title, stream)
                                                 } else {
                                                     errorMessage = "Akış linki çözümlenemedi (Debrid hatası veya yetkisiz token)."
-                                                    resolvingSource = null
                                                 }
                                             }
                                         }
@@ -368,7 +376,7 @@ fun KitsugiStreamSelectorBottomSheet(
                     }
 
                     IconButton(
-                        onClick = onDismiss,
+                        onClick = LocalDismissAnimated.current,
                         colors = IconButtonDefaults.iconButtonColors(
                             containerColor = KitsugiColors.SurfaceStrong
                         )
@@ -514,12 +522,20 @@ fun KitsugiStreamSelectorBottomSheet(
                                     }
                                     resolvingSource = stream
                                     coroutineScope.launch {
-                                        val resolvedUrl = repository.resolveStreamUrl(stream)
+                                        val resolvedUrl = try {
+                                            kotlinx.coroutines.withTimeoutOrNull(30000L) {
+                                                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                                    repository.resolveStreamUrl(stream)
+                                                }
+                                            }
+                                        } catch (e: Exception) {
+                                            null
+                                        }
+                                        resolvingSource = null
                                         if (resolvedUrl != null) {
                                             onStreamSelected(resolvedUrl, stream.title, stream)
                                         } else {
                                             errorMessage = "Akış linki çözümlenemedi (Debrid hatası veya yetkisiz token)."
-                                            resolvingSource = null
                                         }
                                     }
                                 }

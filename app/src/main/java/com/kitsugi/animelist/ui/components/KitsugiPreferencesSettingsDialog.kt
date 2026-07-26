@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -80,14 +81,25 @@ fun KitsugiPreferencesSettingsDialog(
     onMangaFitModeSelected: (String) -> Unit = {},
     onMangaBrightnessChanged: (Float) -> Unit = {}
 ) {
+    val pagerState = rememberPagerState(pageCount = { 3 })
+    val scope = rememberCoroutineScope()
     val accentColor = LocalKitsugiAccent.current
     val KitsugiColors = LocalKitsugiColors.current
-    val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
-    val scope = rememberCoroutineScope()
+
+    val appearanceScrollState = rememberScrollState()
+    val listScoreScrollState = rememberScrollState()
+    val mangaReaderScrollState = rememberScrollState()
+
+    val activeScrollState = when (pagerState.currentPage) {
+        0 -> appearanceScrollState
+        1 -> listScoreScrollState
+        else -> mangaReaderScrollState
+    }
 
     KitsugiSheetOrDialog(
         onDismiss = onDismiss,
-        heightFraction = 0.85f
+        heightFraction = 0.85f,
+        innerColumnScrollState = activeScrollState
     ) {
             // Header
             Column(
@@ -181,7 +193,8 @@ fun KitsugiPreferencesSettingsDialog(
                         onFixedNavBarChanged = onFixedNavBarChanged,
                         onSplashAnimationEnabledChanged = onSplashAnimationEnabledChanged,
                         onSplashSoundEnabledChanged = onSplashSoundEnabledChanged,
-                        accentColor = accentColor
+                        accentColor = accentColor,
+                        scrollState = appearanceScrollState
                     )
                     1 -> ListScoreTab(
                         appSettings = appSettings,
@@ -197,7 +210,8 @@ fun KitsugiPreferencesSettingsDialog(
                         onSimklNotificationsChanged = onSimklNotificationsChanged,
                         onNotificationIntervalChanged = onNotificationIntervalChanged,
                         onSearchHistoryEnabledChanged = onSearchHistoryEnabledChanged,
-                        accentColor = accentColor
+                        accentColor = accentColor,
+                        scrollState = listScoreScrollState
                     )
                     2 -> MangaReaderTab(
                         appSettings = appSettings,
@@ -205,7 +219,8 @@ fun KitsugiPreferencesSettingsDialog(
                         onMangaColorFilterSelected = onMangaColorFilterSelected,
                         onMangaFitModeSelected = onMangaFitModeSelected,
                         onMangaBrightnessChanged = onMangaBrightnessChanged,
-                        accentColor = accentColor
+                        accentColor = accentColor,
+                        scrollState = mangaReaderScrollState
                     )
                 }
             }
@@ -242,7 +257,8 @@ private fun AppearanceTab(
     onFixedNavBarChanged: (Boolean) -> Unit,
     onSplashAnimationEnabledChanged: (Boolean) -> Unit = {},
     onSplashSoundEnabledChanged: (Boolean) -> Unit = {},
-    accentColor: Color
+    accentColor: Color,
+    scrollState: ScrollState = rememberScrollState()
 ) {
     val KitsugiColors = LocalKitsugiColors.current
     val selectedThemeId = appSettings.selectedThemeId
@@ -291,7 +307,6 @@ private fun AppearanceTab(
         KitsugiChoiceOption(id = "en", title = "English", description = "")
     )
 
-    val scrollState = rememberScrollState()
     var showColorPicker by remember { mutableStateOf(false) }
     var colorInputText by remember { mutableStateOf(if (customAccentColor != 0) String.format("#%06X", 0xFFFFFF and customAccentColor) else "") }
 
@@ -583,7 +598,8 @@ private fun ListScoreTab(
     onSimklNotificationsChanged: (Boolean) -> Unit = {},
     onNotificationIntervalChanged: (Int) -> Unit = {},
     onSearchHistoryEnabledChanged: (Boolean) -> Unit = {},
-    accentColor: Color
+    accentColor: Color,
+    scrollState: ScrollState = rememberScrollState()
 ) {
     val KitsugiColors = LocalKitsugiColors.current
     val selectedListLayoutId = appSettings.selectedListLayoutId
@@ -615,7 +631,6 @@ private fun ListScoreTab(
         KitsugiChoiceOption(id = "STARS", title = stringResource(R.string.option_score_stars), description = stringResource(R.string.option_score_stars_desc))
     )
 
-    val scrollState = rememberScrollState()
     val context = LocalContext.current
 
     var showTitleLanguageMenu by remember { mutableStateOf(false) }
@@ -1128,10 +1143,10 @@ private fun MangaReaderTab(
     onMangaColorFilterSelected: (String) -> Unit,
     onMangaFitModeSelected: (String) -> Unit,
     onMangaBrightnessChanged: (Float) -> Unit,
-    accentColor: Color
+    accentColor: Color,
+    scrollState: ScrollState = rememberScrollState()
 ) {
     val KitsugiColors = LocalKitsugiColors.current
-    val scrollState = rememberScrollState()
 
     val readingModeOptions = listOf(
         KitsugiChoiceOption(id = "RightToLeft",  title = stringResource(R.string.manga_direction_rtl),    description = stringResource(R.string.manga_direction_rtl_desc)),

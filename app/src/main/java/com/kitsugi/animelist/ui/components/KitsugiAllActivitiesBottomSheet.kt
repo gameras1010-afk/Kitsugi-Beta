@@ -131,7 +131,8 @@ fun KitsugiAllActivitiesBottomSheet(
     }
 
     KitsugiSheetOrDialog(
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
+        innerScrollState = listState
     ) {
         Column(
             modifier = Modifier
@@ -147,7 +148,7 @@ fun KitsugiAllActivitiesBottomSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
-                    onClick = onDismiss,
+                    onClick = LocalDismissAnimated.current,
                     colors = IconButtonDefaults.iconButtonColors(
                         containerColor = KitsugiColors.SurfaceStrong
                     )

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -52,9 +53,20 @@ fun KitsugiSystemSettingsDialog(
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
     val scope = rememberCoroutineScope()
 
+    val dataManagementScrollState = rememberScrollState()
+    val dnsSettingsScrollState = rememberScrollState()
+    val storageSettingsScrollState = rememberScrollState()
+
+    val activeScrollState = when (pagerState.currentPage) {
+        0 -> dataManagementScrollState
+        1 -> dnsSettingsScrollState
+        else -> storageSettingsScrollState
+    }
+
     KitsugiSheetOrDialog(
         onDismiss = onDismiss,
-        heightFraction = 0.85f
+        heightFraction = 0.85f,
+        innerColumnScrollState = activeScrollState
     ) {
         // Header
         Column(
@@ -138,17 +150,20 @@ fun KitsugiSystemSettingsDialog(
                     onExportFileClick = onExportFileClick,
                     onImportFileClick = onImportFileClick,
                     onDeleteAllClick = onDeleteAllClick,
-                    accentColor = accentColor
+                    accentColor = accentColor,
+                    scrollState = dataManagementScrollState
                 )
                 1 -> DnsSettingsTab(
                     dnsChoice = dnsChoice,
                     onDnsChoiceSelected = onDnsChoiceSelected,
-                    accentColor = accentColor
+                    accentColor = accentColor,
+                    scrollState = dnsSettingsScrollState
                 )
                 2 -> StorageSettingsTab(
                     customImageDownloadUri = customImageDownloadUri,
                     onCustomImageDownloadUriChanged = onCustomImageDownloadUriChanged,
-                    accentColor = accentColor
+                    accentColor = accentColor,
+                    scrollState = storageSettingsScrollState
                 )
             }
         }
@@ -174,9 +189,9 @@ private fun DataManagementTab(
     onExportFileClick: () -> Unit,
     onImportFileClick: () -> Unit,
     onDeleteAllClick: () -> Unit,
-    accentColor: Color
+    accentColor: Color,
+    scrollState: ScrollState = rememberScrollState()
 ) {
-    val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -244,9 +259,9 @@ private fun DataManagementTab(
 private fun DnsSettingsTab(
     dnsChoice: Int,
     onDnsChoiceSelected: (Int) -> Unit,
-    accentColor: Color
+    accentColor: Color,
+    scrollState: ScrollState = rememberScrollState()
 ) {
-    val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -315,10 +330,10 @@ private fun DnsSettingsTab(
 private fun StorageSettingsTab(
     customImageDownloadUri: String,
     onCustomImageDownloadUriChanged: (String) -> Unit,
-    accentColor: Color
+    accentColor: Color,
+    scrollState: ScrollState = rememberScrollState()
 ) {
     val context = LocalContext.current
-    val scrollState = rememberScrollState()
 
     val folderPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()

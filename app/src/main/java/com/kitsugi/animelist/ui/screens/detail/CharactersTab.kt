@@ -27,6 +27,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.RecordVoiceOver
@@ -119,8 +120,10 @@ fun CharactersTabContent(
 
     if (selectedCharacterForVoiceActors != null) {
         val character = selectedCharacterForVoiceActors!!
+        val vaListState = rememberLazyListState()
         KitsugiSheetOrDialog(
-            onDismiss = { selectedCharacterForVoiceActors = null }
+            onDismiss = { selectedCharacterForVoiceActors = null },
+            innerScrollState = vaListState
         ) {
             Text(
                 text = "${character.name} - ${stringResource(R.string.detail_voice_actors)}",
@@ -131,6 +134,7 @@ fun CharactersTabContent(
             )
             
             LazyColumn(
+                state = vaListState,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp, vertical = 8.dp),

@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -117,9 +119,20 @@ fun KitsugiAddonsSettingsDialog(
     val context = androidx.compose.ui.platform.LocalContext.current
     val pagerState = rememberPagerState(initialPage = initialTab, pageCount = { 3 })
 
+    val stremioListState = rememberLazyListState()
+    val cloudstreamListState = rememberLazyListState()
+    val mangaListState = rememberLazyListState()
+
+    val activeListState = when (pagerState.currentPage) {
+        0 -> stremioListState
+        1 -> cloudstreamListState
+        else -> mangaListState
+    }
+
     KitsugiSheetOrDialog(
         onDismiss = onDismiss,
-        heightFraction = 0.93f
+        heightFraction = 0.93f,
+        innerScrollState = activeListState
     ) {
             // Header content (Title + Close button)
             Column(
@@ -252,7 +265,8 @@ fun KitsugiAddonsSettingsDialog(
                             onAddAddon = onAddAddon,
                             onToggleAddon = onToggleAddon,
                             onDeleteAddon = onDeleteAddon,
-                            onSaveDebridToken = onSaveDebridToken
+                            onSaveDebridToken = onSaveDebridToken,
+                            listState = stremioListState
                         )
                         1 -> CloudstreamExtensionsTab(
                             repos = repos,
@@ -291,7 +305,8 @@ fun KitsugiAddonsSettingsDialog(
                                         }
                                     }
                                 }
-                            }
+                            },
+                            listState = cloudstreamListState
                         )
                         2 -> MangaExtensionsTab(
                             sources = mangaSources,
@@ -334,7 +349,8 @@ fun KitsugiAddonsSettingsDialog(
                             onRefreshSourceMirror = onRefreshMangaSourceMirror,
                             onClearSourceMirror = onClearMangaSourceMirror,
                             onOpenSourceHealthScreen = onOpenMangaSourceHealthScreen,
-                            onForceCheckUpdates = onForceCheckMangaUpdates
+                            onForceCheckUpdates = onForceCheckMangaUpdates,
+                            listState = mangaListState
                         )
                     }
                 }

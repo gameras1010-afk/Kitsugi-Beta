@@ -276,7 +276,7 @@ fun MyListHeaderSection(
                         }
                     }
 
-                    val activeSortTitle = sortOptions.firstOrNull { it.id == selectedSortId }?.title ?: "Son eklenen"
+                    val activeSortTitle = getSortTitle(selectedSortId)
                     Box {
                         Box(
                             modifier = Modifier

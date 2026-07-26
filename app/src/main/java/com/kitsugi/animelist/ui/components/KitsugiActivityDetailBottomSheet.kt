@@ -7,7 +7,9 @@ import androidx.compose.foundation.clickable
 import com.kitsugi.animelist.ui.utils.tvClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -96,8 +98,11 @@ fun KitsugiActivityDetailBottomSheet(
         }
     }
 
+    val activityListState = rememberLazyListState()
+
     KitsugiSheetOrDialog(
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
+        innerScrollState = activityListState
     ) {
         Column(
             modifier = Modifier
@@ -243,6 +248,7 @@ fun KitsugiActivityDetailBottomSheet(
                 
                 // Content area with unified LazyColumn
                 LazyColumn(
+                    state = activityListState,
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),

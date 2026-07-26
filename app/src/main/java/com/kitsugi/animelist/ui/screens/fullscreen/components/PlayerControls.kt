@@ -298,6 +298,7 @@ fun PlayerBottomActions(
     onRotateClick: () -> Unit,
     onQualityClick: () -> Unit = {},
     onSkipSettingsClick: (() -> Unit)? = null,
+    onSleepTimerClick: (() -> Unit)? = null,
     showMediaInfo: Boolean = true,
     modifier: Modifier = Modifier
 ) {
@@ -355,6 +356,13 @@ fun PlayerBottomActions(
                 icon = Icons.Rounded.SkipNext,
                 label = "Atlama",
                 onClick = onSkipSettingsClick
+            )
+        }
+        if (onSleepTimerClick != null) {
+            PlayerActionButton(
+                icon = Icons.Rounded.Bedtime,
+                label = "Uyku",
+                onClick = onSleepTimerClick
             )
         }
         PlayerActionButton(

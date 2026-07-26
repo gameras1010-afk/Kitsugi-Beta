@@ -28,6 +28,71 @@ class MediaEntryRepository(
         dao.insertAll(entries.map { it.copy(id = 0).toEntity() })
     }
 
+    /**
+     * Granüler import: mevcut kayıtlarla karşılaştırır, sadece
+     * gerçekten değişen kayıtları günceller. Tüm işlem tek bir
+     * @Transaction içinde çalışır → Room Flow yalnızca 1 kez
+     * tetiklenir ve Compose yalnızca değişen kartları yeniden çizer.
+     *
+     * @param source  "anilist", "mal", "simkl" vb.
+     * @param importedEntries  Uzak API'dan gelen güncel liste
+     */
+    suspend fun smartImport(source: String, importedEntries: List<MediaEntry>) {
+        if (importedEntries.isEmpty()) {
+            dao.deleteBySource(source)
+            return
+        }
+
+        // Yerel DB'deki mevcut kayıtları al (sadece ilgili source)
+        val existing = dao.getAll()
+            .filter { it.source.equals(source, ignoreCase = true) }
+            .associateBy { it.malId }
+
+        val importedByMalId = importedEntries
+            .filter { it.malId != null }
+            .associateBy { it.malId!! }
+
+        val toInsert = mutableListOf<MediaEntryEntity>()
+        val toUpdate = mutableListOf<MediaEntryEntity>()
+
+        for (imported in importedEntries) {
+            val existingEntity = existing[imported.malId]
+            if (existingEntity == null) {
+                // Yeni kayıt → insert
+                toInsert.add(imported.copy(id = 0).toEntity())
+            } else if (hasChanged(existingEntity.toDomain(), imported)) {
+                // Değişmiş kayıt → id'yi koruyarak güncelle
+                toUpdate.add(imported.copy(id = existingEntity.id).toEntity())
+            }
+            // Değişmemiş kayıt → atla (Flow tetiklememe)
+        }
+
+        // Uzak listede artık olmayan kayıtları sil
+        val importedMalIds = importedByMalId.keys
+        val toDeleteIds = existing.values
+            .filter { it.malId == null || it.malId !in importedMalIds }
+            .map { it.id }
+
+        // Tek atomik transaction → Flow 1 kez tetiklenir
+        dao.smartImportTransaction(toInsert, toUpdate, toDeleteIds)
+    }
+
+    /**
+     * İki entry arasında anlamlı bir fark var mı kontrol eder.
+     * Aynıysa import sırasında DB'ye dokunmayız.
+     */
+    private fun hasChanged(local: MediaEntry, remote: MediaEntry): Boolean {
+        return local.status != remote.status ||
+            local.progress != remote.progress ||
+            local.score != remote.score ||
+            local.total != remote.total ||
+            local.isFavorite != remote.isFavorite ||
+            local.repeatCount != remote.repeatCount ||
+            local.notes != remote.notes ||
+            local.startDate != remote.startDate ||
+            local.endDate != remote.endDate
+    }
+
     suspend fun updateAllDirect(entries: List<MediaEntry>) {
         if (entries.isEmpty()) return
         dao.updateAll(entries.map { it.toEntity() })

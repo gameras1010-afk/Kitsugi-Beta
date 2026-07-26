@@ -3,6 +3,8 @@ package com.kitsugi.animelist.ui.components.player
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material.icons.rounded.Subtitles
@@ -52,7 +54,8 @@ internal fun PlayerSubtitleAudioTab(
     onDefaultAudioBoostSelected: (Float) -> Unit,
     onDefaultAudioDelayMsSelected: (Long) -> Unit,
     onPreferredSubtitleLanguagesSelected: (String) -> Unit,
-    onAddonSubtitleStartupModeSelected: (String) -> Unit
+    onAddonSubtitleStartupModeSelected: (String) -> Unit,
+    listState: LazyListState = rememberLazyListState()
 ) {
     var sizeDropdownExpanded by remember { mutableStateOf(false) }
     var colorDropdownExpanded by remember { mutableStateOf(false) }
@@ -111,6 +114,7 @@ internal fun PlayerSubtitleAudioTab(
     val currentStartupModeName = startupModeOptions.find { it.first == addonSubtitleStartupMode }?.second ?: "Yalnızca Tercih Edilen Dilleri Yükle"
 
     LazyColumn(
+        state = listState,
         modifier = Modifier.fillMaxWidth().fillMaxHeight(),
         verticalArrangement = Arrangement.spacedBy(20.dp),
         contentPadding = PaddingValues(vertical = 12.dp)

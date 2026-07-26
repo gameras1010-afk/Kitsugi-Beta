@@ -66,9 +66,15 @@ data class PlayerGestureConfig(
     /**
      * TASK_050 — Dikey swipe hassasiyeti.
      * 0.5 = yavaş/hassas, 1.0 = varsayılan, 2.0 = hızlı.
-     * NuvioTV PlayerGestureDetector.scrollSensitivity referans alındı.
      */
-    val scrollSensitivity: Float = 1.0f
+    val scrollSensitivity: Float = 1.0f,
+    /**
+     * true = sol el ses, sağ el parlaklık (varsayılan Aniyomi davranışı).
+     * false = sol el parlaklık, sağ el ses.
+     */
+    val swipeVolumeBrightnessSides: Boolean = true,
+    /** true = yatay swipe ile seek aktif */
+    val horizontalSeekGestureEnabled: Boolean = true
 )
 
 /**

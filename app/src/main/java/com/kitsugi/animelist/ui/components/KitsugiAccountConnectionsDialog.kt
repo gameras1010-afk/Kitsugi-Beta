@@ -48,10 +48,12 @@ fun KitsugiAccountConnectionsDialog(
     onDismiss: () -> Unit
 ) {
     val accentColor = LocalKitsugiAccent.current
+    val scrollState = rememberScrollState()
 
     KitsugiSheetOrDialog(
         onDismiss = onDismiss,
-        heightFraction = 0.85f
+        heightFraction = 0.85f,
+        innerColumnScrollState = scrollState
     ) {
         // Header
         Column(
@@ -106,7 +108,8 @@ fun KitsugiAccountConnectionsDialog(
                 onSyncEnabledAnilistChanged = onSyncEnabledAnilistChanged,
                 syncEnabledMal = syncEnabledMal,
                 onSyncEnabledMalChanged = onSyncEnabledMalChanged,
-                accentColor = accentColor
+                accentColor = accentColor,
+                scrollState = scrollState
             )
         }
 
@@ -148,9 +151,9 @@ private fun AccountConnectionsTab(
     onSyncEnabledAnilistChanged: (Boolean) -> Unit,
     syncEnabledMal: Boolean,
     onSyncEnabledMalChanged: (Boolean) -> Unit,
-    accentColor: Color
+    accentColor: Color,
+    scrollState: androidx.compose.foundation.ScrollState
 ) {
-    val scrollState = rememberScrollState()
     val isTv = LocalIsTv.current
     var showTvQrDialog by remember { mutableStateOf(false) }
 

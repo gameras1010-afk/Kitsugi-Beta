@@ -115,6 +115,12 @@ data class AppSettings(
     val gestureScrollSensitivity: Float = 1.0f,
     val doubleTapSeekSeconds: Int = 10,
     val holdSpeedMultiplier: Float = 2.0f,
+    /** true = sol el ses, sağ el parlaklık (varsayılan); false = taraflar yer değiştirir */
+    val swipeVolumeBrightnessSides: Boolean = true,
+    /** true = yatay kaydırma ile seeking aktif */
+    val horizontalSeekGestureEnabled: Boolean = true,
+    /** true = seeking esnasında hassas (kare kare) mod; false = hızlı seek */
+    val preciseSeeking: Boolean = false,
     // ─── PIP (T2.3) ─────────────────────────────────────────────────────────
     val pipEnabled: Boolean = true,
     // ─── Ses Rotası Gecikmesi (T1.3) ─────────────────────────────────────────
@@ -165,7 +171,42 @@ data class AppSettings(
     val autoUpdateCheckEnabled: Boolean = true,
     val customImageDownloadUri: String = "",
     val syncEnabledAnilist: Boolean = false,
-    val syncEnabledMal: Boolean = false
+    val syncEnabledMal: Boolean = false,
+    // ─── MPV Gelişmiş Oynatıcı Ayarları (Aniyomi'den uyarlama) ───────────────
+    /** MPV GPU render backend: "gpu" (varsayılan) veya "gpu-next" */
+    val mpvGpuRenderer: String = "gpu",
+    /** Donanım kod çözme modu: "auto", "auto-safe", "no" */
+    val mpvHwdecMode: String = "auto-safe",
+    /** Video debanding: "none", "cpu", "gpu" */
+    val mpvDebandMode: String = "none",
+    /** true = YUV420P format zorla (eski donanım uyumu için) */
+    val mpvForceYuv420p: Boolean = false,
+    /** MPV demuxer maksimum önbellek boyutu (MB) — 0 = sınırsız */
+    val mpvDemuxerCacheMb: Int = 64,
+    // ─── İkincil Altyazı (Secondary Subtitle) ────────────────────────────────
+    /** Etkin ikincil altyazı parça ID'si; -1 = kapalı */
+    val secondarySubtitleTrackId: Int = -1,
+    /** İkincil altyazı gecikme süresi (ms) */
+    val secondarySubtitleDelayMs: Long = 0L,
+    // ─── Altyazı Gelişmiş Stil (Aniyomi'den uyarlama) ────────────────────────
+    /** true = altyazı italik */
+    val subtitleItalic: Boolean = false,
+    /** Altyazı hizalama: "left", "center", "right" */
+    val subtitleJustification: String = "center",
+    /** Altyazı arka plan rengi (ARGB Int); 0 = şeffaf */
+    val subtitleBackgroundColor: Int = 0,
+    /** Altyazı gölge offseti (dp); 0 = gölge yok */
+    val subtitleShadowOffset: Float = 1.5f,
+    /** Altyazı kenarlık rengi (ARGB Int) */
+    val subtitleBorderColor: Int = 0xFF000000.toInt(),
+    /** Altyazı kenarlık kalınlığı (dp) */
+    val subtitleBorderSize: Float = 1.5f,
+    // ─── Uyku Zamanlayıcısı (Sleep Timer) ────────────────────────────────────
+    /** Uyku zamanlayıcısı kalan saniye; 0 = kapalı */
+    val sleepTimerSeconds: Int = 0,
+    // ─── Ses Boost Sınırı ─────────────────────────────────────────────────────
+    /** MPV volume-max değeri (yüzde) — 100–200 arası */
+    val volumeBoostCap: Int = 200
 )
 
 enum class FrameRateMatchingMode {

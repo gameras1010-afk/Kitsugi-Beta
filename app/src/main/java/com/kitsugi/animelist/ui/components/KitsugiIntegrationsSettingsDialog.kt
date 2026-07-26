@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -114,9 +115,22 @@ fun KitsugiIntegrationsSettingsDialog(
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 4 })
     val scope = rememberCoroutineScope()
 
+    val tmdbScrollState = rememberScrollState()
+    val mdbListScrollState = rememberScrollState()
+    val aniSkipScrollState = rememberScrollState()
+    val fanartTvScrollState = rememberScrollState()
+
+    val activeScrollState = when (pagerState.currentPage) {
+        0 -> tmdbScrollState
+        1 -> mdbListScrollState
+        2 -> aniSkipScrollState
+        else -> fanartTvScrollState
+    }
+
     KitsugiSheetOrDialog(
         onDismiss = onDismiss,
-        heightFraction = 0.85f
+        heightFraction = 0.85f,
+        innerColumnScrollState = activeScrollState
     ) {
             // Header
             Column(
@@ -241,7 +255,8 @@ fun KitsugiIntegrationsSettingsDialog(
                         onUseMoreLikeThisChanged = onTmdbUseMoreLikeThisChanged,
                         useCollections = tmdbUseCollections,
                         onUseCollectionsChanged = onTmdbUseCollectionsChanged,
-                        accentColor = accentColor
+                        accentColor = accentColor,
+                        scrollState = tmdbScrollState
                     )
                     1 -> MdbListSettingsTab(
                         enabled = mdbListEnabled,
@@ -262,7 +277,8 @@ fun KitsugiIntegrationsSettingsDialog(
                         onShowTmdbChanged = onMdbListShowTmdbChanged,
                         showTrakt = mdbListShowTrakt,
                         onShowTraktChanged = onMdbListShowTraktChanged,
-                        accentColor = accentColor
+                        accentColor = accentColor,
+                        scrollState = mdbListScrollState
                     )
                     2 -> AniSkipSettingsTab(
                         enabled = aniSkipEnabled,
@@ -271,14 +287,16 @@ fun KitsugiIntegrationsSettingsDialog(
                         onAutoSkipChanged = onAniSkipAutoSkipChanged,
                         animeSkipClientId = animeSkipClientId,
                         onAnimeSkipClientIdChanged = onAnimeSkipClientIdChanged,
-                        accentColor = accentColor
+                        accentColor = accentColor,
+                        scrollState = aniSkipScrollState
                     )
                     3 -> FanartTvSettingsTab(
                         enabled = fanartTvEnabled,
                         onEnabledChanged = onFanartTvEnabledChanged,
                         apiKey = fanartTvApiKey,
                         onApiKeyChanged = onFanartTvApiKeyChanged,
-                        accentColor = accentColor
+                        accentColor = accentColor,
+                        scrollState = fanartTvScrollState
                     )
                 }
             }
@@ -332,9 +350,9 @@ private fun TmdbSettingsTab(
     onUseMoreLikeThisChanged: (Boolean) -> Unit,
     useCollections: Boolean,
     onUseCollectionsChanged: (Boolean) -> Unit,
-    accentColor: Color
+    accentColor: Color,
+    scrollState: ScrollState = rememberScrollState()
 ) {
-    val scrollState = rememberScrollState()
     var tempKey by remember(apiKey) { mutableStateOf(apiKey) }
     var showLanguageDialog by remember { mutableStateOf(false) }
 
@@ -629,9 +647,9 @@ private fun MdbListSettingsTab(
     onShowTmdbChanged: (Boolean) -> Unit,
     showTrakt: Boolean,
     onShowTraktChanged: (Boolean) -> Unit,
-    accentColor: Color
+    accentColor: Color,
+    scrollState: ScrollState = rememberScrollState()
 ) {
-    val scrollState = rememberScrollState()
     var tempKey by remember(apiKey) { mutableStateOf(apiKey) }
 
     Column(
@@ -768,9 +786,9 @@ private fun AniSkipSettingsTab(
     onAutoSkipChanged: (Boolean) -> Unit,
     animeSkipClientId: String,
     onAnimeSkipClientIdChanged: (String) -> Unit,
-    accentColor: Color
+    accentColor: Color,
+    scrollState: ScrollState = rememberScrollState()
 ) {
-    val scrollState = rememberScrollState()
     var tempClientId by remember(animeSkipClientId) { mutableStateOf(animeSkipClientId) }
 
     Column(
@@ -1077,9 +1095,9 @@ private fun FanartTvSettingsTab(
     onEnabledChanged: (Boolean) -> Unit,
     apiKey: String,
     onApiKeyChanged: (String) -> Unit,
-    accentColor: Color
+    accentColor: Color,
+    scrollState: ScrollState = rememberScrollState()
 ) {
-    val scrollState = rememberScrollState()
     var tempKey by remember(apiKey) { mutableStateOf(apiKey) }
 
     Column(

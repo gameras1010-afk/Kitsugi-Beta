@@ -361,7 +361,15 @@ fun TvStreamScreen(
                                             resolvingSource = stream
                                             resolvingError = null
                                             scope.launch {
-                                                val resolvedUrl = repository.resolveStreamUrl(stream)
+                                                val resolvedUrl = try {
+                                                    kotlinx.coroutines.withTimeoutOrNull(30000L) {
+                                                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                                            repository.resolveStreamUrl(stream)
+                                                        }
+                                                    }
+                                                } catch (e: Exception) {
+                                                    null
+                                                }
                                                 resolvingSource = null
                                                 if (resolvedUrl == null) {
                                                     resolvingError = "Akış linki çözümlenemedi."

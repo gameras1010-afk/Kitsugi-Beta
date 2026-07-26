@@ -1,45 +1,55 @@
-# Kitsugi v2.4.106 Release Notes 🚀
+# Kitsugi Modular Player Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### 🖼️ Resimler Sekmesi (Yeni Tab)
+### 🎬 Yeni Modüler ve Reaktif Oynatıcı Arayüzü (Aniyomi Uyarımı)
+- **Yeni Reaktif Mimari:** Eski monolitik ve imperatif oynatıcı yapısı yerine, `StateFlow` durum akışlarına dayalı, modüler koordinasyon katan `PlayerSheetsHost`, `PlayerPanelsHost` ve `PlayerDialogsHost` mimarisi getirilmiştir.
+- **Dahili Oynatıcı Seçenekleri:** Gelişmiş MPV (`MpvPlayerEngine`) ve ExoPlayer (`Media3PlayerEngine`) oynatma motorları tamamen entegre edilmiştir.
+- **Duraklatma Ekranı (Pause Overlay):** Video duraklatıldığında arka planda açılan şık bölüm özeti, sezon yılı ve oyuncu kadrosu (cast) detaylarını barındıran zengin içerikli pause arayüzü eklendi.
 
-- **Ayrı "Resimler" Sekmesi:** Anime/dizi/film detay sayfalarında galeri içeriği artık "Bilgi" sekmesinde değil, ayrı bir **"Resimler"** sekmesinde gösterilir. Bu sayede Bilgi sekmesi daha temiz ve hızlı yüklenir.
-- **Her iki detay tipi destekleniyor:** Hem arama sonuçlarından açılan detay sayfası (`ApiResultDetailPage`) hem de listendeki kayıtların detay sayfası (`MediaEntryDetailPage`) bu yeni sekme yapısına geçirildi.
-- **Galeri tam sayfa:** Resimler sekmesi tıklandığında TMDB, Fanart.tv ve AniList poster/backdrop görselleri kategorilere göre tam ekran gözlemlenebilir.
+### ⚙️ Gelişmiş MPV Oynatıcı Seçenekleri
+- **Donanım Kod Çözme (hwdec):** Otomatik güvenli, tam donanım hızlandırma (tüm formatlar) veya yazılımsal kod çözme modları eklendi.
+- **Video Debanding:** Düşük bit hızı olan görüntülerdeki renk geçiş şeritlerini gidermek için CPU/GPU Debanding desteği.
+- **Demuxer Önbellek Ayarı:** Ağ akışı sırasında önbellek boyutunu (8-256 MB) dinamik olarak ayarlama seçeneği.
+- **Ses Güçlendirme (Volume Boost):** Oynatıcı sesini normal sınırların üstüne (100% - 200% arası) çıkarabilme desteği.
 
-### 💬 Tartışma Konuları Yorum Düzeni
+### 👆 Akıllı Jest Kontrolleri ve Mekanikler
+- **Hold-to-Speedup (Basılı Tutunca Hızlandırma):** Video üzerinde herhangi bir yere basılı tutulduğunda oynatmayı geçici olarak hızlandıran (2.0x veya özel hız katsayısı) ve bırakıldığında eski hızına dönen akıllı jest.
+- **Yatay Kaydırma ile Seek:** Ekran üzerinde yatay kaydırma hareketleriyle hızlıca video konumunu değiştirme desteği.
+- **Ses / Parlaklık Yön Değişimi:** Sol el parlaklık / sağ el ses veya varsayılan yönler arasında geçiş yapabilme (`swipeVolumeBrightnessSides`) ayarı.
+- **Hassas Kare Kare Arama (Precise Seeking):** Seek yaparken kare kare tam konumu arayan özel hassas arama modu seçeneği.
+- **Zoom Jesti:** Ekran üzerinde iki parmakla kıstırma hareketi yaparak ekran sığdırma (FIT) veya yakınlaştırma (ZOOM/CROP) modları arasında geçiş yapabilme.
 
-- **AniHyou Tarzı Düz Liste:** Konu detayı açılır penceresindeki yorumlar artık kart arka planı olmayan, ince bir yatay ayırıcı çizgiyle ayrılan temiz dikey liste görünümüne geçti.
-- **Yazar + Tarih Aynı Satırda:** Yorum kartlarında yazar adı ve zaman bilgisi artık aynı satırın solunda ve sağında hizalı olarak gösterilir.
-- **Alt Yanıtlar Dikey Çizgiyle:** İç içe yanıtlar (`ChildComment`) sol taraflarında dikey bir `VerticalDivider` çizgisiyle girintili listelenir; tam olarak AniHyou tasarımıyla eşleşen bir hiyerarşi sunar.
-- **Aksiyonlar Temizlendi:** Çeviri, kopyala, beğen ve yanıtla butonları daha kompakt ve sezgisel bir düzende yeniden konumlandırıldı.
-
-### ⚙️ Arka Plan İyileştirmeleri
-
-- **Yeni Kayıtlarda Sıfır Puan:** Listeye eklenen yeni yapımlar artık API üzerindeki genel puanı değil, boş (`null`) bir puan ile başlar. Kullanıcı kendi puanını ayrıca girerek belirleyebilir.
-- **Platform Bağımsız Tekrar Kontrolü:** Aynı yapımın farklı kaynaklardan (AniList, MAL, Jikan) ikinci kez eklenmesi artık platform ID'leri üzerinden bütünleşik olarak engellenir.
+### 📝 Altyazı ve Ses Özelleştirmeleri
+- **İkincil Altyazı (Secondary Subtitle):** MPV oynatıcıda aynı anda çift altyazı gösterme desteği ve ikincil altyazı gecikme süre ayarı.
+- **Gelişmiş Altyazı Stili:** İtalik altyazı desteği, hizalama seçenekleri (sol, sağ, orta), gölge offseti ve kenarlık kalınlığı ayarlamaları.
+- **Rotaya Duyarlı Ses Gecikmesi:** Bağlı kulaklık/hoparlör çıkış türüne göre ses senkronizasyon gecikmelerinin otomatik algılanması ve uygulanması.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### 🖼️ Dedicated Images Tab (New)
+### 🎬 New Modular & Reactive Player UI (Aniyomi Inspired)
+- **Modern Reactive Architecture:** Replaced the legacy monolithic player UI with a decoupled structure controlled by `PlayerSheetsHost`, `PlayerPanelsHost`, and `PlayerDialogsHost` running on reactive `StateFlow` state machines.
+- **Dual Playback Engines:** Fully integrated and configured advanced `MpvPlayerEngine` and `Media3PlayerEngine` (ExoPlayer).
+- **Pause Overlay:** A stunning overlay displaying episode description, cast profiles, season year, and poster artwork when the player is paused.
 
-- **Separate "Resimler" (Images) Tab:** Gallery content is no longer embedded in the "Overview" tab. A dedicated **Images** tab now hosts all poster, backdrop, and fanart visuals — keeping the Overview tab clean and fast-loading.
-- **Both detail types supported:** Both API search result pages (`ApiResultDetailPage`) and local list entry pages (`MediaEntryDetailPage`) have been migrated to this new tab architecture.
-- **Full-page gallery:** Tapping the Images tab shows TMDB, Fanart.tv, and AniList visuals organized by category in a full-screen gallery viewer.
+### ⚙️ Advanced MPV Settings
+- **Hardware Decoding (hwdec):** Switch between auto-safe hardware decoding, full auto acceleration, or software decoding modes.
+- **Video Debanding:** Eliminate color banding in low-bitrate streams using customizable CPU or GPU debanding filters.
+- **Demuxer Cache Management:** Set the network demuxer cache size dynamically (ranging from 8MB to 256MB) to optimize streaming stability.
+- **Volume Boost Cap:** Over-amplify audio signals up to 200% for quiet streams.
 
-### 💬 Forum Thread Comment Layout
+### 👆 Intelligent Gesture Controls & Mechanics
+- **Hold-to-Speedup:** Long press anywhere on the screen during playback to temporarily accelerate the video (e.g., 2.0x), reverting to normal speed immediately upon release.
+- **Horizontal Swipe Seek:** Slide horizontally across the video to scrub back and forth with customized on-screen seek progress notifications.
+- **Volume & Brightness Swapping:** Swap the default gesture sides (left-side volume, right-side brightness) for personalized single-handed use.
+- **Precise Seeking:** Seek frame-by-frame for exact positioning rather than fast keyframe jumping.
+- **Pinch to Zoom:** Pinch in or out to toggle between Fit, Stretch, and Zoom display modes.
 
-- **AniHyou-Style Flat List:** Comment cards inside the topic detail sheet now use a clean flat layout — no card backgrounds, separated by a thin `HorizontalDivider` line matching AniHyou's `ThreadCommentView` design.
-- **Author + Timestamp on One Row:** Each comment now displays the author avatar, username, and relative timestamp on a single row (left/right aligned).
-- **Child Replies with Vertical Indent Line:** Nested replies (`ChildComment`) are rendered with a left-side `VerticalDivider` for a clear hierarchical visual — identical to AniHyou's `ChildCommentView` pattern.
-- **Cleaner Action Row:** Translate, Copy, Like, and Reply buttons have been reorganized into a more compact and intuitive layout.
-
-### ⚙️ Background Improvements
-
-- **Null Score on New Entries:** Newly added entries no longer inherit the API's global community score. They start with a `null` (unscored) state so users can assign their own rating.
-- **Platform-Agnostic Duplicate Guard:** Duplicate detection now checks against all linked platform IDs (AniList, MAL, TMDB) — not just the current source — preventing cross-platform double entries.
+### 📝 Custom Subtitle & Audio Enhancements
+- **Secondary Subtitles:** Dual simultaneous subtitle tracks support in MPV with independent secondary subtitle delay control.
+- **Advanced Subtitle Styling:** Custom shadow offsets, border widths, italic toggling, and justification alignments (left, center, right).
+- **Route-Aware Audio Delay:** Automatically detects and applies route-specific sync delays based on active output channels (e.g., Bluetooth, Speakers).

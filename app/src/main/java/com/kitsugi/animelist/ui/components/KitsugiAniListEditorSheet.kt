@@ -141,6 +141,7 @@ internal fun KitsugiAniListMediaEntryEditorSheet(
     var isHiddenFromStatusLists by rememberSaveable(initialEntry?.id) {
         mutableStateOf(initialEntry?.isHiddenFromStatusLists ?: false)
     }
+    val scrollState = rememberScrollState()
 
     val parsedProgress = progressText.toIntOrNull()?.coerceAtLeast(0) ?: 0
     val parsedTotal = totalText.toIntOrNull()?.takeIf { it > 0 }
@@ -165,7 +166,8 @@ internal fun KitsugiAniListMediaEntryEditorSheet(
     val canSave = startDateText.trim().isValidDateOrBlank() && endDateText.trim().isValidDateOrBlank()
 
     KitsugiSheetOrDialog(
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
+        innerColumnScrollState = scrollState
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Row(
@@ -175,7 +177,7 @@ internal fun KitsugiAniListMediaEntryEditorSheet(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(onClick = onDismiss) {
+                TextButton(onClick = LocalDismissAnimated.current) {
                     Text(text = "İptal", color = KitsugiColors.TextSecondary, fontWeight = FontWeight.Medium)
                 }
                 Text(
@@ -228,7 +230,7 @@ internal fun KitsugiAniListMediaEntryEditorSheet(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(scrollState)
                     .padding(bottom = 32.dp)
             ) {
                 // Status row

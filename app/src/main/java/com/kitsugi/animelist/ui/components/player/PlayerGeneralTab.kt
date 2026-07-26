@@ -3,6 +3,8 @@ package com.kitsugi.animelist.ui.components.player
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
@@ -89,7 +91,28 @@ internal fun PlayerGeneralTab(
     subtitleDelayMs: Long = 0L,
     onSubtitleDelayMsChanged: (Long) -> Unit = {},
     decoderPriority: Int = 0,
-    onDecoderPriorityChanged: (Int) -> Unit = {}
+    onDecoderPriorityChanged: (Int) -> Unit = {},
+    // ─── MPV Gelişmiş Ayarları (Aniyomi'den uyarlama) ──────────────────────────
+    mpvGpuRenderer: String = "gpu",
+    onMpvGpuRendererSelected: (String) -> Unit = {},
+    mpvHwdecMode: String = "auto-safe",
+    onMpvHwdecModeSelected: (String) -> Unit = {},
+    mpvDebandMode: String = "none",
+    onMpvDebandModeSelected: (String) -> Unit = {},
+    mpvForceYuv420p: Boolean = false,
+    onMpvForceYuv420pChanged: (Boolean) -> Unit = {},
+    mpvDemuxerCacheMb: Int = 64,
+    onMpvDemuxerCacheMbChanged: (Int) -> Unit = {},
+    volumeBoostCap: Int = 200,
+    onVolumeBoostCapChanged: (Int) -> Unit = {},
+    // ─── Yeni Jest Ayarları ────────────────────────────────────────────
+    swipeVolumeBrightnessSides: Boolean = true,
+    onSwipeVolumeBrightnessSidesChanged: (Boolean) -> Unit = {},
+    horizontalSeekGestureEnabled: Boolean = true,
+    onHorizontalSeekGestureEnabledChanged: (Boolean) -> Unit = {},
+    preciseSeeking: Boolean = false,
+    onPreciseSeekingChanged: (Boolean) -> Unit = {},
+    listState: LazyListState = rememberLazyListState()
 ) {
     var showQualityProfileDialog by remember { mutableStateOf(false) }
     var playerDropdownExpanded by remember { mutableStateOf(false) }
@@ -103,6 +126,9 @@ internal fun PlayerGeneralTab(
     var postPlayDropdownExpanded by remember { mutableStateOf(false) }
     var sessionLimitDropdownExpanded by remember { mutableStateOf(false) }
     var decoderDropdownExpanded by remember { mutableStateOf(false) }
+    var mpvGpuDropdownExpanded by remember { mutableStateOf(false) }
+    var mpvHwdecDropdownExpanded by remember { mutableStateOf(false) }
+    var mpvDebandDropdownExpanded by remember { mutableStateOf(false) }
 
     val playerOptions = listOf(
         "INTERNAL" to "Dahili Oynatıcı (ExoPlayer)",
@@ -135,6 +161,7 @@ internal fun PlayerGeneralTab(
         ?: "Otomatik (Cihaz Desteğine Göre)"
 
     LazyColumn(
+        state = listState,
         modifier = Modifier.fillMaxWidth().fillMaxHeight(),
         verticalArrangement = Arrangement.spacedBy(20.dp),
         contentPadding = PaddingValues(vertical = 12.dp)
@@ -805,6 +832,199 @@ internal fun PlayerGeneralTab(
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
+            }
+        }
+
+        // MPV Gelişmiş Motor Ayarları
+        item {
+            KitsugiSettingsSection(
+                title = "MPV Motoru Gelişmiş Ayarları",
+                subtitle = "GPU arka yüzü, donanım kod çözme, debanding ve önbellek ayarlarını yapılandırın. Yalnızca MPV motoru seçildiğinde geçerlidir."
+            ) {
+                // GPU Renderer
+                val gpuOptions = listOf("gpu" to "🖥️ GPU (Varsayılan)", "gpu-next" to "⚡ GPU-Next (Deneysel)")
+                val currentGpuName = gpuOptions.find { it.first == mpvGpuRenderer }?.second ?: "🖥️ GPU (Varsayılan)"
+                Box {
+                    KitsugiSettingsListItem(
+                        title = "GPU Arka Yüzü (Renderer)",
+                        description = "MPV video render motoru; gpu-next daha iyi HDR desteği sunar",
+                        value = currentGpuName,
+                        icon = Icons.Rounded.Memory,
+                        iconColor = accentColor,
+                        onClick = { mpvGpuDropdownExpanded = true }
+                    )
+                    KitsugiDropdownMenu(expanded = mpvGpuDropdownExpanded, onDismissRequest = { mpvGpuDropdownExpanded = false }) {
+                        gpuOptions.forEach { opt ->
+                            KitsugiDropdownItem(
+                                text = opt.second,
+                                selected = opt.first == mpvGpuRenderer,
+                                onClick = { onMpvGpuRendererSelected(opt.first); mpvGpuDropdownExpanded = false }
+                            )
+                        }
+                    }
+                }
+
+                KitsugiSettingsDivider()
+
+                // Hwdec Modu
+                val hwdecOptions = listOf(
+                    "auto-safe" to "🛡️ Otomatik Güvenli",
+                    "auto" to "⚡ Otomatik (Tüm Format)",
+                    "no" to "💻 Yazılım (Devre Dışı)"
+                )
+                val currentHwdecName = hwdecOptions.find { it.first == mpvHwdecMode }?.second ?: "🛡️ Otomatik Güvenli"
+                Box {
+                    KitsugiSettingsListItem(
+                        title = "Donanım Kod Çözme (hwdec)",
+                        description = "H.264/HEVC gibi format için hızlandırılmış donanım kod çözme",
+                        value = currentHwdecName,
+                        icon = Icons.Rounded.DeveloperBoard,
+                        iconColor = accentColor,
+                        onClick = { mpvHwdecDropdownExpanded = true }
+                    )
+                    KitsugiDropdownMenu(expanded = mpvHwdecDropdownExpanded, onDismissRequest = { mpvHwdecDropdownExpanded = false }) {
+                        hwdecOptions.forEach { opt ->
+                            KitsugiDropdownItem(
+                                text = opt.second,
+                                selected = opt.first == mpvHwdecMode,
+                                onClick = { onMpvHwdecModeSelected(opt.first); mpvHwdecDropdownExpanded = false }
+                            )
+                        }
+                    }
+                }
+
+                KitsugiSettingsDivider()
+
+                // Debanding
+                val debandOptions = listOf("none" to "❌ Kapalı", "cpu" to "💻 CPU Debanding", "gpu" to "🖥️ GPU Debanding")
+                val currentDebandName = debandOptions.find { it.first == mpvDebandMode }?.second ?: "❌ Kapalı"
+                Box {
+                    KitsugiSettingsListItem(
+                        title = "Video Debanding",
+                        description = "Düşk bant sayılı görüntülerdeki renk geçiş şeritlerini giderir",
+                        value = currentDebandName,
+                        icon = Icons.Rounded.Gradient,
+                        iconColor = accentColor,
+                        onClick = { mpvDebandDropdownExpanded = true }
+                    )
+                    KitsugiDropdownMenu(expanded = mpvDebandDropdownExpanded, onDismissRequest = { mpvDebandDropdownExpanded = false }) {
+                        debandOptions.forEach { opt ->
+                            KitsugiDropdownItem(
+                                text = opt.second,
+                                selected = opt.first == mpvDebandMode,
+                                onClick = { onMpvDebandModeSelected(opt.first); mpvDebandDropdownExpanded = false }
+                            )
+                        }
+                    }
+                }
+
+                KitsugiSettingsDivider()
+
+                // YUV420P Zorla
+                KitsugiSettingsSwitchItem(
+                    title = "YUV420P Format Zorla",
+                    description = "Eski donanım uyumu için video çıkışını YUV420P formatına dönüştürmeye zorlar.",
+                    icon = Icons.Rounded.VideoSettings,
+                    iconColor = accentColor,
+                    checked = mpvForceYuv420p,
+                    onCheckedChange = onMpvForceYuv420pChanged
+                )
+
+                KitsugiSettingsDivider()
+
+                // Demuxer Önbelleği
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        "Demuxer Önbelleği: ${mpvDemuxerCacheMb} MB",
+                        color = KitsugiColors.TextPrimary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "Yayın tamponu boyutu — düşük = daha az bellek, yüksek = daha az tampon takılması",
+                        color = KitsugiColors.TextSecondary,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Slider(
+                        value = mpvDemuxerCacheMb.toFloat(),
+                        onValueChange = { onMpvDemuxerCacheMbChanged(it.toInt()) },
+                        valueRange = 8f..256f,
+                        steps = 30,
+                        colors = SliderDefaults.colors(thumbColor = accentColor, activeTrackColor = accentColor),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                KitsugiSettingsDivider()
+
+                // Ses Boost Sınırı
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        "Ses Güçlendirme Sınırı: ${volumeBoostCap}%",
+                        color = KitsugiColors.TextPrimary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "MPV volume-max değeri — 100 = normal, 200 = 2x amplifikayon",
+                        color = KitsugiColors.TextSecondary,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Slider(
+                        value = volumeBoostCap.toFloat(),
+                        onValueChange = { onVolumeBoostCapChanged(it.toInt()) },
+                        valueRange = 100f..200f,
+                        steps = 19,
+                        colors = SliderDefaults.colors(thumbColor = accentColor, activeTrackColor = accentColor),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
+
+        // Yeni Jest Ayarları
+        item {
+            KitsugiSettingsSection(
+                title = "Gelişmiş Jest Ayarları",
+                subtitle = "Kaydırma yönleri, yatay seek ve hassas mod seçenekleri."
+            ) {
+                // Ses/Parlaklık Yer Değiştir
+                KitsugiSettingsSwitchItem(
+                    title = "Ses/Parlaklık Taraf Yer Değiştir",
+                    description = "Kapalı: sol el ses, sağ el parlaklık. Açık: sol el parlaklık, sağ el ses.",
+                    icon = Icons.Rounded.SwapHoriz,
+                    iconColor = accentColor,
+                    checked = !swipeVolumeBrightnessSides,
+                    onCheckedChange = { onSwipeVolumeBrightnessSidesChanged(!it) }
+                )
+
+                KitsugiSettingsDivider()
+
+                // Yatay Seek Jesti
+                KitsugiSettingsSwitchItem(
+                    title = "Yatay Kaydırma Seek",
+                    description = "Yatay sola/sağa kaydırma ile video konumu değiştirilir.",
+                    icon = Icons.Rounded.SwipeRight,
+                    iconColor = accentColor,
+                    checked = horizontalSeekGestureEnabled,
+                    onCheckedChange = onHorizontalSeekGestureEnabledChanged
+                )
+
+                KitsugiSettingsDivider()
+
+                // Hassas Seek Modu
+                KitsugiSettingsSwitchItem(
+                    title = "Hassas Seek (Kare Kare)",
+                    description = "Seek sırasında tam kare arar; daha yavaş ama kesin konumlanma sağlar.",
+                    icon = Icons.Rounded.ControlCamera,
+                    iconColor = accentColor,
+                    checked = preciseSeeking,
+                    onCheckedChange = onPreciseSeekingChanged
+                )
             }
         }
     }

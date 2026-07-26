@@ -271,98 +271,21 @@ fun KitsugiStreamScreen(
             // Önceki işlemi iptal et (ikinci video tıklamasında crash'i önler)
             activeStreamJob?.cancel()
 
-            // Direkt URL'si olan kaynaklar (CS3 dahil) için çözümleme overlay'i gerekmez
-            val needsResolve = source.url.isNullOrBlank() && !source.infoHash.isNullOrBlank()
-            if (needsResolve) {
-                resolvingSource = source
-            }
+            // Tüm kaynaklar için çözümleme overlay'i gösterilerek UI kilitlenmesi önlenir
+            resolvingSource = source
             resolvingError = null
 
             val job = scope.launch {
-                val resolvedUrlDeferred = async(Dispatchers.IO) {
-                    repository.resolveStreamUrl(source)
-                }
-
-                val subtitlesDeferred = async(Dispatchers.IO) {
-                    try {
-                        val currentMalId = malId
-                        val currentAniList = aniListId
-                        val currentEp = episode
-                        val currentS = season
-                        val isMovieType = isMovie || (currentS == 0 && currentEp <= 1)
-
-                        val resolvedIds = com.kitsugi.animelist.data.remote.KitsugiIdResolver.resolveIds(currentMalId, currentAniList, tmdbId)
-                        val imdbId = resolvedIds.imdbId
-                        val kitsuId = resolvedIds.kitsuId
-
-                        val type = if (isMovieType) "movie" else "series"
-                        val queryId = when {
-                            !imdbId.isNullOrBlank() -> if (isMovieType) imdbId else "$imdbId:$currentS:$currentEp"
-                            kitsuId != null -> if (isMovieType) "kitsu:$kitsuId" else "kitsu:$kitsuId:$currentEp"
-                            else -> null
+                val resolvedUrl = try {
+                    kotlinx.coroutines.withTimeoutOrNull(30000L) {
+                        kotlinx.coroutines.withContext(Dispatchers.IO) {
+                            repository.resolveStreamUrl(source)
                         }
-
-                        if (queryId == null) {
-                            Log.w("KitsugiStreamScreen", "Altyazı atlandı: ID çözümlenemedi")
-                            return@async emptyList<SubtitleInput>()
-                        }
-
-                        val resolvedUrl = resolvedUrlDeferred.await() ?: return@async emptyList<SubtitleInput>()
-
-                        val guessedFilename = source.title?.takeIf { it.isNotBlank() }
-                            ?: resolvedUrl.let { url ->
-                                try {
-                                    android.net.Uri.parse(url).lastPathSegment?.takeIf { it.contains(".") }
-                                } catch (_: Exception) { null }
-                            }
-                        val cleanedFilename = guessedFilename?.substringBefore("\n")?.substringBefore("\r")?.trim()
-
-                        val subRepo = com.kitsugi.animelist.data.repository.SubtitleRepositoryImpl(context)
-                        val remoteSubs = subRepo.getSubtitles(
-                            type = type,
-                            id = queryId,
-                            videoUrl = resolvedUrl,
-                            videoHeaders = source.requestHeaders,
-                            filename = cleanedFilename
-                        )
-
-                        val settings = SettingsDataStore(context).settingsFlow.first()
-                        val preferredLangs = settings.preferredSubtitleLanguages.split(",").map { it.trim().lowercase() }
-                        val startupMode = settings.addonSubtitleStartupMode
-
-                        val filteredSubs = if (startupMode == "PREFERRED_ONLY") {
-                            remoteSubs.filter { sub ->
-                                preferredLangs.any { pref -> com.kitsugi.animelist.core.player.PlayerSubtitleUtils.matchesLanguageCode(sub.lang, pref) }
-                            }
-                        } else {
-                            remoteSubs
-                        }
-
-                        coroutineScope {
-                            filteredSubs.map { sub ->
-                                async(Dispatchers.IO) {
-                                    val localFile = com.kitsugi.animelist.core.player.SubtitleFileCache.cacheSubtitle(context, sub.url)
-                                    if (localFile != null) {
-                                        val friendlyLangName = com.kitsugi.animelist.core.player.PlayerSubtitleUtils.getFriendlyLanguageName(sub.lang)
-                                        SubtitleInput(
-                                            url = localFile.absolutePath,
-                                            name = "$friendlyLangName (${sub.addonName})",
-                                            lang = sub.lang
-                                        )
-                                    } else {
-                                        null
-                                    }
-                                }
-                            }.awaitAll().filterNotNull()
-                        }
-                    } catch (e: Exception) {
-                        Log.e("KitsugiStreamScreen", "Altyazı pre-fetch hatası", e)
-                        emptyList<SubtitleInput>()
                     }
+                } catch (e: Exception) {
+                    Log.e("KitsugiStreamScreen", "Akış çözümlenirken hata oluştu", e)
+                    null
                 }
-
-                val resolvedUrl = resolvedUrlDeferred.await()
-                val fetchedSubtitles = subtitlesDeferred.await()
 
                 resolvingSource = null
                 if (resolvedUrl == null) {
@@ -370,11 +293,7 @@ fun KitsugiStreamScreen(
                     return@launch
                 }
 
-                val updatedSource = source.copy(
-                    subtitles = (source.subtitles ?: emptyList()) + fetchedSubtitles
-                )
-
-                handlePlayStream(updatedSource, resolvedUrl)
+                handlePlayStream(source, resolvedUrl)
             }
             activeStreamJob = job
         },

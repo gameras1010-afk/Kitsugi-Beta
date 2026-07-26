@@ -3,9 +3,6 @@ package com.kitsugi.animelist.ui.screens.fullscreen
 import android.app.Application
 import android.content.Context
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.kitsugi.animelist.core.player.SubtitleInput
@@ -22,6 +19,7 @@ import com.kitsugi.animelist.data.repository.StreamSource
 import com.kitsugi.animelist.data.trailer.InAppYouTubeExtractor
 import com.kitsugi.animelist.data.trailer.TrailerPlaybackSource
 import com.kitsugi.animelist.ui.screens.fullscreen.components.MetaCastMember
+import com.kitsugi.animelist.ui.screens.fullscreen.components.PlayerPanel
 import com.kitsugi.animelist.core.player.PlayerLogger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -42,6 +40,7 @@ import com.kitsugi.animelist.data.settings.SettingsDataStore
 import com.kitsugi.animelist.data.local.toDomain
 import com.kitsugi.animelist.core.player.PostPlayMode
 import kotlinx.coroutines.async as asyncSkip
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.awaitAll
 
 
@@ -54,42 +53,251 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         HistoryRepository(KitsugiDatabase.getDatabase(context).historyDao())
     }
 
-    // State Variables
-    var currentVideoUrl by mutableStateOf<String?>(null)
-        private set
-    var currentAudioUrl by mutableStateOf<String?>(null)
-        private set
-    var currentHeaders by mutableStateOf<Map<String, String>>(emptyMap())
-        private set
-    var currentSubtitles by mutableStateOf<List<SubtitleInput>>(emptyList())
-        private set
-    var currentTitle by mutableStateOf("")
-        private set
-    var currentSourceIndex by mutableStateOf(-1)
-        private set
-    var currentStreamSources by mutableStateOf<List<StreamSource>>(emptyList())
-        private set
-    var currentAddonName by mutableStateOf<String?>(null)
-        private set
-    var currentEpisode by mutableStateOf(1)
-        private set
-    var isMovie by mutableStateOf(false)
-        private set
-    var episodesList by mutableStateOf<List<KitsugiStreamingEpisode>>(emptyList())
-        private set
-    var userCancelledBinge by mutableStateOf(false)
-    var isResolvingStream by mutableStateOf(false)
-    var nextEpisodeLoading by mutableStateOf(false)
-    var playbackSource by mutableStateOf<TrailerPlaybackSource?>(null)
-        private set
+    // State Variables - transitioned to reactive StateFlow system
+    private val _currentVideoUrl = MutableStateFlow<String?>(null)
+    val currentVideoUrl: StateFlow<String?> = _currentVideoUrl.asStateFlow()
 
-    var isLoading by mutableStateOf(true)
-    var hasError by mutableStateOf(false)
-    var errorDetails by mutableStateOf<String?>(null)
+    private val _currentAudioUrl = MutableStateFlow<String?>(null)
+    val currentAudioUrl: StateFlow<String?> = _currentAudioUrl.asStateFlow()
 
-    /** Set to true while the player is auto-switching to the next source after a playback error. */
-    var isAutoSwitching by mutableStateOf(false)
-        private set
+    private val _currentHeaders = MutableStateFlow<Map<String, String>>(emptyMap())
+    val currentHeaders: StateFlow<Map<String, String>> = _currentHeaders.asStateFlow()
+
+    private val _currentSubtitles = MutableStateFlow<List<SubtitleInput>>(emptyList())
+    val currentSubtitles: StateFlow<List<SubtitleInput>> = _currentSubtitles.asStateFlow()
+
+    private val _currentTitle = MutableStateFlow("")
+    val currentTitle: StateFlow<String> = _currentTitle.asStateFlow()
+
+    private val _currentSourceIndex = MutableStateFlow(-1)
+    val currentSourceIndex: StateFlow<Int> = _currentSourceIndex.asStateFlow()
+
+    private val _currentStreamSources = MutableStateFlow<List<StreamSource>>(emptyList())
+    val currentStreamSources: StateFlow<List<StreamSource>> = _currentStreamSources.asStateFlow()
+
+    private val _currentAddonName = MutableStateFlow<String?>(null)
+    val currentAddonName: StateFlow<String?> = _currentAddonName.asStateFlow()
+
+    private val _currentEpisode = MutableStateFlow(1)
+    val currentEpisode: StateFlow<Int> = _currentEpisode.asStateFlow()
+
+    private val _isMovie = MutableStateFlow(false)
+    val isMovie: StateFlow<Boolean> = _isMovie.asStateFlow()
+
+    private val _episodesList = MutableStateFlow<List<KitsugiStreamingEpisode>>(emptyList())
+    val episodesList: StateFlow<List<KitsugiStreamingEpisode>> = _episodesList.asStateFlow()
+
+    private val _userCancelledBinge = MutableStateFlow(false)
+    var userCancelledBinge: Boolean
+        get() = _userCancelledBinge.value
+        set(value) { _userCancelledBinge.value = value }
+    val userCancelledBingeFlow = _userCancelledBinge.asStateFlow()
+
+    private val _isResolvingStream = MutableStateFlow(false)
+    var isResolvingStream: Boolean
+        get() = _isResolvingStream.value
+        set(value) { _isResolvingStream.value = value }
+    val isResolvingStreamFlow = _isResolvingStream.asStateFlow()
+
+    private val _nextEpisodeLoading = MutableStateFlow(false)
+    val nextEpisodeLoading: StateFlow<Boolean> = _nextEpisodeLoading.asStateFlow()
+
+    private val _playbackSource = MutableStateFlow<TrailerPlaybackSource?>(null)
+    val playbackSource: StateFlow<TrailerPlaybackSource?> = _playbackSource.asStateFlow()
+
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _hasError = MutableStateFlow(false)
+    val hasError: StateFlow<Boolean> = _hasError.asStateFlow()
+
+    private val _errorDetails = MutableStateFlow<String?>(null)
+    val errorDetails: StateFlow<String?> = _errorDetails.asStateFlow()
+
+    private val _isAutoSwitching = MutableStateFlow(false)
+    val isAutoSwitching: StateFlow<Boolean> = _isAutoSwitching.asStateFlow()
+
+    // Active Panel Flow (Legacy compatibility)
+    private val _activePanel = MutableStateFlow(PlayerPanel.NONE)
+    val activePanel: StateFlow<PlayerPanel> = _activePanel.asStateFlow()
+
+    fun showPanel(panel: PlayerPanel) {
+        _activePanel.value = panel
+    }
+
+    fun dismissPanel() {
+        _activePanel.value = PlayerPanel.NONE
+    }
+
+    // Sleep Timer (Legacy compatibility)
+    private val _sleepTimerSecondsLeft = MutableStateFlow(0)
+    val sleepTimerSecondsLeft: StateFlow<Int> = _sleepTimerSecondsLeft.asStateFlow()
+
+    private var sleepTimerJob: Job? = null
+
+    fun startSleepTimer(minutes: Int) {
+        stopSleepTimer()
+        if (minutes <= 0) return
+        _sleepTimerSecondsLeft.value = minutes * 60
+        sleepTimerJob = viewModelScope.launch {
+            while (_sleepTimerSecondsLeft.value > 0) {
+                delay(1000)
+                _sleepTimerSecondsLeft.value -= 1
+            }
+            activeEngine?.pause()
+        }
+    }
+
+    fun stopSleepTimer() {
+        sleepTimerJob?.cancel()
+        sleepTimerJob = null
+        _sleepTimerSecondsLeft.value = 0
+    }
+
+    // --- New Aniyomi-style UI StateFlows & Coordinates ---
+    private val _sheetShown = MutableStateFlow<KitsugiSheets>(KitsugiSheets.None)
+    val sheetShown: StateFlow<KitsugiSheets> = _sheetShown.asStateFlow()
+
+    private val _dismissSheet = MutableStateFlow(false)
+    val dismissSheet: StateFlow<Boolean> = _dismissSheet.asStateFlow()
+
+    fun showSheet(sheet: KitsugiSheets) {
+        _sheetShown.value = sheet
+        if (sheet == KitsugiSheets.None) {
+            _dismissSheet.value = false
+            showSeekBar()
+        } else {
+            hideSeekBar()
+            _panelShown.value = KitsugiPanels.None
+            _dialogShown.value = KitsugiDialogs.None
+        }
+    }
+
+    fun dismissSheet() {
+        _dismissSheet.value = true
+    }
+
+    fun resetDismissSheet() {
+        _dismissSheet.value = false
+    }
+
+    private val _panelShown = MutableStateFlow<KitsugiPanels>(KitsugiPanels.None)
+    val panelShown: StateFlow<KitsugiPanels> = _panelShown.asStateFlow()
+
+    fun showPanel(panel: KitsugiPanels) {
+        _panelShown.value = panel
+        if (panel == KitsugiPanels.None) {
+            showSeekBar()
+        } else {
+            hideSeekBar()
+            _sheetShown.value = KitsugiSheets.None
+            _dialogShown.value = KitsugiDialogs.None
+        }
+    }
+
+    private val _dialogShown = MutableStateFlow<KitsugiDialogs>(KitsugiDialogs.None)
+    val dialogShown: StateFlow<KitsugiDialogs> = _dialogShown.asStateFlow()
+
+    fun showDialog(dialog: KitsugiDialogs) {
+        _dialogShown.value = dialog
+        if (dialog == KitsugiDialogs.None) {
+            showSeekBar()
+        } else {
+            hideSeekBar()
+            _sheetShown.value = KitsugiSheets.None
+            _panelShown.value = KitsugiPanels.None
+        }
+    }
+
+    private val _seekBarShown = MutableStateFlow(true)
+    val seekBarShown: StateFlow<Boolean> = _seekBarShown.asStateFlow()
+
+    fun showSeekBar() {
+        if (_sheetShown.value != KitsugiSheets.None) return
+        _seekBarShown.value = true
+    }
+
+    fun hideSeekBar() {
+        _seekBarShown.value = false
+    }
+
+    private val _areControlsLocked = MutableStateFlow(false)
+    val areControlsLocked: StateFlow<Boolean> = _areControlsLocked.asStateFlow()
+
+    fun lockControls() {
+        _areControlsLocked.value = true
+    }
+
+    fun unlockControls() {
+        _areControlsLocked.value = false
+    }
+
+    private val _readAhead = MutableStateFlow(0f)
+    val readAhead: StateFlow<Float> = _readAhead.asStateFlow()
+
+    fun updateReadAhead(value: Long) {
+        _readAhead.value = value.toFloat()
+    }
+
+    private val _currentDecoder = MutableStateFlow<Decoder>(Decoder.Auto)
+    val currentDecoder: StateFlow<Decoder> = _currentDecoder.asStateFlow()
+
+    fun updateDecoder(decoder: Decoder) {
+        _currentDecoder.value = decoder
+    }
+
+    private val _remainingTime = MutableStateFlow(0)
+    val remainingTime: StateFlow<Int> = _remainingTime.asStateFlow()
+
+    private var timerJob: Job? = null
+
+    fun startTimer(seconds: Int) {
+        timerJob?.cancel()
+        _remainingTime.value = seconds
+        if (seconds < 1) return
+        timerJob = viewModelScope.launch {
+            for (time in seconds downTo 0) {
+                _remainingTime.value = time
+                delay(1000)
+            }
+            activeEngine?.pause()
+        }
+    }
+
+    private val _chapters = MutableStateFlow<List<com.kitsugi.animelist.ui.screens.fullscreen.controls.components.IndexedSegment>>(emptyList())
+    val chapters: StateFlow<List<com.kitsugi.animelist.ui.screens.fullscreen.controls.components.IndexedSegment>> = _chapters.asStateFlow()
+
+    fun updateChapters(chapterList: List<com.kitsugi.animelist.ui.screens.fullscreen.controls.components.IndexedSegment>) {
+        _chapters.value = chapterList
+    }
+
+    private val _currentChapter = MutableStateFlow<com.kitsugi.animelist.ui.screens.fullscreen.controls.components.IndexedSegment?>(null)
+    val currentChapter: StateFlow<com.kitsugi.animelist.ui.screens.fullscreen.controls.components.IndexedSegment?> = _currentChapter.asStateFlow()
+
+    fun updateChapter(chapter: com.kitsugi.animelist.ui.screens.fullscreen.controls.components.IndexedSegment?) {
+        _currentChapter.value = chapter
+    }
+
+    private val _doubleTapSeekAmount = MutableStateFlow(0)
+    val doubleTapSeekAmount: StateFlow<Int> = _doubleTapSeekAmount.asStateFlow()
+
+    fun setDoubleTapSeekAmount(amount: Int) {
+        _doubleTapSeekAmount.value = amount
+    }
+
+    private val _gestureSeekAmount = MutableStateFlow<Pair<Int, Int>?>(null)
+    val gestureSeekAmount: StateFlow<Pair<Int, Int>?> = _gestureSeekAmount.asStateFlow()
+
+    fun setGestureSeekAmount(seek: Pair<Int, Int>?) {
+        _gestureSeekAmount.value = seek
+    }
+
+    val isVolumeSliderShown = MutableStateFlow(false)
+    val isBrightnessSliderShown = MutableStateFlow(false)
+    val currentBrightness = MutableStateFlow(0.5f)
+    val currentMPVVolume = MutableStateFlow(100)
+
+    val playerUpdate = MutableStateFlow<KitsugiPlayerUpdates>(KitsugiPlayerUpdates.None)
 
     // ── TASK_042: PlaybackState StateFlow ────────────────────────────────────
     // NuvioTV PlayerRuntimeController.playerState pattern referans alındı.
@@ -112,12 +320,14 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         _playerState.value = PlaybackState.Error(errorMessage = errorMsg, errorCode = errorCode)
     }
 
-    var detectedFrameRateRaw by mutableStateOf(0f)
-        private set
-    var detectedFrameRate by mutableStateOf(0f)
-        private set
-    var afrProbeRunning by mutableStateOf(false)
-        private set
+    private val _detectedFrameRateRaw = MutableStateFlow(0f)
+    val detectedFrameRateRaw: StateFlow<Float> = _detectedFrameRateRaw.asStateFlow()
+
+    private val _detectedFrameRate = MutableStateFlow(0f)
+    val detectedFrameRate: StateFlow<Float> = _detectedFrameRate.asStateFlow()
+
+    private val _afrProbeRunning = MutableStateFlow(false)
+    val afrProbeRunning: StateFlow<Boolean> = _afrProbeRunning.asStateFlow()
 
     /** How many consecutive auto-switch attempts have been made for the current episode. */
     private var autoSwitchAttempts = 0
@@ -134,8 +344,8 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
     private var titleNative: String? = null
     private var startYear: Int? = null
 
-    var isInitialized by mutableStateOf(false)
-        private set
+    private val _isInitialized = MutableStateFlow(false)
+    val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
 
     private var lastInitializedKey: String? = null
 
@@ -162,31 +372,31 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         activity: android.app.Activity? = null
     ) {
         val initKey = "${videoId ?: ""}_${videoUrl ?: ""}_${episode}_${aniListId ?: 0}_${malId ?: 0}_${tmdbId ?: 0}"
-        if (isInitialized && lastInitializedKey == initKey) return
-        isInitialized = true
+        if (_isInitialized.value && lastInitializedKey == initKey) return
+        _isInitialized.value = true
         lastInitializedKey = initKey
 
         this.malId = malId
         this.aniListId = aniListId
         this.tmdbId = tmdbId
         this.seasonNum = season
-        this.isMovie = isMovie || (season == 0 && episode <= 1)
+        _isMovie.value = isMovie || (season == 0 && episode <= 1)
         this.animeTitle = animeTitle
         this.titleEnglish = titleEnglish
         this.titleRomaji = titleRomaji
         this.titleNative = titleNative
         this.startYear = startYear
 
-        this.currentVideoUrl = videoUrl
-        this.currentAudioUrl = audioUrl
-        this.currentHeaders = requestHeaders
-        this.currentSubtitles = initialSubtitles
-        this.currentStreamSources = streamSources
-        this.currentSourceIndex = initialIndex
-        this.currentTitle = title
-        this.currentEpisode = episode
+        _currentVideoUrl.value = videoUrl
+        _currentAudioUrl.value = audioUrl
+        _currentHeaders.value = requestHeaders
+        _currentSubtitles.value = initialSubtitles
+        _currentStreamSources.value = streamSources
+        _currentSourceIndex.value = initialIndex
+        _currentTitle.value = title
+        _currentEpisode.value = episode
         if (initialIndex in streamSources.indices) {
-            this.currentAddonName = streamSources[initialIndex].addonName
+            _currentAddonName.value = streamSources[initialIndex].addonName
         }
         // Update hasFallback: true if there are multiple sources to switch between
         orchestrator.errorRecovery.hasFallback = streamSources.size > 1
@@ -208,8 +418,8 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
 
     private fun loadPlaybackSource(videoId: String?, activity: android.app.Activity?) {
         viewModelScope.launch {
-            isLoading = true
-            hasError = false
+            _isLoading.value = true
+            _hasError.value = false
             when {
                 videoId != null -> {
                     try {
@@ -218,35 +428,35 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
                                 .extractPlaybackSource("https://www.youtube.com/watch?v=$videoId")
                         }
                         if (src != null) {
-                            playbackSource = src
+                            _playbackSource.value = src
                         } else {
-                            hasError = true
+                            _hasError.value = true
                         }
                     } catch (e: Exception) {
-                        hasError = true
-                        errorDetails = e.message
+                        _hasError.value = true
+                        _errorDetails.value = e.message
                     } finally {
-                        isLoading = false
+                        _isLoading.value = false
                     }
                 }
-                currentVideoUrl != null -> {
+                _currentVideoUrl.value != null -> {
                     val settings = SettingsDataStore(context).settingsFlow.first()
                     viewModelScope.launch {
                         runAfrPreflightIfEnabled(
                             context = context,
                             activity = activity,
-                            url = currentVideoUrl!!,
-                            headers = currentHeaders,
+                            url = _currentVideoUrl.value!!,
+                            headers = _currentHeaders.value,
                             frameRateMatchingMode = settings.frameRateMatchingMode,
                             resolutionMatchingEnabled = settings.resolutionMatchingEnabled
                         )
                     }
-                    playbackSource = TrailerPlaybackSource(videoUrl = currentVideoUrl!!, audioUrl = currentAudioUrl)
-                    isLoading = false
+                    _playbackSource.value = TrailerPlaybackSource(videoUrl = _currentVideoUrl.value!!, audioUrl = _currentAudioUrl.value)
+                    _isLoading.value = false
                 }
                 else -> {
-                    hasError = true
-                    isLoading = false
+                    _hasError.value = true
+                    _isLoading.value = false
                 }
             }
         }
@@ -261,9 +471,9 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         resolutionMatchingEnabled: Boolean
     ) {
         if (frameRateMatchingMode == com.kitsugi.animelist.data.settings.FrameRateMatchingMode.OFF) {
-            detectedFrameRateRaw = 0f
-            detectedFrameRate = 0f
-            afrProbeRunning = false
+            _detectedFrameRateRaw.value = 0f
+            _detectedFrameRate.value = 0f
+            _afrProbeRunning.value = false
             return
         }
 
@@ -272,14 +482,14 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
             return
         }
 
-        if (afrProbeRunning) {
+        if (_afrProbeRunning.value) {
             Log.d("KitsugiPlayerViewModel", "AFR preflight: already running, skipping duplicate execution")
             return
         }
 
-        afrProbeRunning = true
-        detectedFrameRateRaw = 0f
-        detectedFrameRate = 0f
+        _afrProbeRunning.value = true
+        _detectedFrameRateRaw.value = 0f
+        _detectedFrameRate.value = 0f
 
         val streamHeaders = headers.filterKeys { !it.equals("Range", ignoreCase = true) }
         val probeHeaders = streamHeaders.toMutableMap().apply {
@@ -301,8 +511,8 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
             val cached = com.kitsugi.animelist.core.player.FrameRateUtils.getCachedFrameRate(url, headers)
             if (cached != null) {
                 Log.d("KitsugiPlayerViewModel", "AFR preflight: cache hit! Using cached FPS=${cached.snapped}")
-                detectedFrameRateRaw = cached.raw
-                detectedFrameRate = cached.snapped
+                _detectedFrameRateRaw.value = cached.raw
+                _detectedFrameRate.value = cached.snapped
 
                 val prefer23976ProbeBias = cached.raw in 23.95f..23.999f
                 val targetFrameRate = com.kitsugi.animelist.core.player.FrameRateUtils.refineFrameRateForDisplay(
@@ -354,8 +564,8 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
             }
 
             com.kitsugi.animelist.core.player.FrameRateUtils.cacheFrameRate(url, headers, detection)
-            detectedFrameRateRaw = detection.raw
-            detectedFrameRate = detection.snapped
+            _detectedFrameRateRaw.value = detection.raw
+            _detectedFrameRate.value = detection.snapped
 
             val prefer23976ProbeBias = detection.raw in 23.95f..23.999f
             val targetFrameRate = com.kitsugi.animelist.core.player.FrameRateUtils.refineFrameRateForDisplay(
@@ -374,7 +584,7 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         } catch (e: Exception) {
             Log.e("KitsugiPlayerViewModel", "AFR preflight error: ${e.message}", e)
         } finally {
-            afrProbeRunning = false
+            _afrProbeRunning.value = false
         }
     }
 
@@ -393,7 +603,7 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
                         context = context
                     )
                 }
-                episodesList = list
+                _episodesList.value = list
             } catch (e: Exception) {
                 Log.e("KitsugiPlayerViewModel", "Error fetching episodes", e)
             }
@@ -459,37 +669,45 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
 
     fun playEpisode(targetEp: Int, activity: android.app.Activity?, onAlternativeRequired: () -> Unit, onResolutionFailed: () -> Unit) {
         userCancelledBinge = false
-        showBingeCardState = false
-        nextEpisodeLoading = true
-        isLoading = true
+        _showBingeCardState.value = false
+        _nextEpisodeLoading.value = true
+        _isLoading.value = true
         viewModelScope.launch {
             Log.d("KitsugiPlayerViewModel", "Fetching streams for episode: S${seasonNum}E${targetEp}")
             val streams = fetchStreamsForEpisode(targetEp)
             if (streams.isNotEmpty()) {
-                currentStreamSources = streams
+                _currentStreamSources.value = streams
                 orchestrator.errorRecovery.hasFallback = streams.size > 1
                 val sameProviderStream = streams.firstOrNull {
-                    it.addonName.equals(currentAddonName, ignoreCase = true)
+                    it.addonName.equals(_currentAddonName.value, ignoreCase = true)
                 }
 
                 val targetStream = sameProviderStream ?: streams.firstOrNull { !it.url.isNullOrBlank() } ?: streams.first()
                 val repository = AddonStreamRepository(context)
-                
-                isResolvingStream = true
-                val resolvedUrl = withContext(kotlinx.coroutines.Dispatchers.IO) {
-                    repository.resolveStreamUrl(targetStream)
+
+                _isResolvingStream.value = true
+                val resolvedUrl = try {
+                    kotlinx.coroutines.withTimeoutOrNull(30000L) {
+                        withContext(kotlinx.coroutines.Dispatchers.IO) {
+                            repository.resolveStreamUrl(targetStream)
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("KitsugiPlayerViewModel", "playEpisode: akış çözümleme hatası", e)
+                    null
+                } finally {
+                    isResolvingStream = false
                 }
-                isResolvingStream = false
 
                 if (resolvedUrl != null) {
-                    currentEpisode = targetEp
-                    currentVideoUrl = resolvedUrl
-                    currentAudioUrl = null
-                    currentHeaders = targetStream.requestHeaders ?: emptyMap()
-                    currentSubtitles = targetStream.subtitles ?: emptyList()
-                    currentTitle = "${animeTitle} - Bölüm ${targetEp}"
-                    currentSourceIndex = streams.indexOf(targetStream)
-                    currentAddonName = targetStream.addonName
+                    _currentEpisode.value = targetEp
+                    _currentVideoUrl.value = resolvedUrl
+                    _currentAudioUrl.value = null
+                    _currentHeaders.value = targetStream.requestHeaders ?: emptyMap()
+                    _currentSubtitles.value = targetStream.subtitles ?: emptyList()
+                    _currentTitle.value = "${animeTitle} - Bölüm ${targetEp}"
+                    _currentSourceIndex.value = streams.indexOf(targetStream)
+                    _currentAddonName.value = targetStream.addonName
                     // AniSkip: yeni bölüm için zaman damgalarını yeniden yükle
                     if (malId != null) {
                         loadSkipIntervals(malId!!, targetEp)
@@ -507,13 +725,13 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
                             context = context,
                             activity = activity,
                             url = resolvedUrl,
-                            headers = currentHeaders,
+                            headers = _currentHeaders.value,
                             frameRateMatchingMode = settings.frameRateMatchingMode,
                             resolutionMatchingEnabled = settings.resolutionMatchingEnabled
                         )
                     }
 
-                    playbackSource = TrailerPlaybackSource(videoUrl = resolvedUrl, audioUrl = null)
+                    _playbackSource.value = TrailerPlaybackSource(videoUrl = resolvedUrl, audioUrl = null)
 
                     if (sameProviderStream == null) {
                         onAlternativeRequired()
@@ -522,34 +740,33 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
                     onResolutionFailed()
                 }
             } else {
-                nextEpisodeLoading = false
+                _nextEpisodeLoading.value = false
                 // No streams found
             }
-            nextEpisodeLoading = false
-            isLoading = false
+            _nextEpisodeLoading.value = false
+            _isLoading.value = false
         }
     }
 
     fun playNextEpisode(activity: android.app.Activity?, onAlternativeRequired: () -> Unit, onResolutionFailed: () -> Unit) {
-        playEpisode(currentEpisode + 1, activity, onAlternativeRequired, onResolutionFailed)
+        playEpisode(_currentEpisode.value + 1, activity, onAlternativeRequired, onResolutionFailed)
     }
 
     fun changeStreamSource(index: Int, stream: StreamSource, resolvedUrl: String) {
         PlayerLogger.logSourceChange(
             context   = context,
-            fromAddon = currentAddonName,
+            fromAddon = _currentAddonName.value,
             toAddon   = stream.addonName,
             newUrl    = resolvedUrl,
-            title     = currentTitle
+            title     = _currentTitle.value
         )
-        currentEpisode = currentEpisode // Keep same
-        currentVideoUrl = resolvedUrl
-        currentAudioUrl = null
-        currentHeaders = stream.requestHeaders ?: emptyMap()
-        currentSubtitles = stream.subtitles ?: emptyList()
-        currentSourceIndex = index
-        currentAddonName = stream.addonName
-        playbackSource = TrailerPlaybackSource(videoUrl = resolvedUrl, audioUrl = null)
+        _currentVideoUrl.value = resolvedUrl
+        _currentAudioUrl.value = null
+        _currentHeaders.value = stream.requestHeaders ?: emptyMap()
+        _currentSubtitles.value = stream.subtitles ?: emptyList()
+        _currentSourceIndex.value = index
+        _currentAddonName.value = stream.addonName
+        _playbackSource.value = TrailerPlaybackSource(videoUrl = resolvedUrl, audioUrl = null)
         fetchAutoSubtitles()
     }
 
@@ -563,36 +780,43 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
      * @return true → kaynak değiştirildi, false → deneme limiti aşıldı / kaynak yok
      */
     fun tryNextSource(activity: android.app.Activity?, onSwitched: (newUrl: String, newSource: StreamSource) -> Unit): Boolean {
-        val sources = currentStreamSources
+        val sources = _currentStreamSources.value
         if (sources.isEmpty() || autoSwitchAttempts >= maxAutoSwitchAttempts) {
             Log.w("KitsugiPlayerViewModel", "tryNextSource: limit aşıldı veya kaynak yok ($autoSwitchAttempts/$maxAutoSwitchAttempts)")
             return false
         }
         autoSwitchAttempts++
-        val nextIndex = (currentSourceIndex + 1) % sources.size
-        if (nextIndex == currentSourceIndex % sources.size && sources.size == 1) {
+        val nextIndex = (_currentSourceIndex.value + 1) % sources.size
+        if (nextIndex == _currentSourceIndex.value % sources.size && sources.size == 1) {
             Log.w("KitsugiPlayerViewModel", "tryNextSource: tek kaynak var, geçiş yapılamıyor")
             return false
         }
-        Log.d("KitsugiPlayerViewModel", "tryNextSource: $currentSourceIndex → $nextIndex (deneme $autoSwitchAttempts/$maxAutoSwitchAttempts)")
-        isAutoSwitching = true
-        isLoading = true
+        Log.d("KitsugiPlayerViewModel", "tryNextSource: ${_currentSourceIndex.value} → $nextIndex (deneme $autoSwitchAttempts/$maxAutoSwitchAttempts)")
+        _isAutoSwitching.value = true
+        _isLoading.value = true
         viewModelScope.launch {
             try {
                 val target = sources[nextIndex]
                 val repository = AddonStreamRepository(context)
-                val resolvedUrl = withContext(kotlinx.coroutines.Dispatchers.IO) {
-                    repository.resolveStreamUrl(target)
+                val resolvedUrl = try {
+                    kotlinx.coroutines.withTimeoutOrNull(30000L) {
+                        withContext(kotlinx.coroutines.Dispatchers.IO) {
+                            repository.resolveStreamUrl(target)
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("KitsugiPlayerViewModel", "tryNextSource: çözümleme hatası: ${e.message}")
+                    null
                 }
                 if (resolvedUrl != null) {
-                    currentVideoUrl = resolvedUrl
-                    currentAudioUrl = null
-                    currentHeaders = target.requestHeaders ?: emptyMap()
-                    currentSubtitles = target.subtitles ?: emptyList()
-                    currentSourceIndex = nextIndex
-                    currentAddonName = target.addonName
-                    hasError = false
-                    errorDetails = null
+                    _currentVideoUrl.value = resolvedUrl
+                    _currentAudioUrl.value = null
+                    _currentHeaders.value = target.requestHeaders ?: emptyMap()
+                    _currentSubtitles.value = target.subtitles ?: emptyList()
+                    _currentSourceIndex.value = nextIndex
+                    _currentAddonName.value = target.addonName
+                    _hasError.value = false
+                    _errorDetails.value = null
                     // Keep hasFallback updated: still > 1 source means we can keep trying
                     orchestrator.errorRecovery.hasFallback = sources.size > 1
 
@@ -602,19 +826,19 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
                             context = context,
                             activity = activity,
                             url = resolvedUrl,
-                            headers = currentHeaders,
+                            headers = _currentHeaders.value,
                             frameRateMatchingMode = settings.frameRateMatchingMode,
                             resolutionMatchingEnabled = settings.resolutionMatchingEnabled
                         )
                     }
 
-                    playbackSource = TrailerPlaybackSource(videoUrl = resolvedUrl, audioUrl = null)
+                    _playbackSource.value = TrailerPlaybackSource(videoUrl = resolvedUrl, audioUrl = null)
                     onSwitched(resolvedUrl, target)
                     Log.d("KitsugiPlayerViewModel", "tryNextSource: '${target.addonName}' kaynağına geçildi")
                 } else {
                     Log.w("KitsugiPlayerViewModel", "tryNextSource: kaynak çözümlenemedi, tekrar deneniyor...")
                     // Recursively try the one after
-                    currentSourceIndex = nextIndex
+                    _currentSourceIndex.value = nextIndex
                     tryNextSource(activity, onSwitched)
                 }
             } catch (e: CancellationException) {
@@ -622,8 +846,8 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
             } catch (e: Exception) {
                 Log.e("KitsugiPlayerViewModel", "tryNextSource hata: ${e.message}")
             } finally {
-                isAutoSwitching = false
-                isLoading = false
+                _isAutoSwitching.value = false
+                _isLoading.value = false
             }
         }
         return true
@@ -632,13 +856,15 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
     /** Yeni bölüm oynatılmaya başlandığında otomatik geçiş sayacını sıfırla. */
     fun resetAutoSwitch() {
         autoSwitchAttempts = 0
-        isAutoSwitching = false
+        _isAutoSwitching.value = false
     }
 
     // Keep track of binge state UI
-    var showBingeCardState by mutableStateOf(false)
+    private val _showBingeCardState = MutableStateFlow(false)
+    val showBingeCardState: StateFlow<Boolean> = _showBingeCardState.asStateFlow()
 
-    private var activeEngine: com.kitsugi.animelist.core.player.engine.PlayerEngine? = null
+    private val _bingeCountdownSec = MutableStateFlow(10)
+    val bingeCountdownSec: StateFlow<Int> = _bingeCountdownSec.asStateFlow()
 
     fun setActiveEngine(engine: com.kitsugi.animelist.core.player.engine.PlayerEngine?) {
         this.activeEngine = engine
@@ -655,30 +881,29 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
                     type = com.kitsugi.animelist.model.MediaType.Anime,
                     status = com.kitsugi.animelist.model.WatchStatus.Watching,
                     score = null,
-                    progress = currentEpisode,
+                    progress = _currentEpisode.value,
                     total = null,
                     malId = malId,
                     titleEnglish = titleEnglish
                 )
-                orchestrator.scrobble.onEpisodeStarted(mediaEntry, currentEpisode, engine.duration)
+                orchestrator.scrobble.onEpisodeStarted(mediaEntry, _currentEpisode.value, engine.duration)
             }
         }
     }
 
-    var bingeCountdownSec by mutableStateOf(10)
-        private set
+    private var activeEngine: com.kitsugi.animelist.core.player.engine.PlayerEngine? = null
 
     // --- Player Runtime Orchestrator ---
     val orchestrator: com.kitsugi.animelist.ui.screens.fullscreen.runtime.PlayerRuntimeOrchestrator = com.kitsugi.animelist.ui.screens.fullscreen.runtime.PlayerRuntimeOrchestrator(
         scope = viewModelScope,
         context = context,
         onSourceReady = { url, audio, headers, source, title ->
-            currentVideoUrl = url
-            currentAudioUrl = audio
-            currentHeaders = headers
-            currentAddonName = source.addonName
-            currentTitle = title
-            playbackSource = TrailerPlaybackSource(videoUrl = url, audioUrl = audio)
+            _currentVideoUrl.value = url
+            _currentAudioUrl.value = audio
+            _currentHeaders.value = headers
+            _currentAddonName.value = source.addonName
+            _currentTitle.value = title
+            _playbackSource.value = TrailerPlaybackSource(videoUrl = url, audioUrl = audio)
             fetchAutoSubtitles()
             // Re-trigger scrobble onEpisodeStarted when new source is ready
             activeEngine?.let { engine ->
@@ -693,12 +918,12 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
                         type = com.kitsugi.animelist.model.MediaType.Anime,
                         status = com.kitsugi.animelist.model.WatchStatus.Watching,
                         score = null,
-                        progress = currentEpisode,
+                        progress = _currentEpisode.value,
                         total = null,
                         malId = malId,
                         titleEnglish = titleEnglish
                     )
-                    orchestrator.scrobble.onEpisodeStarted(mediaEntry, currentEpisode, engine.duration)
+                    orchestrator.scrobble.onEpisodeStarted(mediaEntry, _currentEpisode.value, engine.duration)
                 }
             }
         },
@@ -719,14 +944,14 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         onRetry = { attempt ->
             viewModelScope.launch {
                 activeEngine?.let { engine ->
-                    currentVideoUrl?.let { url ->
+                    _currentVideoUrl.value?.let { url ->
                         engine.prepare(
                             videoUrl = url,
-                            audioUrl = currentAudioUrl,
-                            headers = currentHeaders,
-                            subtitles = currentSubtitles,
+                            audioUrl = _currentAudioUrl.value,
+                            headers = _currentHeaders.value,
+                            subtitles = _currentSubtitles.value,
                             startPositionMs = engine.currentPosition,
-                            addonName = currentAddonName
+                            addonName = _currentAddonName.value
                         )
                     }
                 }
@@ -736,11 +961,11 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
             tryNextSource(activity = null) { _, _ -> }
         },
         onFatal = { errorCode, errorMsg ->
-            hasError = true
-            errorDetails = buildString {
+            _hasError.value = true
+            _errorDetails.value = buildString {
                 append("⚠️ Oynatma hatası")
                 append(": $errorMsg")
-                append("\n\nKaynak: ${currentAddonName ?: "bilinmeyen"}")
+                append("\n\nKaynak: ${_currentAddonName.value ?: "bilinmeyen"}")
                 append("\nHata kodu: $errorCode")
                 append("\n\nTüm kaynaklar ve oynatıcılar denendi. Farklı bir kaynak seçebilir veya harici oynatıcıda açabilirsiniz.")
             }
@@ -759,10 +984,10 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         },
         onShowEndPrompt = {
             activeEngine?.pause()
-            showBingeCardState = true
+            _showBingeCardState.value = true
         },
         onCountdownTick = { remaining ->
-            bingeCountdownSec = remaining
+            _bingeCountdownSec.value = remaining
         }
     )
 
@@ -792,13 +1017,13 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
     fun onEpisodeEnded(durationMs: Long, positionMs: Long) {
         viewModelScope.launch {
             try {
-                historyRepository.deleteProgress(getResolveMediaId(), currentEpisode)
+                historyRepository.deleteProgress(getResolveMediaId(), _currentEpisode.value)
             } catch (e: Exception) {
                 Log.e("KitsugiPlayerViewModel", "Error deleting progress on episode ended", e)
             }
 
             val settings = SettingsDataStore(context).settingsFlow.first()
-            val hasNext = episodesList.any { it.episodeNumber == currentEpisode + 1 } || currentEpisode < (episodesList.lastOrNull()?.episodeNumber ?: Int.MAX_VALUE)
+            val hasNext = _episodesList.value.any { it.episodeNumber == _currentEpisode.value + 1 } || _currentEpisode.value < (_episodesList.value.lastOrNull()?.episodeNumber ?: Int.MAX_VALUE)
             val hasOutro = skipIntervals.value.any { it.type == "outro" }
             val outroStart = skipIntervals.value.find { it.type == "outro" }?.startTime?.toLong()
 
@@ -830,7 +1055,7 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
     }
 
     fun updateSkipSettings(enabled: Boolean, autoSkip: Boolean, clientId: String) {
-        orchestrator.skip.updateSettings(enabled, autoSkip, clientId, malId, currentEpisode)
+        orchestrator.skip.updateSettings(enabled, autoSkip, clientId, malId, _currentEpisode.value)
     }
 
     fun loadSkipIntervals(targetMalId: Int, targetEpisode: Int) {
@@ -840,9 +1065,9 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
     fun fetchAutoSubtitles() {
         val currentMalId = malId
         val currentAniList = aniListId
-        val currentEp = currentEpisode
+        val currentEp = _currentEpisode.value
         val currentS = seasonNum
-        val isMovieType = isMovie || (currentS == 0 && currentEp <= 1)
+        val isMovieType = _isMovie.value || (currentS == 0 && currentEp <= 1)
 
         viewModelScope.launch {
             try {
@@ -862,9 +1087,9 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
                     return@launch
                 }
 
-                val selectedSource = currentStreamSources.getOrNull(currentSourceIndex)
+                val selectedSource = _currentStreamSources.value.getOrNull(_currentSourceIndex.value)
                     val guessedFilename = selectedSource?.title?.takeIf { it.isNotBlank() }
-                        ?: currentVideoUrl?.let { url ->
+                        ?: _currentVideoUrl.value?.let { url ->
                             try {
                                 val lastSeg = android.net.Uri.parse(url).lastPathSegment
                                 if (!lastSeg.isNullOrBlank() && lastSeg.contains(".")) lastSeg else null
@@ -878,8 +1103,8 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
                     val remoteSubs = subRepo.getSubtitles(
                         type = type,
                         id = queryId,
-                        videoUrl = currentVideoUrl,
-                        videoHeaders = currentHeaders,
+                        videoUrl = _currentVideoUrl.value,
+                        videoHeaders = _currentHeaders.value,
                         filename = cleanedFilename
                     )
 
@@ -916,12 +1141,12 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
                     }
 
                     if (processedSubs.isNotEmpty()) {
-                        val merged = (currentSubtitles + processedSubs).distinctBy { it.url }
+                        val merged = (_currentSubtitles.value + processedSubs).distinctBy { it.url }
                         val sorted = com.kitsugi.animelist.core.player.PlayerSubtitleUtils.sortSubtitlesByPreference(
                             merged,
                             preferredLangs
                         )
-                        currentSubtitles = sorted
+                        _currentSubtitles.value = sorted
                         Log.d("KitsugiPlayerViewModel", "Altyaz\u0131lar y\u00fcklendi: toplam=${sorted.size} (${processedSubs.size} yeni)")
                     }
             } catch (e: Exception) {

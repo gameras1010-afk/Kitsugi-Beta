@@ -177,6 +177,7 @@ fun KitsugiEditMediaSheet(
     var volumeProgress by rememberSaveable(initialEntry?.id) { mutableIntStateOf(initialEntry?.volumeProgress ?: 0) }
     var isPrivate      by rememberSaveable(initialEntry?.id) { mutableStateOf(initialEntry?.isPrivate ?: false) }
     var isHiddenFromStatusLists by rememberSaveable(initialEntry?.id) { mutableStateOf(initialEntry?.isHiddenFromStatusLists ?: false) }
+    val scrollState = rememberScrollState()
 
     // AniList Metadata / Advanced Scoring / Custom Lists
     val coroutineScope = rememberCoroutineScope()
@@ -297,7 +298,10 @@ fun KitsugiEditMediaSheet(
     // ══════════════════════════════════════════════════════════════════════
     //  UI
     // ══════════════════════════════════════════════════════════════════════
-    KitsugiSheetOrDialog(onDismiss = onDismiss) {
+    KitsugiSheetOrDialog(
+        onDismiss = onDismiss,
+        innerColumnScrollState = scrollState
+    ) {
         Column(modifier = Modifier.fillMaxWidth()) {
 
             // ── Header ─────────────────────────────────────────────────────
@@ -308,7 +312,7 @@ fun KitsugiEditMediaSheet(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(onClick = onDismiss) {
+                TextButton(onClick = LocalDismissAnimated.current) {
                     Text("İptal", color = KitsugiColors.TextSecondary, fontWeight = FontWeight.Medium)
                 }
 
@@ -381,7 +385,7 @@ fun KitsugiEditMediaSheet(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(scrollState)
                     .padding(bottom = 32.dp)
             ) {
 

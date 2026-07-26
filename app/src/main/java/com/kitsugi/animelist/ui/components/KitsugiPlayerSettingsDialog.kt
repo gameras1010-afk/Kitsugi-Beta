@@ -22,6 +22,7 @@ import com.kitsugi.animelist.ui.components.player.PlayerSubtitleAudioTab
 import com.kitsugi.animelist.ui.components.player.PlayerBufferTab
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
+import androidx.compose.foundation.lazy.rememberLazyListState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -129,9 +130,20 @@ fun KitsugiPlayerSettingsDialog(
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
     val scope = rememberCoroutineScope()
 
+    val generalListState = rememberLazyListState()
+    val subtitleAudioListState = rememberLazyListState()
+    val bufferListState = rememberLazyListState()
+
+    val activeScrollState = when (pagerState.currentPage) {
+        0 -> generalListState
+        1 -> subtitleAudioListState
+        else -> bufferListState
+    }
+
     KitsugiSheetOrDialog(
         onDismiss = onDismiss,
-        heightFraction = 0.93f
+        heightFraction = 0.93f,
+        innerScrollState = activeScrollState
     ) {
             // Header content (Title, Close button, and TabRow)
             Column(
@@ -272,7 +284,8 @@ fun KitsugiPlayerSettingsDialog(
                         onSubtitleDelayMsChanged = onSubtitleDelayMsChanged,
                         // ─── T1-04 – Dekoder Önceliği (Telefon) ──────────────────────────────────
                         decoderPriority = decoderPriority,
-                        onDecoderPriorityChanged = onDecoderPriorityChanged
+                        onDecoderPriorityChanged = onDecoderPriorityChanged,
+                        listState = generalListState
                     )
                     1 -> PlayerSubtitleAudioTab(
                         defaultSubtitleSize = defaultSubtitleSize,
@@ -297,7 +310,8 @@ fun KitsugiPlayerSettingsDialog(
                         onDefaultAudioBoostSelected = onDefaultAudioBoostSelected,
                         onDefaultAudioDelayMsSelected = onDefaultAudioDelayMsSelected,
                         onPreferredSubtitleLanguagesSelected = onPreferredSubtitleLanguagesSelected,
-                        onAddonSubtitleStartupModeSelected = onAddonSubtitleStartupModeSelected
+                        onAddonSubtitleStartupModeSelected = onAddonSubtitleStartupModeSelected,
+                        listState = subtitleAudioListState
                     )
                     else -> PlayerBufferTab(
                         minBufferMs = minBufferMs,
@@ -308,7 +322,8 @@ fun KitsugiPlayerSettingsDialog(
                         parallelRangeEnabled = parallelRangeEnabled,
                         accentColor = accentColor,
                         onBufferSettingsChanged = onBufferSettingsChanged,
-                        onParallelRangeEnabledChanged = onParallelRangeEnabledChanged
+                        onParallelRangeEnabledChanged = onParallelRangeEnabledChanged,
+                        listState = bufferListState
                     )
                 }
             }
