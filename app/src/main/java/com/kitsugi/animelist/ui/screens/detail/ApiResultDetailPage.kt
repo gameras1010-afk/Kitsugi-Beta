@@ -411,7 +411,8 @@ fun ApiResultDetailPage(
                     },
                     onShowAuthWarning = { showAuthWarningDialog = true },
                     leftPanelFocusRequester = lpFocus,
-                    tabBarFocusRequester = tbFocus
+                    tabBarFocusRequester = tbFocus,
+                    targetSeason = targetSeason
                 )
             },
             floatingHeaderActions = {
@@ -468,7 +469,8 @@ fun ApiResultDetailPage(
                         },
                         onShowAuthWarning = { showAuthWarningDialog = true },
                         leftPanelFocusRequester = lpFocus,
-                        tabBarFocusRequester = tbFocus
+                        tabBarFocusRequester = tbFocus,
+                        targetSeason = targetSeason
                     )
                 }
             },
@@ -715,7 +717,7 @@ fun ApiResultDetailPage(
                                 aniListId = streamAniListId,
                                 tmdbId = detailState?.tmdbId ?: resolvedTmdbId,
                                 episode = epNum,
-                                season = 1,
+                                season = targetSeason,
                                 isMovie = displayResult.type == MediaType.Movie,
                                 title = displayResult.title,
                                 posterUrl = displayResult.imageUrl,

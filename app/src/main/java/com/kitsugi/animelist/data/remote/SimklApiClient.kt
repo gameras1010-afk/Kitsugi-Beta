@@ -702,4 +702,64 @@ class SimklApiClient(
             emptyList()
         }
     }
+
+    /**
+     * Simkl /search/lookup API'sini kullanarak MAL ID veya TMDB ID'den Simkl ID'sini çözer.
+     * Unified ekleme akışında, Simkl hesabı bağlıyken doğru simklId'yi bulmak için kullanılır.
+     *
+     * @param malId MyAnimeList media ID (anime için)
+     * @param tmdbId TMDB media ID (dizi/film için)
+     * @param mediaType Medya tipi (Anime, TvShow, Movie)
+     * @return Çözümlenen Simkl ID veya null
+     */
+    suspend fun lookupSimklId(
+        malId: Int? = null,
+        tmdbId: Int? = null,
+        mediaType: MediaType? = null
+    ): Int? = withContext(Dispatchers.IO) {
+        try {
+            // MAL ID'yi önce dene (anime için en doğrudan eşleşme)
+            if (malId != null && malId > 0 && malId < 100_000_000) {
+                val result = lookupBySource("mal", malId)
+                if (result != null) return@withContext result
+            }
+            // TMDB ID ile dene (dizi/film için)
+            if (tmdbId != null && tmdbId > 0) {
+                val tmdbType = when (mediaType) {
+                    MediaType.Movie -> "movie"
+                    else -> "show"
+                }
+                val result = lookupBySource("tmdb-$tmdbType", tmdbId)
+                if (result != null) return@withContext result
+            }
+            null
+        } catch (e: Exception) {
+            android.util.Log.w("SimklApiClient", "lookupSimklId failed malId=$malId tmdbId=$tmdbId: ${e.message}")
+            null
+        }
+    }
+
+    /** /search/lookup için yardımcı: belirtilen kaynak+ID'den Simkl ID'sini döndürür. */
+    private fun lookupBySource(source: String, id: Int): Int? {
+        val url = "https://api.simkl.com/search/lookup?source=$source&id=$id&client_id=$clientId"
+        val request = Request.Builder()
+            .url(url)
+            .header("Accept", "application/json")
+            .build()
+        return try {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return null
+                val text = response.body?.string() ?: return null
+                val arr = JSONArray(text)
+                if (arr.length() == 0) return null
+                val obj = arr.optJSONObject(0) ?: return null
+                val ids = obj.optJSONObject("ids") ?: return null
+                val simklId = ids.optInt("simkl", 0)
+                if (simklId > 0) simklId else null
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("SimklApiClient", "lookupBySource source=$source id=$id failed: ${e.message}")
+            null
+        }
+    }
 }

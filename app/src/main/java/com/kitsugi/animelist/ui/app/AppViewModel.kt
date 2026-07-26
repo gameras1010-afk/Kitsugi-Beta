@@ -321,78 +321,95 @@ class AppViewModel : ViewModel() {
     ) {
         val result = selection.result
 
-        // Determine the preferred source based on what the result declares,
-        // NOT on which service happens to be connected first.
-        val preferredSource = when {
+        // En az bir servis bağlı olmalı
+        if (!isAniListConnected && !isMalConnected && !isSimklConnected) {
+            showSnackbarMessage("Listeye eklemek için en az bir hesap bağlamalısın (AniList, MAL veya Simkl).")
+            return
+        }
+
+        // Film/dizi için Simkl zorunlu değil, anime için MAL/AniList biri yeterli
+        if ((result.type == MediaType.TvShow || result.type == MediaType.Movie) && !isSimklConnected) {
+            showSnackbarMessage("Film ve dizileri eklemek için önce Simkl hesabını bağlamalısın!")
+            return
+        }
+        if (result.type == MediaType.Anime && !isAniListConnected && !isMalConnected) {
+            showSnackbarMessage("Anime eklemek için AniList veya MyAnimeList hesabını bağlamalısın!")
+            return
+        }
+
+        // Kaynak belirleme: unified entry'nin hangi source olacağını seç
+        val primarySource = when {
             result.type == MediaType.TvShow || result.type == MediaType.Movie -> "simkl"
-            result.source.equals("anilist", ignoreCase = true) -> "anilist"
-            result.source.equals("mal", ignoreCase = true) ||
-                result.source.equals("jikan", ignoreCase = true) -> "mal"
-            else -> "mal" // safe default for unknown sources
+            result.source.equals("anilist", ignoreCase = true) && isAniListConnected -> "anilist"
+            result.source.equals("mal", ignoreCase = true) || result.source.equals("jikan", ignoreCase = true) -> "mal"
+            isAniListConnected -> "anilist"
+            isMalConnected -> "mal"
+            else -> "simkl"
         }
 
-        // Resolve to a connected service. Only fall back if the preferred service
-        // is not connected at all — and only to another service that IS connected.
-        val finalSource = when (preferredSource) {
-            "simkl" -> {
-                if (isSimklConnected) "simkl"
-                else {
-                    showSnackbarMessage("Listeye eklemek için önce Simkl hesabını bağlamalısın!")
-                    return
-                }
-            }
-            "anilist" -> {
-                when {
-                    isAniListConnected -> "anilist"
-                    isMalConnected -> "mal" // graceful fallback: AniList not connected but MAL is
-                    else -> {
-                        showSnackbarMessage("Listeye eklemek için önce AniList veya MyAnimeList hesabını bağlamalısın!")
-                        return
-                    }
-                }
-            }
-            "mal" -> {
-                when {
-                    isMalConnected -> "mal"
-                    isAniListConnected -> "anilist" // graceful fallback: MAL not connected but AniList is
-                    else -> {
-                        showSnackbarMessage("Listeye eklemek için önce MyAnimeList veya AniList hesabını bağlamalısın!")
-                        return
-                    }
-                }
-            }
-            else -> preferredSource
-        }
-
-        val alreadyExists = currentEntries.any { entry ->
-            val entrySrc = entry.source.lowercase()
-            val targetSrc = finalSource.lowercase()
-            (entrySrc == targetSrc || (entrySrc == "mal" && targetSrc == "jikan") || (entrySrc == "jikan" && targetSrc == "mal")) && entry.matches(result)
-        }
+        // Ön kontrol: currentEntries içinde zaten var mı? (herhangi bir kaynak üzerinden)
+        val alreadyExists = currentEntries.any { entry -> entry.matches(result) }
         if (alreadyExists) {
             showSnackbarMessage("\"${result.title}\" zaten listende var.")
             return
         }
 
-        val newEntry = MediaEntry(
-            id = 0,
-            title = result.title,
-            subtitle = result.subtitle,
-            type = result.type,
-            status = WatchStatus.Planned,
-            score = result.score,
-            progress = 0,
-            total = result.total,
-            isFavorite = false,
-            isAdult = result.isAdult,
-            source = finalSource,
-            malId = result.malId,
-            imageUrl = result.imageUrl,
-            year = result.year,
-            synopsis = selection.synopsis
-        )
-
         viewModelScope.launch {
+            // 1. ARM üzerinden cross-platform ID'leri çöz
+            val rawMalId = result.realMalId
+                ?: if (result.source.equals("jikan", ignoreCase = true) || result.source.equals("mal", ignoreCase = true))
+                    result.malId.takeIf { it in 1 until 100_000_000 }
+                else null
+            val rawAniListId = if (result.source.equals("anilist", ignoreCase = true) && result.malId >= 100_000_000)
+                result.malId - 100_000_000
+            else null
+
+            val resolvedIds = runCatching {
+                com.kitsugi.animelist.data.remote.KitsugiIdResolver.resolveIds(
+                    malId = rawMalId,
+                    aniListId = rawAniListId,
+                    tmdbId = result.tmdbId,
+                    mediaType = result.type
+                )
+            }.getOrNull()
+
+            val finalMalId = resolvedIds?.malId ?: rawMalId ?: result.malId.takeIf { it in 1 until 100_000_000 }
+            val finalTmdbId = resolvedIds?.tmdbId ?: result.tmdbId
+
+            // 2. Simkl bağlıysa Simkl ID'sini çöz
+            val resolvedSimklId: Int? = if (isSimklConnected) {
+                runCatching {
+                    com.kitsugi.animelist.data.remote.SimklApiClient().lookupSimklId(
+                        malId = finalMalId,
+                        tmdbId = finalTmdbId,
+                        mediaType = result.type
+                    )
+                }.getOrNull()
+            } else null
+
+            // 3. Unified MediaEntry oluştur — tüm çözümlenen ID'leri tek bir kayıtta birleştir
+            val newEntry = MediaEntry(
+                id = 0,
+                title = result.title,
+                subtitle = result.subtitle,
+                type = result.type,
+                status = WatchStatus.Planned,
+                score = result.score,
+                progress = 0,
+                total = result.total,
+                isFavorite = false,
+                isAdult = result.isAdult,
+                source = primarySource,
+                malId = finalMalId ?: result.malId.takeIf { it > 0 },
+                imageUrl = result.imageUrl,
+                year = result.year,
+                synopsis = selection.synopsis,
+                tmdbId = finalTmdbId,
+                simklId = resolvedSimklId,
+                titleEnglish = result.titleEnglish,
+                titleJapanese = result.titleJapanese
+            )
+
             repository.insert(newEntry)
             showSnackbarMessage("Listeye eklendi: ${newEntry.title}")
         }

@@ -66,7 +66,8 @@ fun ApiDetailLeftPanel(
     onGalleryOpen: (items: List<GalleryItem>, index: Int) -> Unit,
     onShowAuthWarning: () -> Unit,
     leftPanelFocusRequester: FocusRequester,
-    tabBarFocusRequester: FocusRequester
+    tabBarFocusRequester: FocusRequester,
+    targetSeason: Int = 1
 ) {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
@@ -144,7 +145,7 @@ fun ApiDetailLeftPanel(
                                 tmdbId = detailState?.tmdbId ?: resolvedTmdbId,
                                 episode = 1,
                                 isMovie = displayResult.type == MediaType.Movie,
-                                season = 1,
+                                season = targetSeason,
                                 title = displayResult.title,
                                 posterUrl = displayResult.imageUrl,
                                 titleEnglish = displayResult.titleEnglish,

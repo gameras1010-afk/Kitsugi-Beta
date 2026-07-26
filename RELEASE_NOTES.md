@@ -1,49 +1,57 @@
-# Kitsugi v2.4.104 Release Notes 🚀
+# Kitsugi v2.4.105 Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### 🎬 Sezonluk Akış Düzeltmeleri (KRİTİK)
+### 🔗 Birleşik Çapraz-Servis Senkronizasyonu (KRİTİK)
 
-- **Doğru Sezon Araması:** 2. sezon ve sonrasındaki bölümleri akış eklentilerinde ararken artık önce "2. Sezon", "Season 2", "S2" gibi mevsim-özelleştirilmiş sorgular deneniyor. Böylece eklentiler doğru sezonu buluyor; 1. sezon içerikleri varsayılan olarak yüklenmiyor.
+- **Tek Kayıtla 3 Servise Ekleme:** Arama ekranında bir anime/dizi/filme "+" butonuna basıldığında artık AniList, MyAnimeList ve Simkl'a aynı anda eklenip senkronize edilir. Eski sistemde yalnızca tek servise kayıt oluşturuluyordu.
 
-- **Akıllı Sezon Eşleştirme (`CsTitleMatcher`):** Arama sonuçlarındaki başlıklar artık sezon bilgisine göre ödüllendiriliyor/cezalandırılıyor. "Jujutsu Kaisen 2. Sezon" gibi bir sonuç istenilen sezon 2 ise **+0.35 puan** alıyor; yanlış sezon ise **-0.60 puan** cezalandırılıyor. Sezon içermeyen başlıklar (örtük S1) istenilen sezon >1 ise **-0.50 puan** ceza alıyor.
+- **ARM API ile Otomatik ID Çözümlemesi:** Ekleme sırasında ARM (Anime Relations Map) API'si üzerinden `malId`, `aniListId` ve `tmdbId` otomatik olarak çözümlenir; tüm servisler için doğru ID'ler tek bir kayıtta birleştirilir.
 
-- **Başlık Benzerliği İyileştirmesi:** Arama sonuçlarında sezon metni ("2. Sezon", "II", "2" vb.) temizlenmiş hali de artık benzerlik hesabına katılıyor; "Jujutsu Kaisen 2. Sezon" ile "Jujutsu Kaisen" benzerliği artık ~1.0 çıkıyor.
+- **Simkl Lookup Entegrasyonu:** Simkl hesabı bağlıysa, `/search/lookup` API'si aracılığıyla MAL ID veya TMDB ID'den `simklId` otomatik çözümlenir. Artık Simkl ID'sini manuel girmeye gerek yok.
 
-- **Roman Rakam ve Sondaki Sayı Tespiti:** "Anime II", "Anime III", "Anime 2" gibi sezon belirten sondaki ifadeler otomatik olarak sezon numarasına dönüştürülüyor.
+- **"Ghosting" Hatası Giderildi:** Önceki sürümde bir anime arama ekranında "eklenmiş" görünüyor ancak yalnızca tek servise kaydediliyordu. Bu tutarsızlık tamamen ortadan kaldırıldı.
 
-### 🔗 MAL / AniList Yönlendirme Düzeltmeleri
+- **Unified Senkronizasyon Mantığı (`ExternalListSyncManager`):** Servis seçimi artık `entry.source` alanına değil, her servis için bağımsız olarak token varlığına + ilgili platform ID'sine göre yapılır. Bir `MediaEntry` içinde birden fazla platform ID'si varsa hepsi eş zamanlı güncellenir.
 
-- **MAL Anime Artık MAL Editörüyle Açılıyor:** MyAnimeList (Jikan) kaynaklı animeleri düzenlerken AniList değil, MAL editörü açılıyor. Her kaynağın verisi kendi servisine kaydediliyor.
+- **Çapraz-Servis Silme:** Kayıt silindiğinde de `ExternalListSyncManager` artık tüm bağlı servislerde silme işlemini eş zamanlı gerçekleştirir.
 
-- **Kaynak Öncelikli Çözümleme (`AppViewModel`, `AppDialogHost`):** `addApiSelectionToList` fonksiyonu artık `result.source` bilgisini esas alıyor. Jikan/MAL kaynakları daima `"mal"` olarak işleniyor; AniList yalnızca fallback olarak devreye giriyor.
+- **Akıllı Yineleme Kontrolü:** Ekleme sırasında tekrar engeli artık tüm kaynak/platform kombinasyonlarına karşı çalışır; yalnızca tek kaynağa göre değil.
 
-- **Yinelenen Kayıt Engeli Kaynak Uyumlu Hale Getirildi:** Listeye ekleme sırasında tekrar engeli artık sadece aynı kaynak içinde çalışıyor; AniList ve MAL kayıtları birbirini engellemiyor.
+### 🎬 Sezonluk Akış İyileştirmeleri
 
-- **`firstMatching` Çağrıları Kaynak Farkındası Yapıldı:** Navigasyon ve düzenleme akışlarında AniList/MAL çapraz kirlenmesi önlendi.
+- **Doğru Sezon Araması:** 2. sezon ve sonrasındaki bölümleri akış eklentilerinde ararken önce \"2. Sezon\", \"Season 2\", \"S2\" gibi sezon-özelleştirilmiş sorgular deneniyor.
+
+- **Akıllı Sezon Eşleştirme (`CsTitleMatcher`):** Arama sonuçları sezon bilgisine göre +0.35 ödül / -0.60 ceza alıyor. Sezon içermeyen başlıklar, istenilen sezon > 1 ise -0.50 ceza alıyor.
+
+- **`targetSeason` Yayılımı:** Sezon bilgisi UI katmanından akış motoruna ve eklenti çağrılarına doğru şekilde iletiliyor; çok sezonlu seriler için 1. sezon varsayılanı devre dışı.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### 🎬 Seasonal Stream Fixes (CRITICAL)
+### 🔗 Unified Cross-Service Synchronization (CRITICAL)
 
-- **Correct Season Search:** When fetching episodes from streaming plugins for Season 2+, the app now prepends season-specific query variants ("2. Sezon", "Season 2", "S2") so that plugins locate the right season instead of defaulting to Season 1 content.
+- **Add to All 3 Services with One Tap:** Pressing "+" on a search result now simultaneously registers and synchronizes the entry across AniList, MyAnimeList, and Simkl. The old system only created a record for a single service.
 
-- **Smart Season Matching (`CsTitleMatcher`):** Search result titles are now rewarded or penalized based on season alignment. A result explicitly matching the target season earns **+0.35**, a wrong season gets **-0.60**, and an unlabeled (implicit Season 1) result gets **-0.50** when a Season >1 is requested.
+- **Automatic ID Resolution via ARM API:** During the add flow, MAL, AniList, and TMDB IDs are resolved automatically through the ARM (Anime Relations Map) API and consolidated into a single `MediaEntry`.
 
-- **Title Similarity Improvement:** Season suffixes ("2. Sezon", "II", "2") are stripped before similarity scoring, so "Jujutsu Kaisen 2. Sezon" vs "Jujutsu Kaisen" now resolves to ~1.0 similarity.
+- **Simkl Lookup Integration:** When a Simkl account is connected, the `simklId` is automatically resolved from MAL ID or TMDB ID via Simkl's `/search/lookup` API. No manual Simkl ID entry required.
 
-- **Roman Numeral & Trailing Number Detection:** Season indicators like "Anime II", "Anime III", "Anime 2" are automatically parsed into season numbers for accurate matching.
+- **"Ghosting" Bug Fixed:** In previous builds, an anime could appear "added" in the UI while only being saved to one service. This inconsistency has been fully eliminated.
 
-### 🔗 MAL / AniList Routing Fixes
+- **Unified Sync Logic (`ExternalListSyncManager`):** Service selection is now evaluated independently per service based on token presence and the availability of a matching platform ID — not by `entry.source`. A `MediaEntry` holding multiple platform IDs will sync to all of them simultaneously.
 
-- **MAL Anime Now Opens in the MAL Editor:** Editing an anime sourced from MyAnimeList (Jikan) now always opens the MAL editor, preventing data from being saved to AniList by mistake.
+- **Cross-Service Deletion:** Deleting an entry now triggers removal across all connected services concurrently via `ExternalListSyncManager`.
 
-- **Source-Priority Resolution (`AppViewModel`, `AppDialogHost`):** `addApiSelectionToList` uses `result.source` as the authoritative signal. `jikan`/`mal` results always map to `"mal"` regardless of which services are authenticated; AniList is used only as a fallback.
+- **Smart Duplicate Guard:** The duplicate check now evaluates against all source/platform combinations, not just the single matched source.
 
-- **Duplicate Entry Check Is Now Source-Aware:** The duplicate guard when adding entries now checks within the same resolved target service. AniList and MAL entries no longer block each other.
+### 🎬 Seasonal Stream Improvements
 
-- **`firstMatching` Calls Made Source-Aware:** Cross-contamination between AniList and MAL in navigation and editing flows has been eliminated.
+- **Correct Season Search:** Season 2+ queries prepend season-specific variants ("2. Sezon", "Season 2", "S2") so plugins locate the right season instead of defaulting to Season 1.
+
+- **Smart Season Matching (`CsTitleMatcher`):** Results are scored with +0.35 for matching the target season, -0.60 for wrong season, and -0.50 for implicit Season 1 when Season > 1 is requested.
+
+- **`targetSeason` Propagation:** Season metadata is correctly propagated from the UI layer through the streaming engine to plugin calls, eliminating the default Season 1 fallback for multi-season series.

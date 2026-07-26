@@ -12,7 +12,41 @@ internal object CsTitleMatcher {
 
     private const val TAG = "CsTitleMatcher"
 
+    private val seasonRegex = Regex("\\b(\\d+)(?:\\s*\\.|\\s*(?:st|nd|rd|th))?\\s*(?:sezon|season|s\\b)|\\b(?:sezon|season|s(?=\\d)|s\\b)\\s*\\.?\\s*(\\d+)\\b", RegexOption.IGNORE_CASE)
+
     // ─── Public API ──────────────────────────────────────────────────────────
+
+    /**
+     * Verilen başlık dizesinden sezon numarasını çıkarmaya çalışır.
+     */
+    fun parseSeasonFromTitle(title: String): Int? {
+        val lower = title.lowercase(Locale.ROOT).trim()
+        val seasonMatch = seasonRegex.find(lower)
+        if (seasonMatch != null) {
+            val found = seasonMatch.groupValues.firstOrNull { it.toIntOrNull() != null }?.toIntOrNull()
+                ?: seasonMatch.groupValues.getOrNull(1)?.toIntOrNull()
+                ?: seasonMatch.groupValues.getOrNull(2)?.toIntOrNull()
+            if (found != null) return found
+        }
+
+        // Trailing number fallback (e.g. "Anime Name 2" or roman numeral "Anime Name II")
+        val trailingNumMatch = Regex("\\b(\\d+)\\s*$").find(lower)
+        if (trailingNumMatch != null) {
+            val num = trailingNumMatch.groupValues[1].toInt()
+            if (num in 2..10) {
+                return num
+            }
+        } else if (lower.endsWith(" ii")) {
+            return 2
+        } else if (lower.endsWith(" iii")) {
+            return 3
+        } else if (lower.endsWith(" iv")) {
+            return 4
+        } else if (lower.endsWith(" v")) {
+            return 5
+        }
+        return null
+    }
 
     /**
      * Verilen ana başlık ve alternatif başlıklardan arama varyantları listesi oluşturur.
@@ -129,12 +163,15 @@ internal object CsTitleMatcher {
             .filter { it.length >= 2 }
             .distinct()
 
+        // Extract seasons explicitly mentioned in search query titles
+        val querySeasons = allQueryTitles
+            .mapNotNull { parseSeasonFromTitle(it) }
+            .toSet()
+
         // Build word sets for overlap scoring
         val queryWordSets = allQueryTitles.map { t ->
             toAsciiTitle(t).lowercase(Locale.ROOT).split(Regex("\\s+")).filter { it.length >= 3 }.toSet()
         }.filter { it.isNotEmpty() }
-
-        val seasonRegex = Regex("(\\d+)\\s*(?:st|nd|rd|th)?\\s*(?:sezon|season|s\\b)|\\b(?:sezon|season|s\\b)\\s*\\.?\\s*(\\d+)", RegexOption.IGNORE_CASE)
 
         for (result in results) {
             val resultName = result.name.lowercase(Locale.ROOT).trim()
@@ -143,31 +180,7 @@ internal object CsTitleMatcher {
 
             var foundSeason: Int? = null
             if (targetSeason != null) {
-                val seasonMatch = seasonRegex.find(resultName)
-                if (seasonMatch != null) {
-                    foundSeason = seasonMatch.groupValues.firstOrNull { it.toIntOrNull() != null }?.toIntOrNull()
-                        ?: seasonMatch.groupValues.getOrNull(1)?.toIntOrNull()
-                        ?: seasonMatch.groupValues.getOrNull(2)?.toIntOrNull()
-                }
-
-                // Trailing number fallback (e.g. "Anime Name 2" or roman numeral "Anime Name II")
-                if (foundSeason == null) {
-                    val trailingNumMatch = Regex("\\b(\\d+)\\s*$").find(resultName)
-                    if (trailingNumMatch != null) {
-                        val num = trailingNumMatch.groupValues[1].toInt()
-                        if (num in 2..10) {
-                            foundSeason = num
-                        }
-                    } else if (resultName.endsWith(" ii")) {
-                        foundSeason = 2
-                    } else if (resultName.endsWith(" iii")) {
-                        foundSeason = 3
-                    } else if (resultName.endsWith(" iv")) {
-                        foundSeason = 4
-                    } else if (resultName.endsWith(" v")) {
-                        foundSeason = 5
-                    }
-                }
+                foundSeason = parseSeasonFromTitle(resultName)
             }
 
             val resultNameNoSeason = resultName
@@ -241,7 +254,7 @@ internal object CsTitleMatcher {
 
             if (targetSeason != null) {
                 if (foundSeason != null) {
-                    if (foundSeason == targetSeason) {
+                    if (foundSeason == targetSeason || querySeasons.contains(foundSeason)) {
                         score += 0.35 // Sezon eşleşti ödülü
                         Log.d(TAG, "  -> Sezon Eşleşti: '${result.name}' (Sezon $foundSeason) +0.35")
                     } else {
@@ -249,12 +262,14 @@ internal object CsTitleMatcher {
                         Log.d(TAG, "  -> Farklı Sezon Uyuşmazlığı: '${result.name}' (Bulunan: $foundSeason, Aranan: $targetSeason) -0.60")
                     }
                 } else {
-                    // Implicit season 1
-                    if (targetSeason == 1) {
+                    // Implicit season 1 (no season mentioned in result)
+                    // If targetSeason is 1, and no other season is specified in query, we match Season 1.
+                    val expectsHigherSeason = targetSeason > 1 || querySeasons.any { it > 1 }
+                    if (!expectsHigherSeason) {
                         score += 0.10
                     } else {
-                        score -= 0.50 // Penalty because we wanted season > 1 but this result has no season (implicit season 1)
-                        Log.d(TAG, "  -> İmzasız Sezon Uyuşmazlığı (Sezon 1 varsayıldı): '${result.name}' (Aranan: $targetSeason) -0.50")
+                        score -= 0.50 // Penalty because we wanted a higher season but this result has no season (implicit season 1)
+                        Log.d(TAG, "  -> İmzasız Sezon Uyuşmazlığı (Sezon 1 varsayıldı): '${result.name}' (Aranan: $targetSeason, querySeasons: $querySeasons) -0.50")
                     }
                 }
             }

@@ -40,7 +40,8 @@ fun EntryDetailLeftPanel(
     onUnlinkMangaClick: () -> Unit,
     onGalleryOpen: (List<GalleryItem>, Int) -> Unit,
     leftPanelFocusRequester: FocusRequester,
-    tabBarFocusRequester: FocusRequester
+    tabBarFocusRequester: FocusRequester,
+    targetSeason: Int = 1
 ) {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
@@ -106,7 +107,7 @@ fun EntryDetailLeftPanel(
                         aniListId = streamAniListId,
                         tmdbId = entry.tmdbId ?: detailState?.tmdbId ?: resolvedTmdbId,
                         episode = 1,
-                        season = 1,
+                        season = targetSeason,
                         isMovie = entry.type == com.kitsugi.animelist.model.MediaType.Movie,
                         title = entry.title,
                         posterUrl = entry.imageUrl,

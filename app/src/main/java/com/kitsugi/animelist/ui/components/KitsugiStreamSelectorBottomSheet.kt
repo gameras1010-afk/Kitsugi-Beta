@@ -69,6 +69,7 @@ fun getCacheState(stream: StreamSource): DebridCacheState {
 fun KitsugiStreamSelectorBottomSheet(
     malId: Int?,
     aniListId: Int?,
+    season: Int = 1,
     episodeNumber: Int,
     mediaTitle: String,
     onStreamSelected: (url: String, title: String, source: StreamSource) -> Unit,
@@ -87,14 +88,14 @@ fun KitsugiStreamSelectorBottomSheet(
     var resolvingSource by remember { mutableStateOf<StreamSource?>(null) }
 
     // Fetch streams
-    LaunchedEffect(malId, aniListId, episodeNumber) {
+    LaunchedEffect(malId, aniListId, season, episodeNumber) {
         isLoading = true
         errorMessage = null
         try {
             val fetched = repository.getStreamsForEpisode(
                 malId = malId,
                 aniListId = aniListId,
-                season = 1,
+                season = season,
                 episode = episodeNumber
             )
             streams = fetched

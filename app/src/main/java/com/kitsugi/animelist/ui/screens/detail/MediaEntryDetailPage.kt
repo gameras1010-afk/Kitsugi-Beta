@@ -325,7 +325,8 @@ fun MediaEntryDetailPage(
                         activeGalleryIndex = idx
                     },
                     leftPanelFocusRequester = lpFocus,
-                    tabBarFocusRequester = tbFocus
+                    tabBarFocusRequester = tbFocus,
+                    targetSeason = targetSeason
                 )
             },
             floatingHeaderActions = {
@@ -387,7 +388,8 @@ fun MediaEntryDetailPage(
                             activeGalleryIndex = idx
                         },
                         leftPanelFocusRequester = lpFocus,
-                        tabBarFocusRequester = tbFocus
+                        tabBarFocusRequester = tbFocus,
+                        targetSeason = targetSeason
                     )
                 }
             },

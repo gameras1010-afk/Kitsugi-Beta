@@ -45,7 +45,7 @@ object EpisodeStreamFilter {
         val searchText = buildSearchText(stream)
         if (searchText.isBlank()) return true // No info → be permissive
 
-        val episodeTag = detectEpisodeTag(searchText)
+        val episodeTag = detectEpisodeTag(searchText, season)
 
         return when (episodeTag) {
             is EpisodeTag.Specific -> {
@@ -77,7 +77,7 @@ object EpisodeStreamFilter {
         object None : EpisodeTag()
     }
 
-    private fun detectEpisodeTag(text: String): EpisodeTag {
+    private fun detectEpisodeTag(text: String, targetSeason: Int): EpisodeTag {
         // Pattern: S01E02, S1E2, s01e02
         val sXeX = Regex("""s(\d{1,2})e(\d{1,2})(?!\d)""").find(text)
         if (sXeX != null) {
@@ -99,9 +99,9 @@ object EpisodeStreamFilter {
         // Pattern: Episode 02, Ep02, E02 (standalone, not part of S__E__)
         val epOnly = Regex("""(?<![a-z])(?:episode[\s._-]?|ep[\s._-]?|e)(\d{2,3})(?!\d)""").find(text)
         if (epOnly != null) {
-            // Episode-only tag without season: assume season 1
+            // Episode-only tag without season: assume targetSeason
             return EpisodeTag.Specific(
-                season = 1,
+                season = targetSeason,
                 episode = epOnly.groupValues[1].toInt()
             )
         }

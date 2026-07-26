@@ -53,6 +53,25 @@ class CsTitleMatcherTest {
         assertEquals("Jujutsu Kaisen", matchS1?.name)
     }
 
+    @Test
+    fun testFindBestMatchSequelStandalone() {
+        val results = listOf(
+            createSearchResponse("Tsue to Tsurugi no Wistoria", 2024),
+            createSearchResponse("Tsue to Tsurugi no Wistoria Season 2", 2026)
+        )
+
+        // Searching for Season 1 of "Tsue to Tsurugi no Wistoria Season 2" (sequel entry)
+        val match = CsTitleMatcher.findBestMatch(
+            results = results,
+            mainTitle = "Tsue to Tsurugi no Wistoria Season 2",
+            altTitles = emptyList(),
+            targetYear = 2026,
+            targetSeason = 1
+        )
+        assertNotNull(match)
+        assertEquals("Tsue to Tsurugi no Wistoria Season 2", match?.name)
+    }
+
     private fun createSearchResponse(name: String, year: Int?): SearchResponse {
         val cls = Class.forName("com.lagradost.cloudstream3.AnimeSearchResponse")
         val ctor = cls.constructors.firstOrNull { it.parameterCount >= 3 }
@@ -62,6 +81,18 @@ class CsTitleMatcherTest {
         args[1] = "http://example.com"
         args[2] = "DummyProvider"
         if (ctor.parameterCount > 3) args[3] = TvType.Anime
+        
+        // Fill non-null Kotlin collection parameters to avoid NullPointerException
+        val paramTypes = ctor.parameterTypes
+        for (i in 4 until ctor.parameterCount) {
+            val pType = paramTypes[i]
+            if (pType == java.util.Set::class.java) {
+                args[i] = emptySet<Any>()
+            } else if (pType == java.util.Map::class.java) {
+                args[i] = emptyMap<Any, Any>()
+            }
+        }
+        
         val instance = ctor.newInstance(*args) as SearchResponse
         
         // Try to set year field via reflection if it exists
