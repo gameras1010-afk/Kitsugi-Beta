@@ -394,7 +394,9 @@ class AppViewModel : ViewModel() {
                 subtitle = result.subtitle,
                 type = result.type,
                 status = WatchStatus.Planned,
-                score = result.score,
+                // Yeni eklenen kayıtlar puan sıfırdan başlamalı;
+                // API metadata puanı (result.score) kullanıcının kişisel puanı değildir.
+                score = null,
                 progress = 0,
                 total = result.total,
                 isFavorite = false,
@@ -406,6 +408,7 @@ class AppViewModel : ViewModel() {
                 synopsis = selection.synopsis,
                 tmdbId = finalTmdbId,
                 simklId = resolvedSimklId,
+                aniListEntryId = null, // AniList sync sonrası DB'ye yazılacak
                 titleEnglish = result.titleEnglish,
                 titleJapanese = result.titleJapanese
             )

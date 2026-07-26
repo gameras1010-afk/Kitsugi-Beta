@@ -54,15 +54,17 @@ internal fun KitsugiForumCommentCard(
     var likeCountState by remember { mutableStateOf(comment.likeCount) }
     var isRepliesExpanded by remember { mutableStateOf(false) }
 
+    // ── Flat AniHyou-style layout: no card background, clean separator line ──
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 4.dp, vertical = 8.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp)
     ) {
-        // Author row
+        // ── Author row: avatar · username (left)  date (right) ──
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -70,12 +72,12 @@ internal fun KitsugiForumCommentCard(
                     Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .clickable { onUserProfileClick(comment.userId, comment.username, comment.avatarUrl) }
-                        .padding(4.dp)
+                        .padding(end = 4.dp, top = 2.dp, bottom = 2.dp)
                 } else Modifier
             ) {
                 Box(
                     modifier = Modifier
-                        .size(24.dp)
+                        .size(28.dp)
                         .clip(CircleShape)
                         .background(KitsugiColors.SurfaceSoft)
                 ) {
@@ -92,7 +94,7 @@ internal fun KitsugiForumCommentCard(
                                 text = comment.username.take(1).uppercase(),
                                 color = KitsugiColors.TextMuted,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 11.sp
+                                fontSize = 12.sp
                             )
                         }
                     }
@@ -101,25 +103,24 @@ internal fun KitsugiForumCommentCard(
                 Text(
                     text = comment.username,
                     color = KitsugiColors.TextPrimary,
-                    fontSize = 13.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold
                 )
             }
-            Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = getRelativeTime(comment.createdAt, comment.dateText),
                 color = KitsugiColors.TextSecondary,
-                fontSize = 12.sp
+                fontSize = 13.sp
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
+        // ── Body: markdown content ──
         var activeGalleryImages by remember { mutableStateOf<List<String>>(emptyList()) }
         var activeGalleryIndex by remember { mutableStateOf(0) }
 
         KitsugiMarkdownText(
             text = displayText,
+            modifier = Modifier.padding(vertical = 8.dp),
             onImageGalleryRequest = { urls, index ->
                 activeGalleryImages = urls
                 activeGalleryIndex = index
@@ -135,17 +136,16 @@ internal fun KitsugiForumCommentCard(
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Actions row (Translate, Copy, Reply, Like, Replies Toggle)
+        // ── Actions row: (Translate · Copy)  |  (Replies · Like · Reply) ──
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
+            // Left micro-actions: Translate & Copy
+            Row(horizontalArrangement = Arrangement.spacedBy(0.dp)) {
                 IconButton(
                     onClick = { context.openTranslator(comment.comment) },
                     modifier = Modifier.size(28.dp)
@@ -154,7 +154,7 @@ internal fun KitsugiForumCommentCard(
                         imageVector = Icons.Rounded.Translate,
                         contentDescription = "Çevir",
                         tint = accentColor,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(15.dp)
                     )
                 }
                 IconButton(
@@ -169,13 +169,14 @@ internal fun KitsugiForumCommentCard(
                         imageVector = Icons.Rounded.ContentCopy,
                         contentDescription = "Kopyala",
                         tint = KitsugiColors.TextSecondary,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(15.dp)
                     )
                 }
             }
 
+            // Right stat-actions: child replies toggle · like · reply
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (comment.childComments.isNotEmpty()) {
@@ -202,6 +203,7 @@ internal fun KitsugiForumCommentCard(
                     }
                 }
 
+                // Like button
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -233,6 +235,7 @@ internal fun KitsugiForumCommentCard(
                     )
                 }
 
+                // Reply button
                 if (onReplyClick != null) {
                     IconButton(
                         onClick = { onReplyClick(comment) },
@@ -249,12 +252,18 @@ internal fun KitsugiForumCommentCard(
             }
         }
 
-        // Child comments recursive rendering
+        // ── Separator line (AniHyou style) ──
+        androidx.compose.material3.HorizontalDivider(
+            color = KitsugiColors.Border.copy(alpha = 0.25f),
+            thickness = 0.6.dp
+        )
+
+        // ── Child replies with VerticalDivider indent (already AniHyou-style) ──
         if (isRepliesExpanded && comment.childComments.isNotEmpty()) {
             comment.childComments.forEach { child ->
                 KitsugiForumChildCommentRow(
                     comment = child,
-                    modifier = Modifier.padding(start = 16.dp),
+                    modifier = Modifier.padding(start = 0.dp),
                     apiClient = apiClient,
                     coroutineScope = coroutineScope,
                     selectedLanguage = selectedLanguage,

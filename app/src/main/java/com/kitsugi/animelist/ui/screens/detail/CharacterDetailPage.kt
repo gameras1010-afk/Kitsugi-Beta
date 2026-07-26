@@ -320,7 +320,7 @@ fun CharacterDetailPage(
                                             .padding(horizontal = 16.dp, vertical = 8.dp)
                                     ) {
                                         when (currentTab) {
-                                            "HakkÄ±nda" -> {
+                                            "Hakkında" -> {
                                                 CharacterAboutTabContent(
                                                     detail = detail,
                                                     translatedBio = translatedBio,
@@ -332,7 +332,7 @@ fun CharacterDetailPage(
                                                     }
                                                 )
                                             }
-                                            "YapÄ±mlar" -> {
+                                            "Yapımlar" -> {
                                                 CharacterAppearancesTabContent(
                                                     detail = detail,
                                                     titleLanguage = titleLanguage,
@@ -475,7 +475,7 @@ fun CharacterDetailPage(
                                                 }
                                         ) {
                                             when (currentTab) {
-                                                "HakkÄ±nda" -> {
+                                                "Hakkında" -> {
                                                     CharacterAboutTabContent(
                                                         detail = detail,
                                                         translatedBio = translatedBio,
@@ -487,7 +487,7 @@ fun CharacterDetailPage(
                                                         }
                                                     )
                                                 }
-                                                "YapÄ±mlar" -> {
+                                                "Yapımlar" -> {
                                                     CharacterAppearancesTabContent(
                                                         detail = detail,
                                                         titleLanguage = titleLanguage,

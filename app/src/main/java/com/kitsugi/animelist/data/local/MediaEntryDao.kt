@@ -22,10 +22,10 @@ interface MediaEntryDao {
     suspend fun getByMalId(malId: Int): MediaEntryEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(entry: MediaEntryEntity)
+    suspend fun insert(entry: MediaEntryEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(entities: List<MediaEntryEntity>)
+    suspend fun insertAll(entities: List<MediaEntryEntity>): List<Long>
 
     @Update
     suspend fun update(entry: MediaEntryEntity)

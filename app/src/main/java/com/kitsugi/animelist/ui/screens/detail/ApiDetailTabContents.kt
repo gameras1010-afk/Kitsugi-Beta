@@ -65,21 +65,6 @@ internal fun ApiDetailOverviewTab(
             onImageGalleryRequest = onImageGalleryRequest
         )
 
-        // Galeri — Fanart.tv + TMDB + diğer kaynaklar (paralel çekiliyor, sayfa açıkken güncellenir)
-        Spacer(modifier = Modifier.height(14.dp))
-        if (galleryLoading && galleryItems.isEmpty()) {
-            DetailGalleryLoadingCard()
-        } else if (galleryItems.isNotEmpty()) {
-            DetailGalleryCard(
-                items = galleryItems,
-                onItemClick = { index -> onGalleryItemRequest?.invoke(galleryItems, index) },
-                onOpenGallery = { category ->
-                    val startIndex = if (category == null) 0
-                    else galleryItems.indexOfFirst { it.category == category }.coerceAtLeast(0)
-                    onGalleryItemRequest?.invoke(galleryItems, startIndex)
-                }
-            )
-        }
 
         if (detail != null) {
             Spacer(modifier = Modifier.height(14.dp))

@@ -12,18 +12,15 @@ class MediaEntryRepository(
     val context: Context? = null,
     private val onExternalSyncMessage: ((String) -> Unit)? = null
 ) {
-    val entriesFlow: Flow<List<MediaEntry>> = kotlinx.coroutines.flow.flow {
-        dao.observeAll().collect { entities ->
-            emit(entities.map { it.toDomain() })
-        }
+    val entriesFlow: Flow<List<MediaEntry>> = dao.observeAll().map { entities ->
+        entities.map { it.toDomain() }
     }
 
     suspend fun insert(entry: MediaEntry) {
-        dao.insert(
-            entry.copy(id = 0).toEntity()
-        )
-
-        syncEntryIfPossible(entry)
+        val newId = dao.insert(entry.copy(id = 0).toEntity())
+        // DB'de oluşan gerçek id ile sync yap (AniList entryId geri yazımı doğru entity'yi yakalar)
+        val persistedEntry = dao.getById(newId.toInt())?.toDomain() ?: entry.copy(id = newId.toInt())
+        syncEntryIfPossible(persistedEntry)
     }
 
     suspend fun insertAll(entries: List<MediaEntry>) {

@@ -710,11 +710,8 @@ fun MyListScreen(
                     else -> result.source
                 }
 
-                val alreadyExists = entries.any { entry ->
-                    val entrySrc = entry.source.lowercase()
-                    val targetSrc = resolvedSource.lowercase()
-                    (entrySrc == targetSrc || (entrySrc == "mal" && targetSrc == "jikan") || (entrySrc == "jikan" && targetSrc == "mal")) && entry.matches(result)
-                }
+                // Duplicate kontrolü: herhangi bir platform ID'si üzerinden eşleşme yeter
+                val alreadyExists = entries.any { entry -> entry.matches(result) }
 
                 if (alreadyExists) {
                     duplicateMessage = "\"${result.title}\" zaten listende var."
@@ -728,7 +725,8 @@ fun MyListScreen(
                     subtitle = result.subtitle,
                     type = result.type,
                     status = WatchStatus.Planned,
-                    score = result.score,
+                    // Yeni kayıtlar puansız başlar; API metadata puanı kullanıcı puanı değil
+                    score = null,
                     progress = 0,
                     total = result.total,
                     isFavorite = false,

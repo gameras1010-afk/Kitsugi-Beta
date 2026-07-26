@@ -246,7 +246,7 @@ fun MediaEntryDetailPage(
     val isAnime = entry.type == MediaType.Anime
     val hasTvEpisodes = isAnime || entry.type == MediaType.TvShow
     val tabs = buildList {
-        addAll(listOf("Bilgi", "Karakterler", "Ekip", "Öneriler", "İlişkiler", "Grafikler", "Yorumlar"))
+        addAll(listOf("Bilgi", "Resimler", "Karakterler", "Ekip", "Öneriler", "İlişkiler", "Grafikler", "Yorumlar"))
         if (hasTvEpisodes) add("Bölümler")
     }
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
@@ -433,9 +433,47 @@ fun MediaEntryDetailPage(
                             }
                         )
                     }
-                    1 -> CharactersTabContent(state = charactersState, onCharacterClick = onCharacterClick, onStaffClick = onStaffClick, onMediaClick = onMediaClick)
-                    2 -> StaffTabContent(state = staffState, onStaffClick = onStaffClick)
-                    3 -> RecommendationsTabContent(state = recommendationsState, titleLanguage = titleLanguage, blurAdultMedia = blurAdultMedia, onRecommendationClick = { rel ->
+                    1 -> {
+                        // Resimler sekmesi — tüm galeri öğeleri (Fanart.tv, TMDB, AniList posterler)
+                        Column(
+                            modifier = androidx.compose.ui.Modifier.padding(horizontal = 0.dp, vertical = 14.dp)
+                        ) {
+                            if (galleryLoading && galleryItems.isEmpty()) {
+                                DetailGalleryLoadingCard()
+                            } else if (galleryItems.isNotEmpty()) {
+                                DetailGalleryCard(
+                                    items = galleryItems,
+                                    onItemClick = { index ->
+                                        activeGalleryItems = galleryItems
+                                        activeGalleryIndex = index
+                                    },
+                                    onOpenGallery = { category ->
+                                        val startIndex = if (category == null) 0
+                                        else galleryItems.indexOfFirst { it.category == category }.coerceAtLeast(0)
+                                        activeGalleryItems = galleryItems
+                                        activeGalleryIndex = startIndex
+                                    }
+                                )
+                            } else {
+                                // Galeri yüklenirken veya boşken bilgi mesajı
+                                androidx.compose.foundation.layout.Box(
+                                    modifier = androidx.compose.ui.Modifier
+                                        .fillMaxWidth()
+                                        .padding(32.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = if (galleryLoading) "Resimler yükleniyor..." else "Görsel bulunamadı",
+                                        color = KitsugiColors.TextMuted,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    2 -> CharactersTabContent(state = charactersState, onCharacterClick = onCharacterClick, onStaffClick = onStaffClick, onMediaClick = onMediaClick)
+                    3 -> StaffTabContent(state = staffState, onStaffClick = onStaffClick)
+                    4 -> RecommendationsTabContent(state = recommendationsState, titleLanguage = titleLanguage, blurAdultMedia = blurAdultMedia, onRecommendationClick = { rel ->
                         val typeLabel = when (rel.mediaType) {
                             MediaType.Anime -> "Anime"
                             MediaType.Movie -> "Film"
@@ -456,7 +494,7 @@ fun MediaEntryDetailPage(
                             titleJapanese = rel.titleJapanese
                         ))
                     })
-                    4 -> RelationsTabContent(state = relationsState, titleLanguage = titleLanguage, blurAdultMedia = blurAdultMedia, onRelationClick = { rel ->
+                    5 -> RelationsTabContent(state = relationsState, titleLanguage = titleLanguage, blurAdultMedia = blurAdultMedia, onRelationClick = { rel ->
                         val typeLabel = when (rel.mediaType) {
                             MediaType.Anime -> "Anime"
                             MediaType.Movie -> "Film"
@@ -477,8 +515,8 @@ fun MediaEntryDetailPage(
                             titleJapanese = rel.titleJapanese
                         ))
                     })
-                    5 -> StatsTabContent(state = statsState)
-                    6 -> ReviewsTabContent(
+                    6 -> StatsTabContent(state = statsState)
+                    7 -> ReviewsTabContent(
                         state = reviewsState,
                         source = entry.source,
                         externalId = entry.malId ?: 0,
@@ -488,7 +526,7 @@ fun MediaEntryDetailPage(
                         onUserProfileClick = onUserProfileClick,
                         preferredTranslator = preferredTranslator
                     )
-                    7 -> {
+                    8 -> {
                         EntryDetailEpisodesTab(
                             entry = entry,
                             detailState = detailState,

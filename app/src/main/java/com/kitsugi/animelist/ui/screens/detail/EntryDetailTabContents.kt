@@ -113,27 +113,6 @@ internal fun EntryDetailOverviewTab(
             onImageGalleryRequest = onImageGalleryRequest
         )
 
-        // Fanart.tv + çok kaynaklı galeri
-        if (galleryLoading && galleryItems.isEmpty()) {
-            // Galeri yüklenirken skeleton placeholder göster
-            DetailGalleryLoadingCard()
-        } else if (galleryItems.isNotEmpty()) {
-            DetailGalleryCard(
-                items = galleryItems,
-                onItemClick = { index ->
-                    onGalleryItemRequest?.invoke(galleryItems, index)
-                },
-                onOpenGallery = { category ->
-                    // İlk eşleşen görselden başla
-                    val startIndex = if (category == null) {
-                        0
-                    } else {
-                        galleryItems.indexOfFirst { it.category == category }.coerceAtLeast(0)
-                    }
-                    onGalleryItemRequest?.invoke(galleryItems, startIndex)
-                }
-            )
-        }
 
         // İstatistikler Kartı (Puan Sırası, Oy Sayısı, Üyeler, Popülerlik)
         if (detail != null) {
