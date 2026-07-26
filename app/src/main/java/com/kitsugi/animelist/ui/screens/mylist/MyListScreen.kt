@@ -702,10 +702,12 @@ fun MyListScreen(
             },
             onResultSelected = { selection ->
                 val result = selection.result
-                val resolvedSource = when (selectedTabIndex) {
-                    0 -> "anilist"
-                    1 -> result.source
-                    else -> "simkl"
+                // Always honour the result's own source instead of guessing from tab index.
+                // Normalize "jikan" to "mal" since they refer to the same service.
+                val resolvedSource = when (result.source.lowercase()) {
+                    "jikan" -> "mal"
+                    "anilist", "mal", "simkl" -> result.source.lowercase()
+                    else -> result.source
                 }
 
                 val alreadyExists = entries.any { entry ->

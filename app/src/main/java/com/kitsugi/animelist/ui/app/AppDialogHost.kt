@@ -96,9 +96,9 @@ fun AppDialogHost(
 
         val resolvedSource = when (entry.source.lowercase()) {
             "anilist" -> if (!isAniList && isMal) "mal" else "anilist"
-            "mal" -> if (!isMal && isAniList) "anilist" else "mal"
+            // jikan IS the MAL API — always resolve to "mal", only fall back to AniList if MAL isn't connected
+            "mal", "jikan" -> if (isMal) "mal" else if (isAniList) "anilist" else "mal"
             "simkl" -> "simkl"
-            "jikan" -> if (isAniList && !isMal) "anilist" else "mal"
             else -> {
                 when {
                     entry.aniListEntryId != null && isAniList -> "anilist"

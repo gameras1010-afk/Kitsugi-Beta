@@ -1,57 +1,29 @@
-# Kitsugi v2.4.102 Release Notes 🚀
+# Kitsugi v2.4.103 Release Notes 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### 🔗 AniList & MyAnimeList Senkronizasyon Düzeltmesi (KRİTİK)
+### 🔗 MyAnimeList Kaynak Atama Düzeltmesi (KRİTİK)
 
-- **Senkronizasyon Artık Otomatik Çalışıyor:** Daha önceki sürümlerde AniList veya MyAnimeList hesabın bağlı olsa bile düzenleme/kaydetme işlemleri sessizce eşitleme yapılmadan geçiyordu. Bunun nedeni `syncEnabledAnilist` ve `syncEnabledMal` flaglarının varsayılan değerinin `false` olmasıydı; kullanıcı bu gizli toggle'ı ayarlardan açmadığı sürece sync hiç çalışmıyordu. Artık hesabın bağlıysa sync **otomatik olarak** çalışır.
+- **MAL Anime Artık MAL Editörüyle Açılıyor:** Önceki sürümlerde MyAnimeList'ten (Jikan) gelen animeleri düzenlemek veya listeye eklemek istediğinde, her iki hesap (AniList + MAL) bağlıysa bile uygulama yanlışlıkla **AniList düzenleme ekranını** açıyordu. Animenin MAL verisini AniList'e kaydediyordu; bu nedenle MAL hesabına hiç yansımıyordu. Artık MAL/Jikan kaynaklı animeler her zaman doğru servise yönlendiriliyor.
 
-- **Anime Ekleme, Düzenleme, Silme Eşitleniyor:** Listene yeni anime ekleyince, durum/puan/bölüm güncelleyince veya silince, yapılan değişiklik anında AniList ve/veya MyAnimeList'e yansıtılıyor.
+- **Arama Sonuçlarında Kaynak Önceliği Düzeltildi (`AppViewModel`):** `addApiSelectionToList` fonksiyonu artık `result.source` bilgisini esas alıyor. `jikan` ve `mal` kaynaklı sonuçlar `"mal"` olarak işleniyor; AniList bağlı olup olmamasından bağımsız olarak MAL tercih ediliyor. Servis bağlı değilse diğerine **graceful fallback** yapılıyor.
 
-- **Çevrimdışı Kuyruğu Düzeltildi:** İnternetin olmadığı an yapılan değişiklikler kuyruğa alınıp online olunca otomatik gönderiliyordu; bu akış settings parse hatası nedeniyle de bozuluyordu. Artık settings okunamazsa bile sync atlanmıyor.
+- **Düzenleme Ekranı Kaynak Çözümlemesi Düzeltildi (`AppDialogHost`):** Var olan bir kaydı düzenlerken açılan `resolvedSource` mantığı düzeltildi. `jikan` ve `mal` kaynakları tek bir dalda birleştirildi: MAL bağlıysa her zaman MAL editörü, yalnızca MAL bağlı değil ve AniList bağlıysa AniList editörü açılıyor.
 
-### 🎬 Akış (Stream) Sistemi İyileştirmeleri
-
-- **IMDb ID Zorunluluğu Kaldırıldı:** ID çözümlenemediğinde video akış sayfası bloklanmıyor; CS eklentileri başlık bazlı aramaya devam ediyor.
-
-- **Yanlış Sezon/Bölüm Eşleştirmesi Düzeltildi:** Çok sezonlu animelerde (ör. S2, S3) yanlış sezonun getirilmesine neden olan mantık hatası giderildi.
-
-- **Sezon Parametresi Düzeltildi:** Bölüm seçim diyaloğunda artık her zaman `1` yerine gerçek sezon numarası iletiliyor.
-
-### 🔍 CS Eklenti Bölüm Eşleştirmesi
-
-- **Reflection Hiyerarşisi Genişletildi:** `CsEpisodeMatcher` artık tüm üst sınıf zincirini tarayarak episode/season alanlarını buluyor.
-
-- **Akıllı İndeks-Bazlı Fallback:** Episode meta verisi olmayan Türkçe eklentilerde bölüm numarası liste indeksinden türetiliyor.
-
-- **Preferred Bucket Önceliği:** Subbed → Dubbed → None sırasıyla arama yapılıyor.
+- **"Listeme Ekle" Butonu Kaynak Sorunu Düzeltildi (`MyListScreen`):** Kütüphane ekranındaki arama diyaloğu, seçilen animenin kaynağını tab index'ine (0=AniList, 1=MAL) bakarak değil, `result.source` alanından okuyarak belirliyor. `jikan` → `mal` olarak normalize ediliyor.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### 🔗 AniList & MyAnimeList Sync Fix (CRITICAL)
+### 🔗 MyAnimeList Source Assignment Fix (CRITICAL)
 
-- **Sync Now Works Automatically:** In previous versions, even with AniList or MAL connected, edits and updates were silently skipped. The root cause was `syncEnabledAnilist` and `syncEnabledMal` defaulting to `false` — sync was never triggered unless a hidden toggle was manually enabled in settings. Now sync runs **automatically** whenever an account is connected.
+- **MAL Anime Now Opens in the MAL Editor:** In previous versions, when editing or adding an anime from MyAnimeList (Jikan) with both AniList and MAL accounts connected, the app incorrectly opened the **AniList editor** — saving MAL data to AniList instead of MyAnimeList. Entries now always route to the correct service based on their declared source.
 
-- **Add, Edit, Delete All Sync Correctly:** Adding a new anime, updating status/score/episode progress, or deleting an entry now correctly propagates to AniList and/or MyAnimeList in real time.
+- **Search Result Source Priority Fixed (`AppViewModel`):** `addApiSelectionToList` now uses `result.source` as the authoritative signal. `jikan` and `mal` results map to `"mal"` regardless of which services are connected. Graceful fallback to the other connected service happens only if the preferred one is not linked.
 
-- **Offline Queue Fixed:** Changes made while offline are queued and sent when connectivity is restored. This queue was also broken by the same settings parse issue and is now fixed.
+- **Edit Dialog Source Resolution Fixed (`AppDialogHost`):** The `resolvedSource` logic when opening an existing entry for editing has been corrected. `"jikan"` and `"mal"` cases are consolidated: if MAL is connected it always opens the MAL editor; AniList is only used as a fallback when MAL is not connected.
 
-### 🎬 Stream System Improvements
-
-- **Removed IMDb ID Requirement Block:** CS plugins now fall back to title-based search when ID resolution fails; stream sources are still listed.
-
-- **Fixed Incorrect Season/Episode Mapping:** Multi-season anime (e.g. S2, S3) no longer fall back to S1E1 due to a propagation bug.
-
-- **Fixed Hardcoded Season Parameter:** The episode options dialog now passes the actual current season number instead of always using `1`.
-
-### 🔍 CS Plugin Episode Matching
-
-- **Reflection Traverses Full Class Hierarchy:** `CsEpisodeMatcher` now walks the entire superclass chain to find episode/season fields.
-
-- **Smart Index-Based Fallback:** For flat-list plugins with no metadata (common in Turkish plugins), episode number is resolved via 1-based index within the preferred bucket.
-
-- **Preferred Bucket Priority:** Fallback searches now check Subbed → Dubbed → None in order for better accuracy.
+- **"Add to List" Button Source Fix (`MyListScreen`):** The search dialog inside the Library screen now reads `result.source` directly instead of guessing from the active tab index. `"jikan"` is normalized to `"mal"` so stored entries always have a canonical source string.

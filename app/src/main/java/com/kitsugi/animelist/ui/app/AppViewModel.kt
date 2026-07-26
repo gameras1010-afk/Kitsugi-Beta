@@ -321,53 +321,47 @@ class AppViewModel : ViewModel() {
     ) {
         val result = selection.result
 
-        val targetSource = when {
+        // Determine the preferred source based on what the result declares,
+        // NOT on which service happens to be connected first.
+        val preferredSource = when {
             result.type == MediaType.TvShow || result.type == MediaType.Movie -> "simkl"
-            else -> {
-                val orig = if (result.source.equals("anilist", ignoreCase = true)) "anilist" else "mal"
-                val origConnected = when (orig) {
-                    "anilist" -> isAniListConnected
-                    "mal" -> isMalConnected
-                    else -> false
+            result.source.equals("anilist", ignoreCase = true) -> "anilist"
+            result.source.equals("mal", ignoreCase = true) ||
+                result.source.equals("jikan", ignoreCase = true) -> "mal"
+            else -> "mal" // safe default for unknown sources
+        }
+
+        // Resolve to a connected service. Only fall back if the preferred service
+        // is not connected at all — and only to another service that IS connected.
+        val finalSource = when (preferredSource) {
+            "simkl" -> {
+                if (isSimklConnected) "simkl"
+                else {
+                    showSnackbarMessage("Listeye eklemek için önce Simkl hesabını bağlamalısın!")
+                    return
                 }
-                if (origConnected) {
-                    orig
-                } else {
-                    when {
-                        isAniListConnected -> "anilist"
-                        isMalConnected -> "mal"
-                        isSimklConnected -> "simkl"
-                        else -> orig
+            }
+            "anilist" -> {
+                when {
+                    isAniListConnected -> "anilist"
+                    isMalConnected -> "mal" // graceful fallback: AniList not connected but MAL is
+                    else -> {
+                        showSnackbarMessage("Listeye eklemek için önce AniList veya MyAnimeList hesabını bağlamalısın!")
+                        return
                     }
                 }
             }
-        }
-
-        val isConnected = when (targetSource) {
-            "anilist" -> isAniListConnected
-            "mal" -> isMalConnected
-            "simkl" -> isSimklConnected
-            else -> true
-        }
-
-        if (!isConnected && (isAniListConnected || isMalConnected || isSimklConnected)) {
-            // If user has at least one account connected, allow adding to that connected account
-            // e.g. targetSource defaulted to mal, but user is connected to AniList
-        } else if (!isConnected) {
-            val platformName = when (targetSource) {
-                "anilist" -> "AniList"
-                "simkl" -> "Simkl"
-                else -> "MyAnimeList"
+            "mal" -> {
+                when {
+                    isMalConnected -> "mal"
+                    isAniListConnected -> "anilist" // graceful fallback: MAL not connected but AniList is
+                    else -> {
+                        showSnackbarMessage("Listeye eklemek için önce MyAnimeList veya AniList hesabını bağlamalısın!")
+                        return
+                    }
+                }
             }
-            showSnackbarMessage("Listeye eklemek için önce $platformName hesabını bağlamalısın!")
-            return
-        }
-
-        val finalSource = when (targetSource) {
-            "anilist" -> if (isAniListConnected) "anilist" else if (isMalConnected) "mal" else "anilist"
-            "mal" -> if (isMalConnected) "mal" else if (isAniListConnected) "anilist" else "mal"
-            "simkl" -> if (isSimklConnected) "simkl" else targetSource
-            else -> targetSource
+            else -> preferredSource
         }
 
         val alreadyExists = currentEntries.any { entry -> entry.matches(result) }
