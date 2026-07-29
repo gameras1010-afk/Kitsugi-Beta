@@ -25,7 +25,7 @@ android {
     val simklSecret       = localProperties.getProperty("simkl_client_secret")   ?: "81d3253f90d1f2c0c4ea55af6ca317861e5f40d43c16255eeabd57fc51c73f1c"
     val animeSkipClientId = localProperties.getProperty("anime_skip_client_id")  ?: "5mpKIMeowxmJ4UvAWacdPEzNbfXEjZDv"
 
-    val appVersionName = "2.4.110"
+    val appVersionName = "2.4.111"
 
     compileSdk = 36
 
@@ -158,6 +158,14 @@ android {
         jniLibs {
             useLegacyPackaging = true
             pickFirsts.add("**/libc++_shared.so")
+            pickFirsts.add("**/libavcodec.so")
+            pickFirsts.add("**/libavdevice.so")
+            pickFirsts.add("**/libavfilter.so")
+            pickFirsts.add("**/libavformat.so")
+            pickFirsts.add("**/libavutil.so")
+            pickFirsts.add("**/libswresample.so")
+            pickFirsts.add("**/libswscale.so")
+            pickFirsts.add("**/libpostproc.so")
         }
 
         resources {
