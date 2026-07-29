@@ -20,6 +20,9 @@ import com.kitsugi.animelist.data.remote.KitsugiStreamingEpisode
 import com.kitsugi.animelist.model.MediaType
 import com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity
 import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.kitsugi.animelist.ui.screens.fullscreen.KitsugiFullscreenPlayerActivity
 
 import com.kitsugi.animelist.data.remote.JikanSearchResult
 
@@ -184,9 +187,22 @@ internal fun ApiDetailEpisodesTab(
 ) {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
+    val downloads by com.kitsugi.animelist.data.local.AnimeDownloadManager.downloads.collectAsState()
+
+    val streamMalId = if (displaySource.lowercase() == "anilist") {
+        displayRealMalId
+    } else {
+        displayMalId
+    }
+    val rawStableId = if (displaySource.lowercase() == "anilist") displayMalId else null
+    val streamAniListId = rawStableId?.let {
+        if (it >= 100_000_000) it - 100_000_000 else it
+    }
+    val currentAnimeId = if (streamAniListId != null) streamAniListId.toString() else streamMalId?.toString() ?: ""
 
     EpisodesTabContent(
         state = state,
+        animeId = currentAnimeId,
         episodeRatings = episodeRatings,
         targetSeason = targetSeason,
         totalSeasons = totalSeasons,
@@ -194,15 +210,45 @@ internal fun ApiDetailEpisodesTab(
         onEpisodeClick = { episode ->
             val epNum = episode.episodeNumber
             if (epNum != null && epNum > 0) {
-                val streamMalId = if (displaySource.lowercase() == "anilist") {
-                    displayRealMalId
+                val completedDownload = downloads.find {
+                    it.animeId == currentAnimeId &&
+                    it.episode == epNum &&
+                    (it.season == (targetSeason ?: 1) || it.season == (episode.seasonNumber ?: 1)) &&
+                    it.status == com.kitsugi.animelist.data.model.AnimeDownload.Status.COMPLETED &&
+                    it.localPath != null
+                }
+                if (completedDownload != null) {
+                    KitsugiFullscreenPlayerActivity.startWithStreamUrls(
+                        context = context,
+                        videoUrl = "file://${completedDownload.localPath}",
+                        title = "${completedDownload.animeTitle} - Bölüm ${completedDownload.episode}",
+                        headers = emptyMap(),
+                        subtitles = emptyList()
+                    )
                 } else {
-                    displayMalId
+                    KitsugiStreamActivity.start(
+                        context = context,
+                        malId = streamMalId,
+                        aniListId = streamAniListId,
+                        tmdbId = resolvedTmdbId,
+                        episode = epNum,
+                        season = targetSeason ?: 1,
+                        isMovie = isMovie,
+                        title = displayTitle,
+                        posterUrl = displayImageUrl,
+                        titleEnglish = displayTitleEnglish,
+                        titleRomaji = displayTitleRomaji,
+                        titleNative = displayTitleNative,
+                        startYear = displayYear
+                    )
                 }
-                val rawStableId = if (displaySource.lowercase() == "anilist") displayMalId else null
-                val streamAniListId = rawStableId?.let {
-                    if (it >= 100_000_000) it - 100_000_000 else it
-                }
+            } else {
+                onEpisodeOptionsRequested(episode)
+            }
+        },
+        onDownloadClick = { episode ->
+            val epNum = episode.episodeNumber
+            if (epNum != null && epNum > 0) {
                 KitsugiStreamActivity.start(
                     context = context,
                     malId = streamMalId,
@@ -216,10 +262,9 @@ internal fun ApiDetailEpisodesTab(
                     titleEnglish = displayTitleEnglish,
                     titleRomaji = displayTitleRomaji,
                     titleNative = displayTitleNative,
-                    startYear = displayYear
+                    startYear = displayYear,
+                    isDownloadMode = true
                 )
-            } else {
-                onEpisodeOptionsRequested(episode)
             }
         },
         onRatingClick = { season, episode ->

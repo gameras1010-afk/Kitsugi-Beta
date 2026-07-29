@@ -61,6 +61,9 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.kitsugi.animelist.ui.screens.fullscreen.KitsugiFullscreenPlayerActivity
 
 
 /**
@@ -565,9 +568,23 @@ internal fun EntryDetailEpisodesTab(
 ) {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
+    val downloads by com.kitsugi.animelist.data.local.AnimeDownloadManager.downloads.collectAsState()
+
+    // Decode IDs correctly before launching stream
+    val streamMalId = if (entry.source.lowercase() == "anilist") {
+        detailState?.realMalId ?: entry.malId
+    } else {
+        entry.id
+    }
+    val rawAniListId = if (entry.source.lowercase() == "anilist") entry.id else null
+    val streamAniListId = rawAniListId?.let {
+        if (it >= 100_000_000) it - 100_000_000 else it
+    }
+    val currentAnimeId = if (streamAniListId != null) streamAniListId.toString() else streamMalId?.toString() ?: ""
 
     EpisodesTabContent(
         state = state,
+        animeId = currentAnimeId,
         episodeRatings = episodeRatings,
         targetSeason = targetSeason,
         totalSeasons = detailState?.totalSeasons,
@@ -575,16 +592,45 @@ internal fun EntryDetailEpisodesTab(
         onEpisodeClick = { episode ->
             val epNum = episode.episodeNumber
             if (epNum != null && epNum > 0) {
-                // Decode IDs correctly before launching stream
-                val streamMalId = if (entry.source.lowercase() == "anilist") {
-                    detailState?.realMalId ?: entry.malId
+                val completedDownload = downloads.find {
+                    it.animeId == currentAnimeId &&
+                    it.episode == epNum &&
+                    (it.season == (targetSeason ?: 1) || it.season == (episode.seasonNumber ?: 1)) &&
+                    it.status == com.kitsugi.animelist.data.model.AnimeDownload.Status.COMPLETED &&
+                    it.localPath != null
+                }
+                if (completedDownload != null) {
+                    KitsugiFullscreenPlayerActivity.startWithStreamUrls(
+                        context = context,
+                        videoUrl = "file://${completedDownload.localPath}",
+                        title = "${completedDownload.animeTitle} - Bölüm ${completedDownload.episode}",
+                        headers = emptyMap(),
+                        subtitles = emptyList()
+                    )
                 } else {
-                    entry.id
+                    KitsugiStreamActivity.start(
+                        context = context,
+                        malId = streamMalId,
+                        aniListId = streamAniListId,
+                        tmdbId = entry.tmdbId ?: detailState?.tmdbId,
+                        episode = epNum,
+                        season = targetSeason ?: 1,
+                        isMovie = entry.type == com.kitsugi.animelist.model.MediaType.Movie,
+                        title = entry.title,
+                        posterUrl = entry.imageUrl,
+                        titleEnglish = detailState?.titleEnglish,
+                        titleRomaji = detailState?.titleRomaji,
+                        titleNative = detailState?.titleNative,
+                        startYear = entry.year
+                    )
                 }
-                val rawAniListId = if (entry.source.lowercase() == "anilist") entry.id else null
-                val streamAniListId = rawAniListId?.let {
-                    if (it >= 100_000_000) it - 100_000_000 else it
-                }
+            } else {
+                onEpisodeOptionsRequested(episode)
+            }
+        },
+        onDownloadClick = { episode ->
+            val epNum = episode.episodeNumber
+            if (epNum != null && epNum > 0) {
                 KitsugiStreamActivity.start(
                     context = context,
                     malId = streamMalId,
@@ -598,10 +644,9 @@ internal fun EntryDetailEpisodesTab(
                     titleEnglish = detailState?.titleEnglish,
                     titleRomaji = detailState?.titleRomaji,
                     titleNative = detailState?.titleNative,
-                    startYear = entry.year
+                    startYear = entry.year,
+                    isDownloadMode = true
                 )
-            } else {
-                onEpisodeOptionsRequested(episode)
             }
         },
         onRatingClick = { season, episode ->

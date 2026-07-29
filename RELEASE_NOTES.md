@@ -1,21 +1,18 @@
 # Kitsugi Release Notes
 
-## v2.4.114 – Oynatıcı Görsel ve İşlevsel Uyumlaştırma (Aniyomi Pariteği)
+## v2.4.115 – Çevrimdışı Anime İndirme ve Yerel Oynatma (Offline Playback)
 
-### 🎬 Oynatıcı Arayüzü ve Görsel İyileştirmeler
+Kitsugi'nin bu sürümünde, kullanıcıların internete bağlı olmadıklarında bile anime izleyebilmelerini sağlayan tam özellikli çevrimdışı indirme ve yerel oynatma altyapısı entegre edilmiştir.
 
-#### 1. Yerel Tam Ekran Kayar Menüler (Custom Slide-Up Sheets)
-- **ModalBottomSheet** kullanımı tamamen kaldırıldı. Bu sayede Android sistem durum çubuğu (status bar) ile alt navigasyon çubuğunun (navigation bar) durup dururken açılması ve sürükleyici tam ekran modunun (immersive mode) bozulması engellendi.
-- Tüm alt sayfalar (`PlayerSheet.kt`), oynatıcının kendi yerel görünüm ağacında çalışan ve sayfa dışına tıklandığında yumuşak geçişlerle (`AnimatedVisibility` - dikey kayma ve opaklık animasyonları) kapanan modern bir yapıya dönüştürüldü.
-- Yatay (landscape) mod ve tabletler için maksimum `600.dp` genişlik sınırı getirilerek ekran ortasında şık bir kart şeklinde konumlandırılması sağlandı.
+### 📥 Çevrimdışı İndirme ve Canlı Durum İzleme
+- **Stream Kartı İndirme Butonu:** Yayın kaynağı seçim ekranındaki akış kartlarına doğrudan indirme seçeneği eklendi.
+- **Bölüm Listesi İndirme Desteği:** Bölüm listelerindeki satırlara etkileşimli indirme butonları yerleştirilerek, istenen bölümlerin arka planda kuyruğa alınması sağlandı.
+- **Canlı İndirme Durumu:** Bölüm satırlarında indirme durumları (Kuyrukta, İndiriliyor, Tamamlandı, Duraklatıldı, Hata) ve yüzde olarak canlı ilerleme oranı (CircularProgressIndicator eşliğinde) reaktif şekilde gösterilmektedir.
 
-#### 2. Reaktif Kontrol Yönetimi (OSD Auto-Hiding)
-- Herhangi bir sheet (menü), panel (altyazı/ses gecikme vb.) veya diyalog açık olduğunda oynatıcı üzerindeki tüm OSD kontrolleri (üst/alt barlar, oynat/duraklat butonları, seekbar ve kilit butonu) otomatik ve reaktif bir şekilde gizlenerek ekran kirliliği önlendi.
+### 🎬 Sorunsuz Yerel Oynatma (Offline Playback)
+- **Dosya Yolu Algılama:** İndirmesi tamamlanan bölümlere tıklandığında, uygulama doğrudan yerel depolama dizinini algılar.
+- **Yerel Player Entegrasyonu:** Tamamlanan indirmeler, çevrimiçi akış yerine `file://` protokolü üzerinden mevcut gelişmiş video oynatıcı (`KitsugiFullscreenPlayerActivity`) ile kesintisiz ve yüksek performansla oynatılır.
 
-#### 3. Akıllı Jest Kilitleme ve Menü Kapatma (Gesture Handling)
-- Ayar sayfaları veya paneller açıkken yatay arama (seek), dikey ses/parlaklık sürüklemeleri, uzun basma (hızlandırma) ve çift dokunma (atlama) jestleri tamamen devre dışı bırakıldı.
-- Menü açıkken arka plandaki boş alana tek dokunulduğunda açık olan tüm menülerin ve panellerin otomatik olarak kapatılması sağlandı.
-
-#### 4. Arabellek Görünümü Temizliği (Clean Buffering)
-- Oynatıcı duraklatıldığında (paused) ekranı karartıp "Duraklatıldı" yazan büyük, eski yükleme kutusu kaldırıldı.
-- Arabellek göstergesi artık sadece oynatma aktifken (playing) yükleme yapıldığında ekranın tam ortasında dairesel bir halka olarak görünecek; duraklatıldığında ise temiz bir donma görüntüsü sağlanacaktır.
+### ⚙️ Altyapı ve Depolama Optimizasyonları
+- **Aniyomi Paritesi:** Arka plan indirme kuyruğu, depolama organizasyonu, dosya isimlendirmesi ve Cloudflare korumalarını aşmak için kullanılan özel HTTP istek başlığı (FFmpeg entegrasyonu dahil) desteği Aniyomi standartlarına %100 uyumlu hale getirilmiştir.
+- **Kararlılık:** Büyük boyutlu video dosyalarının arka planda kararlı şekilde indirilmesi ve uygulama içi depolama izinleri optimize edilmiştir.

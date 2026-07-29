@@ -32,6 +32,12 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.DownloadDone
+import androidx.compose.material.icons.rounded.Error
+import androidx.compose.material.icons.rounded.Pause
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,7 +64,9 @@ import com.kitsugi.animelist.ui.utils.tvClickable
 @Composable
 fun EpisodesTabContent(
     state: DetailTabState<List<KitsugiStreamingEpisode>>,
+    animeId: String = "",
     onEpisodeClick: (episode: KitsugiStreamingEpisode) -> Unit,
+    onDownloadClick: (episode: KitsugiStreamingEpisode) -> Unit = {},
     episodeRatings: Map<Pair<Int, Int>, Double> = emptyMap(),
     targetSeason: Int? = null,
     totalSeasons: Int? = null,
@@ -66,6 +74,7 @@ fun EpisodesTabContent(
     onRatingClick: ((season: Int, episode: Int) -> Unit)? = null
 ) {
     val accentColor = LocalKitsugiAccent.current
+    val downloads by com.kitsugi.animelist.data.local.AnimeDownloadManager.downloads.collectAsState()
 
     when (state) {
         is DetailTabState.Loading -> {
@@ -90,8 +99,11 @@ fun EpisodesTabContent(
                     episodeRatings = episodeRatings,
                     onSeasonSelected = onSeasonSelected,
                     onEpisodeClick = onEpisodeClick,
+                    onDownloadClick = onDownloadClick,
                     onRatingClick = onRatingClick,
-                    accentColor = accentColor
+                    accentColor = accentColor,
+                    animeId = animeId,
+                    downloads = downloads
                 )
             } else {
                 // Tek sezon → Düz liste
@@ -101,15 +113,22 @@ fun EpisodesTabContent(
                     } else {
                         episodes.forEachIndexed { index, episode ->
                             val rating = resolveRating(episode, targetSeason, episodeRatings)
+                            val download = downloads.find {
+                                it.animeId == animeId &&
+                                it.episode == episode.episodeNumber &&
+                                (it.season == (targetSeason ?: 1) || it.season == (episode.seasonNumber ?: 1))
+                            }
                             EpisodeRow(
                                 episode = episode,
                                 index = index,
                                 accentColor = accentColor,
                                 imdbRating = rating,
+                                download = download,
                                 onClick = { onEpisodeClick(episode) },
                                 onRatingClick = if (onRatingClick != null && episode.episodeNumber != null) {
                                     { onRatingClick(targetSeason ?: episode.seasonNumber ?: 1, episode.episodeNumber) }
-                                } else null
+                                } else null,
+                                onDownloadClick = { onDownloadClick(episode) }
                             )
                         }
                     }
@@ -146,8 +165,11 @@ private fun SeasonAccordion(
     episodeRatings: Map<Pair<Int, Int>, Double>,
     onSeasonSelected: ((Int) -> Unit)?,
     onEpisodeClick: (KitsugiStreamingEpisode) -> Unit,
+    onDownloadClick: (KitsugiStreamingEpisode) -> Unit,
     onRatingClick: ((season: Int, episode: Int) -> Unit)?,
-    accentColor: Color
+    accentColor: Color,
+    animeId: String,
+    downloads: List<com.kitsugi.animelist.data.model.AnimeDownload>
 ) {
     // Hangi sezon açık? Başlangıçta aktif sezon (targetSeason) açık gelsin
     var expandedSeason by remember(targetSeason) {
@@ -170,9 +192,6 @@ private fun SeasonAccordion(
                 onHeaderClick = {
                     // Aynı sezona basılırsa aç/kapat; farklı sezon basılırsa sadece onu aç
                     if (isExpanded) {
-                        // İstersen kapatmak yerine başka sezon seçilmesini bekle
-                        // Şu an kapatma pasif (sadece yeni sezon seçince kapanır)
-                        // Eğer tıkla-kapat istiyorsan: expandedSeason = -1
                         expandedSeason = -1
                     } else {
                         expandedSeason = season
@@ -180,7 +199,10 @@ private fun SeasonAccordion(
                     }
                 },
                 onEpisodeClick = onEpisodeClick,
-                onRatingClick = onRatingClick
+                onDownloadClick = onDownloadClick,
+                onRatingClick = onRatingClick,
+                animeId = animeId,
+                downloads = downloads
             )
         }
     }
@@ -196,7 +218,10 @@ private fun SeasonAccordionItem(
     accentColor: Color,
     onHeaderClick: () -> Unit,
     onEpisodeClick: (KitsugiStreamingEpisode) -> Unit,
-    onRatingClick: ((season: Int, episode: Int) -> Unit)?
+    onDownloadClick: (KitsugiStreamingEpisode) -> Unit,
+    onRatingClick: ((season: Int, episode: Int) -> Unit)?,
+    animeId: String,
+    downloads: List<com.kitsugi.animelist.data.model.AnimeDownload>
 ) {
     val arrowRotation by animateFloatAsState(
         targetValue = if (isExpanded) 180f else 0f,
@@ -300,15 +325,22 @@ private fun SeasonAccordionItem(
                 } else {
                     episodes.forEachIndexed { index, episode ->
                         val rating = resolveRating(episode, targetSeason, episodeRatings)
+                        val download = downloads.find {
+                            it.animeId == animeId &&
+                            it.episode == episode.episodeNumber &&
+                            (it.season == (targetSeason) || it.season == (episode.seasonNumber ?: 1))
+                        }
                         EpisodeRow(
                             episode = episode,
                             index = index,
                             accentColor = accentColor,
                             imdbRating = rating,
+                            download = download,
                             onClick = { onEpisodeClick(episode) },
                             onRatingClick = if (onRatingClick != null && episode.episodeNumber != null) {
                                 { onRatingClick(targetSeason, episode.episodeNumber) }
-                            } else null
+                            } else null,
+                            onDownloadClick = { onDownloadClick(episode) }
                         )
                     }
                 }
@@ -401,8 +433,10 @@ private fun EpisodeRow(
     index: Int,
     accentColor: androidx.compose.ui.graphics.Color,
     imdbRating: Double? = null,
+    download: com.kitsugi.animelist.data.model.AnimeDownload? = null,
     onClick: () -> Unit,
-    onRatingClick: (() -> Unit)? = null
+    onRatingClick: (() -> Unit)? = null,
+    onDownloadClick: (() -> Unit)? = null
 ) {
     val hasThumbnail = !episode.thumbnail.isNullOrBlank()
 
@@ -505,12 +539,89 @@ private fun EpisodeRow(
             }
         }
 
-        Icon(
-            imageVector = Icons.Rounded.PlayArrow,
-            contentDescription = "Oynat",
-            tint = accentColor.copy(alpha = 0.7f),
-            modifier = Modifier.size(22.dp)
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Download button/status
+            if (download != null) {
+                when (download.status) {
+                    com.kitsugi.animelist.data.model.AnimeDownload.Status.QUEUE -> {
+                        Icon(
+                            imageVector = Icons.Rounded.Download,
+                            contentDescription = "Kuyrukta",
+                            tint = KitsugiColors.TextMuted,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                    com.kitsugi.animelist.data.model.AnimeDownload.Status.DOWNLOADING -> {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                progress = { download.progress / 100f },
+                                modifier = Modifier.size(24.dp),
+                                color = accentColor,
+                                strokeWidth = 2.dp,
+                                trackColor = KitsugiColors.SurfaceStrong
+                            )
+                            Text(
+                                text = "${download.progress}",
+                                fontSize = 8.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = accentColor
+                            )
+                        }
+                    }
+                    com.kitsugi.animelist.data.model.AnimeDownload.Status.COMPLETED -> {
+                        Icon(
+                            imageVector = Icons.Rounded.DownloadDone,
+                            contentDescription = "İndirildi",
+                            tint = KitsugiColors.AccentGreen,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                    com.kitsugi.animelist.data.model.AnimeDownload.Status.ERROR -> {
+                        Icon(
+                            imageVector = Icons.Rounded.Error,
+                            contentDescription = "Hata",
+                            tint = KitsugiColors.AccentRed,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                    com.kitsugi.animelist.data.model.AnimeDownload.Status.PAUSED -> {
+                        Icon(
+                            imageVector = Icons.Rounded.Pause,
+                            contentDescription = "Duraklatıldı",
+                            tint = KitsugiColors.AccentOrange,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+            } else {
+                if (onDownloadClick != null) {
+                    IconButton(
+                        onClick = onDownloadClick,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Download,
+                            contentDescription = "İndir",
+                            tint = KitsugiColors.TextSecondary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+            }
+
+            Icon(
+                imageVector = Icons.Rounded.PlayArrow,
+                contentDescription = "Oynat",
+                tint = if (download?.status == com.kitsugi.animelist.data.model.AnimeDownload.Status.COMPLETED) KitsugiColors.AccentGreen else accentColor.copy(alpha = 0.7f),
+                modifier = Modifier.size(22.dp)
+            )
+        }
     }
 }
 

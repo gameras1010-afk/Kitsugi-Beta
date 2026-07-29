@@ -333,6 +333,52 @@ fun KitsugiStreamScreen(
             }
             activeStreamJob = job
         },
+        onDownloadSelected = { source ->
+            streamPrefs.edit().putString("last_addon_name", source.addonName).apply()
+            val isTorrent = !source.infoHash.isNullOrBlank() || source.url?.startsWith("magnet:") == true
+            if (isTorrent && DebridResolver(context).getApiKey().isNullOrBlank()) {
+                resolvingError = "Debrid API anahtarı gerekli."
+                return@StreamScreenContent
+            }
+
+            activeStreamJob?.cancel()
+            resolvingSource = source
+            resolvingError = null
+
+            val job = scope.launch {
+                val resolvedUrl = try {
+                    kotlinx.coroutines.withTimeoutOrNull(30000L) {
+                        kotlinx.coroutines.withContext(Dispatchers.IO) {
+                            repository.resolveStreamUrl(source)
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("KitsugiStreamScreen", "Akış çözümlenirken hata oluştu", e)
+                    null
+                }
+
+                resolvingSource = null
+                if (resolvedUrl == null) {
+                    resolvingError = "Akış linki çözümlenemedi."
+                    return@launch
+                }
+
+                com.kitsugi.animelist.data.local.AnimeDownloadManager.addDownload(
+                    context = context,
+                    animeId = if (aniListId != null) aniListId.toString() else malId?.toString() ?: "",
+                    animeTitle = title,
+                    posterUrl = posterUrl,
+                    episode = episode,
+                    season = season,
+                    url = resolvedUrl,
+                    quality = source.quality ?: "Bilinmeyen",
+                    requestHeaders = source.requestHeaders ?: emptyMap()
+                )
+                android.widget.Toast.makeText(context, "İndirme kuyruğa eklendi", android.widget.Toast.LENGTH_SHORT).show()
+                onBack()
+            }
+            activeStreamJob = job
+        },
         onBack = onBack,
         resolvingSource = resolvingSource, resolvingError = resolvingError,
         onResolvingErrorDismiss = { resolvingError = null },

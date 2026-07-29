@@ -58,6 +58,7 @@ fun StreamScreenContent(
     selectedAddonFilter: String?,
     onAddonFilterChange: (String?) -> Unit,
     onStreamSelected: (StreamSource) -> Unit,
+    onDownloadSelected: (StreamSource) -> Unit,
     onBack: () -> Unit,
     resolvingSource: StreamSource?,
     resolvingError: String?,
@@ -153,6 +154,7 @@ fun StreamScreenContent(
                 isResolvingId = isResolvingId, idResolveFailed = idResolveFailed, isAnyLoading = isAnyLoading,
                 filteredAddonStates = filteredAddonStates, totalFilteredStreamsCount = totalFilteredStreamsCount,
                 hasActiveFilter = hasActiveFilter, onStreamSelected = onStreamSelected,
+                onDownloadSelected = onDownloadSelected,
                 onVerifyPlugin = onVerifyPlugin, onOpenSettings = onOpenSettings
             )
         } else {
@@ -166,6 +168,7 @@ fun StreamScreenContent(
                 isResolvingId = isResolvingId, idResolveFailed = idResolveFailed, isAnyLoading = isAnyLoading,
                 filteredAddonStates = filteredAddonStates, totalFilteredStreamsCount = totalFilteredStreamsCount,
                 hasActiveFilter = hasActiveFilter, onStreamSelected = onStreamSelected,
+                onDownloadSelected = onDownloadSelected,
                 onVerifyPlugin = onVerifyPlugin, onOpenSettings = onOpenSettings,
                 onOpenHistory = onOpenHistory
             )
@@ -410,7 +413,7 @@ private fun LandscapeLayout(
     onAddonFilterChange: (String?) -> Unit, onBack: () -> Unit,
     isResolvingId: Boolean, idResolveFailed: Boolean, isAnyLoading: Boolean,
     filteredAddonStates: List<AddonFetchState>, totalFilteredStreamsCount: Int, hasActiveFilter: Boolean,
-    onStreamSelected: (StreamSource) -> Unit, onVerifyPlugin: ((String) -> Unit)?, onOpenSettings: (() -> Unit)?
+    onStreamSelected: (StreamSource) -> Unit, onDownloadSelected: (StreamSource) -> Unit, onVerifyPlugin: ((String) -> Unit)?, onOpenSettings: (() -> Unit)?
 ) {
     val listState = rememberLazyListState()
 
@@ -563,6 +566,7 @@ private fun LandscapeLayout(
                         addonStates = filteredAddonStates,
                         accentColor = accentColor,
                         onStreamSelected = onStreamSelected,
+                        onDownloadSelected = onDownloadSelected,
                         onVerifyPlugin = onVerifyPlugin,
                         onOpenSettings = onOpenSettings
                     )
@@ -583,7 +587,7 @@ private fun PortraitLayout(
     onAddonFilterChange: (String?) -> Unit, onBack: () -> Unit,
     isResolvingId: Boolean, idResolveFailed: Boolean, isAnyLoading: Boolean,
     filteredAddonStates: List<AddonFetchState>, totalFilteredStreamsCount: Int, hasActiveFilter: Boolean,
-    onStreamSelected: (StreamSource) -> Unit, onVerifyPlugin: ((String) -> Unit)?, onOpenSettings: (() -> Unit)?,
+    onStreamSelected: (StreamSource) -> Unit, onDownloadSelected: (StreamSource) -> Unit, onVerifyPlugin: ((String) -> Unit)?, onOpenSettings: (() -> Unit)?,
     onOpenHistory: (() -> Unit)?
 ) {
     val listState = rememberLazyListState()
@@ -767,6 +771,7 @@ private fun PortraitLayout(
                         addonStates = filteredAddonStates,
                         accentColor = accentColor,
                         onStreamSelected = onStreamSelected,
+                        onDownloadSelected = onDownloadSelected,
                         onVerifyPlugin = onVerifyPlugin,
                         onOpenSettings = onOpenSettings
                     )

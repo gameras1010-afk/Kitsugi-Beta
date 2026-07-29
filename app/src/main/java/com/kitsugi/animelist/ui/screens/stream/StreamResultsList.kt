@@ -39,6 +39,7 @@ fun LazyListScope.renderStreamResultsItems(
     addonStates: List<AddonFetchState>,
     accentColor: Color,
     onStreamSelected: (StreamSource) -> Unit,
+    onDownloadSelected: (StreamSource) -> Unit,
     onVerifyPlugin: ((addonName: String) -> Unit)? = null,
     onOpenSettings: (() -> Unit)? = null
 ) {
@@ -60,7 +61,8 @@ fun LazyListScope.renderStreamResultsItems(
                         StreamCard(
                             source      = source,
                             accentColor = accentColor,
-                            onClick     = { onStreamSelected(source) }
+                            onClick     = { onStreamSelected(source) },
+                            onDownloadClick = { onDownloadSelected(source) }
                         )
                     }
                 }
@@ -87,6 +89,7 @@ fun StreamResultsList(
     addonStates: List<AddonFetchState>,
     accentColor: Color,
     onStreamSelected: (StreamSource) -> Unit,
+    onDownloadSelected: (StreamSource) -> Unit,
     onVerifyPlugin: ((addonName: String) -> Unit)? = null,
     onOpenSettings: (() -> Unit)? = null
 ) {
@@ -98,6 +101,7 @@ fun StreamResultsList(
             addonStates = addonStates,
             accentColor = accentColor,
             onStreamSelected = onStreamSelected,
+            onDownloadSelected = onDownloadSelected,
             onVerifyPlugin = onVerifyPlugin,
             onOpenSettings = onOpenSettings
         )

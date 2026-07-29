@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.rounded.Download
 import com.kitsugi.animelist.data.repository.StreamSource
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 
@@ -27,7 +28,8 @@ import com.kitsugi.animelist.ui.theme.KitsugiColors
 fun StreamCard(
     source: StreamSource,
     accentColor: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onDownloadClick: () -> Unit
 ) {
     val (quality, size) = remember(source) { parseStreamQuality(source) }
     val langType = remember(source) { detectStreamLang(source) }
@@ -122,19 +124,36 @@ fun StreamCard(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(accentColor.copy(alpha = 0.1f)),
-                contentAlignment = Alignment.Center
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Rounded.PlayArrow,
-                    contentDescription = "Oynat",
-                    tint = accentColor,
-                    modifier = Modifier.size(20.dp)
-                )
+                IconButton(
+                    onClick = onDownloadClick,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Download,
+                        contentDescription = "İndir",
+                        tint = KitsugiColors.TextSecondary,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(accentColor.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.PlayArrow,
+                        contentDescription = "Oynat",
+                        tint = accentColor,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         }
     }
