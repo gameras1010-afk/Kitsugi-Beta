@@ -174,3 +174,8 @@
 -dontwarn org.conscrypt.ConscryptHostnameVerifier
 -dontwarn org.checkerframework.**
 -dontwarn kotlinx.datetime.**
+
+# ── FFmpeg Kit / Smart Exception ──────────────────────────────────────────────
+-dontwarn com.arthenica.smartexception.**
+-dontwarn com.arthenica.ffmpegkit.**
+-keep class com.arthenica.ffmpegkit.** { *; }
