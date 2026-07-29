@@ -19,7 +19,6 @@ import com.kitsugi.animelist.data.repository.StreamSource
 import com.kitsugi.animelist.data.trailer.InAppYouTubeExtractor
 import com.kitsugi.animelist.data.trailer.TrailerPlaybackSource
 import com.kitsugi.animelist.ui.screens.fullscreen.components.MetaCastMember
-import com.kitsugi.animelist.ui.screens.fullscreen.components.PlayerPanel
 import com.kitsugi.animelist.core.player.PlayerLogger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -30,12 +29,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import com.kitsugi.animelist.core.player.AudioDelayRouteConfig
 import com.kitsugi.animelist.core.player.AudioOutputRouteDetector
 import com.kitsugi.animelist.core.player.AudioRoute
 import com.kitsugi.animelist.data.remote.AniSkipClient
 import com.kitsugi.animelist.data.remote.AnimeSkipClient
 import com.kitsugi.animelist.data.remote.SkipInterval
+import com.kitsugi.animelist.data.settings.AppSettings
 import com.kitsugi.animelist.data.settings.SettingsDataStore
 import com.kitsugi.animelist.data.local.toDomain
 import com.kitsugi.animelist.core.player.PostPlayMode
@@ -48,10 +52,18 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
 
 
     private val context = application.applicationContext
+    private val dataStore = SettingsDataStore(context)
 
     private val historyRepository by lazy {
         HistoryRepository(KitsugiDatabase.getDatabase(context).historyDao())
     }
+
+    // ── App Settings reactive StateFlow ──────────────────────────────────────
+    val appSettings: StateFlow<AppSettings> = dataStore.settingsFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = AppSettings()
+    )
 
     // State Variables - transitioned to reactive StateFlow system
     private val _currentVideoUrl = MutableStateFlow<String?>(null)
@@ -117,17 +129,41 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
     private val _isAutoSwitching = MutableStateFlow(false)
     val isAutoSwitching: StateFlow<Boolean> = _isAutoSwitching.asStateFlow()
 
-    // Active Panel Flow (Legacy compatibility)
-    private val _activePanel = MutableStateFlow(PlayerPanel.NONE)
-    val activePanel: StateFlow<PlayerPanel> = _activePanel.asStateFlow()
+    // ── Controls visibility (Aniyomi-style OSD) ──────────────────────────────
+    private val _controlsShown = MutableStateFlow(false)
+    val controlsShown: StateFlow<Boolean> = _controlsShown.asStateFlow()
 
-    fun showPanel(panel: PlayerPanel) {
-        _activePanel.value = panel
+    private val _controlsResetTrigger = MutableStateFlow(0)
+    val controlsResetTrigger: StateFlow<Int> = _controlsResetTrigger.asStateFlow()
+
+    fun showControls() {
+        _controlsShown.value = true
+        _controlsResetTrigger.value += 1
     }
 
-    fun dismissPanel() {
-        _activePanel.value = PlayerPanel.NONE
+    fun hideControls() {
+        _controlsShown.value = false
     }
+
+    fun toggleControls() {
+        _controlsShown.value = !_controlsShown.value
+        _controlsResetTrigger.value += 1
+    }
+
+    // ── Playback position and duration reactive StateFlows ────────────────────
+    private val _pos = MutableStateFlow(0L)
+    val pos: StateFlow<Long> = _pos.asStateFlow()
+
+    private val _duration = MutableStateFlow(0L)
+    val duration: StateFlow<Long> = _duration.asStateFlow()
+
+    // ── Paused state ─────────────────────────────────────────────────────────
+    private val _paused = MutableStateFlow(false)
+    val paused: StateFlow<Boolean> = _paused.asStateFlow()
+
+    // ── Anime title reactive StateFlow ────────────────────────────────────────
+    private val _animeTitleFlow = MutableStateFlow("")
+    val animeTitleFlow: StateFlow<String> = _animeTitleFlow.asStateFlow()
 
     // Sleep Timer (Legacy compatibility)
     private val _sleepTimerSecondsLeft = MutableStateFlow(0)
@@ -278,24 +314,96 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         _currentChapter.value = chapter
     }
 
-    private val _doubleTapSeekAmount = MutableStateFlow(0)
-    val doubleTapSeekAmount: StateFlow<Int> = _doubleTapSeekAmount.asStateFlow()
-
-    fun setDoubleTapSeekAmount(amount: Int) {
-        _doubleTapSeekAmount.value = amount
-    }
-
-    private val _gestureSeekAmount = MutableStateFlow<Pair<Int, Int>?>(null)
-    val gestureSeekAmount: StateFlow<Pair<Int, Int>?> = _gestureSeekAmount.asStateFlow()
-
-    fun setGestureSeekAmount(seek: Pair<Int, Int>?) {
-        _gestureSeekAmount.value = seek
-    }
+    val doubleTapSeekAmount = MutableStateFlow(0)
+    val gestureSeekAmount = MutableStateFlow<Pair<Int, Int>?>(null)
+    val seekText = MutableStateFlow<String?>(null)
+    val isSeekingForwards = MutableStateFlow(false)
 
     val isVolumeSliderShown = MutableStateFlow(false)
     val isBrightnessSliderShown = MutableStateFlow(false)
     val currentBrightness = MutableStateFlow(0.5f)
     val currentMPVVolume = MutableStateFlow(100)
+
+    private val audioManager by lazy { context.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager }
+    val maxVolume by lazy { audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC) }
+    val currentVolume by lazy { MutableStateFlow(audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)) }
+    val volumeBoostCap: Int get() = appSettings.value.volumeBoostCap
+
+    fun updateSeekAmount(amount: Int) {
+        doubleTapSeekAmount.value = amount
+    }
+
+    fun updateSeekText(text: String?) {
+        seekText.value = text
+    }
+
+    fun handleLeftDoubleTap() {
+        isSeekingForwards.value = false
+        val step = appSettings.value.doubleTapSeekSeconds
+        val newAmount = doubleTapSeekAmount.value - step
+        doubleTapSeekAmount.value = newAmount
+        seekBy(-step * 1000L)
+    }
+
+    fun handleRightDoubleTap() {
+        isSeekingForwards.value = true
+        val step = appSettings.value.doubleTapSeekSeconds
+        val newAmount = doubleTapSeekAmount.value + step
+        doubleTapSeekAmount.value = newAmount
+        seekBy(step * 1000L)
+    }
+
+    fun handleCenterDoubleTap() {
+        togglePlay()
+    }
+
+    fun seekBy(offsetMs: Long) {
+        val current = _pos.value
+        val dur = _duration.value
+        val target = (current + offsetMs).coerceIn(0L, dur)
+        activeEngine?.seekTo(target)
+        _pos.value = target
+    }
+
+    fun changeVolumeTo(volume: Int) {
+        val newVolume = volume.coerceIn(0..maxVolume)
+        audioManager.setStreamVolume(
+            android.media.AudioManager.STREAM_MUSIC,
+            newVolume,
+            0,
+        )
+        currentVolume.value = newVolume
+    }
+
+    fun changeMPVVolumeTo(volume: Int) {
+        currentMPVVolume.value = volume
+        activeEngine?.setVolume(volume / 100f)
+    }
+
+    fun changeBrightnessTo(brightness: Float) {
+        currentBrightness.value = brightness.coerceIn(-0.75f, 1f)
+        val activity = context.findActivity() ?: return
+        val params = activity.window.attributes
+        params.screenBrightness = brightness.coerceIn(0f, 1f)
+        activity.window.attributes = params
+    }
+
+    private fun Context.findActivity(): android.app.Activity? {
+        var ctx = this
+        while (ctx is android.content.ContextWrapper) {
+            if (ctx is android.app.Activity) return ctx
+            ctx = ctx.baseContext
+        }
+        return null
+    }
+
+    fun displayVolumeSlider() {
+        isVolumeSliderShown.value = true
+    }
+
+    fun displayBrightnessSlider() {
+        isBrightnessSliderShown.value = true
+    }
 
     val playerUpdate = MutableStateFlow<KitsugiPlayerUpdates>(KitsugiPlayerUpdates.None)
 
@@ -307,6 +415,7 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
 
     /** PlayerEngine durumunu PlaybackState'e çevirir ve StateFlow'u günceller. */
     fun updatePlayerState(engineState: com.kitsugi.animelist.core.player.engine.PlayerEngine.State, isPlaying: Boolean) {
+        _paused.value = !isPlaying
         _playerState.value = when (engineState) {
             com.kitsugi.animelist.core.player.engine.PlayerEngine.State.IDLE      -> PlaybackState.Idle
             com.kitsugi.animelist.core.player.engine.PlayerEngine.State.BUFFERING -> PlaybackState.Buffering
@@ -386,6 +495,7 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         this.titleRomaji = titleRomaji
         this.titleNative = titleNative
         this.startYear = startYear
+        _animeTitleFlow.value = animeTitle
 
         _currentVideoUrl.value = videoUrl
         _currentAudioUrl.value = audioUrl
@@ -1010,9 +1120,49 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
     }
 
     fun onPositionChanged(positionMs: Long, durationMs: Long, isPlaying: Boolean) {
+        _pos.value = positionMs
+        _duration.value = durationMs
         orchestrator.scrobble.onPositionUpdate(positionMs, durationMs)
         orchestrator.stillWatching.onPlaybackTick(positionMs, isPlaying)
     }
+
+    // ── Engine-delegate playback controls ─────────────────────────────────────
+    fun play() {
+        activeEngine?.play()
+        _paused.value = false
+    }
+
+    fun pause() {
+        activeEngine?.pause()
+        _paused.value = true
+    }
+
+    fun togglePlay() {
+        if (activeEngine?.isPlaying == true) pause() else play()
+    }
+
+    fun seekTo(positionMs: Long) {
+        activeEngine?.seekTo(positionMs)
+        _pos.value = positionMs
+    }
+
+    fun setPlaybackSpeed(speed: Float) {
+        activeEngine?.setPlaybackSpeed(speed)
+    }
+
+    fun setAutoPlay(enabled: Boolean) {
+        viewModelScope.launch { dataStore.setAutoplayEnabled(enabled) }
+    }
+
+    // ── Episode navigation helpers ─────────────────────────────────────────────
+    val hasPreviousEpisode: StateFlow<Boolean> = _currentEpisode
+        .map { it > 1 }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    val hasNextEpisode: StateFlow<Boolean> = combine(_episodesList, _currentEpisode) { episodes, current ->
+        episodes.any { it.episodeNumber == current + 1 } ||
+        current < (episodes.lastOrNull()?.episodeNumber ?: Int.MAX_VALUE)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     fun onEpisodeEnded(durationMs: Long, positionMs: Long) {
         viewModelScope.launch {

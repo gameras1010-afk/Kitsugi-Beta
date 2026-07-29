@@ -418,4 +418,406 @@
     <string name="explore_simkl_continue_watching_series">İzlemeye Devam Et (Dizi &amp; Anime)</string>
     <string name="explore_simkl_plantowatch_series">Planladıklarım (Dizi &amp; Anime)</string>
     <string name="explore_read_manga">Manga Oku</string>
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- Search — Genres (AniList resmi türleri)                            -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <string name="genre_action">Aksiyon</string>
+    <string name="genre_adventure">Macera</string>
+    <string name="genre_comedy">Komedi</string>
+    <string name="genre_drama">Dram</string>
+    <string name="genre_ecchi">Ecchi</string>
+    <string name="genre_fantasy">Fantastik</string>
+    <string name="genre_hentai">Hentai</string>
+    <string name="genre_horror">Korku</string>
+    <string name="genre_mahou_shoujo">Sihirli Kız</string>
+    <string name="genre_mecha">Mecha</string>
+    <string name="genre_music">Müzik</string>
+    <string name="genre_mystery">Gizem</string>
+    <string name="genre_psychological">Psikolojik</string>
+    <string name="genre_romance">Romantizm</string>
+    <string name="genre_sci_fi">Bilim Kurgu</string>
+    <string name="genre_slice_of_life">Yaşamdan Kesitler</string>
+    <string name="genre_sports">Spor</string>
+    <string name="genre_supernatural">Doğaüstü</string>
+    <string name="genre_thriller">Gerilim</string>
+
+    <!-- Demografi -->
+    <string name="genre_shounen">Shōnen</string>
+    <string name="genre_shoujo">Shōjo</string>
+    <string name="genre_seinen">Seinen</string>
+    <string name="genre_josei">Josei</string>
+    <string name="genre_kids">Çocuk</string>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- Search — Tags (Etiketler)                                          -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+    <!-- Aksiyon Etiketleri -->
+    <string name="tag_archery">Okçuluk</string>
+    <string name="tag_battle_royale">Battle Royale</string>
+    <string name="tag_espionage">Casusluk</string>
+    <string name="tag_fugitive">Kaçak</string>
+    <string name="tag_guns">Silahlar</string>
+    <string name="tag_martial_arts">Dövüş Sanatları</string>
+    <string name="tag_spearplay">Mızrak Dövüşü</string>
+    <string name="tag_swordplay">Kılıç Dövüşü</string>
+
+    <!-- Fantazi Etiketleri -->
+    <string name="tag_alchemy">Simya</string>
+    <string name="tag_body_swapping">Beden Değişimi</string>
+    <string name="tag_cultivation">Kültivation</string>
+    <string name="tag_curses">Lanetler</string>
+    <string name="tag_exorcism">Cin Kovma</string>
+    <string name="tag_fairy_tale">Masal</string>
+    <string name="tag_henshin">Henshin</string>
+    <string name="tag_isekai">Isekai</string>
+    <string name="tag_kaiju">Kaiju</string>
+    <string name="tag_magic">Büyü</string>
+    <string name="tag_mythology">Mitoloji</string>
+    <string name="tag_necromancy">Nekromansi</string>
+    <string name="tag_reverse_isekai">Ters Isekai</string>
+    <string name="tag_shapeshifting">Dönüşüm</string>
+    <string name="tag_steampunk">Steampunk</string>
+    <string name="tag_super_power">Süper Güç</string>
+    <string name="tag_superhero">Süper Kahraman</string>
+    <string name="tag_wuxia">Wuxia</string>
+    <string name="tag_youkai">Youkai</string>
+
+    <!-- Bilim Kurgu Etiketleri -->
+    <string name="tag_cyberpunk">Siberpunk</string>
+    <string name="tag_space_opera">Uzay Operası</string>
+    <string name="tag_time_loop">Zaman Döngüsü</string>
+    <string name="tag_time_manipulation">Zaman Manipülasyonu</string>
+    <string name="tag_time_travel">Zaman Yolculuğu</string>
+    <string name="tag_post_apocalyptic">Post-Apokaliptik</string>
+    <string name="tag_tokusatsu">Tokusatsu</string>
+    <string name="tag_real_robot">Gerçek Robot</string>
+    <string name="tag_super_robot">Süper Robot</string>
+
+    <!-- Korku / Gerilim Etiketleri -->
+    <string name="tag_gore">Kan / Şiddet</string>
+    <string name="tag_body_horror">Vücut Korkusu</string>
+    <string name="tag_cosmic_horror">Kozmik Korku</string>
+    <string name="tag_survival">Hayatta Kalma</string>
+    <string name="tag_torture">İşkence</string>
+    <string name="tag_suicide">İntihar</string>
+    <string name="tag_eco_horror">Ekolojik Korku</string>
+
+    <!-- Romantizm Etiketleri -->
+    <string name="tag_love_triangle">Aşk Üçgeni</string>
+    <string name="tag_love_polygon">Aşk Çokgeni</string>
+    <string name="tag_harem">Harem</string>
+    <string name="tag_reverse_harem">Ters Harem</string>
+    <string name="tag_unrequited_love">Karşılıksız Aşk</string>
+    <string name="tag_fake_relationship">Sahte İlişki</string>
+    <string name="tag_boys_love">Boys Love</string>
+    <string name="tag_yuri">Yuri</string>
+    <string name="tag_cohabitation">Birlikte Yaşam</string>
+    <string name="tag_age_gap">Yaş Farkı</string>
+    <string name="tag_matchmaking">Görücü Usulü</string>
+    <string name="tag_interspecies">Türler Arası Aşk</string>
+    <string name="tag_cheating">Aldatma</string>
+    <string name="tag_polyamorous">Poliamorös</string>
+    <string name="tag_teens_love">Gençlik Aşkı</string>
+
+    <!-- Dram Etiketleri -->
+    <string name="tag_coming_of_age">Büyüme</string>
+    <string name="tag_revenge">İntikam</string>
+    <string name="tag_tragedy">Trajedi</string>
+    <string name="tag_conspiracy">Komplo</string>
+    <string name="tag_bullying">Zorbalık</string>
+    <string name="tag_class_struggle">Sınıf Çatışması</string>
+    <string name="tag_rehabilitation">Rehabilitasyon</string>
+    <string name="tag_kingdom_management">Krallık Yönetimi</string>
+
+    <!-- Günlük Hayat Etiketleri -->
+    <string name="tag_iyashikei">Iyashikei</string>
+    <string name="tag_otaku_culture">Otaku Kültürü</string>
+    <string name="tag_gourmet">Gurme</string>
+    <string name="tag_family_life">Aile Yaşamı</string>
+    <string name="tag_parenthood">Ebeveynlik</string>
+    <string name="tag_agriculture">Tarım</string>
+    <string name="tag_school_club">Okul Kulübü</string>
+    <string name="tag_cgdct">CGDCT</string>
+    <string name="tag_childcare">Çocuk Bakımı</string>
+    <string name="tag_horticulture">Bahçecilik</string>
+
+    <!-- Sanat / Müzik Etiketleri -->
+    <string name="tag_band">Müzik Grubu</string>
+    <string name="tag_dancing">Dans</string>
+    <string name="tag_idols">İdoller</string>
+    <string name="tag_showbiz">Şovbiz</string>
+    <string name="tag_performing_arts">Sahne Sanatları</string>
+    <string name="tag_fashion">Moda</string>
+    <string name="tag_photography">Fotoğrafçılık</string>
+    <string name="tag_modeling">Modacılık</string>
+    <string name="tag_acting">Oyunculuk</string>
+    <string name="tag_ballet">Bale</string>
+    <string name="tag_classical_music">Klasik Müzik</string>
+    <string name="tag_hip_hop_music">Hip-hop Müzik</string>
+    <string name="tag_jazz_music">Caz Müzik</string>
+    <string name="tag_metal_music">Metal Müzik</string>
+    <string name="tag_musical_theater">Müzikal Tiyatro</string>
+    <string name="tag_rock_music">Rock Müzik</string>
+    <string name="tag_drawing">Çizim</string>
+    <string name="tag_food">Yemek</string>
+    <string name="tag_writing">Yazarlık</string>
+    <string name="tag_calligraphy">Hat Sanatı</string>
+    <string name="tag_classic_literature">Klasik Edebiyat</string>
+    <string name="tag_kabuki">Kabuki</string>
+    <string name="tag_makeup">Makyaj</string>
+    <string name="tag_rakugo">Rakugo</string>
+    <string name="tag_manzai">Manzai</string>
+
+    <!-- Spor Etiketleri -->
+    <string name="tag_football">Futbol</string>
+    <string name="tag_basketball">Basketbol</string>
+    <string name="tag_baseball">Beyzbol</string>
+    <string name="tag_volleyball">Voleybol</string>
+    <string name="tag_tennis">Tenis</string>
+    <string name="tag_swimming">Yüzme</string>
+    <string name="tag_boxing">Boks</string>
+    <string name="tag_judo">Judo</string>
+    <string name="tag_cycling">Bisiklet</string>
+    <string name="tag_surfing">Sörf</string>
+    <string name="tag_rugby">Rugby</string>
+    <string name="tag_skateboarding">Kaykay</string>
+    <string name="tag_table_tennis">Masa Tenisi</string>
+    <string name="tag_ice_skating">Buz Pateni</string>
+    <string name="tag_sumo">Sumo</string>
+    <string name="tag_wrestling">Güreş</string>
+    <string name="tag_fishing">Balıkçılık</string>
+    <string name="tag_fitness">Fitness</string>
+    <string name="tag_golf">Golf</string>
+    <string name="tag_american_football">Amerikan Futbolu</string>
+    <string name="tag_athletics">Atletizm</string>
+    <string name="tag_badminton">Badminton</string>
+    <string name="tag_fencing">Eskrim</string>
+    <string name="tag_lacrosse">Lakros</string>
+    <string name="tag_handball">Hentbol</string>
+    <string name="tag_cheerleading">Amigo</string>
+    <string name="tag_parkour">Parkur</string>
+    <string name="tag_scuba_diving">Dalış</string>
+    <string name="tag_acrobatics">Akrobasi</string>
+    <string name="tag_airsoft">Airsoft</string>
+    <string name="tag_bowling">Bowling</string>
+    <string name="tag_combat_sports">Dövüş Sporları</string>
+    <string name="tag_team_sports">Takım Sporları</string>
+
+    <!-- Oyun Etiketleri -->
+    <string name="tag_e_sports">E-Spor</string>
+    <string name="tag_video_games">Video Oyunları</string>
+    <string name="tag_board_game">Masa Oyunu</string>
+    <string name="tag_card_battle">Kart Savaşı</string>
+    <string name="tag_mahjong">Mahjong</string>
+    <string name="tag_shogi">Shogi</string>
+    <string name="tag_go">Go</string>
+    <string name="tag_karuta">Karuta</string>
+    <string name="tag_poker">Poker</string>
+    <string name="tag_strategy_game">Strateji Oyunu</string>
+    <string name="tag_high_stakes_game">Yüksek Riskli Oyun</string>
+    <string name="tag_death_game">Ölüm Oyunu</string>
+
+    <!-- Karakter Etiketleri -->
+    <string name="tag_vampire">Vampir</string>
+    <string name="tag_zombie">Zombi</string>
+    <string name="tag_werewolf">Kurt Adam</string>
+    <string name="tag_witch">Cadı</string>
+    <string name="tag_samurai">Samuray</string>
+    <string name="tag_ninja">Ninja</string>
+    <string name="tag_pirates">Korsanlar</string>
+    <string name="tag_vikings">Vikingler</string>
+    <string name="tag_demon">Şeytan / İblis</string>
+    <string name="tag_angel">Melek</string>
+    <string name="tag_ghost">Hayalet</string>
+    <string name="tag_tsundere">Tsundere</string>
+    <string name="tag_yandere">Yandere</string>
+    <string name="tag_villainess">Kötü Kadın</string>
+    <string name="tag_tomboy">Erkek Gibi Kız</string>
+    <string name="tag_vtuber">VTuber</string>
+    <string name="tag_twins">İkizler</string>
+    <string name="tag_teacher">Öğretmen</string>
+    <string name="tag_orphan">Yetim</string>
+    <string name="tag_shrine_maiden">Tapınak Kızı</string>
+    <string name="tag_succubus">Sukkubus</string>
+    <string name="tag_skeleton">İskelet</string>
+    <string name="tag_tanned_skin">Bronz Ten</string>
+    <string name="tag_transgender">Transgender</string>
+    <string name="tag_veterinarian">Veteriner</string>
+    <string name="tag_kuudere">Kuudere</string>
+
+    <!-- Organizasyon Etiketleri -->
+    <string name="tag_mafia">Mafya</string>
+    <string name="tag_yakuza">Yakuza</string>
+    <string name="tag_police">Polis</string>
+    <string name="tag_assassins">Suikastçılar</string>
+    <string name="tag_gangs">Çeteler</string>
+    <string name="tag_military">Askeri</string>
+    <string name="tag_firefighters">İtfaiyeciler</string>
+    <string name="tag_triads">Triad</string>
+    <string name="tag_criminal_organization">Suç Örgütü</string>
+    <string name="tag_cult">Tarikat</string>
+
+    <!-- Mekan / Zaman Etiketleri -->
+    <string name="tag_school">Okul</string>
+    <string name="tag_workplace">İş Yeri</string>
+    <string name="tag_dungeon">Zindan</string>
+    <string name="tag_prison">Hapishane</string>
+    <string name="tag_medieval">Ortaçağ</string>
+    <string name="tag_historical">Tarihi</string>
+    <string name="tag_dystopian">Distopik</string>
+    <string name="tag_space">Uzay</string>
+    <string name="tag_virtual_world">Sanal Dünya</string>
+    <string name="tag_urban_fantasy">Şehir Fantezisi</string>
+    <string name="tag_afterlife">Öte Dünya</string>
+    <string name="tag_alternate_universe">Alternatif Evren</string>
+    <string name="tag_ancient_china">Antik Çin</string>
+    <string name="tag_camping">Kamp</string>
+    <string name="tag_restaurant">Restoran</string>
+    <string name="tag_college">Üniversite</string>
+    <string name="tag_boarding_school">Yatılı Okul</string>
+    <string name="tag_bar">Bar</string>
+    <string name="tag_circus">Sirk</string>
+    <string name="tag_office">Ofis</string>
+    <string name="tag_coastal">Kıyı</string>
+    <string name="tag_desert">Çöl</string>
+    <string name="tag_rural">Kırsal</string>
+    <string name="tag_wilderness">Vahşi Doğa</string>
+    <string name="tag_snowscape">Kar Manzarası</string>
+    <string name="tag_urban">Şehir</string>
+    <string name="tag_inn">Han / Otel</string>
+    <string name="tag_time_skip">Zaman Atlaması</string>
+    <string name="tag_achronological_order">Kronolojik Olmayan Sıra</string>
+    <string name="tag_anachronism">Anakronizm</string>
+
+    <!-- Diğer Temalar -->
+    <string name="tag_reincarnation">Reenkarnasyon</string>
+    <string name="tag_gambling">Kumar</string>
+    <string name="tag_politics">Siyaset</string>
+    <string name="tag_philosophy">Felsefe</string>
+    <string name="tag_religion">Din</string>
+    <string name="tag_war">Savaş</string>
+    <string name="tag_crime">Suç</string>
+    <string name="tag_drugs">Uyuşturucu</string>
+    <string name="tag_medicine">Tıp</string>
+    <string name="tag_pandemic">Pandemi</string>
+    <string name="tag_environmental">Çevre</string>
+    <string name="tag_economics">Ekonomi</string>
+    <string name="tag_marriage">Evlilik</string>
+    <string name="tag_travel">Seyahat</string>
+    <string name="tag_educational">Eğitici</string>
+    <string name="tag_delinquents">Asi Gençler</string>
+    <string name="tag_gender_bending">Cinsiyet Değişimi</string>
+    <string name="tag_lgbtq">LGBTQ+ Temalı</string>
+    <string name="tag_found_family">Seçilmiş Aile</string>
+    <string name="tag_memory_manipulation">Bellek Manipülasyonu</string>
+    <string name="tag_noir">Noir</string>
+    <string name="tag_prophecy">Kehanet</string>
+    <string name="tag_crossover">Crossover</string>
+    <string name="tag_chibi">Chibi</string>
+    <string name="tag_terrorism">Terör</string>
+    <string name="tag_animals">Hayvanlar</string>
+    <string name="tag_astronomy">Astronomi</string>
+    <string name="tag_body_horror_theme">Vücut Korkusu</string>
+    <string name="tag_brainwashing">Beyin Yıkama</string>
+    <string name="tag_cosmic_horror_theme">Kozmik Korku</string>
+    <string name="tag_creature_taming">Yaratık Eğitimi</string>
+    <string name="tag_royal_affairs">Kraliyet Meseleleri</string>
+    <string name="tag_slavery">Kölelik</string>
+    <string name="tag_human_experimentation">İnsan Deneyi</string>
+    <string name="tag_rescue">Kurtarma</string>
+    <string name="tag_parody">Parodi</string>
+    <string name="tag_satire">Hiciv</string>
+    <string name="tag_slapstick">Kaba Komedi</string>
+    <string name="tag_surreal_comedy">Absürt Komedi</string>
+    <string name="tag_gag_humor">Saçma Komedi</string>
+    <string name="tag_filmmaking">Film Yapımı</string>
+    <string name="tag_vocal_synth">Vokal Sentezleyici</string>
+    <string name="tag_biographical">Biyografik</string>
+    <string name="tag_autobiographical">Otobiyografik</string>
+    <string name="tag_software_development">Yazılım Geliştirme</string>
+    <string name="tag_mountaineering">Dağcılık</string>
+    <string name="tag_denpa">Denpa</string>
+    <string name="tag_cannibalism">Yamyamlık</string>
+    <string name="tag_indigenous_cultures">Yerli Kültürler</string>
+    <string name="tag_lost_civilization">Kayıp Uygarlık</string>
+    <string name="tag_language_barrier">Dil Engeli</string>
+    <string name="tag_meta">Meta</string>
+    <string name="tag_adoption">Evlat Edinme</string>
+    <string name="tag_pregnancy">Hamilelik</string>
+    <string name="tag_proxy_battle">Vekalet Savaşı</string>
+    <string name="tag_childhood_friend">Çocukluk Arkadaşı</string>
+    <string name="tag_gourmet_food">Gurme Yemek</string>
+    <string name="tag_konbini">Büfe / Konbini</string>
+    <string name="tag_outdoor_activities">Açık Hava Etkinlikleri</string>
+    <string name="tag_foreign">Yabancı Ülke</string>
+    <string name="tag_natural_disaster">Doğal Afet</string>
+
+    <!-- Komedi Etiketleri -->
+    <string name="tag_avant_garde">Avangart</string>
+    <string name="tag_adult_cast">Yetişkin Karakterler</string>
+    <string name="tag_ero_guro">Ero Guro</string>
+
+    <!-- TMDB'ye özel türler -->
+    <string name="genre_animation">Animasyon</string>
+    <string name="genre_documentary">Belgesel</string>
+    <string name="genre_family">Aile</string>
+    <string name="genre_western">Western</string>
+    <string name="genre_tv_movie">TV Filmi</string>
+    <string name="genre_crime">Suç</string>
+    <string name="genre_war">Savaş</string>
+    <string name="genre_history">Tarih</string>
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- Character &amp; Staff Detail Screens                               -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+    <!-- Common actions / icon descriptions -->
+    <string name="action_back">Geri</string>
+    <string name="action_gallery">Galeri</string>
+    <string name="action_share">Paylaş</string>
+    <string name="action_favourite_add">Favori Yap</string>
+    <string name="action_favourite_remove">Favoriden Çıkar</string>
+    <string name="action_translate">Çevir</string>
+    <string name="action_copy">Kopyala</string>
+    <string name="toast_copied_clipboard">Panoya kopyalandı</string>
+
+    <!-- Character Detail tabs -->
+    <string name="character_tab_about">Hakkında</string>
+    <string name="character_tab_appearances">Yapımlar</string>
+    <string name="character_tab_voice_actors">Seslendirenler</string>
+
+    <!-- Staff Detail tabs -->
+    <string name="staff_tab_about">Hakkında</string>
+    <string name="staff_tab_characters">Karakterler</string>
+    <string name="staff_tab_works">Yapımlar</string>
+
+    <!-- Loading placeholders -->
+    <string name="character_loading">Karakter Yükleniyor\u2026</string>
+    <string name="staff_loading">Ekip Üyesi Yükleniyor\u2026</string>
+    <string name="action_retry_label">Yeniden Dene</string>
+
+    <!-- Section headings -->
+    <string name="section_alternative_names">Diğer İsimler</string>
+    <string name="section_info">Bilgiler</string>
+    <string name="section_biography">Biyografi</string>
+
+    <!-- Info row labels -->
+    <string name="info_label_gender">Cinsiyet</string>
+    <string name="info_label_age">Yaş</string>
+    <string name="info_label_birthday">Doğum Günü</string>
+    <string name="info_label_blood_type">Kan Grubu</string>
+    <string name="info_label_occupation">Görev / Meslek</string>
+    <string name="info_label_hometown">Memleket</string>
+
+    <!-- Empty state messages -->
+    <string name="empty_biography">Biyografi bulunmuyor.</string>
+    <string name="empty_appearances">Yapım bilgisi bulunmuyor.</string>
+    <string name="empty_voice_actors">Seslendiren sanatçı bulunmuyor.</string>
+    <string name="empty_character_roles">Karakter seslendirme bilgisi bulunmuyor.</string>
+    <string name="empty_media_works">Yapım katkı bilgisi bulunmuyor.</string>
+
+    <!-- Detail row labels -->
+    <string name="detail_role_prefix">Rol: %1$s</string>
+    <string name="label_unknown">Bilinmiyor</string>
+
 </resources>

@@ -8,6 +8,12 @@ import com.kitsugi.animelist.data.remote.JikanSearchResult
 import com.kitsugi.animelist.data.remote.TmdbApiClient
 import com.kitsugi.animelist.data.settings.SettingsDataStore
 import com.kitsugi.animelist.model.MediaType
+import com.kitsugi.animelist.ui.screens.search.composables.KitsugiCountryOfOrigin
+import com.kitsugi.animelist.ui.screens.search.composables.KitsugiMediaFormat
+import com.kitsugi.animelist.ui.screens.search.composables.KitsugiMediaSeason
+import com.kitsugi.animelist.ui.screens.search.composables.KitsugiMediaSortSearch
+import com.kitsugi.animelist.ui.screens.search.composables.KitsugiMediaSource
+import com.kitsugi.animelist.ui.screens.search.composables.KitsugiMediaStatus
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -81,13 +87,108 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         _uiState.update { it.copy(isFilterSheetOpen = isOpen) }
     }
 
+    // ── Legacy updateFilters (used by GenresTagsSheet & SearchFilterSheet) ──
     fun updateFilters(filters: SearchFilters) {
-        _uiState.update { it.copy(activeFilters = filters) }
+        _uiState.update {
+            it.copy(
+                genres = filters.genres,
+                excludedGenres = filters.excludedGenres,
+                tags = filters.tags,
+                startYear = filters.minYear,
+                endYear = filters.maxYear,
+                season = filters.season?.let { s -> KitsugiMediaSeason.entries.find { e -> e.apiValue == s } },
+                minScore = filters.minScore,
+                maxScore = filters.maxScore
+            )
+        }
         search()
     }
 
     fun resetFilters() {
-        _uiState.update { it.copy(activeFilters = SearchFilters()) }
+        _uiState.update {
+            it.copy(
+                genres = emptyList(),
+                excludedGenres = emptyList(),
+                tags = emptyList(),
+                selectedFormats = emptyList(),
+                selectedStatuses = emptyList(),
+                country = null,
+                selectedSources = emptyList(),
+                startYear = null,
+                endYear = null,
+                season = null,
+                minScore = null,
+                maxScore = null,
+                minEpCh = null,
+                maxEpCh = null,
+                minDuration = null,
+                maxDuration = null,
+                sortSearch = KitsugiMediaSortSearch.SEARCH_MATCH,
+                isSortDescending = true
+            )
+        }
+        search()
+    }
+
+    // ── AniHyou-style reactive filter events ──────────────────────────────
+
+    fun setFormats(values: List<KitsugiMediaFormat>) {
+        _uiState.update { it.copy(selectedFormats = values) }
+        search()
+    }
+
+    fun setStatuses(values: List<KitsugiMediaStatus>) {
+        _uiState.update { it.copy(selectedStatuses = values) }
+        search()
+    }
+
+    fun setCountry(value: KitsugiCountryOfOrigin?) {
+        _uiState.update { it.copy(country = value) }
+        search()
+    }
+
+    fun setSources(values: List<KitsugiMediaSource>) {
+        _uiState.update { it.copy(selectedSources = values) }
+        search()
+    }
+
+    fun setStartYear(value: Int?) {
+        _uiState.update { it.copy(startYear = value) }
+        search()
+    }
+
+    fun setEndYear(value: Int?) {
+        _uiState.update { it.copy(endYear = value) }
+        search()
+    }
+
+    fun setSeason(value: KitsugiMediaSeason?) {
+        _uiState.update { it.copy(season = value) }
+        search()
+    }
+
+    fun setMinScore(value: Int?) {
+        _uiState.update { it.copy(minScore = value) }
+        search()
+    }
+
+    fun setMaxScore(value: Int?) {
+        _uiState.update { it.copy(maxScore = value) }
+        search()
+    }
+
+    fun setEpCh(range: IntRange?) {
+        _uiState.update { it.copy(minEpCh = range?.first, maxEpCh = range?.last) }
+        search()
+    }
+
+    fun setDuration(range: IntRange?) {
+        _uiState.update { it.copy(minDuration = range?.first, maxDuration = range?.last) }
+        search()
+    }
+
+    fun setSort(sortSearch: KitsugiMediaSortSearch, isDescending: Boolean) {
+        _uiState.update { it.copy(sortSearch = sortSearch, isSortDescending = isDescending) }
         search()
     }
 
@@ -98,15 +199,27 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     fun setGenreFilter(genreEnglish: String) {
         val cleanGenre = translateToEnglishForSearch(genreEnglish)
         val isAniListGenre = isOfficialAniListGenre(cleanGenre)
-        val filter = if (isAniListGenre) {
-            SearchFilters(genres = listOf(cleanGenre))
-        } else {
-            SearchFilters(tags = listOf(cleanGenre))
-        }
         _uiState.update {
             it.copy(
                 query = "",
-                activeFilters = filter,
+                genres = if (isAniListGenre) listOf(cleanGenre) else emptyList(),
+                excludedGenres = emptyList(),
+                tags = if (!isAniListGenre) listOf(cleanGenre) else emptyList(),
+                selectedFormats = emptyList(),
+                selectedStatuses = emptyList(),
+                country = null,
+                selectedSources = emptyList(),
+                startYear = null,
+                endYear = null,
+                season = null,
+                minScore = null,
+                maxScore = null,
+                minEpCh = null,
+                maxEpCh = null,
+                minDuration = null,
+                maxDuration = null,
+                sortSearch = KitsugiMediaSortSearch.SEARCH_MATCH,
+                isSortDescending = true,
                 hasSearched = false
             )
         }
@@ -121,7 +234,24 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         _uiState.update {
             it.copy(
                 query = "",
-                activeFilters = SearchFilters(tags = listOf(cleanTag)),
+                genres = emptyList(),
+                excludedGenres = emptyList(),
+                tags = listOf(cleanTag),
+                selectedFormats = emptyList(),
+                selectedStatuses = emptyList(),
+                country = null,
+                selectedSources = emptyList(),
+                startYear = null,
+                endYear = null,
+                season = null,
+                minScore = null,
+                maxScore = null,
+                minEpCh = null,
+                maxEpCh = null,
+                minDuration = null,
+                maxDuration = null,
+                sortSearch = KitsugiMediaSortSearch.SEARCH_MATCH,
+                isSortDescending = true,
                 hasSearched = false
             )
         }
@@ -138,172 +268,127 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         return officialGenres.any { it.equals(genre.trim(), ignoreCase = true) }
     }
 
-    private fun translateToEnglishForSearch(label: String): String = when (label.lowercase().trim()) {
-        "aksiyon" -> "Action"
-        "macera" -> "Adventure"
-        "komedi" -> "Comedy"
-        "dram" -> "Drama"
-        "ecchi" -> "Ecchi"
-        "fantastik" -> "Fantasy"
-        "hentai" -> "Hentai"
-        "korku" -> "Horror"
-        "gizem" -> "Mystery"
-        "romantizm" -> "Romance"
-        "sci-fi", "bilim kurgu" -> "Sci-Fi"
-        "spor" -> "Sports"
-        "doğaüstü" -> "Supernatural"
-        "gerilim", "suspense" -> "Thriller"
-        "psikoloji", "psychological" -> "Psychological"
-        "müzik" -> "Music"
-        "okul" -> "School"
-        "tarihi" -> "Historical"
-        "mecha" -> "Mecha"
-        "yaşamdan kesitler", "slice of life" -> "Slice of Life"
-        "büyü", "sihir", "magic" -> "Magic"
-        "süper güç", "super power" -> "Super Power"
-        "askeri", "military" -> "Military"
-        "uzay", "space" -> "Space"
-        "vampir", "vampire" -> "Vampire"
-        "reenkarnasyon", "reincarnation" -> "Reincarnation"
-        "zaman yolculuğu", "time travel" -> "Time Travel"
-        "mitoloji", "mythology" -> "Mythology"
-        "parodi", "parody" -> "Parody"
-        "samuray", "samurai" -> "Samurai"
-        "çocuk", "kids" -> "Kids"
-        "otaku kültürü", "otaku culture" -> "Otaku Culture"
-        "hayatta kalma", "survival" -> "Survival"
-        "harem" -> "Harem"
-        "ters harem", "reverse harem" -> "Reverse Harem"
-        "dedektif", "detective" -> "Detective"
-        "dövüş sanatları", "martial arts" -> "Martial Arts"
-        "iş yeri", "workplace" -> "Workplace"
-        "cgdct" -> "CGDCT"
-        "çocuk bakımı", "childcare" -> "Childcare"
-        "kavga", "gore" -> "Gore"
-        "idoller", "idols" -> "Idols"
-        "isekai" -> "Isekai"
-        "iyashikei" -> "Iyashikei"
-        "aşk üçgeni", "love polygon" -> "Love Polygon"
-        "video oyunu", "video game" -> "Video Game"
-        "post-apokaliptik", "post-apocalyptic" -> "Post-Apocalyptic"
-        "siberpunk", "cyberpunk" -> "Cyberpunk"
-        else -> label
+
+    private fun translateToEnglishForSearch(label: String): String =
+        SearchTranslation.translateToEnglishForSearch(label)
+
+
+    private fun getJikanGenreId(genreOrTag: String?): Int? {
+        // Önce Türkçe ise İngilizce'ye çevir, sonra ID'yi bul
+        val eng = if (genreOrTag != null) SearchTranslation.translateToEnglishForSearch(genreOrTag) else return null
+        return when (eng.lowercase().trim()) {
+            "action"           -> 1
+            "adventure"        -> 2
+            "racing"           -> 3
+            "comedy"           -> 4
+            "avant garde"      -> 5
+            "mythology"        -> 6
+            "mystery"          -> 7
+            "drama"            -> 8
+            "ecchi"            -> 9
+            "fantasy"          -> 10
+            "magic"            -> 10
+            "strategy game"    -> 11
+            "hentai"           -> 12
+            "historical"       -> 13
+            "horror"           -> 14
+            "kids"             -> 15
+            "martial arts"     -> 17
+            "mecha"            -> 18
+            "music"            -> 19
+            "parody"           -> 20
+            "samurai"          -> 21
+            "romance"          -> 22
+            "school"           -> 23
+            "sci-fi"           -> 24
+            "cyberpunk"        -> 24
+            "shoujo ai"        -> 25
+            "shounen ai"       -> 26
+            "space"            -> 27
+            "space opera"      -> 27
+            "sports"           -> 30
+            "super power"      -> 31
+            "superhero"        -> 31
+            "vampire"          -> 32
+            "harem"            -> 33
+            "slice of life"    -> 36
+            "iyashikei"        -> 36
+            "supernatural"     -> 37
+            "youkai"           -> 37
+            "military"         -> 38
+            "detective"        -> 39
+            "psychological"    -> 40
+            "suspense","thriller" -> 41
+            "seinen"           -> 42
+            "josei"            -> 43
+            "gourmet"          -> 47
+            "workplace", "work" -> 48
+            "adult cast"       -> 50
+            "cgdct"            -> 52
+            "cute girls doing cute things" -> 52
+            "childcare"        -> 53
+            "combat sports"    -> 54
+            "delinquents"      -> 56
+            "educational"      -> 57
+            "gag humor"        -> 58
+            "surreal comedy"   -> 58
+            "gore"             -> 59
+            "body horror"      -> 59
+            "high stakes game", "death game" -> 60
+            "idols"            -> 61
+            "isekai"           -> 62
+            "love polygon", "love triangle" -> 64
+            "medicine", "medical" -> 66
+            "organized crime", "mafia", "yakuza", "criminal organization" -> 67
+            "otaku culture"    -> 68
+            "performing arts", "showbiz" -> 69
+            "pets", "animals"  -> 70
+            "reincarnation"    -> 71
+            "reverse harem"    -> 72
+            "survival"         -> 75
+            "post-apocalyptic" -> 75
+            "time travel", "time loop", "time manipulation" -> 77
+            "video games", "video game", "e-sports" -> 79
+            "visual arts", "photography", "drawing" -> 80
+            "boys' love", "boys love" -> 26
+            "yuri"             -> 25
+            "shounen"          -> 27
+            "shoujo"           -> 25
+            "seinen"           -> 42
+            "josei"            -> 43
+            else               -> null
+        }
     }
 
-    private fun getJikanGenreId(genreOrTag: String?): Int? = when (genreOrTag?.lowercase()?.trim()) {
-        "action", "aksiyon" -> 1
-        "adventure", "macera" -> 2
-        "racing", "yarış" -> 3
-        "comedy", "komedi" -> 4
-        "avant garde" -> 5
-        "mythology", "mitoloji" -> 6
-        "mystery", "gizem" -> 7
-        "drama", "dram" -> 8
-        "ecchi" -> 9
-        "fantasy", "fantastik" -> 10
-        "strategy game" -> 11
-        "hentai" -> 12
-        "historical", "tarihi" -> 13
-        "horror", "korku" -> 14
-        "kids", "çocuk" -> 15
-        "martial arts" -> 17
-        "mecha" -> 18
-        "music", "müzik" -> 19
-        "parody", "parodi" -> 20
-        "samurai" -> 21
-        "romance", "romantizm" -> 22
-        "school", "okul" -> 23
-        "sci-fi" -> 24
-        "shoujo ai" -> 25
-        "shounen ai" -> 26
-        "space", "uzay" -> 27
-        "sports", "spor" -> 30
-        "super power", "süper güç" -> 31
-        "vampire", "vampir" -> 32
-        "harem" -> 33
-        "slice of life", "yaşamdan kesitler" -> 36
-        "supernatural", "doğaüstü" -> 37
-        "military", "askeri" -> 38
-        "detective", "dedektif" -> 39
-        "psychology", "psychological", "psikoloji" -> 40
-        "suspense", "gerilim", "thriller" -> 41
-        "seinen" -> 42
-        "josei" -> 43
-        "gourmet" -> 47
-        "workplace" -> 48
-        "adult cast" -> 50
-        "cgdct" -> 52
-        "childcare" -> 53
-        "combat sports" -> 54
-        "delinquents" -> 56
-        "educational" -> 57
-        "gag humor" -> 58
-        "gore" -> 59
-        "high stakes game" -> 60
-        "idols" -> 61
-        "isekai" -> 62
-        "iyashikei" -> 63
-        "love polygon" -> 64
-        "magical sex shift" -> 65
-        "medical" -> 66
-        "organized crime" -> 67
-        "otaku culture" -> 68
-        "performing arts" -> 69
-        "pets" -> 70
-        "reincarnation", "reenkarnasyon" -> 71
-        "reverse harem" -> 72
-        "showbiz" -> 74
-        "survival", "hayatta kalma" -> 75
-        "team sports" -> 76
-        "time travel", "zaman yolculuğu" -> 77
-        "video game" -> 79
-        "visual arts" -> 80
-        "magic", "sihir", "büyü" -> 10
-        "cyberpunk" -> 24
-        "post-apocalyptic" -> 75
-        else -> null
+    private fun getTmdbGenreId(genreOrTag: String?, isMovie: Boolean): Int? {
+        val eng = if (genreOrTag != null) SearchTranslation.translateToEnglishForSearch(genreOrTag) else return null
+        return when (eng.lowercase().trim()) {
+            "action", "battle royale", "martial arts", "superhero" -> if (isMovie) 28 else 10759
+            "adventure", "isekai", "survival", "post-apocalyptic" -> if (isMovie) 12 else 10759
+            "comedy", "parody", "gag humor", "surreal comedy", "slapstick" -> 35
+            "drama", "tragedy", "coming of age", "romance" -> 18
+            "fantasy", "magic", "supernatural", "alchemy", "youkai", "mythology" -> if (isMovie) 14 else 10765
+            "horror", "gore", "body horror", "cosmic horror" -> 27
+            "mystery", "detective", "conspiracy", "noir" -> 9648
+            "sci-fi", "cyberpunk", "space opera", "time travel", "time loop" -> if (isMovie) 878 else 10765
+            "thriller", "suspense", "psychological", "espionage", "terrorism" -> 53
+            "music", "band", "dancing", "musical theater" -> 10402
+            "historical", "medieval", "ancient china", "samurai", "vikings" -> 36
+            "crime", "mafia", "yakuza", "organized crime", "gangs" -> 80
+            "family", "childcare", "parenthood" -> 10751
+            "military", "war", "guns" -> if (isMovie) 10752 else 10768
+            "animation", "anime" -> 16
+            "documentary", "educational", "biographical" -> 99
+            "western" -> if (isMovie) 37 else null
+            "kids", "cgdct" -> 10762
+            else -> null
+        }
     }
 
-    private fun getTmdbGenreId(genreOrTag: String?, isMovie: Boolean): Int? = when (genreOrTag?.lowercase()?.trim()) {
-        "action", "aksiyon" -> if (isMovie) 28 else 10759
-        "adventure", "macera" -> if (isMovie) 12 else 10759
-        "comedy", "komedi" -> 35
-        "drama", "dram" -> 18
-        "fantasy", "fantastik" -> if (isMovie) 14 else 10765
-        "horror", "korku" -> 27
-        "mystery", "gizem" -> 9648
-        "romance", "romantizm" -> 10749
-        "sci-fi" -> if (isMovie) 878 else 10765
-        "thriller", "gerilim", "suspense", "psychology", "psikoloji" -> 53
-        "music", "müzik" -> 10402
-        "historical", "tarihi" -> 36
-        "crime", "suç" -> 80
-        "family", "aile" -> 10751
-        "military", "war", "savaş", "askeri" -> if (isMovie) 10752 else 10768
-        "supernatural", "doğaüstü", "magic" -> if (isMovie) 14 else 10765
-        "animation", "animasyon" -> 16
-        else -> null
-    }
-
-    private fun getAniListGenreName(genre: String?): String? = when (genre?.lowercase()?.trim()) {
-        "aksiyon" -> "Action"
-        "macera" -> "Adventure"
-        "komedi" -> "Comedy"
-        "dram" -> "Drama"
-        "fantastik" -> "Fantasy"
-        "korku" -> "Horror"
-        "gizem" -> "Mystery"
-        "romantizm" -> "Romance"
-        "sci-fi" -> "Sci-Fi"
-        "spor" -> "Sports"
-        "doğaüstü" -> "Supernatural"
-        "gerilim" -> "Thriller"
-        "psikoloji" -> "Psychological"
-        "müzik" -> "Music"
-        "okul" -> "School"
-        "tarihi" -> "Historical"
-        "mecha" -> "Mecha"
-        else -> genre
+    // AniList'e gönderilecek tür adını normalize eder (Türkçe → İngilizce)
+    private fun getAniListGenreName(genre: String?): String? {
+        if (genre == null) return null
+        return SearchTranslation.translateToEnglishForSearch(genre)
     }
 
     private fun getAniListGenreNames(genres: List<String>): List<String> =
@@ -342,7 +427,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
 
     fun search() {
         val state = _uiState.value
-        if (state.query.isBlank() && state.activeFilters.isDefault()) {
+        if (state.query.isBlank() && !state.hasFiltersApplied) {
             clearResults()
             return
         }
@@ -392,57 +477,45 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     private suspend fun executeSearchForQuery(queryText: String): List<JikanSearchResult> {
         val state = _uiState.value
         val showAdult = showAdultContentState
-        val filters = state.activeFilters
+
+        // ── Derive filter values directly from state ──────────────────────
+        val firstStatus = state.selectedStatuses.firstOrNull()?.apiValue
+        val firstFormat = state.selectedFormats.firstOrNull()?.apiValue
 
         // Jikan filters
-        val jikanStatus = when (filters.status) {
-            "AIRING" -> "airing"
-            "PUBLISHING" -> "publishing"
+        val jikanStatus = when (firstStatus) {
+            "RELEASING" -> "airing"
             "FINISHED" -> "complete"
-            "UPCOMING" -> "upcoming"
+            "NOT_YET_RELEASED" -> "upcoming"
             "HIATUS" -> "hiatus"
-            "DISCONTINUED" -> "discontinued"
+            "CANCELLED" -> "discontinued"
             else -> null
         }
-        val jikanFormat = filters.format?.lowercase()
-        val jikanGenreId = getJikanGenreId(filters.genres.firstOrNull() ?: filters.tags.firstOrNull())
-        val jikanSort = when (filters.sort) {
-            "SCORE_DESC" -> "desc"
-            "POPULARITY_DESC" -> "desc"
-            "TITLE_ROMAJI_DESC" -> "desc"
-            "TITLE_ROMAJI_ASC" -> "asc"
-            else -> "desc"
-        }
-        val jikanOrderBy = when (filters.sort) {
-            "SCORE_DESC" -> "score"
-            "POPULARITY_DESC" -> "popularity"
-            "TITLE_ROMAJI_DESC", "TITLE_ROMAJI_ASC" -> "title"
+        val jikanFormat = firstFormat?.lowercase()
+        val jikanGenreId = getJikanGenreId(state.genres.firstOrNull() ?: state.tags.firstOrNull())
+        val effectiveSort = state.effectiveSortApiValue
+        val jikanSort = if (effectiveSort.endsWith("_DESC") || effectiveSort == "POPULARITY_DESC") "desc" else "asc"
+        val jikanOrderBy = when {
+            effectiveSort.startsWith("SCORE") -> "score"
+            effectiveSort.startsWith("TITLE") -> "title"
             else -> "popularity"
         }
 
         // AniList filters
-        val aniListStatus = when (filters.status) {
-            "AIRING" -> "RELEASING"
-            "PUBLISHING" -> "RELEASING"
-            "FINISHED" -> "FINISHED"
-            "UPCOMING" -> "NOT_YET_RELEASED"
-            "HIATUS" -> "HIATUS"
-            "DISCONTINUED" -> "CANCELLED"
-            else -> null
-        }
-        val aniListFormat = filters.format
-        val aniListGenres = getAniListGenreNames(filters.genres.filter { isOfficialAniListGenre(it) })
-        val aniListExcludedGenres = getAniListGenreNames(filters.excludedGenres.filter { isOfficialAniListGenre(it) })
-        val aniListTags = filters.tags.toMutableList().apply {
-            addAll(filters.genres.filter { !isOfficialAniListGenre(it) })
+        val aniListStatus = firstStatus
+        val aniListFormat = firstFormat
+        val aniListGenres = getAniListGenreNames(state.genres.filter { isOfficialAniListGenre(it) })
+        val aniListExcludedGenres = getAniListGenreNames(state.excludedGenres.filter { isOfficialAniListGenre(it) })
+        val aniListTags = state.tags.toMutableList().apply {
+            addAll(state.genres.filter { !isOfficialAniListGenre(it) })
         }.distinct()
-        val aniListSort = when (filters.sort) {
-            "SCORE_DESC" -> listOf("SCORE_DESC")
-            "TITLE_ROMAJI_DESC" -> listOf("TITLE_DESC")
-            "TITLE_ROMAJI_ASC" -> listOf("TITLE_ASC")
-            "POPULARITY_DESC" -> if (queryText.isNotBlank()) emptyList() else listOf("POPULARITY_DESC")
-            else -> if (queryText.isNotBlank()) emptyList() else listOf("POPULARITY_DESC")
+        val aniListSort = when {
+            effectiveSort == "SEARCH_MATCH" && queryText.isNotBlank() -> emptyList()
+            effectiveSort == "SEARCH_MATCH" -> listOf("POPULARITY_DESC")
+            else -> listOf(effectiveSort)
         }
+        val aniListCountry = state.country?.code
+        val aniListSources = state.selectedSources.map { it.apiValue }
 
         val fallbacks = generateFallbackQueries(queryText)
 
@@ -479,26 +552,29 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                         showAdultContent = showAdult,
                         status = aniListStatus,
                         format = aniListFormat,
-                        season = filters.season,
+                        season = state.season?.apiValue,
                         genres = aniListGenres,
                         excludedGenres = aniListExcludedGenres,
                         tags = aniListTags,
-                        minYear = filters.minYear,
-                        maxYear = filters.maxYear,
-                        minScore = filters.minScore,
-                        maxScore = filters.maxScore,
-                        sort = aniListSort
+                        minYear = state.startYear,
+                        maxYear = state.endYear,
+                        minScore = state.minScore,
+                        maxScore = state.maxScore,
+                        sort = aniListSort,
+                        country = aniListCountry,
+                        sources = aniListSources
                     )
                     if (res.isEmpty()) {
                         for (fb in fallbacks) {
                             res = apiClient.searchAniList(
                                 query = fb, mediaType = state.selectedMediaType,
                                 showAdultContent = showAdult, status = aniListStatus,
-                                format = aniListFormat, season = filters.season,
+                                format = aniListFormat, season = state.season?.apiValue,
                                 genres = aniListGenres, excludedGenres = aniListExcludedGenres,
-                                tags = aniListTags, minYear = filters.minYear,
-                                maxYear = filters.maxYear, minScore = filters.minScore,
-                                maxScore = filters.maxScore, sort = aniListSort
+                                tags = aniListTags, minYear = state.startYear,
+                                maxYear = state.endYear, minScore = state.minScore,
+                                maxScore = state.maxScore, sort = aniListSort,
+                                country = aniListCountry, sources = aniListSources
                             )
                             if (res.isNotEmpty()) break
                         }
@@ -506,7 +582,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                     res
                 }
                 SearchPlatform.TMDB -> {
-                    val tmdbGenreId = getTmdbGenreId(filters.genres.firstOrNull() ?: filters.tags.firstOrNull(), state.selectedMediaType == MediaType.Movie)
+                    val tmdbGenreId = getTmdbGenreId(state.genres.firstOrNull() ?: state.tags.firstOrNull(), state.selectedMediaType == MediaType.Movie)
                     if (queryText.isBlank() && tmdbGenreId != null) {
                         TmdbApiClient().discoverByGenre(tmdbGenreId, state.selectedMediaType == MediaType.Movie)
                     } else if (queryText.isNotBlank()) {
@@ -558,26 +634,29 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                                     showAdultContent = showAdult,
                                     status = aniListStatus,
                                     format = aniListFormat,
-                                    season = filters.season,
+                                    season = state.season?.apiValue,
                                     genres = aniListGenres,
                                     excludedGenres = aniListExcludedGenres,
                                     tags = aniListTags,
-                                    minYear = filters.minYear,
-                                    maxYear = filters.maxYear,
-                                    minScore = filters.minScore,
-                                    maxScore = filters.maxScore,
-                                    sort = aniListSort
+                                    minYear = state.startYear,
+                                    maxYear = state.endYear,
+                                    minScore = state.minScore,
+                                    maxScore = state.maxScore,
+                                    sort = aniListSort,
+                                    country = aniListCountry,
+                                    sources = aniListSources
                                 )
                                 if (res.isEmpty()) {
                                     for (fb in fallbacks) {
                                         res = apiClient.searchAniList(
                                             query = fb, mediaType = state.selectedMediaType,
                                             showAdultContent = showAdult, status = aniListStatus,
-                                            format = aniListFormat, season = filters.season,
+                                            format = aniListFormat, season = state.season?.apiValue,
                                             genres = aniListGenres, excludedGenres = aniListExcludedGenres,
-                                            tags = aniListTags, minYear = filters.minYear,
-                                            maxYear = filters.maxYear, minScore = filters.minScore,
-                                            maxScore = filters.maxScore, sort = aniListSort
+                                            tags = aniListTags, minYear = state.startYear,
+                                            maxYear = state.endYear, minScore = state.minScore,
+                                            maxScore = state.maxScore, sort = aniListSort,
+                                            country = aniListCountry, sources = aniListSources
                                         )
                                         if (res.isNotEmpty()) break
                                     }
@@ -589,7 +668,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                             if (state.selectedMediaType == MediaType.Manga) {
                                 emptyList()
                             } else {
-                                val tmdbGenreId = getTmdbGenreId(filters.genres.firstOrNull() ?: filters.tags.firstOrNull(), state.selectedMediaType == MediaType.Movie)
+                                val tmdbGenreId = getTmdbGenreId(state.genres.firstOrNull() ?: state.tags.firstOrNull(), state.selectedMediaType == MediaType.Movie)
                                 if (queryText.isBlank() && tmdbGenreId != null) {
                                     runCatching {
                                         TmdbApiClient().discoverByGenre(tmdbGenreId, state.selectedMediaType == MediaType.Movie)

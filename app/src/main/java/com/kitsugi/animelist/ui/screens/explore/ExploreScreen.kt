@@ -80,6 +80,7 @@ fun ExploreScreen(
     val filteredNewlyAddedAnime = remember(viewModel.newlyAddedAnime, showAdultContent) { viewModel.newlyAddedAnime.filter { showAdultContent || !it.isAdult } }
     val filteredNewlyAddedManga = remember(viewModel.newlyAddedManga, showAdultContent) { viewModel.newlyAddedManga.filter { showAdultContent || !it.isAdult } }
     val filteredAiringSoonAnime = remember(viewModel.airingSoonAnime, showAdultContent) { viewModel.airingSoonAnime.filter { showAdultContent || !it.isAdult } }
+    val filteredUpcomingMediaTmdb = remember(viewModel.upcomingMediaTmdb, showAdultContent) { viewModel.upcomingMediaTmdb.filter { showAdultContent || !it.isAdult } }
 
     val heroItems = remember(viewModel.selectedPlatform, filteredTopAnime, filteredAiringAnime, filteredMovieAnime) {
         if (viewModel.selectedPlatform == ExplorePlatform.TMDB) {
@@ -402,6 +403,7 @@ fun ExploreScreen(
                                         filteredTrendingAnime = filteredTrendingAnime,
                                         filteredNewlyAddedAnime = filteredNewlyAddedAnime,
                                         filteredTrendingManga = filteredTrendingManga,
+                                        filteredUpcomingMediaTmdb = filteredUpcomingMediaTmdb,
                                         onSeeAllSection = onSeeAllSection,
                                         onOpenAiringCalendar = onOpenAiringCalendar
                                     )
@@ -415,7 +417,9 @@ fun ExploreScreen(
                                             alreadyInList = isAlreadyInList,
                                             onItemClick = onOpenApiDetail,
                                             onLongClickItem = onLongClickItem,
-                                            onOpenAiringCalendar = onOpenAiringCalendar,
+                                            onOpenAiringCalendar = {
+                                                onSeeAllSection(context.getString(R.string.explore_airing_soon), ExploreCategoryType.UPCOMING_MEDIA_TMDB, filteredUpcomingMediaTmdb)
+                                            },
                                             accentColor = accentColor,
                                             titleLanguage = titleLanguage,
                                             blurAdultMedia = blurAdultMedia

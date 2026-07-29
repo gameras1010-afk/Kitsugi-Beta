@@ -97,6 +97,8 @@ import com.kitsugi.animelist.utils.toFriendlySourceLabel
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.kitsugi.animelist.R
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
@@ -146,7 +148,7 @@ fun StaffDetailPage(
         when (val currentState = state) {
             is StaffDetailState.Loading -> {
                 KitsugiCinematicLoadingScreen(
-                    title = name ?: "Ekip Üyesi Yükleniyor...",
+                    title = name ?: stringResource(R.string.staff_loading),
                     imageUrl = imageUrl,
                     onBackClick = onBackClick
                 )
@@ -161,7 +163,7 @@ fun StaffDetailPage(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                            contentDescription = "Geri",
+                            contentDescription = stringResource(R.string.action_back),
                             tint = KitsugiColors.TextPrimary
                         )
                     }
@@ -184,7 +186,7 @@ fun StaffDetailPage(
                                 viewModel.retry()
                             }
                         ) {
-                            Text("Yeniden Dene", color = accentColor, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.action_retry_label), color = accentColor, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -210,7 +212,11 @@ fun StaffDetailPage(
                 ) {
                 val listState = rememberLazyListState()
                 val showFloatingHeader = listState.firstVisibleItemIndex >= 1
-                val tabs = listOf("Hakkında", "Karakterler", "Yapımlar")
+                val tabs = listOf(
+                    stringResource(R.string.staff_tab_about),
+                    stringResource(R.string.staff_tab_characters),
+                    stringResource(R.string.staff_tab_works)
+                )
                 @OptIn(ExperimentalFoundationApi::class)
                 val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
                 val selectedTab = pagerState.currentPage

@@ -417,4 +417,58 @@
     <string name="explore_simkl_continue_watching_series">Continue Watching (Series &amp; Anime)</string>
     <string name="explore_simkl_plantowatch_series">Plan to Watch (Series &amp; Anime)</string>
     <string name="explore_read_manga">Read Manga</string>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- Character &amp; Staff Detail Screens                               -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+    <!-- Common actions / icon descriptions -->
+    <string name="action_back">Back</string>
+    <string name="action_gallery">Gallery</string>
+    <string name="action_share">Share</string>
+    <string name="action_favourite_add">Add to Favourites</string>
+    <string name="action_favourite_remove">Remove from Favourites</string>
+    <string name="action_translate">Translate</string>
+    <string name="action_copy">Copy</string>
+    <string name="toast_copied_clipboard">Copied to clipboard</string>
+
+    <!-- Character Detail tabs -->
+    <string name="character_tab_about">About</string>
+    <string name="character_tab_appearances">Appearances</string>
+    <string name="character_tab_voice_actors">Voice Actors</string>
+
+    <!-- Staff Detail tabs -->
+    <string name="staff_tab_about">About</string>
+    <string name="staff_tab_characters">Characters</string>
+    <string name="staff_tab_works">Works</string>
+
+    <!-- Loading placeholders -->
+    <string name="character_loading">Loading Character&#8230;</string>
+    <string name="staff_loading">Loading Staff Member&#8230;</string>
+    <string name="action_retry_label">Retry</string>
+
+    <!-- Section headings -->
+    <string name="section_alternative_names">Alternative Names</string>
+    <string name="section_info">Information</string>
+    <string name="section_biography">Biography</string>
+
+    <!-- Info row labels -->
+    <string name="info_label_gender">Gender</string>
+    <string name="info_label_age">Age</string>
+    <string name="info_label_birthday">Birthday</string>
+    <string name="info_label_blood_type">Blood Type</string>
+    <string name="info_label_occupation">Role / Occupation</string>
+    <string name="info_label_hometown">Hometown</string>
+
+    <!-- Empty state messages -->
+    <string name="empty_biography">No biography available.</string>
+    <string name="empty_appearances">No appearance information found.</string>
+    <string name="empty_voice_actors">No voice actors found.</string>
+    <string name="empty_character_roles">No character voice roles found.</string>
+    <string name="empty_media_works">No media works found.</string>
+
+    <!-- Detail row labels -->
+    <string name="detail_role_prefix">Role: %1$s</string>
+    <string name="label_unknown">Unknown</string>
+
 </resources>

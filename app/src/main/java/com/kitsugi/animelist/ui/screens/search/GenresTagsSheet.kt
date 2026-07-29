@@ -41,26 +41,77 @@ fun GenresTagsSheet(
     var excludedGenres by remember { mutableStateOf(currentFilters.excludedGenres) }
     var selectedTags by remember { mutableStateOf(currentFilters.tags) }
 
+    // Dahili liste İngilizce — UI'da SearchTranslation ile Türkçe gösterilir
     val allGenres = listOf(
-        "Action", "Adventure", "Comedy", "Drama", "Fantasy",
-        "Horror", "Mystery", "Romance", "Sci-Fi", "Sports",
-        "Supernatural", "Thriller", "Psychological", "Music", "School", "Historical", "Mecha"
+        // AniList resmi türleri
+        "Action", "Adventure", "Comedy", "Drama", "Ecchi", "Fantasy",
+        "Hentai", "Horror", "Mahou Shoujo", "Mecha", "Music", "Mystery",
+        "Psychological", "Romance", "Sci-Fi", "Slice of Life", "Sports",
+        "Supernatural", "Thriller",
+        // Demografi
+        "Shounen", "Shoujo", "Seinen", "Josei", "Kids"
     )
 
     val allTags = listOf(
-        "Isekai", "Magic", "Super Power", "Military", "Survival",
-        "Cyberpunk", "Martial Arts", "Space", "Post-Apocalyptic", "Vampire",
-        "Reincarnation", "Time Travel", "Harem", "Slice of Life", "Gore"
+        // Aksiyon
+        "Battle Royale", "Espionage", "Guns", "Martial Arts", "Swordplay", "Archery",
+        // Fantazi
+        "Isekai", "Reverse Isekai", "Magic", "Super Power", "Superhero", "Mythology",
+        "Alchemy", "Cultivation", "Wuxia", "Fairy Tale", "Youkai", "Steampunk",
+        "Body Swapping", "Shapeshifting", "Curses", "Exorcism", "Necromancy", "Henshin",
+        // Sci-Fi
+        "Cyberpunk", "Space Opera", "Time Loop", "Time Manipulation", "Time Travel", "Post-Apocalyptic",
+        // Korku / Gerilim
+        "Gore", "Body Horror", "Cosmic Horror", "Survival", "Torture",
+        // Romantizm
+        "Love Triangle", "Love Polygon", "Harem", "Reverse Harem", "Unrequited Love",
+        "Fake Relationship", "Boys' Love", "Yuri", "Cohabitation",
+        // Dram / Drama
+        "Coming of Age", "Revenge", "Tragedy", "Conspiracy", "Bullying",
+        "Class Struggle", "Rehabilitation", "Kingdom Management",
+        // Günlük Hayat
+        "Iyashikei", "Otaku Culture", "Gourmet", "Family Life", "Parenthood",
+        "Agriculture", "School Club", "CGDCT", "Childcare",
+        // Sanat / Müzik
+        "Band", "Dancing", "Idol", "Idols", "Showbiz", "Performing Arts",
+        "Fashion", "Photography", "Modeling",
+        // Spor / Oyun
+        "Football", "Basketball", "Baseball", "Volleyball", "Tennis", "Swimming",
+        "Boxing", "Judo", "Cycling", "Surfing", "Rugby", "Skateboarding",
+        "Table Tennis", "Ice Skating", "Sumo", "Wrestling", "Fishing",
+        "E-Sports", "Video Games", "Board Game", "Card Battle", "Mahjong",
+        // Karakterler
+        "Vampire", "Zombie", "Werewolf", "Witch", "Samurai", "Ninja", "Pirates",
+        "Vikings", "Demon", "Tsundere", "Yandere", "Villainess", "Tomboy",
+        "VTuber", "Twins", "Teacher", "Orphan",
+        // Organizasyonlar
+        "Mafia", "Yakuza", "Police", "Assassins", "Gangs", "Military", "Firefighters",
+        // Ayarlar / Setting
+        "School", "Workplace", "Dungeon", "Prison", "Medieval", "Historical",
+        "Dystopian", "Space", "Virtual World", "Urban Fantasy", "Afterlife",
+        "Alternate Universe", "Ancient China", "Camping", "Restaurant", "College",
+        // Diğer temalar
+        "Reincarnation", "Death Game", "Gambling", "Politics", "Philosophy",
+        "Religion", "War", "Crime", "Drugs", "Medicine", "Pandemic",
+        "Environmental", "Economics", "Marriage", "Travel", "Educational",
+        "Delinquents", "Gender Bending", "LGBTQ+ Themes", "Found Family",
+        "Memory Manipulation", "Noir", "Prophecy", "Crossover", "Chibi",
     )
 
     val filteredGenres = remember(searchGenreQuery) {
         if (searchGenreQuery.isBlank()) allGenres
-        else allGenres.filter { it.contains(searchGenreQuery, ignoreCase = true) }
+        else allGenres.filter {
+            it.contains(searchGenreQuery, ignoreCase = true) ||
+            SearchTranslation.translateToTurkishForDisplay(it).contains(searchGenreQuery, ignoreCase = true)
+        }
     }
 
     val filteredTags = remember(searchGenreQuery) {
         if (searchGenreQuery.isBlank()) allTags
-        else allTags.filter { it.contains(searchGenreQuery, ignoreCase = true) }
+        else allTags.filter {
+            it.contains(searchGenreQuery, ignoreCase = true) ||
+            SearchTranslation.translateToTurkishForDisplay(it).contains(searchGenreQuery, ignoreCase = true)
+        }
     }
 
     KitsugiSheetOrDialog(
@@ -148,7 +199,7 @@ fun GenresTagsSheet(
                         ) {
                             filteredGenres.forEach { genre ->
                                 GenreTagChip(
-                                    label = genre,
+                                    label = SearchTranslation.translateToTurkishForDisplay(genre),
                                     isIncluded = selectedGenres.contains(genre),
                                     isExcluded = excludedGenres.contains(genre),
                                     accentColor = accentColor,
@@ -190,7 +241,7 @@ fun GenresTagsSheet(
                             filteredTags.forEach { tag ->
                                 val isSelected = selectedTags.contains(tag)
                                 SimpleTagChip(
-                                    label = tag,
+                                    label = SearchTranslation.translateToTurkishForDisplay(tag),
                                     isSelected = isSelected,
                                     accentColor = accentColor,
                                     onToggle = {

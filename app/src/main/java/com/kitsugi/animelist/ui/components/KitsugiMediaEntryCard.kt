@@ -935,7 +935,7 @@ private fun ScorePill(
 ) {
     val accentColor = LocalKitsugiAccent.current
     val label = when {
-        score == "unrated" -> "unrated"
+        score == "unrated" -> "—"
         scoreFormat == "POINT_5" || scoreFormat == "POINT_3" -> score
         else -> "★ $score"
     }
@@ -1230,23 +1230,22 @@ private fun PosterGridMediaEntryCard(
             // Puan rozeti — SAĞ alt köşe (gizlenmemişse)
             if (!hideScores) {
                 val scoreText = entry.getDisplayScore(scoreFormat, hideScores)
-                if (scoreText != "unrated") {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(5.dp)
-                            .clip(RoundedCornerShape(7.dp))
-                            .background(KitsugiColors.Background.copy(alpha = 0.80f))
-                            .padding(horizontal = 5.dp, vertical = 2.dp)
-                    ) {
-                        Text(
-                            text = "★ $scoreText",
-                            color = accentColor,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1
-                        )
-                    }
+                val badgeText = if (scoreText == "unrated") "—" else "★ $scoreText"
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(5.dp)
+                        .clip(RoundedCornerShape(7.dp))
+                        .background(KitsugiColors.Background.copy(alpha = 0.80f))
+                        .padding(horizontal = 5.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = badgeText,
+                        color = accentColor,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1
+                    )
                 }
             }
 

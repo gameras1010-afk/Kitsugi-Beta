@@ -40,6 +40,13 @@ import com.kitsugi.animelist.model.MediaEntry
 import com.kitsugi.animelist.model.MediaType
 import com.kitsugi.animelist.ui.components.KitsugiEmptyState
 import com.kitsugi.animelist.ui.components.KitsugiShimmerSearchResultList
+import com.kitsugi.animelist.ui.screens.search.composables.KitsugiSearchCountryChip
+import com.kitsugi.animelist.ui.screens.search.composables.KitsugiSearchDateChip
+import com.kitsugi.animelist.ui.screens.search.composables.KitsugiSearchEpChDurationChip
+import com.kitsugi.animelist.ui.screens.search.composables.KitsugiSearchFormatChip
+import com.kitsugi.animelist.ui.screens.search.composables.KitsugiSearchSourceChip
+import com.kitsugi.animelist.ui.screens.search.composables.KitsugiSearchSortChip
+import com.kitsugi.animelist.ui.screens.search.composables.KitsugiSearchStatusChip
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.theme.LocalIsTv
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
@@ -67,11 +74,6 @@ fun SearchScreen(
 
     // Active Dialog States
     var openPlatformDialog by remember { mutableStateOf(false) }
-    var openFormatDialog by remember { mutableStateOf(false) }
-    var openStatusDialog by remember { mutableStateOf(false) }
-    var openDateDialog by remember { mutableStateOf(false) }
-    var openScoreDialog by remember { mutableStateOf(false) }
-    var openSortDialog by remember { mutableStateOf(false) }
     var openTmdbFormatDialog by remember { mutableStateOf(false) }
     var openTmdbGenreDialog by remember { mutableStateOf(false) }
 
@@ -327,102 +329,114 @@ fun SearchScreen(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            // Filters Scroll Row (Format, Status, Year, etc.)
+            // ── AniHyou-style Sort Chip ───────────────────────────────────
             item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (!isTmdbPlatform) {
-                        // Source (Platform)
+                if (!isTmdbPlatform) {
+                    KitsugiSearchSortChip(
+                        sortSearch = uiState.sortSearch,
+                        isDescending = uiState.isSortDescending,
+                        onSortChanged = { sort, desc -> viewModel.setSort(sort, desc) }
+                    )
+                }
+            }
+
+            // ── AniHyou-style More Filters Row ────────────────────────────
+            item {
+                if (!isTmdbPlatform) {
+                    // Platform source chip
+                    Row(
+                        modifier = Modifier
+                            .horizontalScroll(rememberScrollState())
+                            .padding(horizontal = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         val sourceLabel = when (uiState.selectedPlatform) {
-                            SearchPlatform.MAL -> "Kaynak: MAL"
-                            SearchPlatform.AniList -> "Kaynak: AniList"
-                            else -> "Kaynak: Tümü"
+                            SearchPlatform.MAL -> "MAL"
+                            SearchPlatform.AniList -> "AniList"
+                            else -> "Tümü"
                         }
                         SearchFilterChip(
-                            label = sourceLabel,
+                            label = "Kaynak: $sourceLabel",
                             selected = uiState.selectedPlatform != SearchPlatform.All,
                             onClick = { openPlatformDialog = true }
                         )
-
-                        // Format
-                        val formatLabel = uiState.activeFilters.format?.let { "Format: $it" } ?: "Format"
-                        SearchFilterChip(
-                            label = formatLabel,
-                            selected = uiState.activeFilters.format != null,
-                            onClick = { openFormatDialog = true }
+                        KitsugiSearchFormatChip(
+                            mediaType = uiState.selectedMediaType,
+                            selectedFormats = uiState.selectedFormats,
+                            onFormatsChanged = { viewModel.setFormats(it) }
                         )
-
-                        // Status
-                        val statusLabel = uiState.activeFilters.status?.let { s ->
-                            statuses.firstOrNull { it.first == s }?.second?.let { "Durum: $it" } ?: "Durum: $s"
-                        } ?: "Durum"
-                        SearchFilterChip(
-                            label = statusLabel,
-                            selected = uiState.activeFilters.status != null,
-                            onClick = { openStatusDialog = true }
+                        KitsugiSearchStatusChip(
+                            selectedStatuses = uiState.selectedStatuses,
+                            onStatusesChanged = { viewModel.setStatuses(it) }
                         )
-
-                        // Year & Season
-                        val dateLabel = if (uiState.activeFilters.minYear != null || uiState.activeFilters.season != null) {
-                            val yearPart = uiState.activeFilters.minYear?.toString() ?: ""
-                            val seasonPart = when (uiState.activeFilters.season) {
-                                "WINTER" -> "Kış"
-                                "SPRING" -> "İlkbahar"
-                                "SUMMER" -> "Yaz"
-                                "FALL" -> "Sonbahar"
-                                else -> ""
-                            }
-                            if (yearPart.isNotEmpty() && seasonPart.isNotEmpty()) "$yearPart - $seasonPart"
-                            else yearPart.ifEmpty { seasonPart }
-                        } else "Yıl / Sezon"
-
-                        SearchFilterChip(
-                            label = dateLabel,
-                            selected = uiState.activeFilters.minYear != null || uiState.activeFilters.season != null,
-                            onClick = { openDateDialog = true }
+                        KitsugiSearchCountryChip(
+                            selectedCountry = uiState.country,
+                            onCountryChanged = { viewModel.setCountry(it) }
                         )
-
-                        // Score
-                        val scoreLabel = if (uiState.activeFilters.minScore != null || uiState.activeFilters.maxScore != null) {
-                            "Puan: %${uiState.activeFilters.minScore ?: 0} - %${uiState.activeFilters.maxScore ?: 100}"
-                        } else "Puan Aralığı"
-                        SearchFilterChip(
-                            label = scoreLabel,
-                            selected = uiState.activeFilters.minScore != null || uiState.activeFilters.maxScore != null,
-                            onClick = { openScoreDialog = true }
+                        KitsugiSearchSourceChip(
+                            selectedSources = uiState.selectedSources,
+                            onSourcesChanged = { viewModel.setSources(it) }
                         )
-
-                        // Sort
-                        val sortLabel = sortOptions.firstOrNull { it.first == uiState.activeFilters.sort }?.second?.let { "Sıralama: $it" } ?: "Sıralama"
-                        SearchFilterChip(
-                            label = sortLabel,
-                            selected = uiState.activeFilters.sort != "POPULARITY_DESC",
-                            onClick = { openSortDialog = true }
-                        )
-
-                        // Genres/Tags Bottom Sheet Trigger
+                        // Genres/Tags sheet trigger
                         SearchFilterChip(
                             label = "Türler / Etiketler",
-                            selected = uiState.activeFilters.genres.isNotEmpty() || uiState.activeFilters.excludedGenres.isNotEmpty() || uiState.activeFilters.tags.isNotEmpty(),
+                            selected = uiState.genres.isNotEmpty() || uiState.excludedGenres.isNotEmpty() || uiState.tags.isNotEmpty(),
                             onClick = { viewModel.setFilterSheetOpen(true) }
                         )
-
-                    } else {
-                        // TMDB Platform Filters
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    // Date chips row
+                    KitsugiSearchDateChip(
+                        startYear = uiState.startYear,
+                        endYear = uiState.endYear,
+                        season = uiState.season,
+                        onStartYearChanged = { viewModel.setStartYear(it) },
+                        onEndYearChanged = { viewModel.setEndYear(it) },
+                        onSeasonChanged = { viewModel.setSeason(it) }
+                    )
+                    // Episode / Duration chips row
+                    KitsugiSearchEpChDurationChip(
+                        mediaType = uiState.selectedMediaType,
+                        minEpCh = uiState.minEpCh,
+                        maxEpCh = uiState.maxEpCh,
+                        minDuration = uiState.minDuration,
+                        maxDuration = uiState.maxDuration,
+                        onEpChChanged = { viewModel.setEpCh(it) },
+                        onDurationChanged = { viewModel.setDuration(it) }
+                    )
+                    // Clear all filters
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        if (uiState.hasFiltersApplied || uiState.selectedPlatform != SearchPlatform.All) {
+                            TextButton(onClick = {
+                                viewModel.resetFilters()
+                                viewModel.setPlatform(SearchPlatform.All)
+                            }) {
+                                Text("Filtreleri Sıfırla", color = KitsugiColors.AccentRed)
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                } else {
+                    // TMDB Platform Filters
+                    Row(
+                        modifier = Modifier
+                            .horizontalScroll(rememberScrollState())
+                            .padding(horizontal = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         val tmdbFormatLabel = if (currentMediaType == MediaType.Movie) "Film" else "Dizi"
                         SearchFilterChip(
                             label = "Tip: $tmdbFormatLabel",
                             selected = true,
                             onClick = { openTmdbFormatDialog = true }
                         )
-
-                        val tmdbGenreLabel = uiState.activeFilters.genres.firstOrNull()?.let { "Tür: $it" }
-                            ?: uiState.activeFilters.tags.firstOrNull()?.let { "Etiket: $it" }
+                        val tmdbGenreLabel = uiState.genres.firstOrNull()?.let { "Tür: $it" }
+                            ?: uiState.tags.firstOrNull()?.let { "Etiket: $it" }
                             ?: "Tür Seç"
                         SearchFilterChip(
                             label = tmdbGenreLabel,
@@ -430,47 +444,12 @@ fun SearchScreen(
                             onClick = { openTmdbGenreDialog = true }
                         )
                     }
-
-                    // Reset Filters Button
-                    if (!uiState.activeFilters.isDefault() || uiState.selectedPlatform != SearchPlatform.All) {
-                        TextButton(
-                            onClick = {
-                                viewModel.resetFilters()
-                                viewModel.setPlatform(SearchPlatform.All)
-                            }
-                        ) {
-                            Text("Sıfırla", color = KitsugiColors.AccentRed)
-                        }
-                    }
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
-                Spacer(modifier = Modifier.height(12.dp))
             }
 
             // Active Filters Inline Dismissible Chips Row
-            if (!uiState.activeFilters.isDefault()) {
-                item {
-                    ActiveFiltersChipsRow(
-                        filters = uiState.activeFilters,
-                        onRemoveFilter = { filterType, value ->
-                            val current = uiState.activeFilters
-                            val updated = when (filterType) {
-                                "format" -> current.copy(format = null)
-                                "status" -> current.copy(status = null)
-                                "season" -> current.copy(season = null)
-                                "genre" -> current.copy(genres = current.genres - value)
-                                "excludedGenre" -> current.copy(excludedGenres = current.excludedGenres - value)
-                                "tag" -> current.copy(tags = current.tags - value)
-                                "year" -> current.copy(minYear = null, maxYear = null)
-                                "score" -> current.copy(minScore = null, maxScore = null)
-                                "sort" -> current.copy(sort = "POPULARITY_DESC")
-                                else -> current
-                            }
-                            viewModel.updateFilters(updated)
-                        },
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-                }
-            }
+            // (Active filter pills removed – chips themselves show active state)
 
             // Search History Section
             if (showIdleContent && uiState.searchHistory.isNotEmpty()) {
@@ -554,7 +533,11 @@ fun SearchScreen(
     // Genres Bottom Sheet Dialog
     if (uiState.isFilterSheetOpen) {
         GenresTagsSheet(
-            currentFilters = uiState.activeFilters,
+            currentFilters = SearchFilters(
+                genres = uiState.genres,
+                excludedGenres = uiState.excludedGenres,
+                tags = uiState.tags
+            ),
             onApplyFilters = {
                 viewModel.updateFilters(it)
                 viewModel.setFilterSheetOpen(false)
@@ -578,79 +561,7 @@ fun SearchScreen(
         )
     }
 
-    // Dialog: Format selection
-    if (openFormatDialog) {
-        DialogWithRadioSelection(
-            title = "Format Seç",
-            options = formats,
-            selectedOption = uiState.activeFilters.format,
-            onOptionSelected = { f ->
-                viewModel.updateFilters(uiState.activeFilters.copy(format = f))
-            },
-            onDismiss = { openFormatDialog = false }
-        )
-    }
 
-    // Dialog: Status selection
-    if (openStatusDialog) {
-        DialogWithRadioSelection(
-            title = "Yayın Durumu Seç",
-            options = statuses,
-            selectedOption = statuses.firstOrNull { it.first == uiState.activeFilters.status },
-            onOptionSelected = { s ->
-                viewModel.updateFilters(uiState.activeFilters.copy(status = s?.first))
-            },
-            onDismiss = { openStatusDialog = false },
-            optionLabel = { it.second }
-        )
-    }
-
-    // Dialog: Year & Season selection
-    if (openDateDialog) {
-        DialogWithYearSeasonSelection(
-            title = "Tarih ve Sezon Seç",
-            selectedStartYear = uiState.activeFilters.minYear,
-            selectedEndYear = uiState.activeFilters.maxYear,
-            selectedSeason = uiState.activeFilters.season,
-            onStartYearSelected = { y ->
-                viewModel.updateFilters(uiState.activeFilters.copy(minYear = y))
-            },
-            onEndYearSelected = { y ->
-                viewModel.updateFilters(uiState.activeFilters.copy(maxYear = y))
-            },
-            onSeasonSelected = { s ->
-                viewModel.updateFilters(uiState.activeFilters.copy(season = s))
-            },
-            onDismiss = { openDateDialog = false }
-        )
-    }
-
-    // Dialog: Score range selection
-    if (openScoreDialog) {
-        DialogWithScoreRangeSelection(
-            title = "Puan Aralığı Seç",
-            selectedMinScore = uiState.activeFilters.minScore,
-            selectedMaxScore = uiState.activeFilters.maxScore,
-            onScoreRangeSelected = { min, max ->
-                viewModel.updateFilters(uiState.activeFilters.copy(minScore = min, maxScore = max))
-            },
-            onDismiss = { openScoreDialog = false }
-        )
-    }
-
-    // Dialog: Sort selection
-    if (openSortDialog) {
-        DialogWithRadioSelection(
-            title = "Sıralama Seç",
-            options = sortOptions,
-            selectedOption = sortOptions.firstOrNull { it.first == uiState.activeFilters.sort },
-            onOptionSelected = { s ->
-                viewModel.updateFilters(uiState.activeFilters.copy(sort = s?.first))
-            },
-            onDismiss = { openSortDialog = false },
-            optionLabel = { it.second }
-        )
-    }
 
     // Dialog: TMDB Format Selection
     if (openTmdbFormatDialog) {
@@ -669,17 +580,15 @@ fun SearchScreen(
 
     // Dialog: TMDB Genre Selection
     if (openTmdbGenreDialog) {
-        val currentGenre = uiState.activeFilters.genres.firstOrNull() ?: "Tümü"
+        val currentGenre = uiState.genres.firstOrNull() ?: "Tümü"
         DialogWithRadioSelection(
             title = "Tür Seç",
             options = tmdbGenres,
             selectedOption = currentGenre,
             onOptionSelected = { g ->
-                val updated = if (g == null || g == "Tümü") {
-                    uiState.activeFilters.copy(genres = emptyList())
-                } else {
-                    uiState.activeFilters.copy(genres = listOf(g))
-                }
+                val updated = SearchFilters(
+                    genres = if (g == null || g == "Tümü") emptyList() else listOf(g)
+                )
                 viewModel.updateFilters(updated)
             },
             onDismiss = { openTmdbGenreDialog = false }
@@ -773,13 +682,16 @@ fun ActiveFiltersChipsRow(
             ActiveFilterChip(label = "Sezon: $lbl", onCloseClick = { onRemoveFilter("season", "") })
         }
         filters.genres.forEach { g ->
-            ActiveFilterChip(label = "+ $g", onCloseClick = { onRemoveFilter("genre", g) }, borderColor = Color(0xFF10B981))
+            val tr = SearchTranslation.translateToTurkishForDisplay(g)
+            ActiveFilterChip(label = "+ $tr", onCloseClick = { onRemoveFilter("genre", g) }, borderColor = Color(0xFF10B981))
         }
         filters.excludedGenres.forEach { g ->
-            ActiveFilterChip(label = "- $g", onCloseClick = { onRemoveFilter("excludedGenre", g) }, borderColor = Color(0xFFEF4444))
+            val tr = SearchTranslation.translateToTurkishForDisplay(g)
+            ActiveFilterChip(label = "- $tr", onCloseClick = { onRemoveFilter("excludedGenre", g) }, borderColor = Color(0xFFEF4444))
         }
         filters.tags.forEach { t ->
-            ActiveFilterChip(label = "# $t", onCloseClick = { onRemoveFilter("tag", t) })
+            val tr = SearchTranslation.translateToTurkishForDisplay(t)
+            ActiveFilterChip(label = "# $tr", onCloseClick = { onRemoveFilter("tag", t) })
         }
         if (filters.minYear != null || filters.maxYear != null) {
             ActiveFilterChip(label = "Yıl: ${filters.minYear ?: 1970}-${filters.maxYear ?: 2026}", onCloseClick = { onRemoveFilter("year", "") })

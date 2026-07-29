@@ -25,12 +25,15 @@ class AniListSearchClient(
         maxYear: Int? = null,
         minScore: Int? = null,
         maxScore: Int? = null,
-        sort: List<String> = listOf("POPULARITY_DESC")
+        sort: List<String> = listOf("POPULARITY_DESC"),
+        country: String? = null,
+        sources: List<String>? = null
     ): List<JikanSearchResult> {
         return withContext(Dispatchers.IO) {
             if (query.isBlank() && status == null && format == null && season == null &&
                 genres.isNullOrEmpty() && excludedGenres.isNullOrEmpty() && tags.isNullOrEmpty() &&
-                minYear == null && maxYear == null && minScore == null && maxScore == null
+                minYear == null && maxYear == null && minScore == null && maxScore == null &&
+                country == null && sources.isNullOrEmpty()
             ) {
                 return@withContext emptyList()
             }
@@ -49,7 +52,9 @@ class AniListSearchClient(
                 maxYear = maxYear,
                 minScore = minScore,
                 maxScore = maxScore,
-                showAdultContent = showAdultContent
+                showAdultContent = showAdultContent,
+                country = country,
+                sources = sources
             )
         }
     }
@@ -235,7 +240,9 @@ class AniListSearchClient(
         minScore: Int? = null,
         maxScore: Int? = null,
         page: Int = 1,
-        showAdultContent: Boolean = false
+        showAdultContent: Boolean = false,
+        country: String? = null,
+        sources: List<String>? = null
     ): List<JikanSearchResult> {
         val query = """
             query (
@@ -255,7 +262,9 @@ class AniListSearchClient(
                 ${'$'}averageScoreGreater: Int,
                 ${'$'}averageScoreLess: Int,
                 ${'$'}sort: [MediaSort],
-                ${'$'}isAdult: Boolean
+                ${'$'}isAdult: Boolean,
+                ${'$'}countryOfOrigin: CountryCode,
+                ${'$'}sourceIn: [MediaSource]
             ) {
                 Page(page: ${'$'}page, perPage: ${'$'}perPage) {
                     media(
@@ -273,7 +282,9 @@ class AniListSearchClient(
                         averageScore_greater: ${'$'}averageScoreGreater,
                         averageScore_lesser: ${'$'}averageScoreLess,
                         sort: ${'$'}sort,
-                        isAdult: ${'$'}isAdult
+                        isAdult: ${'$'}isAdult,
+                        countryOfOrigin: ${'$'}countryOfOrigin,
+                        source_in: ${'$'}sourceIn
                     ) {
                         id
                         idMal
@@ -372,6 +383,14 @@ class AniListSearchClient(
 
         if (maxScore != null && maxScore > 0) {
             variables.put("averageScoreLess", maxScore)
+        }
+
+        if (!country.isNullOrBlank()) {
+            variables.put("countryOfOrigin", country)
+        }
+
+        if (!sources.isNullOrEmpty()) {
+            variables.put("sourceIn", JSONArray(sources))
         }
 
         // Tüm AniList trafiği tek merkezden (rate-limit + 429 retry uygulayan)

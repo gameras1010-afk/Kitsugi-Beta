@@ -55,7 +55,9 @@ class JikanApiClient(
         maxYear: Int? = null,
         minScore: Int? = null,
         maxScore: Int? = null,
-        sort: List<String> = listOf("POPULARITY_DESC")
+        sort: List<String> = listOf("POPULARITY_DESC"),
+        country: String? = null,
+        sources: List<String>? = null
     ) = aniListSearchClient.searchAniList(
         query = query,
         mediaType = mediaType,
@@ -70,7 +72,9 @@ class JikanApiClient(
         maxYear = maxYear,
         minScore = minScore,
         maxScore = maxScore,
-        sort = sort
+        sort = sort,
+        country = country,
+        sources = sources
     )
 
     // Top & Filters

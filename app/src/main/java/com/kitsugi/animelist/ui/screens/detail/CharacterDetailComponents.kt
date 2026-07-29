@@ -68,6 +68,8 @@ import com.kitsugi.animelist.ui.components.KitsugiMarkdownText
 import com.kitsugi.animelist.utils.copyOnDoubleTap
 import com.kitsugi.animelist.utils.toFriendlySourceLabel
 import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
+import androidx.compose.ui.res.stringResource
+import com.kitsugi.animelist.R
 
 @Composable
 internal fun MediaAppearanceRow(
@@ -120,7 +122,7 @@ internal fun MediaAppearanceRow(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = "${appearance.mediaType.replaceFirstChar { it.uppercase() }} • Rol: ${appearance.characterRole}",
+                text = "${appearance.mediaType.replaceFirstChar { it.uppercase() }} \u2022 ${stringResource(R.string.detail_role_prefix, appearance.characterRole)}",
                 color = KitsugiColors.TextMuted,
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Medium
@@ -175,9 +177,10 @@ internal fun VoiceActorRow(
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold
             )
+            val unknownLabel = stringResource(R.string.label_unknown)
             val labelText = actor.language.toTurkishLanguage()
                 .replaceFirstChar { it.uppercase() }
-                .ifBlank { "Bilinmeyen" }
+                .ifBlank { unknownLabel }
             Text(
                 text = labelText,
                 color = KitsugiColors.TextMuted,
@@ -276,7 +279,7 @@ internal fun CharacterDetailLeftPanel(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                            contentDescription = "Geri",
+                            contentDescription = stringResource(R.string.action_back),
                             tint = KitsugiColors.TextPrimary
                         )
                     }
@@ -300,7 +303,7 @@ internal fun CharacterDetailLeftPanel(
                             }) {
                                 Icon(
                                     imageVector = Icons.Rounded.Image,
-                                    contentDescription = "Galeri",
+                                    contentDescription = stringResource(R.string.action_gallery),
                                     tint = accentColor
                                 )
                             }
@@ -320,7 +323,7 @@ internal fun CharacterDetailLeftPanel(
                         }) {
                             Icon(
                                 imageVector = Icons.Rounded.Share,
-                                contentDescription = "Paylaş",
+                                contentDescription = stringResource(R.string.action_share),
                                 tint = KitsugiColors.TextPrimary
                             )
                         }
@@ -337,7 +340,7 @@ internal fun CharacterDetailLeftPanel(
                             IconButton(onClick = onToggleFavourite) {
                                 Icon(
                                     imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                                    contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
+                                    contentDescription = if (isFavourite) stringResource(R.string.action_favourite_remove) else stringResource(R.string.action_favourite_add),
                                     tint = if (isFavourite) accentColor else KitsugiColors.TextPrimary
                                 )
                             }
@@ -391,7 +394,7 @@ internal fun CharacterAboutTabContent(
                         .padding(16.dp)
                 ) {
                     Text(
-                        text = "Diğer İsimler",
+                        text = stringResource(R.string.section_alternative_names),
                         color = KitsugiColors.TextPrimary,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
@@ -414,17 +417,17 @@ internal fun CharacterAboutTabContent(
                         .padding(16.dp)
                 ) {
                     Text(
-                        text = "Bilgiler",
+                        text = stringResource(R.string.section_info),
                         color = KitsugiColors.TextPrimary,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        if (detail.gender != null) InfoRow(label = "Cinsiyet", value = detail.gender)
-                        if (detail.age != null) InfoRow(label = "Yaş", value = detail.age)
-                        if (detail.birthday != null) InfoRow(label = "Doğum Günü", value = detail.birthday)
-                        if (detail.bloodType != null) InfoRow(label = "Kan Grubu", value = detail.bloodType)
+                        if (detail.gender != null) InfoRow(label = stringResource(R.string.info_label_gender), value = detail.gender)
+                        if (detail.age != null) InfoRow(label = stringResource(R.string.info_label_age), value = detail.age)
+                        if (detail.birthday != null) InfoRow(label = stringResource(R.string.info_label_birthday), value = detail.birthday)
+                        if (detail.bloodType != null) InfoRow(label = stringResource(R.string.info_label_blood_type), value = detail.bloodType)
                     }
                 }
             }
@@ -442,7 +445,7 @@ internal fun CharacterAboutTabContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Biyografi",
+                        text = stringResource(R.string.section_biography),
                         color = KitsugiColors.TextPrimary,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
@@ -460,7 +463,7 @@ internal fun CharacterAboutTabContent(
                             onClick = {
                                 val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                                 clipboard.setPrimaryClip(android.content.ClipData.newPlainText("biography", displayBio))
-                                android.widget.Toast.makeText(context, "Panoya kopyalandı", android.widget.Toast.LENGTH_SHORT).show()
+                                android.widget.Toast.makeText(context, context.getString(R.string.toast_copied_clipboard), android.widget.Toast.LENGTH_SHORT).show()
                             },
                             modifier = Modifier.size(36.dp)
                         ) {
@@ -470,7 +473,7 @@ internal fun CharacterAboutTabContent(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 if (displayBio.isNullOrBlank()) {
-                    Text("Biyografi bulunmuyor.", color = KitsugiColors.TextMuted, style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.empty_biography), color = KitsugiColors.TextMuted, style = MaterialTheme.typography.bodyMedium)
                 } else {
                     KitsugiMarkdownText(
                         text = displayBio,
@@ -495,7 +498,7 @@ internal fun CharacterAppearancesTabContent(
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (detail.mediaAppearances.isEmpty()) {
             Text(
-                text = "Yapım bilgisi bulunmuyor.",
+                text = stringResource(R.string.empty_appearances),
                 color = KitsugiColors.TextSecondary,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(vertical = 16.dp)
@@ -521,7 +524,7 @@ internal fun CharacterVoiceActorsTabContent(
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (detail.voiceActors.isEmpty()) {
             Text(
-                text = "Seslendiren sanatçı bulunmuyor.",
+                text = stringResource(R.string.empty_voice_actors),
                 color = KitsugiColors.TextSecondary,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(vertical = 16.dp)
@@ -613,7 +616,7 @@ internal fun CharacterPortraitHeroSection(
                 contentAlignment = Alignment.Center
             ) {
                 IconButton(onClick = onBackClick) {
-                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Geri", tint = KitsugiColors.TextPrimary)
+                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = stringResource(R.string.action_back), tint = KitsugiColors.TextPrimary)
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -623,7 +626,7 @@ internal fun CharacterPortraitHeroSection(
                         contentAlignment = Alignment.Center
                     ) {
                         IconButton(onClick = { onGalleryOpen(galleryItems, 0) }) {
-                            Icon(Icons.Rounded.Image, contentDescription = "Galeri", tint = accentColor)
+                            Icon(Icons.Rounded.Image, contentDescription = stringResource(R.string.action_gallery), tint = accentColor)
                         }
                     }
                 }
@@ -635,7 +638,7 @@ internal fun CharacterPortraitHeroSection(
                         val url = com.kitsugi.animelist.utils.ShareUtils.buildCharacterUrl(source, characterId)
                         com.kitsugi.animelist.utils.ShareUtils.shareText(context, detail.name, url)
                     }) {
-                        Icon(Icons.Rounded.Share, contentDescription = "Paylaş", tint = KitsugiColors.TextPrimary)
+                        Icon(Icons.Rounded.Share, contentDescription = stringResource(R.string.action_share), tint = KitsugiColors.TextPrimary)
                     }
                 }
                 if (isAniListSource) {
@@ -646,7 +649,7 @@ internal fun CharacterPortraitHeroSection(
                         IconButton(onClick = onToggleFavourite) {
                             Icon(
                                 imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                                contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
+                                contentDescription = if (isFavourite) stringResource(R.string.action_favourite_remove) else stringResource(R.string.action_favourite_add),
                                 tint = if (isFavourite) accentColor else KitsugiColors.TextPrimary
                             )
                         }
@@ -726,7 +729,7 @@ internal fun CharacterDetailStickyHeader(
                     .padding(horizontal = 8.dp)
             ) {
                 IconButton(onClick = onBackClick) {
-                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Geri", tint = KitsugiColors.TextPrimary)
+                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = stringResource(R.string.action_back), tint = KitsugiColors.TextPrimary)
                 }
                 Spacer(modifier = androidx.compose.ui.Modifier.width(8.dp))
                 Text(
@@ -740,20 +743,20 @@ internal fun CharacterDetailStickyHeader(
                 )
                 if (!detail.imageUrl.isNullOrBlank()) {
                     IconButton(onClick = { onGalleryOpen(galleryItems, 0) }) {
-                        Icon(Icons.Rounded.Image, contentDescription = "Galeri", tint = accentColor)
+                        Icon(Icons.Rounded.Image, contentDescription = stringResource(R.string.action_gallery), tint = accentColor)
                     }
                 }
                 IconButton(onClick = {
                     val url = com.kitsugi.animelist.utils.ShareUtils.buildCharacterUrl(source, characterId)
                     com.kitsugi.animelist.utils.ShareUtils.shareText(context, detail.name, url)
                 }) {
-                    Icon(Icons.Rounded.Share, contentDescription = "Paylaş", tint = KitsugiColors.TextSecondary)
+                    Icon(Icons.Rounded.Share, contentDescription = stringResource(R.string.action_share), tint = KitsugiColors.TextSecondary)
                 }
                 if (showFavouriteButton) {
                     IconButton(onClick = onToggleFavourite) {
                         Icon(
                             imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                            contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
+                            contentDescription = if (isFavourite) stringResource(R.string.action_favourite_remove) else stringResource(R.string.action_favourite_add),
                             tint = if (isFavourite) accentColor else KitsugiColors.TextSecondary
                         )
                     }

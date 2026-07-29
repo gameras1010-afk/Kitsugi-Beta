@@ -95,6 +95,8 @@ import com.kitsugi.animelist.utils.toFriendlySourceLabel
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.kitsugi.animelist.R
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import com.kitsugi.animelist.data.remote.GalleryItem
@@ -147,7 +149,7 @@ fun CharacterDetailPage(
         when (val currentState = state) {
             is CharacterDetailState.Loading -> {
                 KitsugiCinematicLoadingScreen(
-                    title = name ?: "Karakter Yükleniyor...",
+                    title = name ?: stringResource(R.string.character_loading),
                     imageUrl = imageUrl,
                     onBackClick = onBackClick
                 )
@@ -162,7 +164,7 @@ fun CharacterDetailPage(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                            contentDescription = "Geri",
+                            contentDescription = stringResource(R.string.action_back),
                             tint = KitsugiColors.TextPrimary
                         )
                     }
@@ -185,7 +187,7 @@ fun CharacterDetailPage(
                                 viewModel.retry()
                             }
                         ) {
-                            Text("Yeniden Dene", color = accentColor, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.action_retry_label), color = accentColor, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -211,10 +213,13 @@ fun CharacterDetailPage(
                 ) {
                     val listState = rememberLazyListState()
                 val showFloatingHeader = listState.firstVisibleItemIndex >= 1
+                val tabAbout      = stringResource(R.string.character_tab_about)
+                val tabAppearances = stringResource(R.string.character_tab_appearances)
+                val tabVoiceActors = stringResource(R.string.character_tab_voice_actors)
                 val tabs = if (source.lowercase() == "tmdb") {
-                    listOf("Hakkında", "Yapımlar")
+                    listOf(tabAbout, tabAppearances)
                 } else {
-                    listOf("Hakkında", "Yapımlar", "Seslendirenler")
+                    listOf(tabAbout, tabAppearances, tabVoiceActors)
                 }
                 @OptIn(ExperimentalFoundationApi::class)
                 val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
@@ -319,8 +324,8 @@ fun CharacterDetailPage(
                                             .verticalScroll(rememberScrollState())
                                             .padding(horizontal = 16.dp, vertical = 8.dp)
                                     ) {
-                                        when (currentTab) {
-                                            "Hakkında" -> {
+                                        when (page) {
+                                            0 -> {
                                                 CharacterAboutTabContent(
                                                     detail = detail,
                                                     translatedBio = translatedBio,
@@ -332,14 +337,14 @@ fun CharacterDetailPage(
                                                     }
                                                 )
                                             }
-                                            "Yapımlar" -> {
+                                            1 -> {
                                                 CharacterAppearancesTabContent(
                                                     detail = detail,
                                                     titleLanguage = titleLanguage,
                                                     onMediaClick = onMediaClick
                                                 )
                                             }
-                                            "Seslendirenler" -> {
+                                            2 -> {
                                                 CharacterVoiceActorsTabContent(
                                                     detail = detail,
                                                     onStaffClick = onStaffClick
@@ -474,8 +479,8 @@ fun CharacterDetailPage(
                                                     pageHeights[page] = coordinates.size.height
                                                 }
                                         ) {
-                                            when (currentTab) {
-                                                "Hakkında" -> {
+                                            when (page) {
+                                                0 -> {
                                                     CharacterAboutTabContent(
                                                         detail = detail,
                                                         translatedBio = translatedBio,
@@ -487,14 +492,14 @@ fun CharacterDetailPage(
                                                         }
                                                     )
                                                 }
-                                                "Yapımlar" -> {
+                                                1 -> {
                                                     CharacterAppearancesTabContent(
                                                         detail = detail,
                                                         titleLanguage = titleLanguage,
                                                         onMediaClick = onMediaClick
                                                     )
                                                 }
-                                                "Seslendirenler" -> {
+                                                2 -> {
                                                     CharacterVoiceActorsTabContent(
                                                         detail = detail,
                                                         onStaffClick = onStaffClick

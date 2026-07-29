@@ -44,6 +44,7 @@ fun TmdbCategoriesSection(
     filteredTrendingAnime: List<JikanSearchResult>,
     filteredNewlyAddedAnime: List<JikanSearchResult>,
     filteredTrendingManga: List<JikanSearchResult>,
+    filteredUpcomingMediaTmdb: List<JikanSearchResult>,
     onSeeAllSection: (title: String, categoryType: ExploreCategoryType, results: List<JikanSearchResult>) -> Unit,
     onOpenAiringCalendar: () -> Unit,
     modifier: Modifier = Modifier
@@ -139,7 +140,7 @@ fun TmdbCategoriesSection(
                     item {
                         ExploreCategoryChip(
                             label = "Yakında Yayında",
-                            onClick = onOpenAiringCalendar
+                            onClick = { onSeeAllSection("Yakında Yayında", ExploreCategoryType.UPCOMING_MEDIA_TMDB, filteredUpcomingMediaTmdb) }
                         )
                     }
                     item {
@@ -190,7 +191,7 @@ fun TmdbCategoriesSection(
                     item {
                         ExploreCategoryChip(
                             label = "Yakında Yayında",
-                            onClick = onOpenAiringCalendar
+                            onClick = { onSeeAllSection("Yakında Yayında", ExploreCategoryType.UPCOMING_MEDIA_TMDB, filteredUpcomingMediaTmdb) }
                         )
                     }
                     item {

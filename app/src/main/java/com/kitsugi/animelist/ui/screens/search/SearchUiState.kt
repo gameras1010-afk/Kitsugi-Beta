@@ -2,10 +2,18 @@ package com.kitsugi.animelist.ui.screens.search
 
 import com.kitsugi.animelist.data.remote.JikanSearchResult
 import com.kitsugi.animelist.model.MediaType
+import com.kitsugi.animelist.ui.screens.search.composables.KitsugiCountryOfOrigin
+import com.kitsugi.animelist.ui.screens.search.composables.KitsugiMediaFormat
+import com.kitsugi.animelist.ui.screens.search.composables.KitsugiMediaSeason
+import com.kitsugi.animelist.ui.screens.search.composables.KitsugiMediaSortSearch
+import com.kitsugi.animelist.ui.screens.search.composables.KitsugiMediaSource
+import com.kitsugi.animelist.ui.screens.search.composables.KitsugiMediaStatus
 
 /**
  * Search ekranının UI durumu.
- * MoeList SearchUiState.kt'den ilham alınarak Kitsugi'nun JikanSearchResult modeline uyarlanmıştır.
+ * AniHyou SearchUiState.kt mimarisine uyarlanmıştır.
+ * Tüm AniHyou filtre alanları (format, status, tarih, sezon, ülke, kaynak, puan, bölüm/süre)
+ * doğrudan bu state'e taşınmıştır.
  */
 data class SearchUiState(
     val query: String = "",
@@ -16,9 +24,74 @@ data class SearchUiState(
     val isLoading: Boolean = false,
     val hasSearched: Boolean = false,
     val errorMessage: String? = null,
-    val activeFilters: SearchFilters = SearchFilters(),
-    val isFilterSheetOpen: Boolean = false
-)
+    val isFilterSheetOpen: Boolean = false,
+
+    // ── Genre / Tag filters (used by GenresTagsSheet) ──────────────────────
+    val genres: List<String> = emptyList(),
+    val excludedGenres: List<String> = emptyList(),
+    val tags: List<String> = emptyList(),
+
+    // ── AniHyou-style chip filters (AniList-only) ──────────────────────────
+    val selectedFormats: List<KitsugiMediaFormat> = emptyList(),
+    val selectedStatuses: List<KitsugiMediaStatus> = emptyList(),
+    val country: KitsugiCountryOfOrigin? = null,
+    val selectedSources: List<KitsugiMediaSource> = emptyList(),
+
+    // ── Date / Season ──────────────────────────────────────────────────────
+    val startYear: Int? = null,
+    val endYear: Int? = null,
+    val season: KitsugiMediaSeason? = null,
+
+    // ── Score / Episode / Duration ranges ──────────────────────────────────
+    val minScore: Int? = null,
+    val maxScore: Int? = null,
+    val minEpCh: Int? = null,
+    val maxEpCh: Int? = null,
+    val minDuration: Int? = null,
+    val maxDuration: Int? = null,
+
+    // ── Sort ───────────────────────────────────────────────────────────────
+    val sortSearch: KitsugiMediaSortSearch = KitsugiMediaSortSearch.SEARCH_MATCH,
+    val isSortDescending: Boolean = true,
+) {
+    /** Effective AniList sort string (e.g. "POPULARITY_DESC") */
+    val effectiveSortApiValue: String get() =
+        if (isSortDescending) sortSearch.descApiValue else sortSearch.ascApiValue
+
+    /** True if any filter besides the default sort is active */
+    val hasFiltersApplied: Boolean get() =
+        genres.isNotEmpty() ||
+        excludedGenres.isNotEmpty() ||
+        tags.isNotEmpty() ||
+        selectedFormats.isNotEmpty() ||
+        selectedStatuses.isNotEmpty() ||
+        country != null ||
+        selectedSources.isNotEmpty() ||
+        startYear != null ||
+        endYear != null ||
+        season != null ||
+        minScore != null ||
+        maxScore != null ||
+        minEpCh != null ||
+        maxEpCh != null ||
+        minDuration != null ||
+        maxDuration != null
+
+    /** Returns the legacy SearchFilters object for backward-compatible ViewModel code. */
+    fun toLegacyFilters(): SearchFilters = SearchFilters(
+        format = selectedFormats.firstOrNull()?.apiValue,
+        status = selectedStatuses.firstOrNull()?.apiValue,
+        genres = genres,
+        excludedGenres = excludedGenres,
+        tags = tags,
+        minYear = startYear,
+        maxYear = endYear,
+        season = season?.apiValue,
+        minScore = minScore,
+        maxScore = maxScore,
+        sort = effectiveSortApiValue
+    )
+}
 
 data class SearchHistoryItem(
     val query: String,
@@ -33,6 +106,10 @@ enum class SearchPlatform(val label: String) {
     TMDB("TMDB")
 }
 
+/**
+ * Legacy filter bag kept for backward compatibility with JikanApiClient
+ * and the existing executeSearchForQuery logic.
+ */
 data class SearchFilters(
     val format: String? = null,
     val status: String? = null,

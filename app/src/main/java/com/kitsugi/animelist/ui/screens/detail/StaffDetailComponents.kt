@@ -49,6 +49,8 @@ import com.kitsugi.animelist.data.remote.KitsugiStaffDetail
 import com.kitsugi.animelist.utils.copyOnDoubleTap
 import com.kitsugi.animelist.utils.toFriendlySourceLabel
 import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
+import androidx.compose.ui.res.stringResource
+import com.kitsugi.animelist.R
 
 // Icon extension imports
 import androidx.compose.material.icons.Icons
@@ -179,7 +181,7 @@ internal fun StaffMediaWorkRow(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = "${work.mediaType.replaceFirstChar { it.uppercase() }} • Rol: ${work.staffRole}",
+                text = "${work.mediaType.replaceFirstChar { it.uppercase() }} \u2022 ${stringResource(R.string.detail_role_prefix, work.staffRole)}",
                 color = KitsugiColors.TextMuted,
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Medium
@@ -276,7 +278,7 @@ internal fun StaffDetailLeftPanel(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                            contentDescription = "Geri",
+                            contentDescription = stringResource(R.string.action_back),
                             tint = KitsugiColors.TextPrimary
                         )
                     }
@@ -299,7 +301,7 @@ internal fun StaffDetailLeftPanel(
                             }) {
                                 Icon(
                                     imageVector = Icons.Rounded.Image,
-                                    contentDescription = "Galeri",
+                                    contentDescription = stringResource(R.string.action_gallery),
                                     tint = accentColor
                                 )
                             }
@@ -319,7 +321,7 @@ internal fun StaffDetailLeftPanel(
                         }) {
                             Icon(
                                 imageVector = Icons.Rounded.Share,
-                                contentDescription = "Paylaş",
+                                contentDescription = stringResource(R.string.action_share),
                                 tint = KitsugiColors.TextPrimary
                             )
                         }
@@ -336,7 +338,7 @@ internal fun StaffDetailLeftPanel(
                             IconButton(onClick = onToggleFavourite) {
                                 Icon(
                                     imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                                    contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
+                                    contentDescription = if (isFavourite) stringResource(R.string.action_favourite_remove) else stringResource(R.string.action_favourite_add),
                                     tint = if (isFavourite) accentColor else KitsugiColors.TextPrimary
                                 )
                             }
@@ -389,7 +391,7 @@ internal fun StaffAboutTabContent(
                         .padding(16.dp)
                 ) {
                     Text(
-                        text = "Diğer İsimler",
+                        text = stringResource(R.string.section_alternative_names),
                         color = KitsugiColors.TextPrimary,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
@@ -413,7 +415,7 @@ internal fun StaffAboutTabContent(
                         .padding(16.dp)
                 ) {
                     Text(
-                        text = "Bilgiler",
+                        text = stringResource(R.string.section_info),
                         color = KitsugiColors.TextPrimary,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
@@ -421,11 +423,11 @@ internal fun StaffAboutTabContent(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        if (detail.occupation != null) InfoRow(label = "Görev / Meslek", value = detail.occupation)
-                        if (detail.gender != null) InfoRow(label = "Cinsiyet", value = detail.gender)
-                        if (detail.age != null) InfoRow(label = "Yaş", value = detail.age)
-                        if (detail.birthday != null) InfoRow(label = "Doğum Günü", value = detail.birthday)
-                        if (detail.homeTown != null) InfoRow(label = "Memleket", value = detail.homeTown)
+                        if (detail.occupation != null) InfoRow(label = stringResource(R.string.info_label_occupation), value = detail.occupation)
+                        if (detail.gender != null) InfoRow(label = stringResource(R.string.info_label_gender), value = detail.gender)
+                        if (detail.age != null) InfoRow(label = stringResource(R.string.info_label_age), value = detail.age)
+                        if (detail.birthday != null) InfoRow(label = stringResource(R.string.info_label_birthday), value = detail.birthday)
+                        if (detail.homeTown != null) InfoRow(label = stringResource(R.string.info_label_hometown), value = detail.homeTown)
                     }
                 }
             }
@@ -444,7 +446,7 @@ internal fun StaffAboutTabContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Biyografi",
+                        text = stringResource(R.string.section_biography),
                         color = KitsugiColors.TextPrimary,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
@@ -458,7 +460,7 @@ internal fun StaffAboutTabContent(
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Translate,
-                                contentDescription = "Çevir",
+                                contentDescription = stringResource(R.string.action_translate),
                                 tint = accentColor
                             )
                         }
@@ -467,13 +469,13 @@ internal fun StaffAboutTabContent(
                             onClick = {
                                 val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                                 clipboard.setPrimaryClip(android.content.ClipData.newPlainText("biography", displayBio))
-                                android.widget.Toast.makeText(context, "Panoya kopyalandı", android.widget.Toast.LENGTH_SHORT).show()
+                                android.widget.Toast.makeText(context, context.getString(R.string.toast_copied_clipboard), android.widget.Toast.LENGTH_SHORT).show()
                             },
                             modifier = Modifier.size(36.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.ContentCopy,
-                                contentDescription = "Kopyala",
+                                contentDescription = stringResource(R.string.action_copy),
                                 tint = KitsugiColors.TextSecondary
                             )
                         }
@@ -482,7 +484,7 @@ internal fun StaffAboutTabContent(
                 Spacer(modifier = Modifier.height(8.dp))
                 if (displayBio.isNullOrBlank()) {
                     Text(
-                        text = "Biyografi bulunmuyor.",
+                        text = stringResource(R.string.empty_biography),
                         color = KitsugiColors.TextMuted,
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -511,7 +513,7 @@ internal fun StaffCharacterRolesTabContent(
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (detail.characterRoles.isEmpty()) {
             Text(
-                text = "Karakter seslendirme bilgisi bulunmuyor.",
+                text = stringResource(R.string.empty_character_roles),
                 color = KitsugiColors.TextSecondary,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(vertical = 16.dp)
@@ -539,7 +541,7 @@ internal fun StaffMediaWorksTabContent(
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (detail.mediaWorks.isEmpty()) {
             Text(
-                text = "Yapım katkı bilgisi bulunmuyor.",
+                text = stringResource(R.string.empty_media_works),
                 color = KitsugiColors.TextSecondary,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(vertical = 16.dp)
@@ -638,7 +640,7 @@ internal fun StaffPortraitHeroSection(
                 IconButton(onClick = onBackClick) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                        contentDescription = "Geri",
+                        contentDescription = stringResource(R.string.action_back),
                         tint = KitsugiColors.TextPrimary
                     )
                 }
@@ -662,7 +664,7 @@ internal fun StaffPortraitHeroSection(
                         }) {
                             Icon(
                                 imageVector = Icons.Rounded.Image,
-                                contentDescription = "Galeri",
+                                contentDescription = stringResource(R.string.action_gallery),
                                 tint = accentColor
                             )
                         }
@@ -682,7 +684,7 @@ internal fun StaffPortraitHeroSection(
                     }) {
                         Icon(
                             imageVector = Icons.Rounded.Share,
-                            contentDescription = "Paylaş",
+                            contentDescription = stringResource(R.string.action_share),
                             tint = KitsugiColors.TextPrimary
                         )
                     }
@@ -699,7 +701,7 @@ internal fun StaffPortraitHeroSection(
                         IconButton(onClick = onToggleFavourite) {
                             Icon(
                                 imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                                contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
+                                contentDescription = if (isFavourite) stringResource(R.string.action_favourite_remove) else stringResource(R.string.action_favourite_add),
                                 tint = if (isFavourite) accentColor else KitsugiColors.TextPrimary
                             )
                         }
@@ -785,7 +787,7 @@ internal fun StaffDetailStickyHeader(
                 IconButton(onClick = onBackClick) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                        contentDescription = "Geri",
+                        contentDescription = stringResource(R.string.action_back),
                         tint = KitsugiColors.TextPrimary
                     )
                 }
@@ -805,7 +807,7 @@ internal fun StaffDetailStickyHeader(
                     }) {
                         Icon(
                             imageVector = Icons.Rounded.Image,
-                            contentDescription = "Galeri",
+                            contentDescription = stringResource(R.string.action_gallery),
                             tint = accentColor
                         )
                     }
@@ -816,7 +818,7 @@ internal fun StaffDetailStickyHeader(
                 }) {
                     Icon(
                         imageVector = Icons.Rounded.Share,
-                        contentDescription = "Paylaş",
+                        contentDescription = stringResource(R.string.action_share),
                         tint = KitsugiColors.TextSecondary
                     )
                 }
@@ -824,7 +826,7 @@ internal fun StaffDetailStickyHeader(
                     IconButton(onClick = onToggleFavourite) {
                         Icon(
                             imageVector = if (isFavourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                            contentDescription = if (isFavourite) "Favoriden Çıkar" else "Favori Yap",
+                            contentDescription = if (isFavourite) stringResource(R.string.action_favourite_remove) else stringResource(R.string.action_favourite_add),
                             tint = if (isFavourite) accentColor else KitsugiColors.TextSecondary
                         )
                     }

@@ -12,8 +12,10 @@ class MediaEntryRepository(
     val context: Context? = null,
     private val onExternalSyncMessage: ((String) -> Unit)? = null
 ) {
-    val entriesFlow: Flow<List<MediaEntry>> = dao.observeAll().map { entities ->
-        entities.map { it.toDomain() }
+    val entriesFlow: Flow<List<MediaEntry>> = kotlinx.coroutines.flow.flow {
+        dao.observeAll().collect { entities ->
+            emit(entities.map { it.toDomain() })
+        }
     }
 
     suspend fun insert(entry: MediaEntry) {

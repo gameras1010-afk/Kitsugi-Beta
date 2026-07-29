@@ -1,21 +1,17 @@
-# Kitsugi Ağ ve Performans Güncellemesi Sürüm Notları 🚀
+# Kitsugi Arayüz ve Navigasyon Güncellemesi Sürüm Notları 🚀
 
 ---
 
 ## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
 
-### ⚡ Ağ Donma ve Bağlantı Kilitlenme Sorunlarının Çözümü (OkHttp Thread Starvation Fixes)
-- **Anlık Ağ İptali (Immediate Cancellation on Exit):** "İzle" (yayın seçici) sayfasından geri çıkıldığı anda, arka planda çalışmaya devam eden tüm OkHttp ağ istekleri (sağlayıcı arama ve link çözücüler) anında iptal edilir. Bu sayede arka planda asılı kalan ve tüm ağ motorunu kilitleyen "Thread Sızıntısı/Açlığı" tamamen önlenmiştir.
-- **İptal Duyarlı Interceptor Yapısı:** `RetryInterceptor` (429 Too Many Requests) ve `CloudflareInterceptor` bekleme döngüleri, ağ isteği iptal edildiği anda uykuyu yarıda kesip thread'leri serbest bırakacak şekilde güncellendi. Yavaş siteler için gerekli bekleme süreleri korunurken, sayfa kapatıldığında kaynakların anında geri kazanılması sağlandı.
-- **Bellek İçi TMDB Önbelleği (TmdbApiClient Cache):** Ana sayfa ve detay ekranlarında sıklıkla tetiklenen TMDB API anahtarı ve dil sorgularındaki `runBlocking` kilitleri tamamen kaldırılarak RAM tabanlı asenkron önbelleğe geçirildi. Ağ/Ana thread üzerindeki disk I/O yükü sıfırlandı.
-- **Eklenti Güvenlik İzolasyonu:** `CsPluginLoader` içerisindeki eklenti yükleme adımları zaman aşımı (`withTimeout`) ve hata korumalarıyla izole edildi. Hatalı veya kilitlenen eklentilerin ana uygulamayı çökertmesi veya dondurması kalıcı olarak engellendi.
+### 🎨 Arayüz İyileştirmeleri ve Navigasyon Düzenlemeleri
+- **MyList Puan Görünürlüğü:** Liste ekranlarındaki 2 sütunlu ızgara (grid) görünümünde, puanı olmayan ("unrated") içeriklerin puan rozetinin gizlenmesi engellendi. Bu rozetler artık global "puanları gizle" (hideScores) tercihine sadık kalınarak `"—"` yer tutucu göstergesiyle gösteriliyor.
+- **TMDB "Yakında Yayında" Ayrımı:** TMDB platformundaki "Yakında Yayında" yönlendirmeleri, günlük/haftalık yayın takviminden tamamen kopartıldı. Bunun yerine TMDB'nin gelecek/yakında çıkacak dizi ve filmlerini listeleyen özgün sayfalama sistemine (`ExploreCategoryType.UPCOMING_MEDIA_TMDB`) yönlendirildi. Keşfet sekmesindeki "Yakında Yayında" bölümünün sağ üst köşesinde yer alan ok butonu da bu yeni liste ekranını açacak şekilde güncellendi.
 
 ---
 
 ## 🇬🇧 ENGLISH RELEASE NOTES
 
-### ⚡ Network Freeze & Connection Starvation Fixes (OkHttp Thread Starvation Fixes)
-- **Immediate Network Cancellation on Exit:** The moment you exit the "Watch" (stream picker) screen, all ongoing background OkHttp network requests (extension search & stream link resolve jobs) are aborted instantly. This completely eliminates background thread leaks that used to freeze the entire network engine.
-- **Cancellation-Aware Retry Interceptors:** Wait loops inside `RetryInterceptor` (handling 429 Too Many Requests) and `CloudflareInterceptor` are now fully cancellation-aware. If the request is cancelled, they immediately abort their sleep/await states and release dispatcher threads.
-- **In-Memory TMDB Client Caching:** Replaced thread-blocking `runBlocking` calls for TMDB API key and language settings with a memory-efficient, asynchronously-updated cache structure. This eliminates main/network thread disk I/O bottlenecks.
-- **Plugin Loading Sandbox:** Integrated strict timeout limits (`withTimeout`) and exception wrappers inside `CsPluginLoader` to isolate third-party extension loading, preventing malicious or poorly-written plugin code from crashing or freezing the main application process.
+### 🎨 UI Improvements & Navigation Fixes
+- **MyList Score Visibility:** Fixed the issue where the score badge was suppressed/hidden for unrated media entries in the 2-column grid layout. The score badge is now always visible unless the global "hide scores" preference is enabled, showing a `"—"` placeholder for unrated entries.
+- **TMDB "Airing Soon" Decoupling:** Decoupled all "Coming Soon" (Yakında Yayında) navigation pathways under the TMDB platform from the general calendar schedule. Clicking these buttons now redirects to a dedicated, paginated upcoming media grid view (`ExploreCategoryType.UPCOMING_MEDIA_TMDB`). The "Airing Soon" section arrow in the TMDB explore view has also been redirected to this new upcoming grid view.

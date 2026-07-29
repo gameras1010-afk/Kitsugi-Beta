@@ -92,9 +92,6 @@ data class MetaCastMember(
     val tmdbId: Int? = null
 ) : java.io.Serializable
 
-enum class PlayerPanel {
-    NONE, SUBTITLES, AUDIO, SOURCES, EPISODES, STREAM_INFO, SKIP_SETTINGS, SPEED, QUALITY, SLEEP_TIMER
-}
 
 data class TrackOption(
     val group: androidx.media3.common.Tracks.Group,

@@ -46,21 +46,8 @@ import com.kitsugi.animelist.core.player.SubtitleInput
 import com.kitsugi.animelist.data.repository.AddonStreamRepository
 import com.kitsugi.animelist.data.repository.StreamSource
 import com.kitsugi.animelist.data.trailer.YoutubeChunkedDataSourceFactory
-import com.kitsugi.animelist.ui.screens.fullscreen.components.EpisodesSidePanel
-import com.kitsugi.animelist.ui.screens.fullscreen.components.SubtitleSelectionOverlay
-import com.kitsugi.animelist.ui.screens.fullscreen.components.AudioSelectionOverlay
-import com.kitsugi.animelist.ui.screens.fullscreen.components.StreamInfoOverlay
-import com.kitsugi.animelist.ui.screens.fullscreen.components.PlayerSkipSettingsOverlay
 import com.kitsugi.animelist.ui.screens.fullscreen.components.PauseOverlay
-import com.kitsugi.animelist.ui.screens.fullscreen.components.PostPlayBingeCard
-import com.kitsugi.animelist.ui.screens.fullscreen.components.PlayerTopBar
-import com.kitsugi.animelist.ui.screens.fullscreen.components.PlayerCenterControl
-import com.kitsugi.animelist.ui.screens.fullscreen.components.PlayerSeekBar
-import com.kitsugi.animelist.ui.screens.fullscreen.components.PlayerBottomActions
-import com.kitsugi.animelist.ui.screens.fullscreen.components.SpeedSelectionOverlay
 import com.kitsugi.animelist.ui.screens.fullscreen.components.FeedbackBubble
-import com.kitsugi.animelist.ui.screens.fullscreen.components.SourcesSelectionOverlay
-import com.kitsugi.animelist.ui.screens.fullscreen.components.QualitySelectionOverlay
 import com.kitsugi.animelist.ui.screens.fullscreen.components.PlayerInlineLoadingOverlay
 import com.kitsugi.animelist.ui.screens.fullscreen.components.PlayerLoadingView
 import com.kitsugi.animelist.ui.screens.fullscreen.components.PlayerErrorView
@@ -70,9 +57,8 @@ import com.kitsugi.animelist.ui.screens.fullscreen.components.StreamInfoData
 import com.kitsugi.animelist.ui.screens.fullscreen.components.MetaCastMember
 import com.kitsugi.animelist.ui.screens.fullscreen.components.TorrentOverlay
 import com.kitsugi.animelist.ui.screens.fullscreen.components.TrackOption
-import com.kitsugi.animelist.ui.screens.fullscreen.components.PlayerPanel
 import com.kitsugi.animelist.ui.screens.fullscreen.components.GestureSwipeSide
-import com.kitsugi.animelist.ui.screens.fullscreen.components.SleepTimerPanel
+import com.kitsugi.animelist.ui.screens.fullscreen.controls.PlayerControls
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.PlayerSheetsHost
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.PlayerPanelsHost
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.PlayerDialogsHost
@@ -232,8 +218,6 @@ fun KitsugiFullscreenPlayerScreen(
     val animeSkipClientId by viewModel.animeSkipClientId.collectAsState()
 
 
-    // Sliding Panel options & control
-    val activePanel by viewModel.activePanel.collectAsState()
     val sleepTimerSecondsLeft by viewModel.sleepTimerSecondsLeft.collectAsState()
 
     // ── New Aniyomi-style reactive UI state ──────────────────────────────────
@@ -245,12 +229,12 @@ fun KitsugiFullscreenPlayerScreen(
     val currentChapter by viewModel.currentChapter.collectAsState()
     val areControlsLocked by viewModel.areControlsLocked.collectAsState()
 
-    LaunchedEffect(activePanel, isFocusTargetAttached) {
-        if (activePanel == PlayerPanel.NONE && isFocusTargetAttached) {
+    LaunchedEffect(panelShown, sheetShown, isFocusTargetAttached) {
+        if (panelShown == KitsugiPanels.None && sheetShown == KitsugiSheets.None && isFocusTargetAttached) {
             try {
                 mainFocusRequester.requestFocus()
             } catch (e: Exception) {
-                Log.e("KitsugiPlayer", "Failed to restore focus after panel close", e)
+                Log.e("KitsugiPlayer", "Failed to restore focus after panel/sheet close", e)
             }
         }
     }
@@ -315,11 +299,11 @@ fun KitsugiFullscreenPlayerScreen(
             targetEp = targetEp,
             activity = activity,
             onAlternativeRequired = {
-                viewModel.showPanel(PlayerPanel.SOURCES)
+                viewModel.showSheet(KitsugiSheets.QualityTracks)
                 Toast.makeText(context, "Aynı kaynak bulunamadı. Diğer kaynaklar listeleniyor.", Toast.LENGTH_LONG).show()
             },
             onResolutionFailed = {
-                viewModel.showPanel(PlayerPanel.SOURCES)
+                viewModel.showSheet(KitsugiSheets.QualityTracks)
                 Toast.makeText(context, "Seçilen kaynak çözümlenemedi. Lütfen listeden başka bir kaynak seçin.", Toast.LENGTH_LONG).show()
             }
         )
@@ -329,11 +313,11 @@ fun KitsugiFullscreenPlayerScreen(
         viewModel.playNextEpisode(
             activity = activity,
             onAlternativeRequired = {
-                viewModel.showPanel(PlayerPanel.SOURCES)
+                viewModel.showSheet(KitsugiSheets.QualityTracks)
                 Toast.makeText(context, "Aynı kaynak bulunamadı. Diğer kaynaklar listeleniyor.", Toast.LENGTH_LONG).show()
             },
             onResolutionFailed = {
-                viewModel.showPanel(PlayerPanel.SOURCES)
+                viewModel.showSheet(KitsugiSheets.QualityTracks)
                 Toast.makeText(context, "Seçilen kaynak çözümlenemedi. Lütfen listeden başka bir kaynak seçin.", Toast.LENGTH_LONG).show()
             }
         )
@@ -394,7 +378,7 @@ fun KitsugiFullscreenPlayerScreen(
                         }
                     },
                     onRetry = { playEpisode(currentEpisode) },
-                    onSwitchSource = { viewModel.showPanel(PlayerPanel.SOURCES) }
+                    onSwitchSource = { viewModel.showSheet(KitsugiSheets.QualityTracks) }
                 )
             }
 
@@ -524,8 +508,8 @@ fun KitsugiFullscreenPlayerScreen(
                 // ─── PiP Panel and Controls Reset (T2.3) ──────────────────────────────
                 LaunchedEffect(isInPipMode) {
                     if (isInPipMode) {
-                        viewModel.dismissPanel()
-                        // showTopBar is declared inside inner else block — reset via activePanel only
+                        viewModel.showPanel(KitsugiPanels.None)
+                        viewModel.showSheet(KitsugiSheets.None)
                     }
                 }
 
@@ -752,22 +736,11 @@ fun KitsugiFullscreenPlayerScreen(
                 // true = kullanıcı sağ tarafa tıkladı → gösterge sola (TopStart) gider
                 var seekFeedbackOnRightSide by remember { mutableStateOf(true) }
                 var playPauseIcon by remember { mutableStateOf<ImageVector?>(null) }
-                var showTopBar     by remember { mutableStateOf(false) }
-                var resetHideTimerTrigger by remember { mutableStateOf(0) }
 
-                fun resetHideTimer() {
-                    resetHideTimerTrigger++
-                }
+                val controlsShown by viewModel.controlsShown.collectAsState()
 
-                LaunchedEffect(showTopBar, isPlayingState, activePanel, resetHideTimerTrigger) {
-                    if (showTopBar && isPlayingState && activePanel == PlayerPanel.NONE) {
-                        delay(5000)
-                        showTopBar = false
-                    }
-                }
-
-                LaunchedEffect(showTopBar) {
-                    if (!showTopBar && isFocusTargetAttached) {
+                LaunchedEffect(controlsShown) {
+                    if (!controlsShown && isFocusTargetAttached) {
                         try {
                             mainFocusRequester.requestFocus()
                         } catch (e: Exception) {
@@ -778,10 +751,9 @@ fun KitsugiFullscreenPlayerScreen(
 
                 LaunchedEffect(isPlayingState) {
                     if (!isPlayingState) {
-                        showTopBar = true
+                        viewModel.showControls()
                     } else {
-                        showTopBar = true
-                        resetHideTimer()
+                        viewModel.showControls()
                     }
                 }
 
@@ -802,13 +774,15 @@ fun KitsugiFullscreenPlayerScreen(
                             
                             if (event.key == Key.Back || event.key == Key.Escape) {
                                 return@onPreviewKeyEvent when {
-                                    activePanel != PlayerPanel.NONE -> {
-                                        viewModel.dismissPanel()
+                                    panelShown != KitsugiPanels.None || sheetShown != KitsugiSheets.None || dialogShown != KitsugiDialogs.None -> {
+                                        viewModel.showPanel(KitsugiPanels.None)
+                                        viewModel.showSheet(KitsugiSheets.None)
+                                        viewModel.showDialog(KitsugiDialogs.None)
                                         mainFocusRequester.requestFocus()
                                         true
                                     }
-                                    showTopBar -> {
-                                        showTopBar = false
+                                    controlsShown -> {
+                                        viewModel.hideControls()
                                         mainFocusRequester.requestFocus()
                                         true
                                     }
@@ -819,32 +793,25 @@ fun KitsugiFullscreenPlayerScreen(
                                 }
                             }
                             
-                            if (activePanel != PlayerPanel.NONE) return@onPreviewKeyEvent false
+                            if (panelShown != KitsugiPanels.None || sheetShown != KitsugiSheets.None || dialogShown != KitsugiDialogs.None) return@onPreviewKeyEvent false
                             
-                            if (showTopBar) {
-                                resetHideTimer()
+                            if (controlsShown) {
+                                viewModel.showControls() // Reset timer
                                 return@onPreviewKeyEvent false
                             }
                             
                             when (event.key) {
                                 Key.DirectionCenter, Key.Enter -> {
-                                    if (playerEngine.isPlaying) {
-                                        playerEngine.pause()
-                                        playPauseIcon = Icons.Rounded.Pause
-                                    } else {
-                                        playerEngine.play()
-                                        playPauseIcon = Icons.Rounded.PlayArrow
-                                    }
-                                    showTopBar = true
-                                    resetHideTimer()
+                                    viewModel.togglePlay()
+                                    viewModel.showControls()
                                     true
                                 }
                                 Key.DirectionLeft -> {
                                     val pos = playerEngine.currentPosition
                                     playerEngine.seekTo((pos - 10000).coerceAtLeast(0))
                                     seekFeedback = "-10s"
-                                    seekFeedbackOnRightSide = false // sol tuş → geri → gösterge sağda (TopEnd)
-                                    resetHideTimer()
+                                    seekFeedbackOnRightSide = false
+                                    viewModel.showControls()
                                     true
                                 }
                                 Key.DirectionRight -> {
@@ -852,27 +819,25 @@ fun KitsugiFullscreenPlayerScreen(
                                     val dur = playerEngine.duration
                                     playerEngine.seekTo((pos + 10000).coerceAtMost(dur))
                                     seekFeedback = "+10s"
-                                    seekFeedbackOnRightSide = true // sağ tuş → ileri → gösterge solda (TopStart)
-                                    resetHideTimer()
+                                    seekFeedbackOnRightSide = true
+                                    viewModel.showControls()
                                     true
                                 }
                                 Key.DirectionUp, Key.DirectionDown -> {
-                                    showTopBar = true
-                                    resetHideTimer()
+                                    viewModel.showControls()
                                     true
                                 }
                                 else -> false
                             }
                         }
-                        .pointerInput(playerEngine, gestureConfig, isInPipMode, activePanel, showTopBar, topBarHeightState, bottomControlsHeightState) {
-                            if (isInPipMode || activePanel != PlayerPanel.NONE) return@pointerInput
-                            if (isInPipMode) return@pointerInput
+                        .pointerInput(playerEngine, gestureConfig, isInPipMode, panelShown, sheetShown, dialogShown, controlsShown, topBarHeightState, bottomControlsHeightState) {
+                            if (isInPipMode || panelShown != KitsugiPanels.None || sheetShown != KitsugiSheets.None || dialogShown != KitsugiDialogs.None) return@pointerInput
                             awaitEachGesture {
                                 val down = awaitFirstDown(requireUnconsumed = false)
                                 val startX: Float = down.position.x
                                 val startY: Float = down.position.y
-                                val isInsideTopBar = showTopBar && startY < topBarHeightState
-                                val isInsideBottomControls = showTopBar && startY > (size.height - bottomControlsHeightState)
+                                val isInsideTopBar = controlsShown && startY < topBarHeightState
+                                val isInsideBottomControls = controlsShown && startY > (size.height - bottomControlsHeightState)
                                 if (isInsideTopBar || isInsideBottomControls) {
                                     return@awaitEachGesture
                                 }
@@ -912,13 +877,8 @@ fun KitsugiFullscreenPlayerScreen(
                                         }
 
                                         if (isDragging) {
-                                            resetHideTimer()
+                                            viewModel.showControls() // Reset timer
                                             if (dyAbs > dxAbs * 1.5f) {
-                                                // Dikey swipe — ses veya parlaklık
-                                                // swipeVolumeBrightnessSides=true (varsayılan):
-                                                //   sol el = ses, sağ el = parlaklık
-                                                // false (yer değiştirilmiş):
-                                                //   sol el = parlaklık, sağ el = ses
                                                 val deltaNorm: Float = (change.position.y - change.previousPosition.y) * -1.5f / size.height
                                                 val isVolumeLeft = gestureConfig.swipeVolumeBrightnessSides
                                                 val leftIsVolume = (isVolumeLeft && isLeftSide) || (!isVolumeLeft && !isLeftSide)
@@ -931,7 +891,6 @@ fun KitsugiFullscreenPlayerScreen(
                                                 }
                                                 change.consume()
                                             } else if (dxAbs > dyAbs * 1.5f && gestureConfig.horizontalSeekGestureEnabled) {
-                                                // Horizontal swipe — seek
                                                 val deltaX: Float = change.position.x - change.previousPosition.x
                                                 val percentage: Float = (deltaX / size.width) * gestureConfig.scrollSensitivity
                                                 val seekDeltaMs: Long = (percentage * duration * 0.15f).toLong()
@@ -942,7 +901,6 @@ fun KitsugiFullscreenPlayerScreen(
                                                     val seekSec = (seekDeltaMs / 1000).toInt()
                                                     if (seekSec != 0) {
                                                         seekFeedback = if (seekSec > 0) "+${seekSec}s" else "${seekSec}s"
-                                                        // Swipe yönüne göre gösterge konumu: sağa kaydırma (ileri) → solda, sola kaydırma (geri) → sağda
                                                         seekFeedbackOnRightSide = deltaX > 0
                                                     }
                                                 }
@@ -963,13 +921,13 @@ fun KitsugiFullscreenPlayerScreen(
                             }
                         }
                         // Tap and double-tap gestures
-                        .pointerInput(playerEngine, gestureConfig, isInPipMode, activePanel, showTopBar, topBarHeightState, bottomControlsHeightState) {
-                            if (isInPipMode || activePanel != PlayerPanel.NONE) return@pointerInput
+                        .pointerInput(playerEngine, gestureConfig, isInPipMode, panelShown, sheetShown, dialogShown, controlsShown, topBarHeightState, bottomControlsHeightState) {
+                            if (isInPipMode || panelShown != KitsugiPanels.None || sheetShown != KitsugiSheets.None || dialogShown != KitsugiDialogs.None) return@pointerInput
                             detectTapGestures(
                                 onDoubleTap = { offset ->
                                     val startY = offset.y
-                                    val isInsideTopBar = showTopBar && startY < topBarHeightState
-                                    val isInsideBottomControls = showTopBar && startY > (size.height - bottomControlsHeightState)
+                                    val isInsideTopBar = controlsShown && startY < topBarHeightState
+                                    val isInsideBottomControls = controlsShown && startY > (size.height - bottomControlsHeightState)
                                     if (isInsideTopBar || isInsideBottomControls) return@detectTapGestures
 
                                     val isRight = offset.x > size.width / 2f
@@ -979,23 +937,20 @@ fun KitsugiFullscreenPlayerScreen(
                                     if (isRight) {
                                         playerEngine.seekTo((pos + seekMs).coerceAtMost(dur))
                                         seekFeedback = "+${safeSettings.doubleTapSeekSeconds}s"
-                                        seekFeedbackOnRightSide = true // sağa tıklandı → gösterge solda (TopStart)
+                                        seekFeedbackOnRightSide = true
                                     } else {
                                         playerEngine.seekTo((pos - seekMs).coerceAtLeast(0))
                                         seekFeedback = "-${safeSettings.doubleTapSeekSeconds}s"
-                                        seekFeedbackOnRightSide = false // sola tıklandı → gösterge sağda (TopEnd)
+                                        seekFeedbackOnRightSide = false
                                     }
-                                    resetHideTimer()
+                                    viewModel.showControls() // Reset timer
                                 },
                                 onTap = { offset ->
                                     val startY = offset.y
-                                    val isInsideTopBar = showTopBar && startY < topBarHeightState
-                                    val isInsideBottomControls = showTopBar && startY > (size.height - bottomControlsHeightState)
+                                    val isInsideTopBar = controlsShown && startY < topBarHeightState
+                                    val isInsideBottomControls = controlsShown && startY > (size.height - bottomControlsHeightState)
                                     if (!isInsideTopBar && !isInsideBottomControls) {
-                                        showTopBar = !showTopBar
-                                        if (showTopBar) {
-                                            resetHideTimer()
-                                        }
+                                        viewModel.toggleControls()
                                     }
                                 }
                             )
@@ -1006,11 +961,11 @@ fun KitsugiFullscreenPlayerScreen(
                                 if (zoom > 1.10f && currentAspectMode != com.kitsugi.animelist.core.player.PlayerAspectMode.ZOOM) {
                                     currentAspectMode = com.kitsugi.animelist.core.player.PlayerAspectMode.ZOOM
                                     aspectFeedback = "Yakınlaştır (Kırp)"
-                                    resetHideTimer()
+                                    viewModel.showControls()
                                 } else if (zoom < 0.90f && currentAspectMode != com.kitsugi.animelist.core.player.PlayerAspectMode.FIT) {
                                     currentAspectMode = com.kitsugi.animelist.core.player.PlayerAspectMode.FIT
                                     aspectFeedback = "Sığdır"
-                                    resetHideTimer()
+                                    viewModel.showControls()
                                 }
                             }
                         },
@@ -1030,7 +985,7 @@ fun KitsugiFullscreenPlayerScreen(
 
                     // PauseOverlay — buffering veya çözümleme sırasında gösterme
                     PauseOverlay(
-                        visible = !isPlayingState && !isBufferingState && !isResolvingStream && activePanel == PlayerPanel.NONE && !isInPipMode,
+                        visible = !isPlayingState && !isBufferingState && !isResolvingStream && panelShown == KitsugiPanels.None && sheetShown == KitsugiSheets.None && !isInPipMode,
                         onClose = { playerEngine.play() },
                         title = animeTitle.ifBlank { currentTitle },
                         posterUrl = posterUrl,
@@ -1073,194 +1028,32 @@ fun KitsugiFullscreenPlayerScreen(
                         )
                     }
 
-                    // Controls overlay (Top and Bottom bars)
-                    AnimatedVisibility(
-                        visible = showTopBar && !isInPipMode,
-                        enter = fadeIn(tween(250)),
-                        exit  = fadeOut(tween(250)),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.15f))) {
-                            // Top Bar
-                            val extVideoUrlVal = currentVideoUrl
-                            PlayerTopBar(
-                                title = formattedTitle,
-                                onBack = onBack,
-                                onLaunchExternal = if (!extVideoUrlVal.isNullOrBlank()) {
-                                    {
-                                        PlayerLogger.logExternalPlayerLaunch(
-                                            context   = context,
-                                            url       = extVideoUrlVal,
-                                            addonName = currentAddonName,
-                                            title     = currentTitle,
-                                            manual    = true
-                                        )
-                                        KitsugiFullscreenPlayerActivity.launchExternalPlayer(
-                                            context = context,
-                                            videoUrl = extVideoUrlVal,
-                                            title = currentTitle,
-                                            positionMs = playerEngine.currentPosition,
-                                            headers = currentHeaders,
-                                            subtitles = currentSubtitles
-                                        )
-                                        onBack()
-                                    }
-                                } else null,
-                                modifier = Modifier
-                                    .align(Alignment.TopCenter)
-                                    .onGloballyPositioned { coords ->
-                                        topBarHeightState = coords.size.height.toFloat()
-                                    }
-                            )
-
-                            // Center Play/Pause button
-                            PlayerCenterControl(
-                                isPlaying = isPlayingState,
-                                onClick = {
-                                    if (playerEngine.isPlaying) {
-                                        playerEngine.pause()
-                                        playPauseIcon = Icons.Rounded.Pause
-                                    } else {
-                                        playerEngine.play()
-                                        playPauseIcon = Icons.Rounded.PlayArrow
-                                    }
-                                    resetHideTimer()
-                                },
-                                modifier = Modifier.align(Alignment.Center)
-                            )
-
-                            // Bottom Seek Bar Controls
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .align(Alignment.BottomCenter)
-                                    .background(
-                                        Brush.verticalGradient(
-                                            colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.45f))
-                                        )
-                                    )
-                                    .onGloballyPositioned { coords ->
-                                        bottomControlsHeightState = coords.size.height.toFloat()
-                                    }
-                                    .padding(horizontal = 16.dp, vertical = 20.dp)
-                            ) {
-                                // ─── T2.2 – Preview Seekbar Generator Lifecycle ────────────────────────
-                val previewBitmap = remember { mutableStateOf<android.graphics.Bitmap?>(null) }
-                val previewUrlVal = currentVideoUrl
-                val previewGenerator = remember(previewUrlVal) {
-                    if (!previewUrlVal.isNullOrBlank() && safeSettings.previewSeekbarEnabled) {
-                        PreviewGenerator(context, previewUrlVal, currentHeaders)
-                    } else null
-                }
-
-                LaunchedEffect(previewGenerator, duration) {
-                    if (previewGenerator != null && duration > 0 && safeSettings.previewSeekbarEnabled) {
-                        previewGenerator.start(duration)
-                    }
-                }
-
-                DisposableEffect(previewGenerator) {
-                    onDispose {
-                        previewGenerator?.release()
-                        previewBitmap.value = null
-                    }
-                }
-
-                PlayerSeekBar(
-                    currentPosition = currentPosition,
-                    duration = duration,
-                    onSeekTo = {
-                        playerEngine.seekTo(it)
-                        resetHideTimer()
-                    },
-                    previewBitmap = if (safeSettings.previewSeekbarEnabled) previewBitmap.value else null,
-                    onScrubPosition = if (safeSettings.previewSeekbarEnabled) { fraction ->
-                        resetHideTimer()
-                        scope.launch {
-                            val bmp = previewGenerator?.getPreviewImage(fraction)
-                            previewBitmap.value = bmp
-                        }
-                    } else null
-                )
-
-                                Spacer(modifier = Modifier.height(10.dp))
-
-                                val hasQualityOptions = remember(currentStreamSources) {
-                                    currentStreamSources
-                                        .map { it.qualityValue ?: 0 }
-                                        .filter { it > 0 }
-                                        .distinct()
-                                        .size > 1
+                    // Centralized OSD controls (Aniyomi style)
+                    if (!isInPipMode) {
+                        PlayerControls(
+                            viewModel = viewModel,
+                            onBackClick = onBack,
+                            onRotateClick = {
+                                val nextOrientation = when (screenOrientationState) {
+                                    ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                                    ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
+                                    else -> ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
                                 }
-
-                                PlayerBottomActions(
-                                    hasTextTracks = textTrackOptions.isNotEmpty(),
-                                    hasMultiAudio = audioTrackOptions.size > 1,
-                                    hasSources = streamSources.isNotEmpty(),
-                                    hasEpisodes = episodesList.isNotEmpty(),
-                                    hasQualityOptions = hasQualityOptions,
-                                    currentResizeModeLabel = when (currentAspectMode) {
-                                        com.kitsugi.animelist.core.player.PlayerAspectMode.ORIGINAL -> "Orijinal"
-                                        com.kitsugi.animelist.core.player.PlayerAspectMode.FIT -> "Sığdır"
-                                        com.kitsugi.animelist.core.player.PlayerAspectMode.FILL -> "Uzat"
-                                        com.kitsugi.animelist.core.player.PlayerAspectMode.ZOOM -> "Yakınlaştır"
-                                        com.kitsugi.animelist.core.player.PlayerAspectMode.CROP_16_9 -> "Kırp 16:9"
-                                        com.kitsugi.animelist.core.player.PlayerAspectMode.CROP_4_3 -> "Kırp 4:3"
-                                    },
-                                    currentSpeedLabel = if (currentSpeed == 1.0f) "Normal" else "${currentSpeed}x",
-                                    onSubtitleClick = { viewModel.showPanel(PlayerPanel.SUBTITLES) },
-                                    onAudioClick = { viewModel.showPanel(PlayerPanel.AUDIO) },
-                                    onSourcesClick = { viewModel.showPanel(PlayerPanel.SOURCES) },
-                                    onEpisodesClick = { viewModel.showPanel(PlayerPanel.EPISODES) },
-                                    onAspectClick = {
-                                        currentAspectMode = when (currentAspectMode) {
-                                            com.kitsugi.animelist.core.player.PlayerAspectMode.ORIGINAL -> com.kitsugi.animelist.core.player.PlayerAspectMode.FIT
-                                            com.kitsugi.animelist.core.player.PlayerAspectMode.FIT -> com.kitsugi.animelist.core.player.PlayerAspectMode.FILL
-                                            com.kitsugi.animelist.core.player.PlayerAspectMode.FILL -> com.kitsugi.animelist.core.player.PlayerAspectMode.ZOOM
-                                            com.kitsugi.animelist.core.player.PlayerAspectMode.ZOOM -> com.kitsugi.animelist.core.player.PlayerAspectMode.CROP_16_9
-                                            com.kitsugi.animelist.core.player.PlayerAspectMode.CROP_16_9 -> com.kitsugi.animelist.core.player.PlayerAspectMode.CROP_4_3
-                                            com.kitsugi.animelist.core.player.PlayerAspectMode.CROP_4_3 -> com.kitsugi.animelist.core.player.PlayerAspectMode.ORIGINAL
-                                        }
-                                        val newModeText = when (currentAspectMode) {
-                                            com.kitsugi.animelist.core.player.PlayerAspectMode.ORIGINAL -> "Orijinal"
-                                            com.kitsugi.animelist.core.player.PlayerAspectMode.FIT -> "Sığdır"
-                                            com.kitsugi.animelist.core.player.PlayerAspectMode.FILL -> "Uzat"
-                                            com.kitsugi.animelist.core.player.PlayerAspectMode.ZOOM -> "Yakınlaştır"
-                                            com.kitsugi.animelist.core.player.PlayerAspectMode.CROP_16_9 -> "Kırp 16:9"
-                                            com.kitsugi.animelist.core.player.PlayerAspectMode.CROP_4_3 -> "Kırp 4:3"
-                                        }
-                                        aspectFeedback = "Ekran Modu: $newModeText"
-                                        resetHideTimer()
-                                    },
-                                    onRotateClick = {
-                                        val nextOrientation = when (screenOrientationState) {
-                                            ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-                                            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
-                                            else -> ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
-                                        }
-                                        screenOrientationState = nextOrientation
-                                        activity?.requestedOrientation = nextOrientation
-                                        val text = when (nextOrientation) {
-                                            ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR -> "Yönlendirme: Otomatik"
-                                            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE -> "Yönlendirme: Yatay (Kilitli)"
-                                            ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT -> "Yönlendirme: Dikey (Kilitli)"
-                                            else -> ""
-                                        }
-                                        aspectFeedback = text
-                                        resetHideTimer()
-                                    },
-                                    onSpeedClick = { viewModel.showPanel(PlayerPanel.SPEED) },
-                                    onStreamInfoClick = { viewModel.showPanel(PlayerPanel.STREAM_INFO) },
-                                    onSkipSettingsClick = { viewModel.showPanel(PlayerPanel.SKIP_SETTINGS) },
-                                    onQualityClick = { viewModel.showPanel(PlayerPanel.QUALITY) },
-                                    onSleepTimerClick = { viewModel.showPanel(PlayerPanel.SLEEP_TIMER) },
-                                    showMediaInfo = safeSettings.showMediaInfo
-                                )
-                            }
-                        }
+                                screenOrientationState = nextOrientation
+                                activity?.requestedOrientation = nextOrientation
+                                val text = when (nextOrientation) {
+                                    ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR -> "Yönlendirme: Otomatik"
+                                    ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE -> "Yönlendirme: Yatay (Kilitli)"
+                                    ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT -> "Yönlendirme: Dikey (Kilitli)"
+                                    else -> ""
+                                }
+                                aspectFeedback = text
+                            },
+                            modifier = Modifier.fillMaxSize()
+                        )
                     }
 
-                    // AniSkip Overlay
+                    // AniSkip Auto-Skip logic
                     run {
                         val positionSec = currentPosition / 1000L
                         val activeSkip = skipIntervals.firstOrNull { interval ->
@@ -1268,54 +1061,22 @@ fun KitsugiFullscreenPlayerScreen(
                             positionSec < interval.endTime.toLong()
                         }
                         if (activeSkip != null) {
-                            val skipLabel = when (activeSkip.type) {
-                                "op"       -> "⏭️ Intro Atla"
-                                "ed"       -> "⏭️ Outro Atla"
-                                "recap"    -> "⏭️ Özet Atla"
-                                "mixed-op" -> "⏭️ Intro Atla"
-                                "mixed-ed" -> "⏭️ Outro Atla"
-                                else       -> "⏭️ Atla"
-                            }
                             LaunchedEffect(activeSkip) {
                                 if (aniSkipAutoSkip) {
                                     playerEngine.seekTo((activeSkip.endTime * 1000).toLong())
-                                }
-                            }
-                            if (!aniSkipAutoSkip && !isInPipMode) {
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .padding(bottom = 130.dp, end = 24.dp)
-                                ) {
-                                    Button(
-                                        onClick = {
-                                            playerEngine.seekTo((activeSkip.endTime * 1000).toLong())
-                                        },
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color.Black.copy(alpha = 0.75f),
-                                            contentColor = Color.White
-                                        ),
-                                        shape = RoundedCornerShape(8.dp)
-                                    ) {
-                                        Text(
-                                            skipLabel,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
                                 }
                             }
                         }
                     }
 
                     // Double Tap Seek feedback
-                    // Tıklanan tarafın KARŞISINDAki köşede göster, play butonunun üstünde
                     FeedbackBubble(
                         text = seekFeedback,
                         icon = if (seekFeedback?.startsWith("+") == true) Icons.Rounded.FastForward else Icons.Rounded.FastRewind,
                         modifier = Modifier
                             .align(
-                                if (seekFeedbackOnRightSide) Alignment.TopStart   // sağa tıklandı → gösterge sol üstte
-                                else                         Alignment.TopEnd     // sola tıklandı → gösterge sağ üstte
+                                if (seekFeedbackOnRightSide) Alignment.TopStart
+                                else                         Alignment.TopEnd
                             )
                             .padding(
                                 top   = 80.dp,
@@ -1324,38 +1085,13 @@ fun KitsugiFullscreenPlayerScreen(
                             )
                     )
 
-                    // Aspect ratio feedback overlay — merkez üst (play butonunun üstünde)
+                    // Aspect ratio feedback overlay
                     FeedbackBubble(
                         text = aspectFeedback,
                         icon = Icons.Rounded.AspectRatio,
                         modifier = Modifier
                             .align(Alignment.TopCenter)
                             .padding(top = 80.dp)
-                    )
-
-                    // Playback speed selection overlay (Side Panel)
-                    SpeedSelectionOverlay(
-                        visible = activePanel == PlayerPanel.SPEED,
-                        onClose = { viewModel.dismissPanel() },
-                        currentSpeed = currentSpeed,
-                        onSpeedSelected = { speed ->
-                            currentSpeed = speed
-                            playerEngine.setPlaybackSpeed(speed)
-                        },
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                    )
-                    // PostPlayBingeCard
-                    PostPlayBingeCard(
-                        visible = shouldShowBingeCard,
-                        nextEpisodeTitle = nextEpTitle,
-                        nextEpisodeNumber = nextEpNum,
-                        thumbnailUrl = nextEpThumbnail,
-                        onPlayNext = { playNextEpisode() },
-                        onCancel = { viewModel.userCancelledBinge = true },
-                        countdownSeconds = bingeCountdownSec,
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(bottom = 90.dp, end = 24.dp)
                     )
 
                     val hasNextEpisode = episodesList.any { it.episodeNumber == nextEpNum } || currentEpisode < (episodesList.lastOrNull()?.episodeNumber ?: Int.MAX_VALUE)
@@ -1387,15 +1123,6 @@ fun KitsugiFullscreenPlayerScreen(
                             .padding(top = 70.dp, start = 24.dp)
                     )
 
-                    // StreamInfoOverlay (Side Panel)
-                    StreamInfoOverlay(
-                        visible = activePanel == PlayerPanel.STREAM_INFO,
-                        onClose = { viewModel.dismissPanel() },
-                        info = streamInfoData,
-                        showPlayerResolution = safeSettings.showPlayerResolution,
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                    )
-
                     // Search/Fetch loading overlay for next episode
                     if (nextEpisodeLoading && !isInPipMode) {
                         PlayerInlineLoadingOverlay(message = "Sonraki Bölüm Kaynakları Aranıyor...")
@@ -1416,187 +1143,9 @@ fun KitsugiFullscreenPlayerScreen(
                                 } else {
                                     playerEngine.play()
                                 }
-                                resetHideTimer()
                             }
                         )
                     }
-
-                    // Slide-out Settings Panels
-                    // Episodes Side Panel
-                    EpisodesSidePanel(
-                        visible = activePanel == PlayerPanel.EPISODES,
-                        onClose = { viewModel.dismissPanel() },
-                        episodes = episodesList,
-                        currentEpisode = currentEpisode,
-                        onEpisodeClick = { ep ->
-                            viewModel.dismissPanel()
-                            val targetEp = ep.episodeNumber ?: 1
-                            playEpisode(targetEp)
-                        },
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                    )
-
-                    // Subtitle Selection Overlay
-                    SubtitleSelectionOverlay(
-                        visible = activePanel == PlayerPanel.SUBTITLES,
-                        onClose = { viewModel.dismissPanel() },
-                        trackOptions = textTrackOptions,
-                        isSubtitleDisabled = isSubtitleDisabled,
-                        onDisableSubtitles = {
-                            playerEngine.disableSubtitles()
-                            isSubtitleDisabled = true
-                        },
-                        onSelectTrack = { opt ->
-                            playerEngine.selectTrack(opt)
-                            isSubtitleDisabled = false
-                        },
-                        styleSettings = subtitleStyle,
-                        onStyleChange = { newStyle ->
-                            subtitleStyle = newStyle
-                            playerEngine.setSubtitleStyle(newStyle)
-                            scope.launch {
-                                dataStore.setDefaultSubtitleSize(newStyle.size)
-                                dataStore.setDefaultSubtitleColor(newStyle.textColor)
-                                dataStore.setSubtitleBold(newStyle.bold)
-                                dataStore.setSubtitleOutlineEnabled(newStyle.outlineEnabled)
-                            }
-                        },
-                        subtitleDelayMs = subtitleDelayMs,
-                        onSubtitleDelayChange = { 
-                            subtitleDelayMs = it
-                            playerEngine.setSubtitleDelay(it)
-                        },
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                    )
-
-                    // Audio Selection Overlay
-                    AudioSelectionOverlay(
-                        visible = activePanel == PlayerPanel.AUDIO,
-                        onClose = { viewModel.dismissPanel() },
-                        trackOptions = audioTrackOptions,
-                        onSelectTrack = { opt ->
-                            playerEngine.selectTrack(opt)
-                        },
-                        audioDelayMs = audioDelayMs,
-                        onAudioDelayChange = { delay ->
-                            audioDelayMs = delay
-                            playerEngine.setAudioDelay(delay)
-                            scope.launch {
-                                dataStore.setDefaultAudioDelayMs(delay)
-                            }
-                        },
-                        audioBoostLevel = audioBoostLevel,
-                        onAudioBoostChange = { boost ->
-                            audioBoostLevel = boost
-                            playerEngine.setVolume(1.0f + boost)
-                            scope.launch {
-                                dataStore.setDefaultAudioBoost(boost)
-                            }
-                        },
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                    )
-
-                    // Sources Selection Panel
-                    SourcesSelectionOverlay(
-                        visible = activePanel == PlayerPanel.SOURCES,
-                        onClose = { viewModel.dismissPanel() },
-                        sources = currentStreamSources,
-                        currentIndex = currentSourceIndex,
-                        onSelectSource = { i, stream ->
-                            viewModel.dismissPanel()
-                            viewModel.isResolvingStream = true
-                            scope.launch {
-                                val repo = AddonStreamRepository(context)
-                                val resolvedUrl = try {
-                                    kotlinx.coroutines.withTimeoutOrNull(30000L) {
-                                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                                            repo.resolveStreamUrl(stream)
-                                        }
-                                    }
-                                } catch (e: Exception) {
-                                    android.util.Log.e("KitsugiPlayerScreen", "Kaynak çözümleme hatası", e)
-                                    null
-                                } finally {
-                                    viewModel.isResolvingStream = false
-                                }
-                                if (resolvedUrl != null) {
-                                    val currentPos = playerEngine.currentPosition
-                                    viewModel.changeStreamSource(i, stream, resolvedUrl)
-                                    
-                                    val nextResumeKey = "play_pos_" + resolvedUrl.hashCode()
-                                    sharedPrefs.edit().putLong(nextResumeKey, currentPos).apply()
-                                } else {
-                                    Toast.makeText(context, "Kaynak çözümlenemedi.", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        },
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                    )
-
-                    // Quality Selection Overlay (Side Panel)
-                    QualitySelectionOverlay(
-                        visible = activePanel == PlayerPanel.QUALITY,
-                        onClose = { viewModel.dismissPanel() },
-                        sources = currentStreamSources,
-                        currentSourceIndex = currentSourceIndex,
-                        onQualitySelected = { source, index ->
-                            viewModel.dismissPanel()
-                            viewModel.isResolvingStream = true
-                            scope.launch {
-                                val repo = AddonStreamRepository(context)
-                                val resolvedUrl = try {
-                                    kotlinx.coroutines.withTimeoutOrNull(30000L) {
-                                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                                            repo.resolveStreamUrl(source)
-                                        }
-                                    }
-                                } catch (e: Exception) {
-                                    android.util.Log.e("KitsugiPlayerScreen", "Kalite değişimi çözümleme hatası", e)
-                                    null
-                                } finally {
-                                    viewModel.isResolvingStream = false
-                                }
-                                if (resolvedUrl != null) {
-                                    val currentPos = playerEngine.currentPosition
-                                    viewModel.changeStreamSource(index, source, resolvedUrl)
-                                    val nextResumeKey = "play_pos_" + resolvedUrl.hashCode()
-                                    sharedPrefs.edit().putLong(nextResumeKey, currentPos).apply()
-                                } else {
-                                    android.widget.Toast.makeText(context, "Kaynak çözümlenemedi.", android.widget.Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        },
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                    )
-
-                    // PlayerSkipSettingsOverlay (Side Panel)
-                    PlayerSkipSettingsOverlay(
-                        visible = activePanel == PlayerPanel.SKIP_SETTINGS,
-                        onClose = { viewModel.dismissPanel() },
-                        enabled = aniSkipEnabled,
-                        onEnabledChange = { enabled ->
-                            viewModel.updateSkipSettings(enabled, aniSkipAutoSkip, animeSkipClientId)
-                        },
-                        autoSkip = aniSkipAutoSkip,
-                        onAutoSkipChange = { autoSkip ->
-                            viewModel.updateSkipSettings(aniSkipEnabled, autoSkip, animeSkipClientId)
-                        },
-                        clientId = animeSkipClientId,
-                        onClientIdChange = { clientId ->
-                            viewModel.updateSkipSettings(aniSkipEnabled, aniSkipAutoSkip, clientId)
-                        },
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                    )
-
-                    // Sleep Timer Panel (Legacy)
-                    SleepTimerPanel(
-                        visible = activePanel == PlayerPanel.SLEEP_TIMER,
-                        secondsLeft = sleepTimerSecondsLeft,
-                        onStartTimer = { minutes -> viewModel.startSleepTimer(minutes) },
-                        onStopTimer = { viewModel.stopSleepTimer() },
-                        onClose = { viewModel.dismissPanel() },
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                    )
 
                     // ── New Reactive Sheet Host (Aniyomi-style) ───────────────────────
                     PlayerSheetsHost(
