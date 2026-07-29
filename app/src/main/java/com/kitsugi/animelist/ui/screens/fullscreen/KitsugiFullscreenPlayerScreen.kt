@@ -953,7 +953,7 @@ fun KitsugiFullscreenPlayerScreen(
                     }
 
                     // Buffering overlay
-                    if (isBufferingState && !isInPipMode) {
+                    if (isBufferingState && isPlayingState && !isInPipMode) {
                         PlayerBufferingView(
                             isPlaying = isPlayingState,
                             onPlayPauseClick = {
@@ -1044,7 +1044,7 @@ fun KitsugiFullscreenPlayerScreen(
                         onSaveScreenshot = { stream -> viewModel.saveImage(stream, playerEngine.currentPosition.toInt()) },
                         onShareScreenshot = { stream -> viewModel.shareImage(stream, playerEngine.currentPosition.toInt()) },
                         takeScreenshot = { path, showSubs -> viewModel.takeScreenshot(path, showSubs) },
-                        modifier = Modifier.align(Alignment.BottomCenter)
+                        modifier = Modifier.fillMaxSize()
                     )
 
                     // ── New Reactive Panel Host (Aniyomi-style) ──────────────────────

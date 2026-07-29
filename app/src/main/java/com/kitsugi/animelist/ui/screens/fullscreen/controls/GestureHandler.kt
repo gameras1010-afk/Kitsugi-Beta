@@ -37,6 +37,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.kitsugi.animelist.ui.screens.fullscreen.KitsugiPlayerViewModel
+import com.kitsugi.animelist.ui.screens.fullscreen.KitsugiSheets
+import com.kitsugi.animelist.ui.screens.fullscreen.KitsugiDialogs
 import com.kitsugi.animelist.ui.screens.fullscreen.components.LeftSideOvalShape
 import com.kitsugi.animelist.ui.screens.fullscreen.components.RightSideOvalShape
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.DoubleTapSeekTriangles
@@ -55,10 +57,17 @@ fun GestureHandler(
     val settings         by viewModel.appSettings.collectAsState()
     val controlsShown    by viewModel.controlsShown.collectAsState()
     val areControlsLocked by viewModel.areControlsLocked.collectAsState()
+    val sheetShown       by viewModel.sheetShown.collectAsState()
+    val panelShown       by viewModel.panelShown.collectAsState()
+    val dialogShown      by viewModel.dialogShown.collectAsState()
     val seekAmount       by viewModel.doubleTapSeekAmount.collectAsState()
     val isSeekingForwards by viewModel.isSeekingForwards.collectAsState()
     val posMs            by viewModel.pos.collectAsState()
     val durationMs       by viewModel.duration.collectAsState()
+
+    val isSheetOrPanelOrDialogShown = sheetShown != KitsugiSheets.None ||
+            panelShown != com.kitsugi.animelist.ui.screens.fullscreen.KitsugiPanels.None ||
+            dialogShown != KitsugiDialogs.None
 
     // Convert ms → seconds for gesture calculations (matching Aniyomi's Float-based API)
     val positionSec = posMs / 1000f
@@ -95,13 +104,19 @@ fun GestureHandler(
         modifier = modifier
             .fillMaxSize()
             // ── Tap / Double-tap / Long-press ────────────────────────────────
-            .pointerInput(Unit) {
+            .pointerInput(areControlsLocked, isSheetOrPanelOrDialogShown) {
                 detectTapGestures(
                     onTap = {
-                        if (controlsShown) viewModel.hideControls() else viewModel.showControls()
+                        if (isSheetOrPanelOrDialogShown) {
+                            viewModel.showSheet(KitsugiSheets.None)
+                            viewModel.showPanel(com.kitsugi.animelist.ui.screens.fullscreen.KitsugiPanels.None)
+                            viewModel.showDialog(KitsugiDialogs.None)
+                        } else {
+                            if (controlsShown) viewModel.hideControls() else viewModel.showControls()
+                        }
                     },
                     onDoubleTap = {
-                        if (areControlsLocked || isDoubleTapSeeking) return@detectTapGestures
+                        if (areControlsLocked || isDoubleTapSeeking || isSheetOrPanelOrDialogShown) return@detectTapGestures
                         if (it.x > size.width * 3 / 5) {
                             if (!isSeekingForwards) viewModel.updateSeekAmount(0)
                             viewModel.handleRightDoubleTap()
@@ -115,6 +130,7 @@ fun GestureHandler(
                         }
                     },
                     onPress = {
+                        if (isSheetOrPanelOrDialogShown) return@detectTapGestures
                         if (!areControlsLocked && isDoubleTapSeeking && seekAmount != 0) {
                             val press = PressInteraction.Press(
                                 it.copy(x = if (it.x > size.width * 3 / 5) it.x - size.width * 0.6f else it.x),
@@ -140,7 +156,7 @@ fun GestureHandler(
                         }
                     },
                     onLongPress = {
-                        if (areControlsLocked) return@detectTapGestures
+                        if (areControlsLocked || isSheetOrPanelOrDialogShown) return@detectTapGestures
                         if (!isLongPressing) {
                             haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                             isLongPressing = true
@@ -151,8 +167,8 @@ fun GestureHandler(
                 )
             }
             // ── Horizontal seek ──────────────────────────────────────────────
-            .pointerInput(areControlsLocked) {
-                if (!seekGestureEnabled || areControlsLocked) return@pointerInput
+            .pointerInput(areControlsLocked, isSheetOrPanelOrDialogShown) {
+                if (!seekGestureEnabled || areControlsLocked || isSheetOrPanelOrDialogShown) return@pointerInput
                 var startingPositionSec = 0f
                 var startingX = 0f
                 var wasPlayerAlreadyPaused = false
@@ -188,8 +204,8 @@ fun GestureHandler(
                 }
             }
             // ── Vertical volume / brightness ─────────────────────────────────
-            .pointerInput(areControlsLocked) {
-                if (!gestureVolumeBrightness || areControlsLocked) return@pointerInput
+            .pointerInput(areControlsLocked, isSheetOrPanelOrDialogShown) {
+                if (!gestureVolumeBrightness || areControlsLocked || isSheetOrPanelOrDialogShown) return@pointerInput
                 var startingY = 0f
                 var mpvVolumeStartingY = 0f
                 var originalVolume = currentVolume

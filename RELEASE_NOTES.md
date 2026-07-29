@@ -1,38 +1,21 @@
 # Kitsugi Release Notes
 
-## v2.4.113 – Aniyomi Oynatıcı Pariteği (Tamamlandı)
+## v2.4.114 – Oynatıcı Görsel ve İşlevsel Uyumlaştırma (Aniyomi Pariteği)
 
-### 🎬 Oynatıcı Geliştirmeleri
+### 🎬 Oynatıcı Arayüzü ve Görsel İyileştirmeler
 
-#### İstatistik Sayfası (MPV Stats)
-- `MoreSheet` içine 0–5 arası sayfa seçici chip'leri eklendi
-- Sayfa 0 = Kapalı, sayfa 1–5 = MPV stats overlay
-- Aniyomi `stats/display-stats-toggle` ve `stats/display-page-N` script-binding komutları ile birebir uyumlu
-- Seçim `SettingsDataStore.setPlayerStatisticsPage` ile kalıcı olarak saklanır
+#### 1. Yerel Tam Ekran Kayar Menüler (Custom Slide-Up Sheets)
+- **ModalBottomSheet** kullanımı tamamen kaldırıldı. Bu sayede Android sistem durum çubuğu (status bar) ile alt navigasyon çubuğunun (navigation bar) durup dururken açılması ve sürükleyici tam ekran modunun (immersive mode) bozulması engellendi.
+- Tüm alt sayfalar (`PlayerSheet.kt`), oynatıcının kendi yerel görünüm ağacında çalışan ve sayfa dışına tıklandığında yumuşak geçişlerle (`AnimatedVisibility` - dikey kayma ve opaklık animasyonları) kapanan modern bir yapıya dönüştürüldü.
+- Yatay (landscape) mod ve tabletler için maksimum `600.dp` genişlik sınırı getirilerek ekran ortasında şık bir kart şeklinde konumlandırılması sağlandı.
 
-#### Ses Kanalları (Audio Channels)
-- `MoreSheet` içine `AudioChannels` enum tabanlı chip seçici eklendi
-- Desteklenen modlar: Otomatik, Güvenli Otomatik, Mono, Stereo, Ters Stereo
-- Aniyomi'nin `af` filtresi + `audio-channels` property yaklaşımı ile birebir uyumlu
-- MPV motoruna anlık uygulanır, `SettingsDataStore.setAudioChannels` ile kalıcı saklanır
+#### 2. Reaktif Kontrol Yönetimi (OSD Auto-Hiding)
+- Herhangi bir sheet (menü), panel (altyazı/ses gecikme vb.) veya diyalog açık olduğunda oynatıcı üzerindeki tüm OSD kontrolleri (üst/alt barlar, oynat/duraklat butonları, seekbar ve kilit butonu) otomatik ve reaktif bir şekilde gizlenerek ekran kirliliği önlendi.
 
-#### Kod Çözücü (Decoder) İyileştirmesi
-- `updateDecoder()` artık MPV motoruna anlık `hwdec` property atıyor
-- `SettingsDataStore.setMpvHwdecMode` ile otururlar arasında kalıcı
+#### 3. Akıllı Jest Kilitleme ve Menü Kapatma (Gesture Handling)
+- Ayar sayfaları veya paneller açıkken yatay arama (seek), dikey ses/parlaklık sürüklemeleri, uzun basma (hızlandırma) ve çift dokunma (atlama) jestleri tamamen devre dışı bırakıldı.
+- Menü açıkken arka plandaki boş alana tek dokunulduğunda açık olan tüm menülerin ve panellerin otomatik olarak kapatılması sağlandı.
 
-#### Picture-in-Picture (PiP) – Tam Entegrasyon
-- `BottomRightPlayerControls`'daki PiP butonu artık `settings.pipEnabled` ayarına reaktif
-- Tıklandığında `PlayerPipHelper.enterPipSafe(activity, playerEngine, isPlaying, hasNext)` çağrılır
-- `LocalContext.current` composable scope'da doğru yakalanıyor
-
-### 🏗️ Mimari
-- `KitsugiPlayerViewModel`: `statisticsPage`, `audioChannels` state akışları eklendi
-- `PlayerSheetsHost`: yeni parametreler prop-drilling zinciriyle `MoreSheet`'e aktarıldı
-- `KitsugiFullscreenPlayerScreen`: tüm yeni state'ler collect ediliyor ve PlayerSheetsHost'a geçiriliyor
-- `SettingsDataStore`: `setMpvHwdecMode` setter eklendi (diğerleri zaten mevcuttu)
-
-### 🐛 Düzeltilen Derleme Hataları
-- `MPVLib` bağımlılığı `MoreSheet`'ten kaldırıldı; komutlar ViewModel üzerinden yürütülüyor
-- `items(count = 6) { page: Int -> }` tip çıkarımı hatası giderildi
-- `LocalContext.current` composable olmayan lambda içinde çağrılan hata düzeltildi
-- `setMpvHwdecMode` duplikasyon çakışması çözüldü
+#### 4. Arabellek Görünümü Temizliği (Clean Buffering)
+- Oynatıcı duraklatıldığında (paused) ekranı karartıp "Duraklatıldı" yazan büyük, eski yükleme kutusu kaldırıldı.
+- Arabellek göstergesi artık sadece oynatma aktifken (playing) yükleme yapıldığında ekranın tam ortasında dairesel bir halka olarak görünecek; duraklatıldığında ise temiz bir donma görüntüsü sağlanacaktır.

@@ -52,42 +52,16 @@ fun PlayerBufferingView(
     onPlayPauseClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    if (!isPlaying) return
+
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.55f))
-            .tvClickable(onClick = onPlayPauseClick),
+        modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            if (isPlaying) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(72.dp)
-                        .clip(CircleShape)
-                        .background(Color.Black.copy(alpha = 0.6f))
-                        .border(1.dp, Color.White.copy(alpha = 0.18f), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.PlayArrow,
-                        contentDescription = "Oynat",
-                        tint = Color.White,
-                        modifier = Modifier.size(38.dp)
-                    )
-                }
-            }
-            Text(
-                text = if (isPlaying) stringResource(R.string.player_buffering) else "Duraklatıldı",
-                color = Color.White,
-                fontWeight = FontWeight.Medium
-            )
-        }
+        CircularProgressIndicator(
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(48.dp)
+        )
     }
 }
 

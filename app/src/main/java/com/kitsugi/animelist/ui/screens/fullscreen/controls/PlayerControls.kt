@@ -84,6 +84,15 @@ fun PlayerControls(
     // ── Collect all state from ViewModel ──────────────────────────────────────
     val controlsShown     by viewModel.controlsShown.collectAsState()
     val areControlsLocked by viewModel.areControlsLocked.collectAsState()
+    val sheetShown        by viewModel.sheetShown.collectAsState()
+    val panelShown        by viewModel.panelShown.collectAsState()
+    val dialogShown       by viewModel.dialogShown.collectAsState()
+
+    val isAnyMenuShown = sheetShown != KitsugiSheets.None ||
+            panelShown != com.kitsugi.animelist.ui.screens.fullscreen.KitsugiPanels.None ||
+            dialogShown != KitsugiDialogs.None
+
+    val areControlsVisible = controlsShown && !isAnyMenuShown
     val paused            by viewModel.paused.collectAsState()
     val isLoading         by viewModel.isLoading.collectAsState()
     val isLoadingEpisode  by viewModel.nextEpisodeLoading.collectAsState()
@@ -229,7 +238,7 @@ fun PlayerControls(
 
         // ── Gradient scrim ────────────────────────────────────────────────────
         AnimatedVisibility(
-            visible = controlsShown && !areControlsLocked,
+            visible = areControlsVisible && !areControlsLocked,
             enter   = fadeIn(),
             exit    = fadeOut(),
         ) {
@@ -252,7 +261,7 @@ fun PlayerControls(
         if (areControlsLocked) {
             // ── Lock icon (tap to unlock) ─────────────────────────────────────
             AnimatedVisibility(
-                visible  = controlsShown,
+                visible  = areControlsVisible,
                 enter    = fadeIn(),
                 exit     = fadeOut(),
                 modifier = Modifier.align(Alignment.Center)
@@ -280,7 +289,7 @@ fun PlayerControls(
         } else {
             // ── Top bar ───────────────────────────────────────────────────────
             AnimatedVisibility(
-                visible  = controlsShown,
+                visible  = areControlsVisible,
                 enter    = slideInVertically { -it } + fadeIn(),
                 exit     = slideOutVertically { -it } + fadeOut(),
                 modifier = Modifier
@@ -352,7 +361,7 @@ fun PlayerControls(
                 },
                 isLoading         = isLoading,
                 isLoadingEpisode  = isLoadingEpisode,
-                controlsShown     = controlsShown,
+                controlsShown     = areControlsVisible,
                 areControlsLocked = areControlsLocked,
                 showLoadingCircle = showLoadingCircle,
                 paused            = paused,
@@ -377,7 +386,7 @@ fun PlayerControls(
 
             // ── Bottom bar ────────────────────────────────────────────────────
             AnimatedVisibility(
-                visible  = controlsShown,
+                visible  = areControlsVisible,
                 enter    = slideInVertically { it } + fadeIn(),
                 exit     = slideOutVertically { it } + fadeOut(),
                 modifier = Modifier

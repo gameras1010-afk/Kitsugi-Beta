@@ -1,7 +1,22 @@
 package com.kitsugi.animelist.ui.screens.fullscreen.controls
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.kitsugi.animelist.data.repository.StreamSource
 import com.kitsugi.animelist.ui.screens.fullscreen.AudioChannels
 import com.kitsugi.animelist.ui.screens.fullscreen.Decoder
@@ -93,107 +108,132 @@ fun PlayerSheetsHost(
 
     modifier: Modifier = Modifier,
 ) {
-    when (sheetShown) {
-        KitsugiSheets.None -> Unit
+    val isVisible = sheetShown != KitsugiSheets.None
 
-        KitsugiSheets.PlaybackSpeed -> {
-            PlaybackSpeedSheet(
-                speed = currentSpeed,
-                onSpeedChange = onSpeedChange,
-                onSetAsDefault = onSetSpeedAsDefault,
-                onDismissRequest = onDismissRequest,
+    Box(modifier = modifier) {
+        // Dim background overlay
+        AnimatedVisibility(
+            visible = isVisible,
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = onDismissRequest,
+                    )
             )
         }
 
-        KitsugiSheets.Chapters -> {
-            val chapter = currentChapter ?: return
-            if (chapters.isEmpty()) return
-            ChaptersSheet(
-                chapters = chapters,
-                currentChapter = chapter,
-                onClick = onSeekToChapter,
-                onDismissRequest = onDismissRequest,
-                dismissSheet = dismissSheet,
-            )
-        }
+        // Slide-up sheet container
+        AnimatedVisibility(
+            visible = isVisible,
+            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+            modifier = Modifier.align(Alignment.BottomCenter),
+        ) {
+            when (sheetShown) {
+                KitsugiSheets.None -> Box(Modifier.size(0.dp))
 
-        KitsugiSheets.SubtitleTracks -> {
-            val selectedIndices = if (selectedSubtitleIndex >= 0) listOf(selectedSubtitleIndex) else emptyList()
-            SubtitleTracksSheet(
-                tracks = subtitleTracks,
-                selectedIndices = selectedIndices,
-                onSelect = onSelectSubtitle,
-                onAddSubtitleFile = onAddSubtitleFile,
-                onOpenSubtitleSettings = { onOpenPanel(KitsugiPanels.SubtitleSettings) },
-                onOpenSubtitleDelay = { onOpenPanel(KitsugiPanels.SubtitleDelay) },
-                onDismissRequest = onDismissRequest,
-                modifier = modifier,
-            )
-        }
+                KitsugiSheets.PlaybackSpeed -> {
+                    PlaybackSpeedSheet(
+                        speed = currentSpeed,
+                        onSpeedChange = onSpeedChange,
+                        onSetAsDefault = onSetSpeedAsDefault,
+                        onDismissRequest = onDismissRequest,
+                    )
+                }
 
-        KitsugiSheets.AudioTracks -> {
-            val audioTrackInfos = audioTrackLabels.mapIndexed { index, label ->
-                AudioTrackInfo(
-                    id = index,
-                    label = label
-                )
+                KitsugiSheets.Chapters -> {
+                    val chapter = currentChapter ?: return@AnimatedVisibility
+                    if (chapters.isEmpty()) return@AnimatedVisibility
+                    ChaptersSheet(
+                        chapters = chapters,
+                        currentChapter = chapter,
+                        onClick = onSeekToChapter,
+                        onDismissRequest = onDismissRequest,
+                        dismissSheet = dismissSheet,
+                    )
+                }
+
+                KitsugiSheets.SubtitleTracks -> {
+                    val selectedIndices = if (selectedSubtitleIndex >= 0) listOf(selectedSubtitleIndex) else emptyList()
+                    SubtitleTracksSheet(
+                        tracks = subtitleTracks,
+                        selectedIndices = selectedIndices,
+                        onSelect = onSelectSubtitle,
+                        onAddSubtitleFile = onAddSubtitleFile,
+                        onOpenSubtitleSettings = { onOpenPanel(KitsugiPanels.SubtitleSettings) },
+                        onOpenSubtitleDelay = { onOpenPanel(KitsugiPanels.SubtitleDelay) },
+                        onDismissRequest = onDismissRequest,
+                    )
+                }
+
+                KitsugiSheets.AudioTracks -> {
+                    val audioTrackInfos = audioTrackLabels.mapIndexed { index, label ->
+                        AudioTrackInfo(
+                            id = index,
+                            label = label
+                        )
+                    }
+                    AudioTracksSheet(
+                        tracks = audioTrackInfos,
+                        selectedId = selectedAudioIndex,
+                        onSelect = onSelectAudio,
+                        onAddAudioFile = onAddAudioFile,
+                        onOpenDelayPanel = { onOpenPanel(KitsugiPanels.AudioDelay) },
+                        onDismissRequest = onDismissRequest,
+                    )
+                }
+
+                KitsugiSheets.QualityTracks -> {
+                    QualitySheet(
+                        streamSources = streamSources,
+                        selectedIndex = selectedSourceIndex,
+                        isLoading = isQualityLoading,
+                        onSelect = onSelectSource,
+                        onDismissRequest = onDismissRequest,
+                        dismissSheet = dismissSheet,
+                    )
+                }
+
+                KitsugiSheets.More -> {
+                    MoreSheet(
+                        selectedDecoder = selectedDecoder,
+                        onSelectDecoder = onSelectDecoder,
+                        remainingTime = sleepTimerSecondsLeft,
+                        onStartTimer = onStartSleepTimer,
+                        onDismissRequest = onDismissRequest,
+                        onEnterFiltersPanel = { onOpenPanel(KitsugiPanels.VideoFilters) },
+                        customButtons = customButtons,
+                        onClickCustomButton = onClickCustomButton,
+                        onLongClickCustomButton = onLongClickCustomButton,
+                        statisticsPage = statisticsPage,
+                        onSelectStatisticsPage = onSelectStatisticsPage,
+                        audioChannels = audioChannels,
+                        onSelectAudioChannels = onSelectAudioChannels,
+                    )
+                }
+
+                KitsugiSheets.Screenshot -> {
+                    ScreenshotSheet(
+                        isLocalSource = isLocalSource,
+                        hasSubTracks = hasSubTracks,
+                        showSubtitles = showSubtitles,
+                        onToggleShowSubtitles = onToggleShowSubtitles,
+                        cachePath = cachePath,
+                        onSetAsArt = onSetAsArt,
+                        onSave = onSaveScreenshot,
+                        onShare = onShareScreenshot,
+                        takeScreenshot = takeScreenshot,
+                        onDismissRequest = onDismissRequest,
+                    )
+                }
             }
-            AudioTracksSheet(
-                tracks = audioTrackInfos,
-                selectedId = selectedAudioIndex,
-                onSelect = onSelectAudio,
-                onAddAudioFile = onAddAudioFile,
-                onOpenDelayPanel = { onOpenPanel(KitsugiPanels.AudioDelay) },
-                onDismissRequest = onDismissRequest,
-                modifier = modifier,
-            )
-        }
-
-        KitsugiSheets.QualityTracks -> {
-            QualitySheet(
-                streamSources = streamSources,
-                selectedIndex = selectedSourceIndex,
-                isLoading = isQualityLoading,
-                onSelect = onSelectSource,
-                onDismissRequest = onDismissRequest,
-                dismissSheet = dismissSheet,
-                modifier = modifier,
-            )
-        }
-
-        KitsugiSheets.More -> {
-            MoreSheet(
-                selectedDecoder = selectedDecoder,
-                onSelectDecoder = onSelectDecoder,
-                remainingTime = sleepTimerSecondsLeft,
-                onStartTimer = onStartSleepTimer,
-                onDismissRequest = onDismissRequest,
-                onEnterFiltersPanel = { onOpenPanel(KitsugiPanels.VideoFilters) },
-                customButtons = customButtons,
-                onClickCustomButton = onClickCustomButton,
-                onLongClickCustomButton = onLongClickCustomButton,
-                statisticsPage = statisticsPage,
-                onSelectStatisticsPage = onSelectStatisticsPage,
-                audioChannels = audioChannels,
-                onSelectAudioChannels = onSelectAudioChannels,
-                modifier = modifier,
-            )
-        }
-
-        KitsugiSheets.Screenshot -> {
-            ScreenshotSheet(
-                isLocalSource = isLocalSource,
-                hasSubTracks = hasSubTracks,
-                showSubtitles = showSubtitles,
-                onToggleShowSubtitles = onToggleShowSubtitles,
-                cachePath = cachePath,
-                onSetAsArt = onSetAsArt,
-                onSave = onSaveScreenshot,
-                onShare = onShareScreenshot,
-                takeScreenshot = takeScreenshot,
-                onDismissRequest = onDismissRequest,
-                modifier = modifier,
-            )
         }
     }
 }
