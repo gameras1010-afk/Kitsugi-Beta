@@ -237,6 +237,10 @@ fun KitsugiFullscreenPlayerScreen(
     // Autoplay / binge card (replaces full-screen countdown)
     val isAutoplayEnabled = appSettings?.isAutoplayEnabled ?: true
     val showBingeCard by viewModel.showBingeCardState.collectAsState()
+    val customButtons by viewModel.customButtons.collectAsState()
+    val statisticsPage by viewModel.statisticsPage.collectAsState()
+    val audioChannels by viewModel.audioChannels.collectAsState()
+
     val bingeCountdownSec by viewModel.bingeCountdownSec.collectAsState()
 
     // Track selections
@@ -632,6 +636,10 @@ fun KitsugiFullscreenPlayerScreen(
                             isSubtitleDisabled = playerEngine.isSubtitleDisabled
                             streamInfoData = playerEngine.activeStreamInfo
                         }
+
+                        override fun onEngineEvent(property: String, value: String) {
+                            viewModel.handleLuaInvocation(property, value)
+                        }
                     }
                     playerEngine.addListener(listener)
                     onDispose {
@@ -966,6 +974,9 @@ fun KitsugiFullscreenPlayerScreen(
                             viewModel.showSheet(KitsugiSheets.None)
                             viewModel.resetDismissSheet()
                         },
+                        customButtons = customButtons,
+                        onClickCustomButton = viewModel::executeCustomButton,
+                        onLongClickCustomButton = viewModel::executeCustomButtonLongPress,
                         onOpenPanel = { panel -> viewModel.showPanel(panel) },
                         currentSpeed = currentSpeed,
                         onSpeedChange = { speed ->
@@ -1020,6 +1031,10 @@ fun KitsugiFullscreenPlayerScreen(
                         onStartSleepTimer = { secs -> viewModel.startTimer(secs) },
                         selectedDecoder = viewModel.currentDecoder.collectAsState().value,
                         onSelectDecoder = { dec -> viewModel.updateDecoder(dec) },
+                        statisticsPage = statisticsPage,
+                        onSelectStatisticsPage = { page -> viewModel.updateStatisticsPage(page) },
+                        audioChannels = audioChannels,
+                        onSelectAudioChannels = { ch -> viewModel.updateAudioChannels(ch) },
                         isLocalSource = viewModel.isLocalSource,
                         hasSubTracks = viewModel.hasSubTracks.collectAsState().value,
                         showSubtitles = viewModel.screenshotShowSubtitles.collectAsState().value,

@@ -118,3 +118,11 @@ enum class SetAsArt {
     Error,
 }
 
+enum class AudioChannels(val title: String, val property: String, val value: String) {
+    Auto("Otomatik", "audio-channels", "auto-safe"),
+    AutoSafe("Güvenli Otomatik", "audio-channels", "auto"),
+    Mono("Mono", "audio-channels", "mono"),
+    Stereo("Stereo", "audio-channels", "stereo"),
+    ReverseStereo("Ters Stereo", "af", "pan=[stereo|c0=c1|c1=c0]"),
+}
+

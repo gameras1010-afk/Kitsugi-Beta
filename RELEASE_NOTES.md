@@ -1,31 +1,38 @@
-# Kitsugi Çevrimdışı İndirme ve İzleme Geçmişi Güncellemesi Sürüm Notları 🚀
+# Kitsugi Release Notes
 
----
+## v2.4.113 – Aniyomi Oynatıcı Pariteği (Tamamlandı)
 
-## 🇹🇷 TÜRKÇE SÜRÜM NOTLARI
+### 🎬 Oynatıcı Geliştirmeleri
 
-### 📥 Anime İndirme Sistemi (Aniyomi-Style)
-- **FFmpeg Entegrasyonu:** M3U8 ve MP4 video akışlarını arka planda sorunsuzca birleştirebilen ve indirebilen FFmpeg tabanlı yüksek performanslı indirme motoru entegre edildi.
-- **Arka Plan İndirme Servisi:** İndirmelerin yarıda kalmasını önlemek için ilerleme bildirimi sunan kararlı Android Foreground Service altyapısı geliştirildi.
-- **Esnek Depolama Yönetimi:** SAF (Storage Access Framework) entegrasyonu ile harici/özel klasör seçimi eklendi. Ayrıca 1DM/ADM gibi harici indirme yöneticileri için yönlendirme desteği getirildi.
-- **İndirmeler Ekranı:** İndirme ilerlemesini, tamamlanma durumlarını ve yerel dosyaları yönetebileceğiniz yeni `DownloadsScreen` arayüze entegre edildi.
+#### İstatistik Sayfası (MPV Stats)
+- `MoreSheet` içine 0–5 arası sayfa seçici chip'leri eklendi
+- Sayfa 0 = Kapalı, sayfa 1–5 = MPV stats overlay
+- Aniyomi `stats/display-stats-toggle` ve `stats/display-page-N` script-binding komutları ile birebir uyumlu
+- Seçim `SettingsDataStore.setPlayerStatisticsPage` ile kalıcı olarak saklanır
 
-### 📜 İzleme Geçmişi (Watch History)
-- **Geçmiş Takibi:** İzlenen anime, bölüm ve oynatıcı detaylarını yerel olarak kaydeden `WatchHistoryManager` geliştirildi.
-- **Geçmiş Ekranı:** Kullanıcıların izledikleri bölümleri takip edebileceği, arayabileceği ve tek tuşla temizleyebileceği `WatchHistoryScreen` arayüze eklendi.
-- **Navigasyon İyileştirmeleri:** Akış seçim ekranından ve ana menüden izleme geçmişine doğrudan erişim sağlayan geçişler entegre edildi.
+#### Ses Kanalları (Audio Channels)
+- `MoreSheet` içine `AudioChannels` enum tabanlı chip seçici eklendi
+- Desteklenen modlar: Otomatik, Güvenli Otomatik, Mono, Stereo, Ters Stereo
+- Aniyomi'nin `af` filtresi + `audio-channels` property yaklaşımı ile birebir uyumlu
+- MPV motoruna anlık uygulanır, `SettingsDataStore.setAudioChannels` ile kalıcı saklanır
 
----
+#### Kod Çözücü (Decoder) İyileştirmesi
+- `updateDecoder()` artık MPV motoruna anlık `hwdec` property atıyor
+- `SettingsDataStore.setMpvHwdecMode` ile otururlar arasında kalıcı
 
-## 🇬🇧 ENGLISH RELEASE NOTES
+#### Picture-in-Picture (PiP) – Tam Entegrasyon
+- `BottomRightPlayerControls`'daki PiP butonu artık `settings.pipEnabled` ayarına reaktif
+- Tıklandığında `PlayerPipHelper.enterPipSafe(activity, playerEngine, isPlaying, hasNext)` çağrılır
+- `LocalContext.current` composable scope'da doğru yakalanıyor
 
-### 📥 Anime Video Downloader Integration
-- **FFmpeg Integration:** Integrated an FFmpeg-based download pipeline supporting high-performance muxing and compilation of M3U8 streams.
-- **Background Download Service:** Implemented an Android Foreground Service with live notification progress updates to keep download tasks running reliably.
-- **Storage & External Downloader Support:** Added SAF directory selection and custom intent-based routing to support external downloaders like 1DM, ADM, or default system options.
-- **Downloads Screen:** Added a dedicated `DownloadsScreen` to view active download progress, pause/resume tasks, delete local files, and trigger offline playback.
+### 🏗️ Mimari
+- `KitsugiPlayerViewModel`: `statisticsPage`, `audioChannels` state akışları eklendi
+- `PlayerSheetsHost`: yeni parametreler prop-drilling zinciriyle `MoreSheet`'e aktarıldı
+- `KitsugiFullscreenPlayerScreen`: tüm yeni state'ler collect ediliyor ve PlayerSheetsHost'a geçiriliyor
+- `SettingsDataStore`: `setMpvHwdecMode` setter eklendi (diğerleri zaten mevcuttu)
 
-### 📜 Watch History Management
-- **Playback Tracking:** Introduced `WatchHistoryManager` to capture anime playback, episode details, quality metadata, and timestamps locally.
-- **Watch History UI:** Developed a premium, responsive `WatchHistoryScreen` to view, search, and delete individual history entries or wipe history entirely.
-- **Navigation Flow:** Wired the new screens into the core routing system (`AppRoot` and detail page backstacks) for smooth transition pathways.
+### 🐛 Düzeltilen Derleme Hataları
+- `MPVLib` bağımlılığı `MoreSheet`'ten kaldırıldı; komutlar ViewModel üzerinden yürütülüyor
+- `items(count = 6) { page: Int -> }` tip çıkarımı hatası giderildi
+- `LocalContext.current` composable olmayan lambda içinde çağrılan hata düzeltildi
+- `setMpvHwdecMode` duplikasyon çakışması çözüldü

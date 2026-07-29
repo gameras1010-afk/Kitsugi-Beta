@@ -46,8 +46,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.kitsugi.animelist.ui.screens.fullscreen.Decoder
+import com.kitsugi.animelist.ui.screens.fullscreen.AudioChannels
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import com.kitsugi.animelist.data.local.CustomButton
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun MoreSheet(
     selectedDecoder: Decoder,
@@ -56,6 +62,13 @@ fun MoreSheet(
     onStartTimer: (Int) -> Unit,
     onDismissRequest: () -> Unit,
     onEnterFiltersPanel: () -> Unit,
+    customButtons: List<CustomButton>,
+    onClickCustomButton: (CustomButton) -> Unit,
+    onLongClickCustomButton: (CustomButton) -> Unit,
+    statisticsPage: Int = 0,
+    onSelectStatisticsPage: (Int) -> Unit = {},
+    audioChannels: AudioChannels = AudioChannels.Auto,
+    onSelectAudioChannels: (AudioChannels) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     PlayerSheet(
@@ -117,7 +130,7 @@ fun MoreSheet(
                 }
             }
 
-            Text("Kod Çözücü Modu (Decoder)", style = MaterialTheme.typography.titleMedium)
+            Text("Donanım Kod Çözücü Modu", style = MaterialTheme.typography.titleMedium)
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
@@ -126,6 +139,70 @@ fun MoreSheet(
                         selected = decoder == selectedDecoder,
                         onClick = { onSelectDecoder(decoder) },
                         label = { Text(text = decoder.title) },
+                    )
+                }
+            }
+
+            Text("İstatistik Sayfası", style = MaterialTheme.typography.titleMedium)
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(count = 6) { page: Int ->
+                    FilterChip(
+                        selected = statisticsPage == page,
+                        onClick = {
+                            // MPV komutları ViewModel'da çalıştırılır
+                            onSelectStatisticsPage(page)
+                        },
+                        label = {
+                            Text(
+                                text = if (page == 0) "Kapalı" else "Sayfa $page"
+                            )
+                        },
+                    )
+                }
+            }
+
+            if (customButtons.isNotEmpty()) {
+                Text("Özel Butonlar", style = MaterialTheme.typography.titleMedium)
+                FlowRow(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    maxItemsInEachRow = Int.MAX_VALUE,
+                ) {
+                    customButtons.forEach { button ->
+                        val inputChipInteractionSource = remember { MutableInteractionSource() }
+                        Box {
+                            FilterChip(
+                                onClick = {},
+                                label = { Text(text = button.name) },
+                                selected = false,
+                                interactionSource = inputChipInteractionSource,
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .combinedClickable(
+                                        onClick = { onClickCustomButton(button) },
+                                        onLongClick = { onLongClickCustomButton(button) },
+                                        interactionSource = inputChipInteractionSource,
+                                        indication = null,
+                                    ),
+                            )
+                        }
+                    }
+                }
+            }
+
+            Text("Ses Kanalları", style = MaterialTheme.typography.titleMedium)
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(items = AudioChannels.entries.toList()) { ch: AudioChannels ->
+                    FilterChip(
+                        selected = audioChannels == ch,
+                        onClick = { onSelectAudioChannels(ch) },
+                        label = { Text(text = ch.title) },
                     )
                 }
             }

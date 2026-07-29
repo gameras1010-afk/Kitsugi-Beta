@@ -9,9 +9,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.ControlsButton
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.FilledControlsButton
+import com.kitsugi.animelist.data.local.CustomButton
 
 @Composable
 fun BottomRightPlayerControls(
+    customButton: CustomButton?,
+    customButtonTitle: String,
+    onPressCustomButton: () -> Unit,
+    onLongPressCustomButton: () -> Unit,
     skipIntroButton: String?,
     onPressSkipIntroButton: () -> Unit,
     isPipAvailable: Boolean,
@@ -28,6 +33,12 @@ fun BottomRightPlayerControls(
                 text = skipIntroButton,
                 onClick = onPressSkipIntroButton,
                 onLongClick = {},
+            )
+        } else if (customButton != null) {
+            FilledControlsButton(
+                text = customButtonTitle,
+                onClick = onPressCustomButton,
+                onLongClick = onLongPressCustomButton,
             )
         }
 

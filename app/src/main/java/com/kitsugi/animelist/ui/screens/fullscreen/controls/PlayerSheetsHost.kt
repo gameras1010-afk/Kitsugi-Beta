@@ -3,6 +3,7 @@ package com.kitsugi.animelist.ui.screens.fullscreen.controls
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.kitsugi.animelist.data.repository.StreamSource
+import com.kitsugi.animelist.ui.screens.fullscreen.AudioChannels
 import com.kitsugi.animelist.ui.screens.fullscreen.Decoder
 import com.kitsugi.animelist.ui.screens.fullscreen.KitsugiPanels
 import com.kitsugi.animelist.ui.screens.fullscreen.KitsugiSheets
@@ -17,6 +18,7 @@ import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.sheets.Qu
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.sheets.MoreSheet
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.sheets.ScreenshotSheet
 import com.kitsugi.animelist.ui.screens.fullscreen.ArtType
+import com.kitsugi.animelist.data.local.CustomButton
 import java.io.InputStream
 
 /**
@@ -76,6 +78,18 @@ fun PlayerSheetsHost(
     onSaveScreenshot: (() -> InputStream) -> Unit = {},
     onShareScreenshot: (() -> InputStream) -> Unit = {},
     takeScreenshot: (String, Boolean) -> InputStream? = { _, _ -> null },
+
+    customButtons: List<CustomButton> = emptyList(),
+    onClickCustomButton: (CustomButton) -> Unit = {},
+    onLongClickCustomButton: (CustomButton) -> Unit = {},
+
+    // Statistics Page
+    statisticsPage: Int = 0,
+    onSelectStatisticsPage: (Int) -> Unit = {},
+
+    // Audio Channels
+    audioChannels: AudioChannels = AudioChannels.Auto,
+    onSelectAudioChannels: (AudioChannels) -> Unit = {},
 
     modifier: Modifier = Modifier,
 ) {
@@ -155,6 +169,13 @@ fun PlayerSheetsHost(
                 onStartTimer = onStartSleepTimer,
                 onDismissRequest = onDismissRequest,
                 onEnterFiltersPanel = { onOpenPanel(KitsugiPanels.VideoFilters) },
+                customButtons = customButtons,
+                onClickCustomButton = onClickCustomButton,
+                onLongClickCustomButton = onLongClickCustomButton,
+                statisticsPage = statisticsPage,
+                onSelectStatisticsPage = onSelectStatisticsPage,
+                audioChannels = audioChannels,
+                onSelectAudioChannels = onSelectAudioChannels,
                 modifier = modifier,
             )
         }

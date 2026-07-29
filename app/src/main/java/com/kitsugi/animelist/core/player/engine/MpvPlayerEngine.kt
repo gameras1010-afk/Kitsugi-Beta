@@ -10,6 +10,10 @@ import com.kitsugi.animelist.ui.screens.fullscreen.components.StreamInfoData
 import com.kitsugi.animelist.data.settings.AppSettings
 import `is`.xyz.mpv.MPV
 import `is`.xyz.mpv.MPVNode
+import com.kitsugi.animelist.data.local.KitsugiDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 
 /**
  * Aniyomi PlayerActivity yaklaşımından ilham alınarak yeniden yazılmış MPV motor.
@@ -28,7 +32,7 @@ class MpvPlayerEngine(
 
     private val TAG = "MpvPlayerEngine"
     private val listeners = mutableListOf<PlayerEngine.Listener>()
-    private var mpvView: KitsugiMpvSurfaceView? = null
+    internal var mpvView: KitsugiMpvSurfaceView? = null
 
     override val engineType: PlayerEngineType = PlayerEngineType.MPV
     override var currentState: PlayerEngine.State = PlayerEngine.State.IDLE
@@ -110,7 +114,8 @@ class MpvPlayerEngine(
         "aid"               to MPV.mpvFormat.MPV_FORMAT_INT64,
         "hwdec-current"     to MPV.mpvFormat.MPV_FORMAT_STRING,
         "video-params/w"    to MPV.mpvFormat.MPV_FORMAT_INT64,
-        "video-params/h"    to MPV.mpvFormat.MPV_FORMAT_INT64
+        "video-params/h"    to MPV.mpvFormat.MPV_FORMAT_INT64,
+        "user-data/aniyomi" to MPV.mpvFormat.MPV_FORMAT_STRING
     )
 
     override val activeStreamInfo: StreamInfoData
@@ -169,6 +174,7 @@ class MpvPlayerEngine(
                 view.addAndSelectExternalSubtitle(sub.url, sub.name, sub.lang)
             }
             applySecondarySubtitle(view)
+            setupCustomButtons()
             isPlaying = true
         }
     }
@@ -343,6 +349,9 @@ class MpvPlayerEngine(
                         addAndSelectExternalSubtitle(sub.url, sub.name, sub.lang)
                     }
                     applySecondarySubtitle(this)
+                    kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+                        setupCustomButtons()
+                    }
                     isPlaying = true
                 }
             }
@@ -456,6 +465,9 @@ class MpvPlayerEngine(
             "hwdec-current" -> {
                 activeHwdecMode = value
                 Log.d(TAG, "hwdec-current=$value")
+            }
+            "user-data/aniyomi" -> {
+                listeners.forEach { it.onEngineEvent(property, value) }
             }
         }
     }
@@ -629,6 +641,62 @@ class MpvPlayerEngine(
         newFile.delete()
         tempFile.renameTo(newFile)
         return newFile.takeIf { it.exists() }?.inputStream()
+    }
+
+    private suspend fun setupCustomButtons() {
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val db = KitsugiDatabase.getDatabase(context)
+                val buttons = db.customButtonDao().getAll()
+                if (buttons.isEmpty()) return@runCatching
+                val primaryButtonId = buttons.firstOrNull { it.isFavorite }?.id ?: 0L
+                val scriptsDir = java.io.File(context.filesDir, "scripts")
+                if (!scriptsDir.exists()) {
+                    scriptsDir.mkdirs()
+                }
+                val customButtonsContent = buildString {
+                    append(
+                        """
+                            local lua_modules = mp.find_config_file('scripts')
+                            if lua_modules then
+                                package.path = package.path .. ';' .. lua_modules .. '/?.lua;' .. lua_modules .. '/?/init.lua;' .. '${scriptsDir.absolutePath.replace("\\", "/")}' .. '/?.lua'
+                            end
+                        """.trimIndent()
+                    )
+                    append("\n")
+                    buttons.forEach { button ->
+                        append(
+                            """
+                                -- ${button.name}
+                                ${button.getButtonOnStartup(primaryButtonId)}
+                                function button${button.id}()
+                                    ${button.getButtonContent(primaryButtonId)}
+                                end
+                                mp.register_script_message('call_button_${button.id}', button${button.id})
+                                function button${button.id}long()
+                                    ${button.getButtonLongPressContent(primaryButtonId)}
+                                end
+                                mp.register_script_message('call_button_${button.id}_long', button${button.id}long)
+                            """.trimIndent()
+                        )
+                        append("\n")
+                    }
+                }
+                val file = java.io.File(scriptsDir, "custombuttons.lua")
+                file.writeText(customButtonsContent)
+                withContext(Dispatchers.Main) {
+                    mpvView?.mpv?.command("load-script", file.absolutePath)
+                }
+            }.onFailure {
+                Log.w(TAG, "setupCustomButtons error: ${it.message}")
+            }
+        }
+    }
+
+    override fun executeCommand(command: Array<String>) {
+        runCatching {
+            mpvView?.mpv?.command(*command)
+        }
     }
 }
 

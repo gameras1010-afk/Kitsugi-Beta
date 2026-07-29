@@ -45,10 +45,13 @@ import com.kitsugi.animelist.data.remote.SkipInterval
 import com.kitsugi.animelist.data.settings.AppSettings
 import com.kitsugi.animelist.data.settings.SettingsDataStore
 import com.kitsugi.animelist.data.local.toDomain
+import com.kitsugi.animelist.data.local.CustomButton
+import kotlinx.coroutines.flow.update
 import com.kitsugi.animelist.core.player.PostPlayMode
 import kotlinx.coroutines.async as asyncSkip
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.awaitAll
+import com.kitsugi.animelist.ui.screens.fullscreen.AudioChannels
 
 
 class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(application) {
@@ -67,6 +70,31 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         started = SharingStarted.Eagerly,
         initialValue = AppSettings()
     )
+
+    val customButtons: StateFlow<List<CustomButton>> =
+        KitsugiDatabase.getDatabase(context).customButtonDao().subscribeAll()
+            .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    private val _primaryButton = MutableStateFlow<CustomButton?>(null)
+    val primaryButton: StateFlow<CustomButton?> = _primaryButton.asStateFlow()
+
+    private val _primaryButtonTitle = MutableStateFlow("")
+    val primaryButtonTitle: StateFlow<String> = _primaryButtonTitle.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            customButtons.collect { buttons ->
+                buttons.firstOrNull { it.isFavorite }?.let { fav ->
+                    if (_primaryButton.value == null) {
+                        _primaryButton.value = fav
+                    }
+                    if (_primaryButtonTitle.value.isEmpty()) {
+                        setPrimaryCustomButtonTitle(fav)
+                    }
+                }
+            }
+        }
+    }
 
     // State Variables - transitioned to reactive StateFlow system
     private val _currentVideoUrl = MutableStateFlow<String?>(null)
@@ -283,6 +311,46 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
 
     fun updateDecoder(decoder: Decoder) {
         _currentDecoder.value = decoder
+        // Apply to MPV engine immediately
+        val mpvEngine = activeEngine as? com.kitsugi.animelist.core.player.engine.MpvPlayerEngine
+        mpvEngine?.mpvView?.mpv?.setPropertyString("hwdec", decoder.value)
+        viewModelScope.launch { dataStore.setMpvHwdecMode(decoder.value) }
+    }
+
+    private val _statisticsPage = MutableStateFlow(0)
+    val statisticsPage: StateFlow<Int> = _statisticsPage.asStateFlow()
+
+    fun updateStatisticsPage(page: Int) {
+        val previousPage = _statisticsPage.value
+        _statisticsPage.value = page
+        // Aniyomi parity: toggle stats overlay when switching between off (0) and on states
+        if ((page == 0) xor (previousPage == 0)) {
+            activeEngine?.executeCommand(arrayOf("script-binding", "stats/display-stats-toggle"))
+        }
+        if (page != 0) {
+            activeEngine?.executeCommand(arrayOf("script-binding", "stats/display-page-$page"))
+        }
+        viewModelScope.launch { dataStore.setPlayerStatisticsPage(page) }
+    }
+
+    private val _audioChannels = MutableStateFlow(AudioChannels.Auto)
+    val audioChannels: StateFlow<AudioChannels> = _audioChannels.asStateFlow()
+
+    fun updateAudioChannels(channels: AudioChannels) {
+        _audioChannels.value = channels
+        // Apply to MPV engine: Aniyomi pattern — ReverseStereo uses af filter, others use audio-channels
+        val mpvEngine = activeEngine as? com.kitsugi.animelist.core.player.engine.MpvPlayerEngine
+        runCatching {
+            if (channels == AudioChannels.ReverseStereo) {
+                // Clear audio-channels first
+                mpvEngine?.mpvView?.mpv?.setPropertyString(AudioChannels.Auto.property, AudioChannels.Auto.value)
+            } else {
+                // Clear ReverseStereo af filter
+                mpvEngine?.mpvView?.mpv?.setPropertyString(AudioChannels.ReverseStereo.property, "")
+            }
+            mpvEngine?.mpvView?.mpv?.setPropertyString(channels.property, channels.value)
+        }
+        viewModelScope.launch { dataStore.setAudioChannels(channels) }
     }
 
     private val _remainingTime = MutableStateFlow(0)
@@ -1553,6 +1621,163 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         } else {
             String.format(java.util.Locale.US, "%02d:%02d", mins, secs)
         }
+    }
+
+    fun setPrimaryCustomButtonTitle(button: CustomButton) {
+        val title = if (button.name.length <= 8) button.name else button.name.take(7) + "…"
+        _primaryButtonTitle.value = title
+    }
+
+    fun executeCustomButton(button: CustomButton) {
+        activeEngine?.executeCommand(arrayOf("script-message", "call_button_${button.id}"))
+    }
+
+    fun executeCustomButtonLongPress(button: CustomButton) {
+        activeEngine?.executeCommand(arrayOf("script-message", "call_button_${button.id}_long"))
+    }
+
+    fun seekToWithText(positionSec: Int, text: String?) {
+        val targetMs = positionSec * 1000L
+        activeEngine?.seekTo(targetMs)
+        _pos.value = targetMs
+        if (!text.isNullOrBlank()) {
+            playerUpdate.value = KitsugiPlayerUpdates.ShowText(text)
+        }
+    }
+
+    fun seekByWithText(deltaSec: Int, text: String?) {
+        val current = _pos.value
+        val dur = _duration.value
+        val target = (current + deltaSec * 1000L).coerceIn(0L, dur)
+        activeEngine?.seekTo(target)
+        _pos.value = target
+        if (!text.isNullOrBlank()) {
+            playerUpdate.value = KitsugiPlayerUpdates.ShowText(text)
+        }
+    }
+
+    fun changeEpisode(previous: Boolean) {
+        val target = if (previous) _currentEpisode.value - 1 else _currentEpisode.value + 1
+        val activity = context.findActivity()
+        playEpisode(target, activity, {}, {})
+    }
+
+    fun handleLuaInvocation(property: String, value: String) {
+        val data = value
+            .removePrefix("\"")
+            .removeSuffix("\"")
+            .ifEmpty { return }
+
+        val mpvEngine = activeEngine as? com.kitsugi.animelist.core.player.engine.MpvPlayerEngine
+
+        when (property.substringAfterLast("/")) {
+            "show_text" -> playerUpdate.value = KitsugiPlayerUpdates.ShowText(data)
+            "toggle_ui" -> {
+                when (data) {
+                    "show" -> showControls()
+                    "toggle" -> toggleControls()
+                    "hide" -> {
+                        _sheetShown.value = KitsugiSheets.None
+                        _panelShown.value = KitsugiPanels.None
+                        _dialogShown.value = KitsugiDialogs.None
+                        hideControls()
+                    }
+                }
+            }
+            "show_panel" -> {
+                when (data) {
+                    "subtitle_settings" -> showPanel(KitsugiPanels.SubtitleSettings)
+                    "subtitle_delay" -> showPanel(KitsugiPanels.SubtitleDelay)
+                    "audio_delay" -> showPanel(KitsugiPanels.AudioDelay)
+                    "video_filters" -> showPanel(KitsugiPanels.VideoFilters)
+                }
+            }
+            "set_button_title" -> {
+                _primaryButtonTitle.value = data
+            }
+            "reset_button_title" -> {
+                customButtons.value.firstOrNull { it.isFavorite }?.let {
+                    setPrimaryCustomButtonTitle(it)
+                }
+            }
+            "switch_episode" -> {
+                when (data) {
+                    "n" -> changeEpisode(false)
+                    "p" -> changeEpisode(true)
+                }
+            }
+            "launch_int_picker" -> {
+                val parts = data.split("|")
+                if (parts.size >= 6) {
+                    val title = parts[0]
+                    val nameFormat = parts[1]
+                    val start = parts[2]
+                    val stop = parts[3]
+                    val step = parts[4]
+                    val pickerProperty = parts[5]
+
+                    val defaultValue = mpvEngine?.mpvView?.mpv?.getPropertyInt(pickerProperty) ?: 0
+                    showDialog(
+                        KitsugiDialogs.IntegerPicker(
+                            defaultValue = defaultValue,
+                            minValue = start.toIntOrNull() ?: 0,
+                            maxValue = stop.toIntOrNull() ?: 100,
+                            step = step.toIntOrNull() ?: 1,
+                            nameFormat = nameFormat,
+                            title = title,
+                            onChange = { mpvEngine?.mpvView?.mpv?.setPropertyInt(pickerProperty, it) },
+                            onDismissRequest = { showDialog(KitsugiDialogs.None) }
+                        )
+                    )
+                }
+            }
+            "pause" -> {
+                when (data) {
+                    "pause" -> pause()
+                    "unpause" -> play()
+                    "pauseunpause" -> if (activeEngine?.isPlaying == true) pause() else play()
+                }
+            }
+            "toggle_button" -> {
+                fun showButton() {
+                    if (_primaryButton.value == null) {
+                        _primaryButton.update {
+                            customButtons.value.firstOrNull { it.isFavorite }
+                        }
+                    }
+                }
+
+                when (data) {
+                    "show" -> showButton()
+                    "hide" -> _primaryButton.update { null }
+                    "toggle" -> if (_primaryButton.value == null) showButton() else _primaryButton.update { null }
+                }
+            }
+            "software_keyboard" -> {
+                val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+                when (data) {
+                    "show" -> {
+                        val activity = context.findActivity()
+                        val view = activity?.currentFocus ?: activity?.window?.decorView
+                        if (view != null) {
+                            inputMethodManager.showSoftInput(view, android.view.inputmethod.InputMethodManager.SHOW_FORCED)
+                        }
+                    }
+                    "hide" -> {
+                        val activity = context.findActivity()
+                        val view = activity?.currentFocus
+                        if (view != null) {
+                            inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+                        }
+                    }
+                    "toggle" -> {
+                        inputMethodManager.toggleSoftInput(android.view.inputmethod.InputMethodManager.SHOW_FORCED, 0)
+                    }
+                }
+            }
+        }
+
+        mpvEngine?.mpvView?.mpv?.setPropertyString(property, "")
     }
 }
 

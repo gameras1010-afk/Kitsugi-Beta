@@ -23,9 +23,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         HistoryEntity::class,                 // 🎬 İzleme geçmişi
         VideoEntity::class,                  // 📹 Video cache/çözümleme
         ExploreCacheEntity::class,           // 📂 Explore page cache
-        PersistentDetailCacheEntity::class   // 📂 Media details cache
+        PersistentDetailCacheEntity::class,  // 📂 Media details cache
+        CustomButton::class
     ],
-    version = 25,
+    version = 26,
     exportSchema = true  // T3-03/TASK-106: KSP → $projectDir/schemas/ konumuna yazar
 )
 abstract class KitsugiDatabase : RoomDatabase() {
@@ -44,6 +45,7 @@ abstract class KitsugiDatabase : RoomDatabase() {
     abstract fun videoDao(): VideoDao                               // 📹 Video cache/çözümleme
     abstract fun exploreCacheDao(): ExploreCacheDao
     abstract fun persistentDetailCacheDao(): PersistentDetailCacheDao
+    abstract fun customButtonDao(): CustomButtonDao
 
 
     companion object {
@@ -363,6 +365,24 @@ abstract class KitsugiDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_25_26 = object : Migration(25, 26) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `custom_buttons` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `name` TEXT NOT NULL,
+                        `isFavorite` INTEGER NOT NULL,
+                        `sortIndex` INTEGER NOT NULL,
+                        `content` TEXT NOT NULL,
+                        `longPressContent` TEXT NOT NULL,
+                        `onStartup` TEXT NOT NULL
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
+
         fun getDatabase(context: Context): KitsugiDatabase {
             return INSTANCE ?: synchronized(this) {
                 val builder = Room.databaseBuilder(
@@ -393,7 +413,8 @@ abstract class KitsugiDatabase : RoomDatabase() {
                         MIGRATION_21_22,   // 🎬 İzleme geçmişi
                         MIGRATION_22_23,   // 📹 Video cache/çözümleme
                         MIGRATION_23_24,    // 📂 Üçlü Fallback / Explore Cache
-                        MIGRATION_24_25    // 📂 TVDB ID Caching
+                        MIGRATION_24_25,   // 📂 TVDB ID Caching
+                        MIGRATION_25_26
                     )
                 
                 // T3-03: Güvenlik sertleştirmesi — Üretim sürümünde verilerin kazara sıfırlanmasını engeller.

@@ -22,6 +22,7 @@ interface PlayerEngine {
         fun onPositionChanged(positionMs: Long, durationMs: Long) {}
         fun onTracksChanged(audioTracks: List<TrackOption>, subtitleTracks: List<TrackOption>)
         fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int, pixelWidthHeightRatio: Float) {}
+        fun onEngineEvent(property: String, value: String) {}
     }
 
     val engineType: PlayerEngineType
@@ -84,5 +85,10 @@ interface PlayerEngine {
      * Takes a screenshot of the video.
      */
     fun takeScreenshot(cachePath: String, showSubtitles: Boolean): java.io.InputStream? = null
+
+    /**
+     * Executes an arbitrary engine command (e.g. MPV script-message).
+     */
+    fun executeCommand(command: Array<String>) {}
 }
 

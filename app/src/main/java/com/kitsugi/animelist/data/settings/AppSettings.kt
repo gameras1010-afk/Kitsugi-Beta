@@ -1,5 +1,7 @@
 package com.kitsugi.animelist.data.settings
 
+import com.kitsugi.animelist.ui.screens.fullscreen.AudioChannels
+
 data class AppSettings(
     val selectedThemeId: String = "mint",
     val showAdultContent: Boolean = false,
@@ -208,7 +210,9 @@ data class AppSettings(
     val sleepTimerSeconds: Int = 0,
     // ─── Ses Boost Sınırı ─────────────────────────────────────────────────────
     /** MPV volume-max değeri (yüzde) — 100–200 arası */
-    val volumeBoostCap: Int = 200
+    val volumeBoostCap: Int = 200,
+    val audioChannels: AudioChannels = AudioChannels.AutoSafe,
+    val playerStatisticsPage: Int = 0
 )
 
 enum class FrameRateMatchingMode {

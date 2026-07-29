@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.map
 import com.kitsugi.animelist.ui.screens.search.SearchHistoryItem
 import com.kitsugi.animelist.ui.screens.search.SearchPlatform
 import com.kitsugi.animelist.model.MediaType
+import com.kitsugi.animelist.ui.screens.fullscreen.AudioChannels
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -196,6 +197,8 @@ class SettingsDataStore(
         val SwipeVolumeBrightnessSides = booleanPreferencesKey("swipe_volume_brightness_sides")
         val HorizontalSeekGestureEnabled = booleanPreferencesKey("horizontal_seek_gesture_enabled")
         val PreciseSeeking = booleanPreferencesKey("precise_seeking")
+        val AudioChannelsConfig = stringPreferencesKey("pref_audio_channels_config")
+        val PlayerStatisticsPage = intPreferencesKey("pref_player_statistics_page")
     }
 
     val settingsFlow: Flow<AppSettings> = kotlinx.coroutines.flow.flow {
@@ -365,7 +368,11 @@ class SettingsDataStore(
                     // ─── Gesture genişleme
                     swipeVolumeBrightnessSides = preferences[Keys.SwipeVolumeBrightnessSides] ?: true,
                     horizontalSeekGestureEnabled = preferences[Keys.HorizontalSeekGestureEnabled] ?: true,
-                    preciseSeeking = preferences[Keys.PreciseSeeking] ?: false
+                    preciseSeeking = preferences[Keys.PreciseSeeking] ?: false,
+                    audioChannels = runCatching {
+                        AudioChannels.valueOf(preferences[Keys.AudioChannelsConfig] ?: "AutoSafe")
+                    }.getOrDefault(AudioChannels.AutoSafe),
+                    playerStatisticsPage = preferences[Keys.PlayerStatisticsPage] ?: 0
                 )
             )
         }
@@ -1149,6 +1156,12 @@ class SettingsDataStore(
     suspend fun setPreciseSeeking(precise: Boolean) {
         context.settingsDataStore.edit { it[Keys.PreciseSeeking] = precise }
     }
+
+    suspend fun setAudioChannels(channels: AudioChannels) {
+        context.settingsDataStore.edit { it[Keys.AudioChannelsConfig] = channels.name }
+    }
+
+    suspend fun setPlayerStatisticsPage(page: Int) {
+        context.settingsDataStore.edit { it[Keys.PlayerStatisticsPage] = page }
+    }
 }
-
-

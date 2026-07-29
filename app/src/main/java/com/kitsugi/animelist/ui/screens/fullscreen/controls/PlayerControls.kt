@@ -51,11 +51,13 @@ import androidx.compose.animation.slideOutHorizontally
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.BrightnessSlider
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.VolumeSlider
 import com.kitsugi.animelist.core.player.PlaybackState
+import com.kitsugi.animelist.core.player.PlayerPipHelper
 import com.kitsugi.animelist.ui.screens.fullscreen.KitsugiDialogs
 import com.kitsugi.animelist.ui.screens.fullscreen.KitsugiPlayerViewModel
 import com.kitsugi.animelist.ui.screens.fullscreen.KitsugiSheets
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.IndexedSegment
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.SeekbarWithTimers
+import androidx.compose.ui.platform.LocalContext
 import dev.vivvvek.seeker.Segment
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
@@ -99,6 +101,9 @@ fun PlayerControls(
     val showBingeCard     by viewModel.showBingeCardState.collectAsState()
     val playerState       by viewModel.playerState.collectAsState()
     val controlsResetTrigger by viewModel.controlsResetTrigger.collectAsState()
+    val customButton      by viewModel.primaryButton.collectAsState()
+    val customButtonTitle by viewModel.primaryButtonTitle.collectAsState()
+    val context           = LocalContext.current
 
     val showLoadingCircle = isLoading || isLoadingEpisode ||
             playerState is PlaybackState.Buffering
@@ -423,6 +428,16 @@ fun PlayerControls(
                             showChapters        = chapters.isNotEmpty()
                         )
                         BottomRightPlayerControls(
+                            customButton         = customButton,
+                            customButtonTitle    = customButtonTitle,
+                            onPressCustomButton  = {
+                                customButton?.let { viewModel.executeCustomButton(it) }
+                                resetTimer()
+                            },
+                            onLongPressCustomButton = {
+                                customButton?.let { viewModel.executeCustomButtonLongPress(it) }
+                                resetTimer()
+                            },
                             skipIntroButton      = skipIntroText,
                             onPressSkipIntroButton = {
                                 skipIntervals.firstOrNull { interval ->
@@ -432,9 +447,20 @@ fun PlayerControls(
                                 }
                                 resetTimer()
                             },
-                            isPipAvailable       = false,
+                            isPipAvailable       = settings.pipEnabled,
                             onAspectClick        = { resetTimer() },
-                            onPipClick           = {}
+                            onPipClick           = {
+                                val activity = (context as? android.app.Activity)
+                                if (activity != null) {
+                                    PlayerPipHelper.enterPipSafe(
+                                        activity     = activity,
+                                        playerEngine = null,
+                                        isPlaying    = !paused,
+                                        hasNext      = hasNext
+                                    )
+                                }
+                                resetTimer()
+                            }
                         )
                     }
                 }
