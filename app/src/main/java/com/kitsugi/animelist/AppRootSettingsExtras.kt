@@ -77,7 +77,11 @@ internal fun SettingsContext.buildSettingsParams() =
             onAutoUpdateCheckEnabledChanged = { onAutoUpdateCheckEnabledChanged(it) },
             onCheckForUpdatesClick = { onCheckForUpdatesClick() },
             customImageDownloadUri = appSettings.customImageDownloadUri,
-            onCustomImageDownloadUriChanged = { onCustomImageDownloadUriChanged(it) }
+            onCustomImageDownloadUriChanged = { onCustomImageDownloadUriChanged(it) },
+            videoDownloadUri = appSettings.videoDownloadUri,
+            onVideoDownloadUriChanged = { onVideoDownloadUriChanged(it) },
+            downloaderPreference = appSettings.downloaderPreference,
+            onDownloaderPreferenceSelected = { onDownloaderPreferenceSelected(it) }
         ),
         profile = com.kitsugi.animelist.ui.screens.settings.ProfileSettings(
             profileName = appSettings.profileName,
@@ -355,7 +359,13 @@ internal fun SettingsContext.buildSettingsParams() =
             onFanartTvEnabledChanged = { onFanartTvEnabledChanged(it) },
             fanartTvApiKey = appSettings.fanartTvApiKey,
             onFanartTvApiKeyChanged = { onFanartTvApiKeyChanged(it) }
-        )
+        ),
+        onOpenDownloads = {
+            navState.navigateToDetail(DetailScreen.Downloads)
+        },
+        onOpenWatchHistory = {
+            navState.navigateToDetail(DetailScreen.WatchHistory)
+        }
     )
 
 // ─── Non-Composable SettingsContext Extension Functions ────────────────────────────
@@ -842,4 +852,18 @@ internal fun SettingsContext.onFanartTvEnabledChanged(enabled: Boolean) {
 
 internal fun SettingsContext.onFanartTvApiKeyChanged(key: String) {
     coroutineScope.launch { settingsDataStore.setFanartTvApiKey(key) }
+}
+
+internal fun SettingsContext.onVideoDownloadUriChanged(uri: String) {
+    coroutineScope.launch {
+        settingsDataStore.setVideoDownloadUri(uri)
+        appViewModel.showSnackbarMessage(if (uri.isNotBlank()) "Video indirme klasörü güncellendi" else "Video indirme klasörü varsayılana sıfırlandı")
+    }
+}
+
+internal fun SettingsContext.onDownloaderPreferenceSelected(preference: String) {
+    coroutineScope.launch {
+        settingsDataStore.setDownloaderPreference(preference)
+        appViewModel.showSnackbarMessage("İndirici tercihi güncellendi")
+    }
 }

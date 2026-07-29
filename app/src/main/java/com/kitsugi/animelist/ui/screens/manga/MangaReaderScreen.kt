@@ -23,13 +23,19 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.automirrored.filled.NavigateBefore
 import androidx.compose.material.icons.automirrored.filled.NavigateNext
+import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.ViewStream
 import androidx.compose.material.icons.filled.BrightnessLow
 import androidx.compose.material.icons.filled.BrightnessHigh
+import androidx.compose.material.icons.filled.ScreenRotation
+import androidx.compose.material.icons.filled.CropFree
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -318,72 +324,175 @@ fun MangaReaderScreen(
             }
         }
 
-        // ─── Alt Bar ─────────────────────────────────────────────────────────
+        // ─── Alt Bar (Aniyomi Parity) ──────────────────────────────────────────
         AnimatedVisibility(
             visible = menuVisible && pages.isNotEmpty(),
             enter   = fadeIn() + slideInVertically { it },
             exit    = fadeOut() + slideOutVertically { it },
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
-            Box(
+            val barBackgroundColor = Color(0xFF161622).copy(alpha = 0.95f)
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(
-                        Brush.verticalGradient(
-                            listOf(Color.Transparent, Color.Black.copy(0.85f))
-                        )
-                    )
+                    .background(barBackgroundColor)
                     .navigationBarsPadding()
-                    .padding(16.dp)
+                    .padding(vertical = 12.dp, horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Column {
-                    // İlerleme çubuğu
-                    val progress = if (pages.isEmpty()) 0f
-                        else (currentPage + 1).toFloat() / pages.size.toFloat()
-                    LinearProgressIndicator(
-                        progress         = { progress },
-                        color            = Color(0xFF7C4DFF),
-                        trackColor       = Color(0xFF2A2A2A),
-                        modifier         = Modifier.fillMaxWidth()
-                    )
-                    Spacer(Modifier.height(6.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                // 1. ChapterNavigator (Aniyomi Style)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Previous Chapter Button
+                    IconButton(
+                        onClick = { viewModel.goToPreviousChapter() },
+                        enabled = viewModel.hasPreviousChapter
                     ) {
-                        IconButton(
-                            onClick = { viewModel.goToPreviousChapter() },
-                            enabled = viewModel.hasPreviousChapter
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Önceki Bölüm",
+                            tint = if (viewModel.hasPreviousChapter) Color.White else Color.White.copy(0.3f)
+                        )
+                    }
+
+                    // Slider Container
+                    if (pages.size > 1) {
+                        Row(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(24.dp))
+                                .background(Color(0xFF26263B))
+                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.NavigateBefore,
-                                contentDescription = "Önceki Bölüm",
-                                tint = if (viewModel.hasPreviousChapter) Color.White else Color.White.copy(0.3f)
+                            Text(
+                                text = "${currentPage + 1}",
+                                color = Color.White,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            
+                            var sliderValue by remember(currentPage) { mutableStateOf((currentPage + 1).toFloat()) }
+                            Slider(
+                                value = sliderValue,
+                                onValueChange = {
+                                    sliderValue = it
+                                    val targetPage = it.toInt() - 1
+                                    scope.launch {
+                                        if (readingMode == ReadingMode.Webtoon) {
+                                            listState.scrollToItem(targetPage.coerceIn(0, pages.size - 1))
+                                        } else {
+                                            pagerState.scrollToPage(targetPage.coerceIn(0, pages.size - 1))
+                                        }
+                                    }
+                                },
+                                valueRange = 1f..pages.size.toFloat().coerceAtLeast(1f),
+                                colors = SliderDefaults.colors(
+                                    activeTrackColor = Color(0xFF7C4DFF),
+                                    inactiveTrackColor = Color(0xFF3D3D5C),
+                                    thumbColor = Color(0xFF7C4DFF)
+                                ),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(horizontal = 8.dp)
+                            )
+
+                            Text(
+                                text = "${pages.size}",
+                                color = Color.White.copy(0.6f),
+                                fontSize = 12.sp
                             )
                         }
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
 
-                        Text(
-                            "${currentPage + 1} / ${pages.size}",
-                            color    = Color.White.copy(0.7f),
-                            fontSize = 12.sp
+                    // Next Chapter Button
+                    IconButton(
+                        onClick = { viewModel.goToNextChapter() },
+                        enabled = viewModel.hasNextChapter
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = "Sonraki Bölüm",
+                            tint = if (viewModel.hasNextChapter) Color.White else Color.White.copy(0.3f)
                         )
-                        Text(
-                            readingMode.label(),
-                            color    = Color(0xFF7C4DFF),
-                            fontSize = 12.sp
-                        )
+                    }
+                }
 
-                        IconButton(
-                            onClick = { viewModel.goToNextChapter() },
-                            enabled = viewModel.hasNextChapter
-                        ) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.NavigateNext,
-                                contentDescription = "Sonraki Bölüm",
-                                tint = if (viewModel.hasNextChapter) Color.White else Color.White.copy(0.3f)
-                            )
+                // 2. BottomReaderBar (Aniyomi Style)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Quick Reading Mode cycle
+                    val readingModeIcon = when (readingMode) {
+                        ReadingMode.RightToLeft -> Icons.AutoMirrored.Filled.MenuBook
+                        ReadingMode.LeftToRight -> Icons.Default.SwapHoriz
+                        ReadingMode.Vertical    -> Icons.Default.ViewStream
+                        ReadingMode.Webtoon     -> Icons.Default.ViewStream
+                    }
+                    IconButton(onClick = {
+                        val nextMode = when (readingMode) {
+                            ReadingMode.RightToLeft -> ReadingMode.LeftToRight
+                            ReadingMode.LeftToRight -> ReadingMode.Vertical
+                            ReadingMode.Vertical    -> ReadingMode.Webtoon
+                            ReadingMode.Webtoon     -> ReadingMode.RightToLeft
                         }
+                        viewModel.setReadingMode(nextMode)
+                    }) {
+                        Icon(
+                            imageVector = readingModeIcon,
+                            contentDescription = "Okuma Yönü",
+                            tint = Color.White
+                        )
+                    }
+
+                    // Quick Orientation cycle
+                    IconButton(onClick = {
+                        val activity = context.findActivity()
+                        if (activity != null) {
+                            val currentOrientation = activity.requestedOrientation
+                            if (currentOrientation == android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+                                activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                            } else {
+                                activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                            }
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.ScreenRotation,
+                            contentDescription = "Ekran Döndürme",
+                            tint = Color.White
+                        )
+                    }
+
+                    // Quick Fit Mode cycle
+                    IconButton(onClick = {
+                        val nextFit = when (uiState.fitMode) {
+                            MangaFitMode.FitScreen -> MangaFitMode.FitWidth
+                            MangaFitMode.FitWidth  -> MangaFitMode.FitHeight
+                            MangaFitMode.FitHeight -> MangaFitMode.FitScreen
+                        }
+                        viewModel.setFitMode(nextFit)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.CropFree,
+                            contentDescription = "Sığdırma Modu",
+                            tint = Color.White
+                        )
+                    }
+
+                    // Settings Dialog Trigger
+                    IconButton(onClick = { showSettings = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Ayarlar",
+                            tint = Color.White
+                        )
                     }
                 }
             }
@@ -556,4 +665,13 @@ private fun ReadingMode.label() = when (this) {
     ReadingMode.LeftToRight -> "Soldan Sağa"
     ReadingMode.Vertical    -> "Dikey"
     ReadingMode.Webtoon     -> "Webtoon"
+}
+
+private fun android.content.Context.findActivity(): android.app.Activity? {
+    var context = this
+    while (context is android.content.ContextWrapper) {
+        if (context is android.app.Activity) return context
+        context = context.baseContext
+    }
+    return null
 }

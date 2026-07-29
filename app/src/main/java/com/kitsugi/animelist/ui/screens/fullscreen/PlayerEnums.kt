@@ -105,3 +105,16 @@ enum class SingleActionGesture(val label: String) {
     Switch("Bölüm Değiştir"),
     Custom("Özel"),
 }
+
+enum class ArtType {
+    Cover,
+    Background,
+    Thumbnail,
+}
+
+enum class SetAsArt {
+    Success,
+    AddToLibraryFirst,
+    Error,
+}
+

@@ -2,7 +2,6 @@ package com.kitsugi.animelist.ui.screens.fullscreen.controls
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.kitsugi.animelist.core.player.SubtitleInput
 import com.kitsugi.animelist.data.repository.StreamSource
 import com.kitsugi.animelist.ui.screens.fullscreen.Decoder
 import com.kitsugi.animelist.ui.screens.fullscreen.KitsugiPanels
@@ -17,6 +16,8 @@ import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.sheets.Au
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.sheets.QualitySheet
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.sheets.MoreSheet
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.sheets.ScreenshotSheet
+import com.kitsugi.animelist.ui.screens.fullscreen.ArtType
+import java.io.InputStream
 
 /**
  * Tüm sheet'leri merkezi olarak yöneten koordinatör.
@@ -40,7 +41,7 @@ fun PlayerSheetsHost(
     onSeekToChapter: (IndexedSegment) -> Unit = {},
 
     // Subtitle Tracks
-    subtitleTracks: List<SubtitleInput> = emptyList(),
+    subtitleTracks: List<SubtitleTrackInfo> = emptyList(),
     selectedSubtitleIndex: Int = -1,
     onSelectSubtitle: (Int) -> Unit = {},
     onAddSubtitleFile: () -> Unit = {},
@@ -66,8 +67,15 @@ fun PlayerSheetsHost(
     onSelectDecoder: (Decoder) -> Unit = {},
 
     // Screenshot actions
-    onSaveScreenshot: () -> Unit = {},
-    onShareScreenshot: () -> Unit = {},
+    isLocalSource: Boolean = false,
+    hasSubTracks: Boolean = false,
+    showSubtitles: Boolean = true,
+    onToggleShowSubtitles: (Boolean) -> Unit = {},
+    cachePath: String = "",
+    onSetAsArt: (ArtType, (() -> InputStream)) -> Unit = { _, _ -> },
+    onSaveScreenshot: (() -> InputStream) -> Unit = {},
+    onShareScreenshot: (() -> InputStream) -> Unit = {},
+    takeScreenshot: (String, Boolean) -> InputStream? = { _, _ -> null },
 
     modifier: Modifier = Modifier,
 ) {
@@ -96,16 +104,9 @@ fun PlayerSheetsHost(
         }
 
         KitsugiSheets.SubtitleTracks -> {
-            val subtitleTrackInfos = subtitleTracks.mapIndexed { index, input ->
-                SubtitleTrackInfo(
-                    id = index,
-                    label = input.name ?: "Altyazı $index",
-                    language = input.lang
-                )
-            }
             val selectedIndices = if (selectedSubtitleIndex >= 0) listOf(selectedSubtitleIndex) else emptyList()
             SubtitleTracksSheet(
-                tracks = subtitleTrackInfos,
+                tracks = subtitleTracks,
                 selectedIndices = selectedIndices,
                 onSelect = onSelectSubtitle,
                 onAddSubtitleFile = onAddSubtitleFile,
@@ -160,8 +161,15 @@ fun PlayerSheetsHost(
 
         KitsugiSheets.Screenshot -> {
             ScreenshotSheet(
+                isLocalSource = isLocalSource,
+                hasSubTracks = hasSubTracks,
+                showSubtitles = showSubtitles,
+                onToggleShowSubtitles = onToggleShowSubtitles,
+                cachePath = cachePath,
+                onSetAsArt = onSetAsArt,
                 onSave = onSaveScreenshot,
                 onShare = onShareScreenshot,
+                takeScreenshot = takeScreenshot,
                 onDismissRequest = onDismissRequest,
                 modifier = modifier,
             )

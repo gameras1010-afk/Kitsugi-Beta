@@ -2,8 +2,11 @@ package com.kitsugi.animelist.ui.screens.fullscreen
 
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
+
 import androidx.lifecycle.viewModelScope
 import com.kitsugi.animelist.core.player.SubtitleInput
 import com.kitsugi.animelist.core.player.PlaybackState
@@ -1396,4 +1399,160 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
             }
         }
     }
+
+    // ─── Screenshot and Art Management ──────────────────────────────────────────
+
+    private val _screenshotShowSubtitles = MutableStateFlow(true)
+    val screenshotShowSubtitles: StateFlow<Boolean> = _screenshotShowSubtitles.asStateFlow()
+
+    fun toggleScreenshotShowSubtitles(show: Boolean) {
+        _screenshotShowSubtitles.value = show
+    }
+
+    val hasSubTracks: StateFlow<Boolean> = _currentSubtitles.map { it.isNotEmpty() }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    val isLocalSource: Boolean
+        get() = _currentVideoUrl.value?.let { !it.startsWith("http://") && !it.startsWith("https://") } ?: true
+
+    fun takeScreenshot(cachePath: String, showSubtitles: Boolean): java.io.InputStream? {
+        return activeEngine?.takeScreenshot(cachePath, showSubtitles)
+    }
+
+    fun saveImage(imageStream: () -> java.io.InputStream, timePos: Int?) {
+        viewModelScope.launch {
+            try {
+                val timeStr = timePos?.let { formatMs(it.toLong()) } ?: System.currentTimeMillis().toString()
+                val filename = "Kitsugi_${animeTitle}_${timeStr.replace(":", "-")}.png"
+                val resolver = context.contentResolver
+                val contentValues = android.content.ContentValues().apply {
+                    put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, filename)
+                    put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "image/png")
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                        put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, android.os.Environment.DIRECTORY_PICTURES + "/Kitsugi")
+                    }
+                }
+                val uri = resolver.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+                if (uri != null) {
+                    resolver.openOutputStream(uri)?.use { out ->
+                        imageStream().use { input ->
+                            input.copyTo(out)
+                        }
+                    }
+                    Toast.makeText(context, "Ekran görüntüsü kaydedildi: $filename", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(context, "Ekran görüntüsü kaydedilemedi", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e("PlayerViewModel", "saveImage failed", e)
+                Toast.makeText(context, "Kaydetme başarısız: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun shareImage(imageStream: () -> java.io.InputStream, timePos: Int?) {
+        viewModelScope.launch {
+            try {
+                val cacheDir = java.io.File(context.cacheDir, "shared_images").apply { mkdirs() }
+                val tempFile = java.io.File(cacheDir, "mpv_screenshot_share.png")
+                tempFile.outputStream().use { out ->
+                    imageStream().use { input ->
+                        input.copyTo(out)
+                    }
+                }
+
+                val uri = androidx.core.content.FileProvider.getUriForFile(
+                    context,
+                    "com.kitsugi.animelist.fileprovider",
+                    tempFile
+                )
+
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "image/png"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                
+                val chooser = Intent.createChooser(intent, "Ekran Görüntüsünü Paylaş").apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(chooser)
+            } catch (e: Exception) {
+                Log.e("PlayerViewModel", "shareImage failed", e)
+                Toast.makeText(context, "Paylaşım başarısız: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun setAsArt(artType: ArtType, imageStream: () -> java.io.InputStream) {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            val db = KitsugiDatabase.getDatabase(context)
+            val entryEntity = malId?.let { db.mediaEntryDao().getByMalId(it) }
+                ?: aniListId?.let { db.mediaEntryDao().getById(it) }
+                ?: db.mediaEntryDao().getAll().firstOrNull { it.title.equals(animeTitle, ignoreCase = true) }
+
+            if (entryEntity == null) {
+                withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    Toast.makeText(context, "Resmi ayarlamak için önce bu animeyi kütüphanenize eklemelisiniz.", Toast.LENGTH_LONG).show()
+                }
+                return@launch
+            }
+
+            try {
+                when (artType) {
+                    ArtType.Cover -> {
+                        val dir = java.io.File(context.filesDir, "covers").apply { mkdirs() }
+                        val file = java.io.File(dir, "${entryEntity.id}.png")
+                        file.outputStream().use { out ->
+                            imageStream().use { input -> input.copyTo(out) }
+                        }
+                        // Update in DB
+                        val updated = entryEntity.copy(imageUrl = "file://${file.absolutePath}")
+                        db.mediaEntryDao().update(updated)
+                        withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            Toast.makeText(context, "Kapak resmi güncellendi.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    ArtType.Background -> {
+                        // Set wallpaper
+                        val wallpaperManager = android.app.WallpaperManager.getInstance(context)
+                        imageStream().use { input ->
+                            wallpaperManager.setStream(input)
+                        }
+                        withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            Toast.makeText(context, "Duvar kağıdı güncellendi.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    ArtType.Thumbnail -> {
+                        val dir = java.io.File(context.filesDir, "thumbnails").apply { mkdirs() }
+                        val file = java.io.File(dir, "${entryEntity.id}_${_currentEpisode.value}.png")
+                        file.outputStream().use { out ->
+                            imageStream().use { input -> input.copyTo(out) }
+                        }
+                        withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            Toast.makeText(context, "Küçük resim güncellendi.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("KitsugiPlayerViewModel", "setAsArt failed", e)
+                withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    Toast.makeText(context, "Resim ayarlanırken hata oluştu: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun formatMs(ms: Long): String {
+        val totalSecs = ms / 1000
+        val hours = totalSecs / 3600
+        val mins = (totalSecs % 3600) / 60
+        val secs = totalSecs % 60
+        return if (hours > 0) {
+            String.format(java.util.Locale.US, "%02d:%02d:%02d", hours, mins, secs)
+        } else {
+            String.format(java.util.Locale.US, "%02d:%02d", mins, secs)
+        }
+    }
 }
+

@@ -586,6 +586,22 @@ fun AppRootDetailPages(
             }
         }
 
+        is AppStateKey.Downloads -> {
+            navState.stateHolder.SaveableStateProvider(key = "downloads_${key.depth}") {
+                com.kitsugi.animelist.ui.screens.offline.DownloadsScreen(
+                    onBack = { navState.popDetailStack() }
+                )
+            }
+        }
+
+        is AppStateKey.WatchHistory -> {
+            navState.stateHolder.SaveableStateProvider(key = "watch_history_${key.depth}") {
+                com.kitsugi.animelist.ui.screens.history.WatchHistoryScreen(
+                    onBack = { navState.popDetailStack() }
+                )
+            }
+        }
+
         else -> {
             // No-op or throw for unhandled states
         }

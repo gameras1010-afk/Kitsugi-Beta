@@ -35,6 +35,7 @@ import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import java.net.URLEncoder
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Download
 import com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity
 
 @Composable
@@ -135,6 +136,34 @@ fun KitsugiEpisodeOptionsDialog(
                                 titleRomaji = titleRomaji,
                                 titleNative = titleNative,
                                 startYear = startYear
+                            )
+                            onDismiss()
+                        }
+                    )
+                }
+
+                // 0b. Bölümü İndir
+                if (episodeNumber != null) {
+                    EpisodeOptionRow(
+                        icon = Icons.Rounded.Download,
+                        title = "Bölümü İndir",
+                        description = "Akış eklentileri aracılığıyla bölümü indirir",
+                        onClick = {
+                            KitsugiStreamActivity.start(
+                                context = context,
+                                malId = malId,
+                                aniListId = aniListId,
+                                tmdbId = tmdbId,
+                                episode = episodeNumber,
+                                season = seasonNumber,
+                                isMovie = isMovie,
+                                title = animeTitle,
+                                posterUrl = posterUrl,
+                                titleEnglish = titleEnglish,
+                                titleRomaji = titleRomaji,
+                                titleNative = titleNative,
+                                startYear = startYear,
+                                isDownloadMode = true
                             )
                             onDismiss()
                         }

@@ -170,6 +170,8 @@ data class AppSettings(
     val splashSoundEnabled: Boolean = true,
     val autoUpdateCheckEnabled: Boolean = true,
     val customImageDownloadUri: String = "",
+    val videoDownloadUri: String = "",
+    val downloaderPreference: String = "INTERNAL",
     val syncEnabledAnilist: Boolean = false,
     val syncEnabledMal: Boolean = false,
     // ─── MPV Gelişmiş Oynatıcı Ayarları (Aniyomi'den uyarlama) ───────────────

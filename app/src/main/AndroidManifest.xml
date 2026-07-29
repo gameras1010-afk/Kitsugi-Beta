@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <!-- T3.3: Yayın bildirimleri -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
@@ -31,6 +32,11 @@
         <package android:name="is.xyz.mpv" />
         <package android:name="org.courville.nova" />
         <package android:name="net.gtvbox.videoplayer" />
+        <!-- External downloaders for EXTERNAL_1DM / EXTERNAL_ADM preference -->
+        <package android:name="idm.internet.download.manager" />
+        <package android:name="idm.internet.download.manager.plus" />
+        <package android:name="com.dv.adm" />
+        <package android:name="com.dv.adm.pay" />
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <category android:name="android.intent.category.DEFAULT" />
@@ -214,6 +220,20 @@
             android:name=".core.player.KeepAliveService"
             android:foregroundServiceType="mediaPlayback"
             android:exported="false" />
+
+        <!-- AnimeDownloadService for background downloading -->
+        <service
+            android:name=".core.download.AnimeDownloadService"
+            android:foregroundServiceType="dataSync"
+            android:exported="false" />
+
+        <!-- WatchHistoryActivity: Standalone screen for browsing watch history -->
+        <activity
+            android:name=".ui.screens.stream.WatchHistoryActivity"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|density"
+            android:theme="@style/Theme.KitsugiAnimeList" />
 
         <!-- B1.10: TV Channel refresh background job (15dk periyodik + anlik) -->
         <service

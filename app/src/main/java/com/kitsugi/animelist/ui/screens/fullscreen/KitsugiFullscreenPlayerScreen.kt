@@ -57,7 +57,6 @@ import com.kitsugi.animelist.ui.screens.fullscreen.components.StreamInfoData
 import com.kitsugi.animelist.ui.screens.fullscreen.components.MetaCastMember
 import com.kitsugi.animelist.ui.screens.fullscreen.components.TorrentOverlay
 import com.kitsugi.animelist.ui.screens.fullscreen.components.TrackOption
-import com.kitsugi.animelist.ui.screens.fullscreen.components.GestureSwipeSide
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.PlayerControls
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.PlayerSheetsHost
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.PlayerPanelsHost
@@ -79,11 +78,7 @@ import com.kitsugi.animelist.core.player.engine.PlayerEngineType
 import com.kitsugi.animelist.core.player.engine.PlayerEngineSelector
 import com.kitsugi.animelist.core.player.engine.Media3PlayerEngine
 import com.kitsugi.animelist.core.player.engine.MpvPlayerEngine
-import com.kitsugi.animelist.ui.screens.fullscreen.components.PlayerGestureConfig
-import com.kitsugi.animelist.ui.screens.fullscreen.components.PlayerGestureOverlay
-import com.kitsugi.animelist.ui.screens.fullscreen.components.VolumeProgressBar
-import com.kitsugi.animelist.ui.screens.fullscreen.components.BrightnessProgressBar
-import com.kitsugi.animelist.ui.screens.fullscreen.components.rememberPlayerGestureController
+// Legacy gesture imports removed
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.changedToDown
@@ -477,33 +472,7 @@ fun KitsugiFullscreenPlayerScreen(
                 }
 
                 // ─── Gesture Controller (T2.1 + T2.7) ─────────────────────────────────
-                val gestureConfig = remember(safeSettings) {
-                    PlayerGestureConfig(
-                        volumeGestureEnabled     = safeSettings.gestureVolumeEnabled,
-                        brightnessGestureEnabled  = safeSettings.gestureBrightnessEnabled,
-                        zoomGestureEnabled        = safeSettings.gestureZoomEnabled,
-                        doubleTapSeekSeconds      = safeSettings.doubleTapSeekSeconds,
-                        holdSpeedMultiplier       = safeSettings.holdSpeedMultiplier,
-                        scrollSensitivity         = safeSettings.gestureScrollSensitivity,
-                        swipeVolumeBrightnessSides = safeSettings.swipeVolumeBrightnessSides,
-                        horizontalSeekGestureEnabled = safeSettings.horizontalSeekGestureEnabled
-                    )
-                }
-                val gestureController = rememberPlayerGestureController(
-                    config           = gestureConfig,
-                    onVolumeChange   = { /* AudioManager already updated inside controller */ },
-                    onBrightnessChange = { /* WindowManager already updated inside controller */ },
-                    onSeek           = { deltaMs ->
-                        val pos = playerEngine.currentPosition
-                        val dur = playerEngine.duration
-                        playerEngine.seekTo((pos + deltaMs).coerceIn(0L, dur))
-                    },
-                    onSpeedChange    = { speed ->
-                        currentSpeed = speed
-                        playerEngine.setPlaybackSpeed(speed)
-                    }
-                )
-                val gestureState by gestureController.gestureState
+                // Legacy rememberPlayerGestureController removed (Centralized GestureHandler used in PlayerControls)
 
                 // ─── PiP Panel and Controls Reset (T2.3) ──────────────────────────────
                 LaunchedEffect(isInPipMode) {
@@ -513,11 +482,7 @@ fun KitsugiFullscreenPlayerScreen(
                     }
                 }
 
-                // ─── Gesture drag state tracking ──────────────────────────────────────
-                var isGestureSwipeActive by remember { mutableStateOf(false) }
-                var gestureSwipeSide by remember { mutableStateOf<GestureSwipeSide>(GestureSwipeSide.NONE) }
-                var swipeStartY by remember { mutableStateOf(0f) }
-                var swipeTotalDy by remember { mutableStateOf(0f) }
+
 
                 LaunchedEffect(aspectFeedback) {
                     if (aspectFeedback != null) {
@@ -830,133 +795,8 @@ fun KitsugiFullscreenPlayerScreen(
                                 else -> false
                             }
                         }
-                        .pointerInput(playerEngine, gestureConfig, isInPipMode, panelShown, sheetShown, dialogShown, controlsShown, topBarHeightState, bottomControlsHeightState) {
-                            if (isInPipMode || panelShown != KitsugiPanels.None || sheetShown != KitsugiSheets.None || dialogShown != KitsugiDialogs.None) return@pointerInput
-                            awaitEachGesture {
-                                val down = awaitFirstDown(requireUnconsumed = false)
-                                val startX: Float = down.position.x
-                                val startY: Float = down.position.y
-                                val isInsideTopBar = controlsShown && startY < topBarHeightState
-                                val isInsideBottomControls = controlsShown && startY > (size.height - bottomControlsHeightState)
-                                if (isInsideTopBar || isInsideBottomControls) {
-                                    return@awaitEachGesture
-                                }
-                                val isLeftSide = startX < size.width / 2f
-                                var totalDy = 0f
-                                var isDragging = false
-                                 var dragVolume = gestureController.currentVolumeNormalized()
-                                 var dragBrightness = gestureController.currentBrightnessNormalized(context)
-                                var isPointerDown = true
-                                var holdJob: kotlinx.coroutines.Job? = null
-
-                                // Long press detection (hold-to-speedup T2.7)
-                                holdJob = scope.launch {
-                                    kotlinx.coroutines.delay(600)
-                                    if (isPointerDown && !isDragging) { gestureController.startHoldSpeed() }
-                                }
-
-                                var upOrCancel: PointerInputChange? = null
-                                var lastChange: PointerInputChange? = null
-                                try {
-                                    loop@ while (true) {
-                                        val event = awaitPointerEvent()
-                                        val change: androidx.compose.ui.input.pointer.PointerInputChange = event.changes.firstOrNull() ?: break@loop
-                                        lastChange = change
-
-                                        val dy: Float = change.position.y - startY
-                                        val dx: Float = change.position.x - startX
-                                        totalDy = dy
-
-                                        val dxAbs: Float = if (dx < 0f) 0f - dx else dx
-                                        val dyAbs: Float = if (dy < 0f) 0f - dy else dy
-
-                                        if (!isDragging && (dyAbs > 12f || dxAbs > 12f)) {
-                                            isPointerDown = false
-                                            holdJob?.cancel() // Not a long press if user moved
-                                            isDragging = true
-                                        }
-
-                                        if (isDragging) {
-                                            viewModel.showControls() // Reset timer
-                                            if (dyAbs > dxAbs * 1.5f) {
-                                                val deltaNorm: Float = (change.position.y - change.previousPosition.y) * -1.5f / size.height
-                                                val isVolumeLeft = gestureConfig.swipeVolumeBrightnessSides
-                                                val leftIsVolume = (isVolumeLeft && isLeftSide) || (!isVolumeLeft && !isLeftSide)
-                                                if (leftIsVolume) {
-                                                    dragVolume = (dragVolume + deltaNorm).coerceIn(0f, 1f)
-                                                    gestureController.setVolumeAbsolute(dragVolume)
-                                                } else {
-                                                    dragBrightness = (dragBrightness + deltaNorm).coerceIn(0.01f, 1f)
-                                                    gestureController.setBrightnessAbsolute(context, dragBrightness)
-                                                }
-                                                change.consume()
-                                            } else if (dxAbs > dyAbs * 1.5f && gestureConfig.horizontalSeekGestureEnabled) {
-                                                val deltaX: Float = change.position.x - change.previousPosition.x
-                                                val percentage: Float = (deltaX / size.width) * gestureConfig.scrollSensitivity
-                                                val seekDeltaMs: Long = (percentage * duration * 0.15f).toLong()
-                                                if (seekDeltaMs != 0L) {
-                                                    val newPos = (playerEngine.currentPosition + seekDeltaMs).coerceIn(0L, duration)
-                                                    playerEngine.seekTo(newPos)
-                                                    
-                                                    val seekSec = (seekDeltaMs / 1000).toInt()
-                                                    if (seekSec != 0) {
-                                                        seekFeedback = if (seekSec > 0) "+${seekSec}s" else "${seekSec}s"
-                                                        seekFeedbackOnRightSide = deltaX > 0
-                                                    }
-                                                }
-                                                change.consume()
-                                            }
-                                        }
-
-                                        if (change.changedToUp() || !change.pressed || event.changes.none { it.pressed }) {
-                                            upOrCancel = change
-                                            break@loop
-                                        }
-                                    }
-                                } finally {
-                                    isPointerDown = false
-                                    holdJob?.cancel()
-                                    gestureController.stopHoldSpeed()
-                                }
-                            }
-                        }
-                        // Tap and double-tap gestures
-                        .pointerInput(playerEngine, gestureConfig, isInPipMode, panelShown, sheetShown, dialogShown, controlsShown, topBarHeightState, bottomControlsHeightState) {
-                            if (isInPipMode || panelShown != KitsugiPanels.None || sheetShown != KitsugiSheets.None || dialogShown != KitsugiDialogs.None) return@pointerInput
-                            detectTapGestures(
-                                onDoubleTap = { offset ->
-                                    val startY = offset.y
-                                    val isInsideTopBar = controlsShown && startY < topBarHeightState
-                                    val isInsideBottomControls = controlsShown && startY > (size.height - bottomControlsHeightState)
-                                    if (isInsideTopBar || isInsideBottomControls) return@detectTapGestures
-
-                                    val isRight = offset.x > size.width / 2f
-                                    val pos = playerEngine.currentPosition
-                                    val dur = playerEngine.duration
-                                    val seekMs = (safeSettings.doubleTapSeekSeconds * 1000).toLong()
-                                    if (isRight) {
-                                        playerEngine.seekTo((pos + seekMs).coerceAtMost(dur))
-                                        seekFeedback = "+${safeSettings.doubleTapSeekSeconds}s"
-                                        seekFeedbackOnRightSide = true
-                                    } else {
-                                        playerEngine.seekTo((pos - seekMs).coerceAtLeast(0))
-                                        seekFeedback = "-${safeSettings.doubleTapSeekSeconds}s"
-                                        seekFeedbackOnRightSide = false
-                                    }
-                                    viewModel.showControls() // Reset timer
-                                },
-                                onTap = { offset ->
-                                    val startY = offset.y
-                                    val isInsideTopBar = controlsShown && startY < topBarHeightState
-                                    val isInsideBottomControls = controlsShown && startY > (size.height - bottomControlsHeightState)
-                                    if (!isInsideTopBar && !isInsideBottomControls) {
-                                        viewModel.toggleControls()
-                                    }
-                                }
-                            )
-                        }
-                        .pointerInput(playerEngine, gestureConfig, isInPipMode) {
-                            if (isInPipMode || !gestureConfig.zoomGestureEnabled) return@pointerInput
+                        .pointerInput(playerEngine, safeSettings, isInPipMode) {
+                            if (isInPipMode || !safeSettings.gestureZoomEnabled) return@pointerInput
                             detectTransformGestures { _, _, zoom, _ ->
                                 if (zoom > 1.10f && currentAspectMode != com.kitsugi.animelist.core.player.PlayerAspectMode.ZOOM) {
                                     currentAspectMode = com.kitsugi.animelist.core.player.PlayerAspectMode.ZOOM
@@ -997,36 +837,7 @@ fun KitsugiFullscreenPlayerScreen(
                         cast = castList
                     )
 
-                    // ─── Gesture overlays (T2.1) ────────────────────────────────────────
-                    if (!gestureState.isHoldSpeeding && !isInPipMode) {
-                        // Volume bar (left side - reversed UX)
-                        if (gestureState.gestureOverlayIcon?.name?.contains("Volume") == true) {
-                            VolumeProgressBar(
-                                volume   = gestureState.volumeLevel,
-                                modifier = Modifier
-                                    .align(Alignment.CenterStart)
-                                    .padding(start = 24.dp)
-                            )
-                        }
-                        // Brightness bar (right side - reversed UX)
-                        if (gestureState.gestureOverlayIcon?.name?.contains("Brightness") == true) {
-                            BrightnessProgressBar(
-                                brightness = gestureState.brightnessLevel.coerceAtLeast(0f),
-                                modifier   = Modifier
-                                    .align(Alignment.CenterEnd)
-                                    .padding(end = 24.dp)
-                            )
-                        }
-                    } else if (gestureState.isHoldSpeeding && !isInPipMode) {
-                        // Hold-to-speedup overlay — merkez üst (play butonunun üstünde)
-                        PlayerGestureOverlay(
-                            text = gestureState.gestureOverlayText,
-                            icon = gestureState.gestureOverlayIcon,
-                            modifier = Modifier
-                                .align(Alignment.TopCenter)
-                                .padding(top = 80.dp)
-                        )
-                    }
+                    // Legacy gesture progress bars and overlays removed (GestureHandler & PlayerControls manage overlays)
 
                     // Centralized OSD controls (Aniyomi style)
                     if (!isInPipMode) {
@@ -1170,12 +981,18 @@ fun KitsugiFullscreenPlayerScreen(
                         onSeekToChapter = { seg ->
                             playerEngine.seekTo((seg.start * 1000f).toLong())
                         },
-                        subtitleTracks = currentSubtitles,
-                        selectedSubtitleIndex = -1,
+                        subtitleTracks = textTrackOptions.mapIndexed { index, option ->
+                            com.kitsugi.animelist.ui.screens.fullscreen.controls.components.sheets.SubtitleTrackInfo(
+                                id = index,
+                                label = option.label,
+                                language = null
+                            )
+                        },
+                        selectedSubtitleIndex = if (isSubtitleDisabled) -1 else textTrackOptions.indexOfFirst { it.isSelected },
                         onSelectSubtitle = { idx -> textTrackOptions.getOrNull(idx)?.let { playerEngine.selectTrack(it) } },
                         onAddSubtitleFile = {},
                         audioTrackLabels = audioTrackOptions.map { it.label },
-                        selectedAudioIndex = -1,
+                        selectedAudioIndex = audioTrackOptions.indexOfFirst { it.isSelected },
                         onSelectAudio = { idx -> audioTrackOptions.getOrNull(idx)?.let { playerEngine.selectTrack(it) } },
                         onAddAudioFile = {},
                         streamSources = currentStreamSources,
@@ -1203,8 +1020,15 @@ fun KitsugiFullscreenPlayerScreen(
                         onStartSleepTimer = { secs -> viewModel.startTimer(secs) },
                         selectedDecoder = viewModel.currentDecoder.collectAsState().value,
                         onSelectDecoder = { dec -> viewModel.updateDecoder(dec) },
-                        onSaveScreenshot = {},
-                        onShareScreenshot = {},
+                        isLocalSource = viewModel.isLocalSource,
+                        hasSubTracks = viewModel.hasSubTracks.collectAsState().value,
+                        showSubtitles = viewModel.screenshotShowSubtitles.collectAsState().value,
+                        onToggleShowSubtitles = { viewModel.toggleScreenshotShowSubtitles(it) },
+                        cachePath = context.cacheDir.absolutePath,
+                        onSetAsArt = { artType, stream -> viewModel.setAsArt(artType, stream) },
+                        onSaveScreenshot = { stream -> viewModel.saveImage(stream, playerEngine.currentPosition.toInt()) },
+                        onShareScreenshot = { stream -> viewModel.shareImage(stream, playerEngine.currentPosition.toInt()) },
+                        takeScreenshot = { path, showSubs -> viewModel.takeScreenshot(path, showSubs) },
                         modifier = Modifier.align(Alignment.BottomCenter)
                     )
 

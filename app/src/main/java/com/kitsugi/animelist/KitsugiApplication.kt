@@ -54,6 +54,12 @@ class KitsugiApplication : Application(), SingletonImageLoader.Factory {
         instance = this
         super.onCreate()
 
+        // Initialize AnimeDownloadManager
+        com.kitsugi.animelist.data.local.AnimeDownloadManager.init(this)
+
+        // Initialize WatchHistoryManager
+        com.kitsugi.animelist.data.local.WatchHistoryManager.init(this)
+
         // Initialize custom FileLoggingTree
         com.kitsugi.animelist.core.diagnostics.FileLoggingTree.init(this)
 

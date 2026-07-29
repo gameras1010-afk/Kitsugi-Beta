@@ -20,6 +20,8 @@ sealed interface DetailScreen {
     data class UserProfile(val userId: Int, val username: String? = null, val avatarUrl: String? = null) : DetailScreen
     data class UserMediaList(val userId: Int, val username: String, val initialMediaType: com.kitsugi.animelist.model.MediaType) : DetailScreen
     data object Notifications : DetailScreen
+    data object Downloads : DetailScreen
+    data object WatchHistory : DetailScreen
 }
 
 sealed interface AppStateKey {
@@ -45,6 +47,8 @@ sealed interface AppStateKey {
     data class UserProfile(val userId: Int, override val depth: Int, val username: String? = null, val avatarUrl: String? = null) : AppStateKey
     data class UserMediaList(val userId: Int, override val depth: Int, val username: String, val initialMediaType: com.kitsugi.animelist.model.MediaType) : AppStateKey
     data class Notifications(override val depth: Int) : AppStateKey
+    data class Downloads(override val depth: Int) : AppStateKey
+    data class WatchHistory(override val depth: Int) : AppStateKey
 }
 
 /**

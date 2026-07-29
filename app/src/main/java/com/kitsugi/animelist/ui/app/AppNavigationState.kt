@@ -85,6 +85,8 @@ class AppNavigationState(
                 is DetailScreen.UserProfile -> "user_profile_${depth}_${screen.userId}"
                 is DetailScreen.UserMediaList -> "user_media_list_${depth}_${screen.userId}_${screen.initialMediaType.name}"
                 DetailScreen.Notifications -> "notifications_${depth}"
+                DetailScreen.Downloads -> "downloads_${depth}"
+                DetailScreen.WatchHistory -> "watch_history_${depth}"
             }
             stateHolder.removeState(key)
         }

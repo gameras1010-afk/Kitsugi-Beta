@@ -79,4 +79,10 @@ interface PlayerEngine {
      * Stop and release resources.
      */
     fun release()
+
+    /**
+     * Takes a screenshot of the video.
+     */
+    fun takeScreenshot(cachePath: String, showSubtitles: Boolean): java.io.InputStream? = null
 }
+

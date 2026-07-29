@@ -136,6 +136,26 @@ fun SettingsScreen(
             KitsugiSettingsDivider()
 
             KitsugiSettingsItem(
+                title = "İndirilen Videolar",
+                description = "İndirilen anime bölümlerini yönetin ve çevrimdışı oynatın",
+                icon = Icons.Rounded.Download,
+                iconColor = KitsugiColors.AccentGreen,
+                onClick = { params.onOpenDownloads?.invoke() }
+            )
+
+            KitsugiSettingsDivider()
+
+            KitsugiSettingsItem(
+                title = "İzleme Geçmişi",
+                description = "İzlediğiniz anime bölümlerini görüntüleyin veya temizleyin",
+                icon = Icons.Rounded.History,
+                iconColor = KitsugiColors.AccentOrange,
+                onClick = { params.onOpenWatchHistory?.invoke() }
+            )
+
+            KitsugiSettingsDivider()
+
+            KitsugiSettingsItem(
                 title = "Eklenti & Akış Ayarları",
                 description = "Torrent, video sağlayıcıları, debrid ve manga kaynakları",
                 icon = Icons.Rounded.Extension,
@@ -265,6 +285,10 @@ fun SettingsScreen(
                 onDnsChoiceSelected = params.integrations.onDnsChoiceSelected,
                 customImageDownloadUri = params.general.customImageDownloadUri,
                 onCustomImageDownloadUriChanged = params.general.onCustomImageDownloadUriChanged,
+                videoDownloadUri = params.general.videoDownloadUri,
+                onVideoDownloadUriChanged = params.general.onVideoDownloadUriChanged,
+                downloaderPreference = params.general.downloaderPreference,
+                onDownloaderPreferenceSelected = params.general.onDownloaderPreferenceSelected,
                 onDismiss = {
                     activeDialog = null
                 }

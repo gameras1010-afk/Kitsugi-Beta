@@ -47,6 +47,10 @@ fun KitsugiSystemSettingsDialog(
     onDnsChoiceSelected: (Int) -> Unit,
     customImageDownloadUri: String = "",
     onCustomImageDownloadUriChanged: (String) -> Unit = {},
+    videoDownloadUri: String = "",
+    onVideoDownloadUriChanged: (String) -> Unit = {},
+    downloaderPreference: String = "INTERNAL",
+    onDownloaderPreferenceSelected: (String) -> Unit = {},
     onDismiss: () -> Unit
 ) {
     val accentColor = LocalKitsugiAccent.current
@@ -162,6 +166,10 @@ fun KitsugiSystemSettingsDialog(
                 2 -> StorageSettingsTab(
                     customImageDownloadUri = customImageDownloadUri,
                     onCustomImageDownloadUriChanged = onCustomImageDownloadUriChanged,
+                    videoDownloadUri = videoDownloadUri,
+                    onVideoDownloadUriChanged = onVideoDownloadUriChanged,
+                    downloaderPreference = downloaderPreference,
+                    onDownloaderPreferenceSelected = onDownloaderPreferenceSelected,
                     accentColor = accentColor,
                     scrollState = storageSettingsScrollState
                 )
@@ -330,6 +338,10 @@ private fun DnsSettingsTab(
 private fun StorageSettingsTab(
     customImageDownloadUri: String,
     onCustomImageDownloadUriChanged: (String) -> Unit,
+    videoDownloadUri: String,
+    onVideoDownloadUriChanged: (String) -> Unit,
+    downloaderPreference: String,
+    onDownloaderPreferenceSelected: (String) -> Unit,
     accentColor: Color,
     scrollState: ScrollState = rememberScrollState()
 ) {
@@ -349,6 +361,20 @@ private fun StorageSettingsTab(
         }
     }
 
+    val videoFolderPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        uri?.let {
+            try {
+                val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                context.contentResolver.takePersistableUriPermission(it, takeFlags)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            onVideoDownloadUriChanged(it.toString())
+        }
+    }
+
     val displayPath = if (customImageDownloadUri.isBlank()) {
         "Varsayılan (İndirilenler / Kitsugi)"
     } else {
@@ -358,6 +384,18 @@ private fun StorageSettingsTab(
             docFile?.name ?: treeUri.lastPathSegment ?: customImageDownloadUri
         } catch (e: Exception) {
             customImageDownloadUri
+        }
+    }
+
+    val displayVideoPath = if (videoDownloadUri.isBlank()) {
+        "Varsayılan (İndirilenler / Kitsugi / Video)"
+    } else {
+        try {
+            val treeUri = Uri.parse(videoDownloadUri)
+            val docFile = DocumentFile.fromTreeUri(context, treeUri)
+            docFile?.name ?: treeUri.lastPathSegment ?: videoDownloadUri
+        } catch (e: Exception) {
+            videoDownloadUri
         }
     }
 
@@ -435,6 +473,123 @@ private fun StorageSettingsTab(
                 }
             }
         }
+
+        KitsugiSettingsSection(title = "Video & Anime İndirmeleri") {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Anime videolarının kaydedileceği hedef klasörü ve indirme aracını seçebilirsiniz.",
+                    color = KitsugiColors.TextSecondary,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(KitsugiColors.SurfaceSoft, shape = RoundedCornerShape(12.dp))
+                        .padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Folder,
+                        contentDescription = null,
+                        tint = accentColor,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Mevcut Video İndirme Konumu",
+                            color = KitsugiColors.TextMuted,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = displayVideoPath,
+                            color = KitsugiColors.TextPrimary,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Button(
+                    onClick = { videoFolderPickerLauncher.launch(null) },
+                    colors = ButtonDefaults.buttonColors(containerColor = accentColor),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Rounded.Folder, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Video İndirme Klasörü Seç", color = KitsugiColors.Background, fontWeight = FontWeight.Bold)
+                }
+
+                if (videoDownloadUri.isNotBlank()) {
+                    OutlinedButton(
+                        onClick = { onVideoDownloadUriChanged("") },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Varsayılana Sıfırla (Downloads/Kitsugi/Video)", color = KitsugiColors.TextSecondary)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+                HorizontalDivider(color = KitsugiColors.Border)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "İndirme Aracı Tercihi",
+                    color = KitsugiColors.TextPrimary,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
+                downloaderOptions.forEach { option ->
+                    val isSelected = option.id == downloaderPreference
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = if (isSelected) KitsugiColors.SurfaceSoft else Color.Transparent,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .tvClickable(shape = RoundedCornerShape(12.dp)) { onDownloaderPreferenceSelected(option.id) }
+                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = isSelected,
+                            onClick = { onDownloaderPreferenceSelected(option.id) },
+                            colors = RadioButtonDefaults.colors(
+                                selectedColor = accentColor,
+                                unselectedColor = KitsugiColors.TextMuted
+                            )
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                text = option.title,
+                                color = KitsugiColors.TextPrimary,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = option.description,
+                                color = KitsugiColors.TextSecondary,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -447,4 +602,11 @@ private val dnsOptions = listOf(
     KitsugiChoiceOption(id = "5", title = "Quad9 DNS", description = "Zararlı yazılım korumalı ve güvenli Quad9 DoH sunucularını kullanır."),
     KitsugiChoiceOption(id = "6", title = "DNS.SB", description = "Gizlilik odaklı, log tutmayan DNS.SB DoH sunucularını kullanır."),
     KitsugiChoiceOption(id = "7", title = "Canadian Shield", description = "CIRA tarafından sunulan Kanada merkezli korumalı DoH sunucularını kullanır.")
+)
+
+private val downloaderOptions = listOf(
+    KitsugiChoiceOption(id = "INTERNAL", title = "Dahili İndirici (FFmpeg)", description = "İndirmeleri arka planda FFmpeg kullanarak birleştirir ve kaydeder."),
+    KitsugiChoiceOption(id = "EXTERNAL_1DM", title = "1DM / 1DM+", description = "1DM uygulamasını kullanarak indirme işlemini başlatır."),
+    KitsugiChoiceOption(id = "EXTERNAL_ADM", title = "ADM", description = "Advanced Download Manager (ADM) uygulamasını kullanarak indirmeyi başlatır."),
+    KitsugiChoiceOption(id = "EXTERNAL_SYSTEM", title = "Sistem Varsayılanı / İndirici Seçici", description = "İndirme bağlantısını sistemin varsayılan indiricisi veya tarayıcı ile açar.")
 )

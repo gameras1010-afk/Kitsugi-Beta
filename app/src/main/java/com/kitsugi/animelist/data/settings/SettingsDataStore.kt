@@ -168,6 +168,8 @@ class SettingsDataStore(
         val EnableAssExtractor = booleanPreferencesKey("enable_ass_extractor")
         val AutoUpdateCheckEnabled = booleanPreferencesKey("auto_update_check_enabled")
         val CustomImageDownloadUri = stringPreferencesKey("custom_image_download_uri")
+        val VideoDownloadUri = stringPreferencesKey("video_download_uri")
+        val DownloaderPreference = stringPreferencesKey("downloader_preference")
         val SyncEnabledAnilist = booleanPreferencesKey("sync_enabled_anilist")
         val SyncEnabledMal = booleanPreferencesKey("sync_enabled_mal")
         // ─── MPV Gelişmiş Oynatıcı Ayarları ───────────────────────────────────────
@@ -336,6 +338,8 @@ class SettingsDataStore(
                     enableAssExtractor = preferences[Keys.EnableAssExtractor] ?: false,
                     autoUpdateCheckEnabled = preferences[Keys.AutoUpdateCheckEnabled] ?: true,
                     customImageDownloadUri = preferences[Keys.CustomImageDownloadUri] ?: "",
+                    videoDownloadUri = preferences[Keys.VideoDownloadUri] ?: "",
+                    downloaderPreference = preferences[Keys.DownloaderPreference] ?: "INTERNAL",
                     syncEnabledAnilist = preferences[Keys.SyncEnabledAnilist] ?: true,
                     syncEnabledMal = preferences[Keys.SyncEnabledMal] ?: true,
                     // ─── MPV Gelişmiş Ayarları
@@ -370,6 +374,18 @@ class SettingsDataStore(
     suspend fun setCustomImageDownloadUri(uri: String) {
         context.settingsDataStore.edit { preferences ->
             preferences[Keys.CustomImageDownloadUri] = uri
+        }
+    }
+
+    suspend fun setVideoDownloadUri(uri: String) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[Keys.VideoDownloadUri] = uri
+        }
+    }
+
+    suspend fun setDownloaderPreference(preference: String) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[Keys.DownloaderPreference] = preference
         }
     }
 

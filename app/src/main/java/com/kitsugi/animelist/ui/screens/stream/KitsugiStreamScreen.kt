@@ -90,8 +90,10 @@ fun KitsugiStreamScreen(
     description: String? = null,
     castList: List<MetaCastMember> = emptyList(),
     isAutoplay: Boolean = false,
+    isDownloadMode: Boolean = false,
     onBack: () -> Unit,
-    onLaunchExternalPlayer: ((input: ExternalPlayerInput, streamKey: String) -> Unit)? = null
+    onLaunchExternalPlayer: ((input: ExternalPlayerInput, streamKey: String) -> Unit)? = null,
+    onOpenHistory: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val accentColor = LocalKitsugiAccent.current
@@ -177,6 +179,23 @@ fun KitsugiStreamScreen(
         { source: StreamSource, resolvedUrl: String, engine: String ->
             val streamKey = (source.infoHash ?: resolvedUrl).hashCode().toString()
             val resumePositionMs = streamPrefs.getLong(KitsugiStreamActivity.KEY_POS_PFX + streamKey, 0L)
+
+            // ── İzleme geçmişine kaydet ─────────────────────────────────────
+            com.kitsugi.animelist.data.local.WatchHistoryManager.record(
+                com.kitsugi.animelist.data.model.WatchHistoryEntry(
+                    animeId = if (aniListId != null) aniListId.toString() else malId?.toString() ?: "",
+                    animeTitle = title,
+                    posterUrl = posterUrl,
+                    episode = episode,
+                    season = season,
+                    isMovie = isMovie,
+                    quality = source.quality,
+                    source = source.addonName,
+                    malId = malId,
+                    aniListId = aniListId
+                )
+            )
+
             if (engine == "exoplayer") {
                 KitsugiFullscreenPlayerActivity.startWithStreamUrls(
                     context = context, videoUrl = resolvedUrl,
@@ -255,6 +274,7 @@ fun KitsugiStreamScreen(
     // ── Main content ──────────────────────────────────────────────────────────
     StreamScreenContent(
         title = title, posterUrl = posterUrl, episode = episode, season = season, isMovie = isMovie,
+        isDownloadMode = isDownloadMode,
         imdbId = imdbId, accentColor = accentColor,
         addonStates = addonStates, allStreams = allStreams,
         isResolvingId = isResolvingId, idResolveFailed = idResolveFailed,
@@ -293,7 +313,23 @@ fun KitsugiStreamScreen(
                     return@launch
                 }
 
-                handlePlayStream(source, resolvedUrl)
+                if (isDownloadMode) {
+                    com.kitsugi.animelist.data.local.AnimeDownloadManager.addDownload(
+                        context = context,
+                        animeId = if (aniListId != null) aniListId.toString() else malId?.toString() ?: "",
+                        animeTitle = title,
+                        posterUrl = posterUrl,
+                        episode = episode,
+                        season = season,
+                        url = resolvedUrl,
+                        quality = source.quality ?: "Bilinmeyen",
+                        requestHeaders = source.requestHeaders ?: emptyMap()
+                    )
+                    android.widget.Toast.makeText(context, "İndirme kuyruğa eklendi", android.widget.Toast.LENGTH_SHORT).show()
+                    onBack()
+                } else {
+                    handlePlayStream(source, resolvedUrl)
+                }
             }
             activeStreamJob = job
         },
@@ -314,7 +350,8 @@ fun KitsugiStreamScreen(
         onVerifyPlugin = { addonDisplayName ->
             viewModel.onVerifyPlugin(addonDisplayName)
         },
-        onOpenSettings = { showSettingsDialog = true }
+        onOpenSettings = { showSettingsDialog = true },
+        onOpenHistory = onOpenHistory
     )
 
     if (showSettingsDialog) {

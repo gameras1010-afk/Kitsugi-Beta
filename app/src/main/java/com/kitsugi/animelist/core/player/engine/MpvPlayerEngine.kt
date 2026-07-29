@@ -610,4 +610,25 @@ class MpvPlayerEngine(
             booleanArrayOf(false)
         )
     }
+
+    override fun takeScreenshot(cachePath: String, showSubtitles: Boolean): java.io.InputStream? {
+        val view = mpvView ?: return null
+        val filename = cachePath + "/${System.currentTimeMillis()}_mpv_screenshot_tmp.png"
+        val subtitleFlag = if (showSubtitles) "subtitles" else "video"
+
+        runCatching {
+            view.mpv.command("screenshot-to-file", filename, subtitleFlag)
+        }.onFailure {
+            Log.e(TAG, "screenshot-to-file failed: ${it.message}")
+            return null
+        }
+
+        val tempFile = java.io.File(filename).takeIf { it.exists() } ?: return null
+        val newFile = java.io.File("$cachePath/mpv_screenshot.png")
+
+        newFile.delete()
+        tempFile.renameTo(newFile)
+        return newFile.takeIf { it.exists() }?.inputStream()
+    }
 }
+

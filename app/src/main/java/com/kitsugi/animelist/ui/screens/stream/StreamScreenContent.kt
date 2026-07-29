@@ -47,6 +47,7 @@ fun StreamScreenContent(
     episode: Int,
     season: Int,
     isMovie: Boolean = false,
+    isDownloadMode: Boolean = false,
     imdbId: String?,
     accentColor: Color,
     addonStates: List<AddonFetchState>,
@@ -68,7 +69,8 @@ fun StreamScreenContent(
     onPendingDone: () -> Unit,
     onRememberChoice: (String) -> Unit = {},
     onOpenSettings: (() -> Unit)? = null,
-    onVerifyPlugin: ((addonName: String) -> Unit)? = null
+    onVerifyPlugin: ((addonName: String) -> Unit)? = null,
+    onOpenHistory: (() -> Unit)? = null
 ) {
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
@@ -164,7 +166,8 @@ fun StreamScreenContent(
                 isResolvingId = isResolvingId, idResolveFailed = idResolveFailed, isAnyLoading = isAnyLoading,
                 filteredAddonStates = filteredAddonStates, totalFilteredStreamsCount = totalFilteredStreamsCount,
                 hasActiveFilter = hasActiveFilter, onStreamSelected = onStreamSelected,
-                onVerifyPlugin = onVerifyPlugin, onOpenSettings = onOpenSettings
+                onVerifyPlugin = onVerifyPlugin, onOpenSettings = onOpenSettings,
+                onOpenHistory = onOpenHistory
             )
         }
 
@@ -399,7 +402,8 @@ private fun FilteredEmptyState(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun LandscapeLayout(
-    title: String, posterUrl: String?, episode: Int, season: Int, isMovie: Boolean = false, imdbId: String?,
+    title: String, posterUrl: String?, episode: Int, season: Int, isMovie: Boolean = false,
+    isDownloadMode: Boolean = false, imdbId: String?,
     accentColor: Color, addonStates: List<AddonFetchState>, allStreams: List<StreamSource>,
     selectedAddonFilter: String?, searchQuery: String, onQueryChange: (String) -> Unit,
     selectedTagFilter: String?, onTagSelect: (String?) -> Unit,
@@ -475,7 +479,11 @@ private fun LandscapeLayout(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    if (isMovie) "Film" else "Sezon $season · Bölüm $episode",
+                    if (isMovie) {
+                        if (isDownloadMode) "Film (İndir)" else "Film"
+                    } else {
+                        if (isDownloadMode) "İndir · Sezon $season · Bölüm $episode" else "Sezon $season · Bölüm $episode"
+                    },
                     color = KitsugiColors.TextSecondary,
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center
@@ -567,14 +575,16 @@ private fun LandscapeLayout(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun PortraitLayout(
-    title: String, posterUrl: String?, episode: Int, season: Int, isMovie: Boolean = false, imdbId: String?,
+    title: String, posterUrl: String?, episode: Int, season: Int, isMovie: Boolean = false,
+    isDownloadMode: Boolean = false, imdbId: String?,
     accentColor: Color, addonStates: List<AddonFetchState>, allStreams: List<StreamSource>,
     selectedAddonFilter: String?, searchQuery: String, onQueryChange: (String) -> Unit,
     selectedTagFilter: String?, onTagSelect: (String?) -> Unit,
     onAddonFilterChange: (String?) -> Unit, onBack: () -> Unit,
     isResolvingId: Boolean, idResolveFailed: Boolean, isAnyLoading: Boolean,
     filteredAddonStates: List<AddonFetchState>, totalFilteredStreamsCount: Int, hasActiveFilter: Boolean,
-    onStreamSelected: (StreamSource) -> Unit, onVerifyPlugin: ((String) -> Unit)?, onOpenSettings: (() -> Unit)?
+    onStreamSelected: (StreamSource) -> Unit, onVerifyPlugin: ((String) -> Unit)?, onOpenSettings: (() -> Unit)?,
+    onOpenHistory: (() -> Unit)?
 ) {
     val listState = rememberLazyListState()
     val showFloatingHeader by remember {
@@ -605,11 +615,25 @@ private fun PortraitLayout(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(title, color = KitsugiColors.TextPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         Text(
-                            if (isMovie) "Film" else "Sezon $season · Bölüm $episode",
+                            if (isMovie) {
+                                if (isDownloadMode) "Film (İndir)" else "Film"
+                            } else {
+                                if (isDownloadMode) "İndir · Sezon $season · Bölüm $episode" else "Sezon $season · Bölüm $episode"
+                            },
                             color = KitsugiColors.TextSecondary, style = MaterialTheme.typography.bodySmall
                         )
                     }
                     imdbId?.let { ImdbBadge(it) }
+                    if (onOpenHistory != null) {
+                        Spacer(Modifier.width(4.dp))
+                        IconButton(
+                            onClick = onOpenHistory,
+                            colors = IconButtonDefaults.iconButtonColors(containerColor = KitsugiColors.SurfaceStrong.copy(alpha = 0.5f)),
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(Icons.Rounded.History, "İzleme Geçmişi", tint = KitsugiColors.TextSecondary, modifier = Modifier.size(18.dp))
+                        }
+                    }
                 }
             }
 
@@ -628,7 +652,11 @@ private fun PortraitLayout(
                         Text(title, color = KitsugiColors.TextPrimary, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            if (isMovie) "Film" else "Sezon $season · Bölüm $episode",
+                            if (isMovie) {
+                                if (isDownloadMode) "Film (İndir)" else "Film"
+                            } else {
+                                if (isDownloadMode) "İndir · Sezon $season · Bölüm $episode" else "Sezon $season · Bölüm $episode"
+                            },
                             color = KitsugiColors.TextSecondary, style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -684,7 +712,11 @@ private fun PortraitLayout(
                                     overflow = TextOverflow.Ellipsis
                                 )
                                 Text(
-                                    text = if (isMovie) "Film" else "Sezon $season · Bölüm $episode",
+                                    text = if (isMovie) {
+                                        if (isDownloadMode) "Film (İndir)" else "Film"
+                                    } else {
+                                        if (isDownloadMode) "İndir · Sezon $season · Bölüm $episode" else "Sezon $season · Bölüm $episode"
+                                    },
                                     color = KitsugiColors.TextSecondary,
                                     style = MaterialTheme.typography.labelSmall
                                 )

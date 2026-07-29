@@ -34,6 +34,7 @@ class KitsugiStreamActivity : ComponentActivity() {
         private const val EXTRA_CAST_JSON      = "extra_cast_json"
 
         private const val EXTRA_IS_AUTOPLAY    = "extra_is_autoplay"
+        private const val EXTRA_IS_DOWNLOAD_MODE = "extra_is_download_mode"
 
         const val PREFS_NAME  = "KitsugiStreamPrefs"
         const val KEY_POS_PFX = "pos_"
@@ -57,7 +58,8 @@ class KitsugiStreamActivity : ComponentActivity() {
             startYear: Int? = null,
             description: String? = null,
             cast: List<MetaCastMember> = emptyList(),
-            isAutoplay: Boolean = false
+            isAutoplay: Boolean = false,
+            isDownloadMode: Boolean = false
         ) {
             tempCast = cast
             context.startActivity(
@@ -76,6 +78,7 @@ class KitsugiStreamActivity : ComponentActivity() {
                     startYear?.let      { putExtra(EXTRA_START_YEAR, it) }
                     description?.let    { putExtra(EXTRA_DESCRIPTION, it) }
                     putExtra(EXTRA_IS_AUTOPLAY, isAutoplay)
+                    putExtra(EXTRA_IS_DOWNLOAD_MODE, isDownloadMode)
                 }
             )
         }
@@ -147,6 +150,7 @@ class KitsugiStreamActivity : ComponentActivity() {
     private var currentStartYear: Int? = null
     private var currentDescription: String? = null
     private var isAutoplayMode: Boolean = false
+    private var isDownloadMode: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -167,6 +171,7 @@ class KitsugiStreamActivity : ComponentActivity() {
         currentStartYear    = if (intent.hasExtra(EXTRA_START_YEAR)) intent.getIntExtra(EXTRA_START_YEAR, 0).takeIf { it > 0 } else null
         currentDescription  = intent.getStringExtra(EXTRA_DESCRIPTION)
         isAutoplayMode      = intent.getBooleanExtra(EXTRA_IS_AUTOPLAY, false)
+        isDownloadMode      = intent.getBooleanExtra(EXTRA_IS_DOWNLOAD_MODE, false)
 
         val castList: List<MetaCastMember> = tempCast ?: run {
             val castJson = intent.getStringExtra(EXTRA_CAST_JSON)
@@ -187,11 +192,17 @@ class KitsugiStreamActivity : ComponentActivity() {
                     titleRomaji = currentTitleRomaji, titleNative = currentTitleNative, startYear = currentStartYear,
                     description = currentDescription, castList = castList,
                     isAutoplay = isAutoplayMode,
+                    isDownloadMode = isDownloadMode,
                     onBack = { finish() },
                     onLaunchExternalPlayer = { input, streamKey ->
                         currentStreamKey = streamKey
                         com.kitsugi.animelist.core.player.KeepAliveService.start(this)
                         externalPlayerLauncher.launch(input)
+                    },
+                    onOpenHistory = {
+                        startActivity(
+                            android.content.Intent(this, WatchHistoryActivity::class.java)
+                        )
                     }
                 )
             }

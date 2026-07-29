@@ -46,6 +46,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.BrightnessSlider
+import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.VolumeSlider
 import com.kitsugi.animelist.core.player.PlaybackState
 import com.kitsugi.animelist.ui.screens.fullscreen.KitsugiDialogs
 import com.kitsugi.animelist.ui.screens.fullscreen.KitsugiPlayerViewModel
@@ -141,6 +145,25 @@ fun PlayerControls(
         }
     }
 
+    val isBrightnessSliderShown by viewModel.isBrightnessSliderShown.collectAsState()
+    val isVolumeSliderShown by viewModel.isVolumeSliderShown.collectAsState()
+    val brightness by viewModel.currentBrightness.collectAsState()
+    val volume by viewModel.currentVolume.collectAsState()
+    val mpvVolume by viewModel.currentMPVVolume.collectAsState()
+
+    LaunchedEffect(volume, mpvVolume, isVolumeSliderShown) {
+        if (isVolumeSliderShown) {
+            delay(2000)
+            viewModel.isVolumeSliderShown.value = false
+        }
+    }
+    LaunchedEffect(brightness, isBrightnessSliderShown) {
+        if (isBrightnessSliderShown) {
+            delay(2000)
+            viewModel.isBrightnessSliderShown.value = false
+        }
+    }
+
     fun resetTimer() { resetTimerTrigger++ }
 
     val interactionSource = remember { MutableInteractionSource() }
@@ -163,6 +186,41 @@ fun PlayerControls(
             interactionSource = interactionSource,
             modifier          = Modifier.fillMaxSize()
         )
+
+        // ── Brightness slider overlay ─────────────────────────────────────────
+        val swapVolumeAndBrightness = settings.swipeVolumeBrightnessSides
+        AnimatedVisibility(
+            visible = isBrightnessSliderShown,
+            enter = slideInHorizontally(androidx.compose.animation.core.tween(100)) { if (swapVolumeAndBrightness) -it else it } + fadeIn(),
+            exit = slideOutHorizontally(androidx.compose.animation.core.tween(300)) { if (swapVolumeAndBrightness) -it else it } + fadeOut(),
+            modifier = Modifier
+                .align(if (swapVolumeAndBrightness) Alignment.CenterStart else Alignment.CenterEnd)
+                .padding(horizontal = 24.dp)
+        ) {
+            BrightnessSlider(
+                brightness = brightness,
+                positiveRange = 0f..1f,
+                negativeRange = 0f..0.75f,
+            )
+        }
+
+        // ── Volume slider overlay ─────────────────────────────────────────────
+        AnimatedVisibility(
+            visible = isVolumeSliderShown,
+            enter = slideInHorizontally(androidx.compose.animation.core.tween(100)) { if (swapVolumeAndBrightness) it else -it } + fadeIn(),
+            exit = slideOutHorizontally(androidx.compose.animation.core.tween(300)) { if (swapVolumeAndBrightness) it else -it } + fadeOut(),
+            modifier = Modifier
+                .align(if (swapVolumeAndBrightness) Alignment.CenterEnd else Alignment.CenterStart)
+                .padding(horizontal = 24.dp)
+        ) {
+            VolumeSlider(
+                volume = volume,
+                mpvVolume = mpvVolume,
+                range = 0..viewModel.maxVolume,
+                boostRange = if (settings.volumeBoostCap - 100 > 0) 0..(settings.volumeBoostCap - 100) else null,
+                displayAsPercentage = false,
+            )
+        }
 
         // ── Gradient scrim ────────────────────────────────────────────────────
         AnimatedVisibility(

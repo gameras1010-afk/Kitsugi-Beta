@@ -13,7 +13,9 @@ class SettingsScreenParameters(
     val player: PlayerSettings,
     val addon: AddonSettings,
     val manga: MangaSettings,
-    val integrations: IntegrationsSettings
+    val integrations: IntegrationsSettings,
+    val onOpenDownloads: (() -> Unit)? = null,
+    val onOpenWatchHistory: (() -> Unit)? = null
 )
 
 data class GeneralSettings(
@@ -78,7 +80,11 @@ data class GeneralSettings(
     val onAutoUpdateCheckEnabledChanged: (Boolean) -> Unit = {},
     val onCheckForUpdatesClick: () -> Unit = {},
     val customImageDownloadUri: String = "",
-    val onCustomImageDownloadUriChanged: (String) -> Unit = {}
+    val onCustomImageDownloadUriChanged: (String) -> Unit = {},
+    val videoDownloadUri: String = "",
+    val onVideoDownloadUriChanged: (String) -> Unit = {},
+    val downloaderPreference: String = "INTERNAL",
+    val onDownloaderPreferenceSelected: (String) -> Unit = {}
 )
 
 data class ProfileSettings(

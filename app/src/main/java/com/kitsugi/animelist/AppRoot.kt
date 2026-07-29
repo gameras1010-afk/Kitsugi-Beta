@@ -859,6 +859,8 @@ fun AppRoot(
                     activeScreen is DetailScreen.UserProfile -> AppStateKey.UserProfile(activeScreen.userId, depth = currentDepth, username = activeScreen.username, avatarUrl = activeScreen.avatarUrl)
                     activeScreen is DetailScreen.UserMediaList -> AppStateKey.UserMediaList(activeScreen.userId, depth = currentDepth, username = activeScreen.username, initialMediaType = activeScreen.initialMediaType)
                     activeScreen is DetailScreen.Notifications -> AppStateKey.Notifications(depth = currentDepth)
+                    activeScreen is DetailScreen.Downloads -> AppStateKey.Downloads(depth = currentDepth)
+                    activeScreen is DetailScreen.WatchHistory -> AppStateKey.WatchHistory(depth = currentDepth)
                     else                         -> AppStateKey.Tab(selectedTab)
                 }
 
@@ -1066,6 +1068,8 @@ private fun AppNavigationContent(
             is AppStateKey.UserProfile,
             is AppStateKey.UserMediaList,
             is AppStateKey.Notifications,
+            is AppStateKey.Downloads,
+            is AppStateKey.WatchHistory,
             is AppStateKey.MediaDetail -> {
                 AppRootDetailPages(
                     key = key,
