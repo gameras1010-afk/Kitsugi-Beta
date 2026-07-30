@@ -1,4 +1,4 @@
-# Kitsugi Release Notes - v2.4.117-beta
+# Kitsugi Release Notes - v2.4.118-beta
 
 Bu sürümde, görsel galeri etkileşimi iyileştirilmiş, çapraz platform senkronizasyon altyapısı güçlendirilmiş ve Simkl entegrasyonuna otomatik akıllı ID eşleştirme desteği eklenmiştir.
 
