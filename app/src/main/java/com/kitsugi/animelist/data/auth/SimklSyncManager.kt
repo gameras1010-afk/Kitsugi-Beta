@@ -9,6 +9,7 @@ import com.kitsugi.animelist.model.MediaType
 import com.kitsugi.animelist.model.WatchStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.kitsugi.animelist.data.local.toEntity
 
 /**
  * Simkl ↔ Kitsugi uygulaması arasında çift yönlü senkronizasyon yöneticisi.
@@ -70,7 +71,22 @@ object SimklSyncManager {
             return@withContext SyncResult(messages = emptyList(), errors = listOf("Simkl hesabı bağlı değil"))
         }
 
-        val simklId = entry.simklId
+        var simklId = entry.simklId
+        if (simklId == null || simklId <= 0) {
+            val resolvedId = simklApiClient.lookupSimklId(
+                malId = entry.malId,
+                tmdbId = entry.tmdbId,
+                mediaType = entry.type
+            )
+            if (resolvedId != null && resolvedId > 0) {
+                simklId = resolvedId
+                runCatching {
+                    val dao = com.kitsugi.animelist.data.local.KitsugiDatabase.getDatabase(context).mediaEntryDao()
+                    dao.update(entry.copy(simklId = resolvedId).toEntity())
+                }
+            }
+        }
+
         if (simklId == null || simklId <= 0) {
             return@withContext SyncResult(messages = emptyList(), errors = listOf("Simkl ID bulunamadı: ${entry.title}"))
         }
@@ -142,7 +158,18 @@ object SimklSyncManager {
             return@withContext SyncResult(messages = emptyList(), errors = listOf("Simkl hesabı bağlı değil"))
         }
 
-        val simklId = entry.simklId
+        var simklId = entry.simklId
+        if (simklId == null || simklId <= 0) {
+            val resolvedId = simklApiClient.lookupSimklId(
+                malId = entry.malId,
+                tmdbId = entry.tmdbId,
+                mediaType = entry.type
+            )
+            if (resolvedId != null && resolvedId > 0) {
+                simklId = resolvedId
+            }
+        }
+
         if (simklId == null || simklId <= 0) {
             return@withContext SyncResult(messages = emptyList(), errors = listOf("Simkl ID bulunamadı"))
         }

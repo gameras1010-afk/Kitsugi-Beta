@@ -55,7 +55,11 @@ fun EntryDetailLeftPanel(
         blurAdultMedia = blurAdultMedia,
         onPosterClick = { clickedUrl ->
             if (galleryItems.isNotEmpty()) {
-                onGalleryOpen(galleryItems, 0)
+                val index = galleryItems.indexOfFirst { item ->
+                    item.url == clickedUrl || 
+                    (!clickedUrl.isNullOrBlank() && item.url.substringAfterLast("/") == clickedUrl.substringAfterLast("/"))
+                }.coerceAtLeast(0)
+                onGalleryOpen(galleryItems, index)
             } else if (!clickedUrl.isNullOrBlank()) {
                 onGalleryOpen(
                     listOf(

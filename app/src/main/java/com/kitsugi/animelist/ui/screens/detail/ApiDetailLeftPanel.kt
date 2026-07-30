@@ -96,12 +96,16 @@ fun ApiDetailLeftPanel(
         onBackClick = onBackClick,
         blurAdultMedia = blurAdultMedia,
         onPosterClick = {
+            val clickedUrl = displayResult.imageUrl
             if (galleryItems.isNotEmpty()) {
-                onGalleryOpen(galleryItems, 0)
+                val index = galleryItems.indexOfFirst { item ->
+                    item.url == clickedUrl || 
+                    (!clickedUrl.isNullOrBlank() && item.url.substringAfterLast("/") == clickedUrl.substringAfterLast("/"))
+                }.coerceAtLeast(0)
+                onGalleryOpen(galleryItems, index)
             } else {
-                val posterUrl = displayResult.imageUrl
-                if (!posterUrl.isNullOrBlank()) {
-                    onGalleryOpen(listOf(GalleryItem(url = posterUrl, category = GalleryCategory.POSTER, source = displayResult.source)), 0)
+                if (!clickedUrl.isNullOrBlank()) {
+                    onGalleryOpen(listOf(GalleryItem(url = clickedUrl, category = GalleryCategory.POSTER, source = displayResult.source)), 0)
                 }
             }
         },

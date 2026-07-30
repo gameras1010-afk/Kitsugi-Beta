@@ -36,7 +36,8 @@ object ExternalListSyncManager {
             val shouldSyncAniList = syncEnabledAniList && !aniListToken.isNullOrBlank() &&
                 (entry.aniListEntryId != null || realMalId != null || entry.source == "anilist")
             val shouldSyncMal = syncEnabledMal && !malToken.isNullOrBlank() && realMalId != null
-            val shouldSyncSimkl = !simklToken.isNullOrBlank() && entry.simklId != null && entry.simklId > 0
+            val shouldSyncSimkl = !simklToken.isNullOrBlank() &&
+                ((entry.simklId != null && entry.simklId > 0) || entry.malId != null || entry.tmdbId != null)
 
             if (shouldSyncAniList) {
                 runCatching {
@@ -132,7 +133,8 @@ object ExternalListSyncManager {
             val shouldDeleteAniList = syncEnabledAniList && !aniListToken.isNullOrBlank() &&
                 (entry.aniListEntryId != null || realMalId != null || entry.source == "anilist")
             val shouldDeleteMal = syncEnabledMal && !malToken.isNullOrBlank() && realMalId != null
-            val shouldDeleteSimkl = !simklToken.isNullOrBlank() && entry.simklId != null && entry.simklId > 0
+            val shouldDeleteSimkl = !simklToken.isNullOrBlank() &&
+                ((entry.simklId != null && entry.simklId > 0) || entry.malId != null || entry.tmdbId != null)
 
             if (shouldDeleteAniList) {
                 runCatching {

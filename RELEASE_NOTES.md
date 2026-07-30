@@ -1,21 +1,14 @@
-# Kitsugi Release Notes - v2.4.116-beta
+# Kitsugi Release Notes - v2.4.117-beta
 
-Bu sürümde, video indirme altyapısındaki kritik çalışma zamanı hataları giderilmiş, üçüncü taraf entegrasyonlar genişletilmiş ve platformlar arası senkronizasyon kararlılığı artırılmıştır.
+Bu sürümde, görsel galeri etkileşimi iyileştirilmiş, çapraz platform senkronizasyon altyapısı güçlendirilmiş ve Simkl entegrasyonuna otomatik akıllı ID eşleştirme desteği eklenmiştir.
 
-### 🛠️ FFmpeg İndirme Çökme Hatası Giderildi
-- **Eksik Bağımlılık Çözümü:** Video indirme/dönüştürme işlemlerinde FFmpeg çalıştırılırken meydana gelen ve uygulamanın çökmesine yol açan `NoClassDefFoundError: Failed resolution of: Lcom/arthenica/smartexception/java/Exceptions;` hatası giderildi.
-- **Transitive Linking Desteği:** `smart-exception-java` ve `smart-exception-common` kütüphaneleri runtime sınıf yoluna (classpath) ve paketleme yapılandırmasına açıkça dahil edildi.
-- **R8 / ProGuard Optimizasyonu:** R8 kod daraltıcısının FFmpeg bağımlılıklarını silmesini engelleyen keep kuralları güncellendi ve doğrulandı.
+### 🖼️ Görsel Galeri Etkileşimi İyileştirildi
+- **Akıllı Poster Tıklama Mantığı:** Detay ekranlarında poster görseline tıklandığında resim galerisinin her zaman ilk resimden (0. indeks) başlaması yerine, tıklanan görselin URL'si üzerinden doğru galeri indeksinin hesaplanıp o görselle açılması sağlandı.
 
-### 🌐 Gelişmiş Cloudstream Eklenti Depoları (Extensions)
-- **Doğrulanmış Türkçe & Küresel Depolar:** `CloudstreamExtensionsTab` içerisine tek tıkla kurulabilir 8 adet güncel ve çalışan Türkçe/Community eklenti deposu (aktif linkler) entegre edildi.
-- **Eklenti Lisans ve Anti-Leech Korumaları:** Türkçe eklentilerdeki sürüm kilitlerini ve RequestBlocker hız sınırlarını otomatik olarak aşan `applyHelperPatches` mantığı iyileştirildi.
+### 🔄 Simkl Entegrasyonuna Akıllı ID Çözümleme Desteği
+- **Çalışma Zamanı Simkl ID Eşleme:** Veritabanında Simkl ID'si bulunmayan veya Simkl hesabı sonradan bağlanan içeriklerin güncellenmesi veya silinmesi durumunda, MyAnimeList ID veya TMDB ID kullanılarak Simkl ID'si çalışma zamanında (on-the-fly) API üzerinden çözümlenir.
+- **Veri Tutarlılığı ve Otomatik Kayıt:** Çözümlenen Simkl ID'si veritabanındaki yerel kayda otomatik olarak yazılarak sonraki senkronizasyonların doğrudan ve hızlı yapılması sağlanır.
+- **Gelişmiş Senkronizasyon Akışı:** Simkl hesabı bağlı olduğunda, yerel veritabanında Simkl ID'si olmasa dahi MAL veya TMDB ID'leri mevcut olduğu sürece senkronizasyon işlemleri Simkl ile anında gerçekleştirilir.
 
-### 📺 NuvioTV Entegrasyon ve Eşitleme Çalışmaları
-- **NuvioIdResolver Altyapısı:** MyAnimeList (MAL), AniList ve TMDB medya kimlikleri arasında çapraz eşleştirme sağlayan kimlik çözücü tamamlandı.
-- **Birleşik Keşfet Desteği (Discover):** TV arayüzünde MAL, AniList ve TMDB verilerini tek bir ekranda birleştiren `DiscoverRepository` ve `MediaDiscoverScreen` entegrasyonu tamamlandı.
-- **PathClassLoader Dinamik Yükleme:** Harici TV eklentilerinin dinamik olarak güvenle yüklenmesi için `ExternalExtensionLoader` yapısı PathClassLoader ile yeniden tasarlandı.
-
-### 🔄 Multi-Platform Eşitleme ve Hız Sınırlandırıcı (Throttling)
-- **Simkl Entegrasyonu:** AniList ve MyAnimeList entegrasyonlarının yanına Simkl de eklenerek 3 yönlü senkronizasyon sağlandı.
-- **API 429 Koruması:** Yoğun senkronizasyon isteklerinde API sunucularından 429 (Too Many Requests) hatası almayı önlemek için coroutine tabanlı akıllı gecikme (throttling) mekanizması devreye alındı.
+### ⚙️ Genel Entegrasyon ve Kararlılık
+- **Platformlar Arası Veri Tutarlılığı:** MAL, AniList ve Simkl platformları arasındaki üç yönlü senkronizasyon ve akıllı içe aktarma (`smartImport`) işlemleri optimize edilerek kütüphanedeki veri bütünlüğü korundu.
