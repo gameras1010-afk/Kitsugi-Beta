@@ -45,6 +45,9 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.OutlinedButton
 import androidx.tv.material3.Text
+import android.content.Intent
+import android.net.Uri
+import com.kitsugi.animelist.ui.components.KitsugiWebViewDialog
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.QRCodeWriter
@@ -98,6 +101,9 @@ fun TvQrLoginScreen(
     var selectedService by remember { mutableStateOf<TvAuthService?>(null) }
     var qrBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var currentQrUrl by remember { mutableStateOf("") }
+
+    var showWebViewUrl by remember { mutableStateOf<String?>(null) }
+    var activeAuthService by remember { mutableStateOf<String?>(null) }
 
     // Seçilen servis değiştiğinde QR'ı oluştur ve Simkl ise polling başlat
     LaunchedEffect(selectedService) {
@@ -171,6 +177,42 @@ fun TvQrLoginScreen(
         }
     }
 
+    if (showWebViewUrl != null) {
+        val title = when (activeAuthService) {
+            "anilist" -> "AniList Girişi"
+            "mal" -> "MyAnimeList Girişi"
+            else -> "Web Girişi"
+        }
+        KitsugiWebViewDialog(
+            title = title,
+            url = showWebViewUrl!!,
+            onDismiss = {
+                showWebViewUrl = null
+                activeAuthService = null
+                authViewModel.refreshAuthState()
+            },
+            onUrlRedirect = { redirectUrl ->
+                if (redirectUrl.startsWith("malapp://auth")) {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(redirectUrl))
+                    ExternalAuthManager.handleAuthIntent(context, intent,
+                        onSuccess = { serviceName ->
+                            android.widget.Toast.makeText(context, "${if (serviceName == "anilist") "AniList" else "MyAnimeList"} bağlantısı başarılı.", android.widget.Toast.LENGTH_SHORT).show()
+                            authViewModel.refreshAuthState()
+                        },
+                        onError = { error ->
+                            android.widget.Toast.makeText(context, "Hata: $error", android.widget.Toast.LENGTH_LONG).show()
+                        }
+                    )
+                    showWebViewUrl = null
+                    activeAuthService = null
+                    true
+                } else {
+                    false
+                }
+            }
+        )
+    }
+
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -194,7 +236,7 @@ fun TvQrLoginScreen(
             )
 
             Text(
-                text = "Telefonunuzla QR kodu okutarak\nbağlanın",
+                text = "TV üzerinden doğrudan tarayıcı ile\nveya telefonunuzla bağlanın",
                 style = MaterialTheme.typography.bodyMedium,
                 color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.6f),
                 modifier = Modifier.padding(bottom = 32.dp)
@@ -231,7 +273,7 @@ fun TvQrLoginScreen(
             }
         }
 
-        // ── Sağ Panel: QR Görüntüsü ───────────────────────────────────────────
+        // ── Sağ Panel: Giriş Seçenekleri / QR Görüntüsü ────────────────────────
         Column(
             modifier = Modifier.weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -257,27 +299,82 @@ fun TvQrLoginScreen(
                             modifier = Modifier.padding(bottom = KitsugiTvTokens.Spacing.contentPadding)
                         )
 
-                        Box(
-                            modifier = Modifier
-                                .clip(KitsugiTvTokens.Shapes.posterCard as RoundedCornerShape)
-                                .background(androidx.compose.ui.graphics.Color.White)
-                                .padding(12.dp)
-                        ) {
-                            Image(
-                                bitmap = bmp.asImageBitmap(),
-                                contentDescription = "QR Kodu",
-                                modifier = Modifier.size(220.dp)
+                        if (service == TvAuthService.Simkl) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(KitsugiTvTokens.Shapes.posterCard as RoundedCornerShape)
+                                    .background(androidx.compose.ui.graphics.Color.White)
+                                    .padding(12.dp)
+                            ) {
+                                Image(
+                                    bitmap = bmp.asImageBitmap(),
+                                    contentDescription = "QR Kodu",
+                                    modifier = Modifier.size(220.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(KitsugiTvTokens.Spacing.contentPadding))
+
+                            Text(
+                                text = "Telefonunuzdaki kamera veya\ntarayıcı ile okutun",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.5f),
+                                textAlign = TextAlign.Center
                             )
+                        } else {
+                            Button(
+                                onClick = {
+                                    val svcName = when (service) {
+                                        TvAuthService.AniList -> "anilist"
+                                        TvAuthService.MAL -> "mal"
+                                        else -> ""
+                                    }
+                                    if (svcName.isNotEmpty()) {
+                                        runCatching {
+                                            val url = ExternalAuthManager.getAuthUrlAndPrepare(context, svcName)
+                                            activeAuthService = svcName
+                                            showWebViewUrl = url
+                                        }.onFailure { e ->
+                                            android.widget.Toast.makeText(context, "Hata: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+                                        }
+                                    }
+                                },
+                                colors = ButtonDefaults.colors(
+                                    containerColor = accentColor,
+                                    contentColor = androidx.compose.ui.graphics.Color.White
+                                ),
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            ) {
+                                Text(
+                                    text = "TV Tarayıcısı ile Giriş Yap",
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                text = "TV üzerinde açılacak güvenli pencere ile giriş yapın.\nAlternatif olarak QR kodu okutabilirsiniz.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.6f),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+
+                            Box(
+                                modifier = Modifier
+                                    .clip(KitsugiTvTokens.Shapes.posterCard as RoundedCornerShape)
+                                    .background(androidx.compose.ui.graphics.Color.White)
+                                    .padding(8.dp)
+                            ) {
+                                Image(
+                                    bitmap = bmp.asImageBitmap(),
+                                    contentDescription = "QR Kodu",
+                                    modifier = Modifier.size(120.dp)
+                                )
+                            }
                         }
-
-                        Spacer(modifier = Modifier.height(KitsugiTvTokens.Spacing.contentPadding))
-
-                        Text(
-                            text = "Telefonunuzdaki kamera veya\ntarayıcı ile okutun",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.5f),
-                            textAlign = TextAlign.Center
-                        )
                     }
                 }
             }

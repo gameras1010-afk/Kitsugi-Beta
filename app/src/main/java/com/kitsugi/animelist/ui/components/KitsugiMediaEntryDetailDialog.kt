@@ -41,6 +41,8 @@ import com.kitsugi.animelist.model.WatchStatus
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.utils.toFriendlySourceLabel
+import androidx.compose.ui.res.stringResource
+import com.kitsugi.animelist.R
 
 @Composable
 fun KitsugiMediaEntryDetailDialog(
@@ -501,12 +503,12 @@ private fun DetailInfoGrid(
 
         DetailInfoRow(
             label = "ID",
-            value = entry.malId?.toString() ?: "-"
+            value = entry.malId?.toString() ?: stringResource(R.string.label_unknown)
         )
 
         DetailInfoRow(
             label = "Yıl",
-            value = entry.year?.toString() ?: "-"
+            value = entry.year?.toString() ?: stringResource(R.string.label_unknown)
         )
 
         if (entry.source == "mal" || entry.source == "jikan") {
@@ -651,9 +653,10 @@ private fun entryProgressText(entry: MediaEntry): String {
     return "${entry.progress}/$totalText ${progressUnit(entry)}"
 }
 
+@Composable
 private fun scoreText(entry: MediaEntry): String {
-    return if (entry.score == null) {
-        "Puan yok"
+    return if (entry.score == null || entry.score == 0) {
+        stringResource(R.string.score_unrated)
     } else {
         "${entry.score}/10"
     }

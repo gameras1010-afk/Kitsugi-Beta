@@ -820,4 +820,31 @@
     <string name="detail_role_prefix">Rol: %1$s</string>
     <string name="label_unknown">Bilinmiyor</string>
 
+    <!-- Additional Localization Strings -->
+    <string name="score_unrated">Puanlanmamış</string>
+    <string name="label_not_available">Yok</string>
+
+    <!-- Common Staff/Crew Roles -->
+    <string name="staff_role_director">Yönetmen</string>
+    <string name="staff_role_producer">Yapımcı</string>
+    <string name="staff_role_writer">Yazar</string>
+    <string name="staff_role_creator">Yaratıcı</string>
+    <string name="staff_role_editor">Editör</string>
+    <string name="staff_role_original_creator">Orijinal Yaratıcı</string>
+    <string name="staff_role_character_design">Karakter Tasarımı</string>
+    <string name="staff_role_animation_director">Animasyon Yönetmeni</string>
+    <string name="staff_role_music">Müzik</string>
+    <string name="staff_role_sound_director">Ses Yönetmeni</string>
+    <string name="staff_role_art_director">Sanat Yönetmeni</string>
+    <string name="staff_role_screenplay">Senarist</string>
+    <string name="staff_role_series_composition">Seri Düzenlemesi</string>
+    <string name="staff_role_color_design">Renk Tasarımı</string>
+    <string name="staff_role_photography_director">Görüntü Yönetmeni</string>
+    <string name="staff_role_storyboard">Storyboard</string>
+    <string name="staff_role_key_animation">Anahtar Animasyon</string>
+    <string name="staff_role_in_between_animation">Ara Animasyon</string>
+    <string name="staff_role_theme_song_performance">Tema Şarkısı Performansı</string>
+    <string name="staff_role_original_story">Orijinal Hikaye</string>
+    <string name="staff_role_voice_actor">Seslendirme Sanatçısı</string>
+
 </resources>

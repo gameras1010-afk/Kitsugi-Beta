@@ -39,6 +39,7 @@ import com.kitsugi.animelist.data.remote.KitsugiStudio
 import com.kitsugi.animelist.data.remote.KitsugiTag
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
+import com.kitsugi.animelist.ui.screens.search.SearchTranslation
 
 // ---------------------------------------------------------------------------
 //  Stüdyo / Yapımcı chips bölümü
@@ -218,7 +219,7 @@ private fun TagChip(tag: KitsugiTag, accentColor: Color, onClick: (() -> Unit)? 
             )
         }
         Text(
-            text = tag.name,
+            text = SearchTranslation.translateToTurkishForDisplay(tag.name),
             color = chipColor,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.SemiBold

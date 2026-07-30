@@ -377,20 +377,64 @@ object SearchTranslation {
     // Public API
     // ─────────────────────────────────────────────────────────────────────────
 
-    fun translateToTurkishForDisplay(label: String): String =
-        englishToTurkish[label] ?: label
+    fun String.normalizeToResourceKey(): String {
+        return this.lowercase()
+            .replace(Regex("[^a-z0-9_]"), "_")
+            .replace(Regex("__+"), "_")
+            .trim('_')
+    }
 
-    fun translateToEnglishForSearch(label: String): String {
+    private fun getLocalizedStringFromResource(prefix: String, label: String): String? {
+        val context = com.kitsugi.animelist.KitsugiApplication.getInstance() ?: return null
+        val normalized = label.normalizeToResourceKey()
+        val key = "${prefix}_$normalized"
+        val resId = context.resources.getIdentifier(key, "string", context.packageName)
+        return if (resId != 0) context.getString(resId) else null
+    }
+
+    fun translateToTurkishForDisplay(label: String): String {
         val cleaned = label.trim()
+        if (cleaned.isEmpty()) return cleaned
+        getLocalizedStringFromResource("genre", cleaned)?.let { return it }
+        getLocalizedStringFromResource("tag", cleaned)?.let { return it }
+        getLocalizedStringFromResource("staff_role", cleaned)?.let { return it }
+
+        val exact = englishToTurkish[cleaned]
+        if (exact != null) return exact
         val lower = cleaned.lowercase()
-        if (englishToTurkish.containsKey(cleaned)) return cleaned
-        aliases[lower]?.let { return it }
-        turkishToEnglish[lower]?.let { return it }
+        englishToTurkish.entries.find { it.key.lowercase() == lower }?.let { return it.value }
         return cleaned
     }
 
-    fun displayLabel(label: String): String =
-        englishToTurkish[label]
-            ?: englishToTurkish[translateToEnglishForSearch(label)]
-            ?: label
+    fun translateToEnglishForSearch(label: String): String {
+        val cleaned = label.trim()
+        if (englishToTurkish.containsKey(cleaned)) return cleaned
+        val lower = cleaned.lowercase()
+        aliases[lower]?.let { return it }
+        turkishToEnglish[lower]?.let { return it }
+        englishToTurkish.keys.find { it.lowercase() == lower }?.let { return it }
+        return cleaned
+    }
+
+    fun displayLabel(label: String): String {
+        val cleaned = label.trim()
+        if (cleaned.isEmpty()) return cleaned
+        getLocalizedStringFromResource("genre", cleaned)?.let { return it }
+        getLocalizedStringFromResource("tag", cleaned)?.let { return it }
+        getLocalizedStringFromResource("staff_role", cleaned)?.let { return it }
+
+        val exact = englishToTurkish[cleaned]
+        if (exact != null) return exact
+        val eng = translateToEnglishForSearch(cleaned)
+
+        getLocalizedStringFromResource("genre", eng)?.let { return it }
+        getLocalizedStringFromResource("tag", eng)?.let { return it }
+        getLocalizedStringFromResource("staff_role", eng)?.let { return it }
+
+        val engExact = englishToTurkish[eng]
+        if (engExact != null) return engExact
+        val lower = eng.lowercase()
+        englishToTurkish.entries.find { it.key.lowercase() == lower }?.let { return it.value }
+        return cleaned
+    }
 }

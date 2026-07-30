@@ -467,8 +467,34 @@
     <string name="empty_character_roles">No character voice roles found.</string>
     <string name="empty_media_works">No media works found.</string>
 
-    <!-- Detail row labels -->
     <string name="detail_role_prefix">Role: %1$s</string>
     <string name="label_unknown">Unknown</string>
+
+    <!-- Additional Localization Strings -->
+    <string name="score_unrated">Unrated</string>
+    <string name="label_not_available">N/A</string>
+
+    <!-- Common Staff/Crew Roles -->
+    <string name="staff_role_director">Director</string>
+    <string name="staff_role_producer">Producer</string>
+    <string name="staff_role_writer">Writer</string>
+    <string name="staff_role_creator">Creator</string>
+    <string name="staff_role_editor">Editor</string>
+    <string name="staff_role_original_creator">Original Creator</string>
+    <string name="staff_role_character_design">Character Design</string>
+    <string name="staff_role_animation_director">Animation Director</string>
+    <string name="staff_role_music">Music</string>
+    <string name="staff_role_sound_director">Sound Director</string>
+    <string name="staff_role_art_director">Art Director</string>
+    <string name="staff_role_screenplay">Screenplay</string>
+    <string name="staff_role_series_composition">Series Composition</string>
+    <string name="staff_role_color_design">Color Design</string>
+    <string name="staff_role_photography_director">Photography Director</string>
+    <string name="staff_role_storyboard">Storyboard</string>
+    <string name="staff_role_key_animation">Key Animation</string>
+    <string name="staff_role_in_between_animation">In-Between Animation</string>
+    <string name="staff_role_theme_song_performance">Theme Song Performance</string>
+    <string name="staff_role_original_story">Original Story</string>
+    <string name="staff_role_voice_actor">Voice Actor</string>
 
 </resources>

@@ -39,6 +39,8 @@ import com.kitsugi.animelist.ui.theme.KitsugiTvTokens
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayTitle
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayScore
 import com.kitsugi.animelist.utils.toFriendlySourceLabel
+import androidx.compose.ui.res.stringResource
+import com.kitsugi.animelist.R
 
 import com.kitsugi.animelist.ui.utils.tvClickable
 
@@ -167,7 +169,7 @@ fun SearchResultRow(
                 ) {
                     if (!hideScores) {
                         val displayScore = result.getDisplayScore(scoreFormat, hideScores)
-                        val scoreText = if (displayScore == "unrated") "unrated" else "★ $displayScore"
+                        val scoreText = if (displayScore == "unrated") stringResource(R.string.score_unrated) else "★ $displayScore"
                         Text(
                             text = scoreText,
                             color = KitsugiColors.AccentOrange,

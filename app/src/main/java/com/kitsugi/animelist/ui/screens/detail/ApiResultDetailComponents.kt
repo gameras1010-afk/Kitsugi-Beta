@@ -68,6 +68,8 @@ import androidx.compose.foundation.lazy.items
 import com.kitsugi.animelist.ui.components.KitsugiMarkdownText
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayTitle
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayScore
+import androidx.compose.ui.res.stringResource
+import com.kitsugi.animelist.R
 
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -293,19 +295,19 @@ internal fun ApiStatsGrid(
 
         ApiMiniStatCard(
             label = "Yıl",
-            value = result.year?.toString() ?: "-",
+            value = result.year?.toString() ?: stringResource(R.string.label_unknown),
             modifier = Modifier.weight(1f)
         )
 
         ApiMiniStatCard(
             label = "Toplam",
-            value = result.total?.toString() ?: "-",
+            value = result.total?.toString() ?: stringResource(R.string.label_unknown),
             modifier = Modifier.weight(1f)
         )
 
         ApiMiniStatCard(
             label = "Skor",
-            value = if (hideScores) "-" else result.getDisplayScore(scoreFormat, hideScores),
+            value = if (hideScores) stringResource(R.string.label_unknown) else result.getDisplayScore(scoreFormat, hideScores),
             modifier = Modifier.weight(1f)
         )
     }

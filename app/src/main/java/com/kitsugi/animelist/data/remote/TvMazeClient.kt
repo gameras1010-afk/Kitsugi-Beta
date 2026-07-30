@@ -9,6 +9,8 @@ import okhttp3.Request
 import org.json.JSONObject
 import java.net.URLEncoder
 
+import com.kitsugi.animelist.utils.toTurkishGenres
+
 object TvMazeClient {
     private const val TAG = "TvMazeClient"
 
@@ -81,7 +83,7 @@ object TvMazeClient {
 
         return KitsugiMediaDetail(
             synopsis = summary,
-            genres = genres,
+            genres = genres.toTurkishGenres(),
             status = statusVal,
             titleEnglish = name,
             titleRomaji = name,

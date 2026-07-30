@@ -107,21 +107,39 @@ private val genreMap = mapOf(
 )
 
 /** API'dan gelen tür adını Türkçeye çevirir. Eşleme yoksa orijinali döner. */
-fun String.toTurkishGenre(): String = if (!isTurkish()) this else genreMap[this] ?: this
+fun String.toTurkishGenre(): String {
+    if (!isTurkish()) return this
+    val cleaned = this.trim()
+    if (cleaned.isEmpty()) return cleaned
+    val mapped = genreMap[cleaned]
+        ?: genreMap[cleaned.lowercase()]
+        ?: genreMap[cleaned.replaceFirstChar { if (it.isLowerCase()) it.titlecase(java.util.Locale.ROOT) else it.toString() }]
+        // Try case-insensitive lookup in keys
+        ?: genreMap.entries.find { it.key.equals(cleaned, ignoreCase = true) }?.value
+    if (mapped != null) return mapped
+    return com.kitsugi.animelist.ui.screens.search.SearchTranslation.displayLabel(cleaned)
+}
 
 /** Tür listesini Türkçeye çevirir. */
 fun List<String>.toTurkishGenres(): List<String> = map { it.toTurkishGenre() }
 
 // Tersine dönüşüm: Türkçe → İngilizce (arama API'ları için)
 private val reverseGenreMap: Map<String, String> by lazy {
-    genreMap.entries.associate { (en, tr) -> tr to en }
+    genreMap.entries.associate { (en, tr) -> tr.lowercase() to en }
 }
 
 /**
  * Türkçe veya İngilizce tür adını İngilizce API adına dönüştürür.
  * "Aksiyon" → "Action", "Action" → "Action"
  */
-fun String.toEnglishGenreForSearch(): String = reverseGenreMap[this] ?: this
+fun String.toEnglishGenreForSearch(): String {
+    val cleaned = this.trim()
+    if (cleaned.isEmpty()) return cleaned
+    val mapped = reverseGenreMap[cleaned.lowercase()]
+        ?: reverseGenreMap.entries.find { it.key.equals(cleaned, ignoreCase = true) }?.value
+    if (mapped != null) return mapped
+    return com.kitsugi.animelist.ui.screens.search.SearchTranslation.translateToEnglishForSearch(cleaned)
+}
 
 // ─── Yayın Durumu / Status ─────────────────────────────────────────────────────
 
@@ -752,6 +770,24 @@ private val commonPhrasesMap = mapOf(
     "Background Art" to "Arka Plan Sanatı",
     "Series Composition" to "Seri Düzenlemesi",
     "Voice Actor" to "Seslendirme Sanatçısı",
+    "Special Thanks" to "Özel Teşekkür",
+    "Additional Voices" to "Ek Seslendirmeler",
+    "Additional Voice" to "Ek Seslendirme",
+    "Guest Star" to "Konuk Oyuncu",
+    "Guest Role" to "Konuk Rolü",
+    "Voice Acting" to "Seslendirme",
+    "Voice Director" to "Seslendirme Yönetmeni",
+    "Voice Directing" to "Seslendirme Yönetmenliği",
+    "Sound Directing" to "Ses Yönetmenliği",
+    "Recording Engineer" to "Kayıt Mühendisi",
+    "Mixing Engineer" to "Miksaj Mühendisi",
+    "Manga Creator" to "Manga Yaratıcısı",
+    "Supervising Producer" to "Denetçi Yapımcı",
+    "Co-Executive Producer" to "Eş Yönetici Yapımcı",
+    "Creative Director" to "Kreatif Direktör",
+    "Stage Manager" to "Sahne Amiri",
+    "Project Manager" to "Proje Yöneticisi",
+    "Social Media" to "Sosyal Medya",
 )
 
 private val commonWordsMap = mapOf(
@@ -826,6 +862,35 @@ private val commonWordsMap = mapOf(
     "2D" to "2D",
     "CG" to "CG",
     "VFX" to "VFX",
+    "Narrator" to "Anlatıcı",
+    "Self" to "Kendisi",
+    "Guest" to "Konuk",
+    "Translator" to "Çevirmen",
+    "Translation" to "Çeviri",
+    "Illustration" to "İllüstrasyon",
+    "Colorist" to "Renk Uzmanı",
+    "Author" to "Yazar",
+    "Novel" to "Roman",
+    "Supervising" to "Baş/Denetçi",
+    "Coordinating" to "Koordinasyon",
+    "Management" to "Yönetim",
+    "Consultant" to "Danışman",
+    "Adviser" to "Danışman",
+    "Advisor" to "Danışman",
+    "Developer" to "Geliştirici",
+    "Co-Producer" to "Eş Yapımcı",
+    "Co-editor" to "Kurgu Ortağı",
+    "Co-director" to "Yardımcı Yönetmen",
+    "Co-writer" to "Yazar Ortağı",
+    "Cast" to "Oyuncular/Kadro",
+    "Support" to "Destek",
+    "Helper" to "Yardımcı",
+    "Additional" to "Ek",
+    "Main" to "Ana",
+    "Key" to "Ana/Baş",
+    "Lead" to "Baş",
+    "Head" to "Şef/Baş",
+    "Vocal" to "Vokal",
 )
 
 private fun translateSuffix(suffix: String): String {
@@ -872,6 +937,20 @@ fun String.toTurkishStaffRole(): String {
             .map { it.trim().toTurkishStaffRole() }
             .filter { it.isNotEmpty() }
             .joinToString(", ")
+    }
+
+    // Dynamic resource lookup first
+    val context = com.kitsugi.animelist.KitsugiApplication.getInstance()
+    if (context != null) {
+        val normalized = trimmed.lowercase()
+            .replace(Regex("[^a-z0-9_]"), "_")
+            .replace(Regex("__+"), "_")
+            .trim('_')
+        val key = "staff_role_$normalized"
+        val resId = context.resources.getIdentifier(key, "string", context.packageName)
+        if (resId != 0) {
+            return context.getString(resId)
+        }
     }
 
     val exactMatch = staffRoleMap[trimmed]

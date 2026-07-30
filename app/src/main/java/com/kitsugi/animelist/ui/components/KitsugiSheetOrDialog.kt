@@ -19,6 +19,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.foundation.focusable
 import androidx.compose.ui.Modifier
@@ -37,7 +38,6 @@ import androidx.compose.foundation.layout.width
 import com.kitsugi.animelist.ui.theme.LocalIsTv
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.theme.KitsugiTvTokens
-
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -119,6 +119,18 @@ fun KitsugiSheetOrDialog(
 
         val scope = rememberCoroutineScope()
 
+        // One-shot dismiss guard: prevents double-dismiss when the swipe gesture
+        // completes and onDismissRequest fires at the same time (e.g., after an
+        // accidental horizontal scroll that the system interprets as a dismiss swipe).
+        val isDismissing = remember { mutableStateOf(false) }
+
+        fun safeDismiss() {
+            if (!isDismissing.value) {
+                isDismissing.value = true
+                onDismiss()
+            }
+        }
+
         // Scroll-aware dismissal: block if content is not at top
         val sheetState = rememberModalBottomSheetState(
             skipPartiallyExpanded = true,
@@ -146,6 +158,18 @@ fun KitsugiSheetOrDialog(
 
         val dismissAnimated: () -> Unit = remember(sheetState, onDismiss) {
             {
+                if (!isDismissing.value) {
+                    isDismissing.value = true
+                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                        onDismiss()
+                    }
+                }
+            }
+        }
+
+        androidx.activity.compose.BackHandler(enabled = sheetState.isVisible) {
+            if (!isDismissing.value) {
+                isDismissing.value = true
                 scope.launch { sheetState.hide() }.invokeOnCompletion {
                     onDismiss()
                 }
@@ -153,7 +177,7 @@ fun KitsugiSheetOrDialog(
         }
 
         ModalBottomSheet(
-            onDismissRequest = onDismiss,
+            onDismissRequest = { safeDismiss() },
             sheetState = sheetState,
             containerColor = KitsugiColors.Surface,
             contentColor = KitsugiColors.TextPrimary,

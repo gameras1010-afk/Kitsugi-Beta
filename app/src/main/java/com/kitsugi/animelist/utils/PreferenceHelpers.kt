@@ -5,6 +5,8 @@ import com.kitsugi.animelist.data.remote.JikanSearchResult
 import com.kitsugi.animelist.data.remote.KitsugiRelation
 import com.kitsugi.animelist.data.remote.KitsugiCharacterMediaAppearance
 import com.kitsugi.animelist.data.remote.KitsugiStaffMediaWork
+import com.kitsugi.animelist.KitsugiApplication
+import com.kitsugi.animelist.R
 
 object PreferenceHelpers {
     fun getDisplayTitle(
@@ -41,8 +43,13 @@ object PreferenceHelpers {
     }
 
     fun formatScore(score: Int?, scoreFormat: String, hideScores: Boolean): String {
-        if (hideScores) return "-"
-        if (score == null || score == 0) return "unrated"
+        val context = KitsugiApplication.getInstance()
+        if (hideScores) {
+            return context?.getString(R.string.label_unknown) ?: "-"
+        }
+        if (score == null || score == 0) {
+            return context?.getString(R.string.score_unrated) ?: "unrated"
+        }
         return when (scoreFormat) {
             "POINT_100" -> "${score * 10}"
             "POINT_10_DECIMAL" -> "${score}.0/10"

@@ -31,6 +31,7 @@ import eu.kanade.tachiyomi.network.NetworkHelper
 fun KitsugiWebViewDialog(
     title: String,
     url: String,
+    onUrlRedirect: ((String) -> Boolean)? = null,
     onDismiss: () -> Unit
 ) {
     val accentColor = LocalKitsugiAccent.current
@@ -113,6 +114,9 @@ fun KitsugiWebViewDialog(
                                 )
                                 webViewClient = object : WebViewClient() {
                                     override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
+                                        if (url != null && onUrlRedirect?.invoke(url) == true) {
+                                            return
+                                        }
                                         isLoading = true
                                         progress = 0
                                     }
@@ -131,6 +135,21 @@ fun KitsugiWebViewDialog(
                                             }
                                             nh.cookieJar.syncFromWebView(finalUrl)
                                         } catch (_: Exception) {}
+                                    }
+
+                                    override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                                        if (url != null && onUrlRedirect?.invoke(url) == true) {
+                                            return true
+                                        }
+                                        return super.shouldOverrideUrlLoading(view, url)
+                                    }
+
+                                    override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest?): Boolean {
+                                        val requestUrl = request?.url?.toString()
+                                        if (requestUrl != null && onUrlRedirect?.invoke(requestUrl) == true) {
+                                            return true
+                                        }
+                                        return super.shouldOverrideUrlLoading(view, request)
                                     }
                                 }
                                 webChromeClient = object : WebChromeClient() {

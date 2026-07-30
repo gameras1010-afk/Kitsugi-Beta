@@ -262,10 +262,11 @@ private fun CompactMediaEntryCard(
                         style = MaterialTheme.typography.bodySmall
                     )
 
-                    if (!hideScores) {
+                    val displayScore = entry.getDisplayScore(scoreFormat, hideScores)
+                    if (!hideScores && displayScore != "unrated") {
                         Spacer(modifier = Modifier.width(8.dp))
                         ScorePill(
-                            score = entry.getDisplayScore(scoreFormat, hideScores),
+                            score = displayScore,
                             scoreFormat = scoreFormat
                         )
                     }
@@ -428,9 +429,10 @@ private fun ComfortableMediaEntryCard(
                         style = MaterialTheme.typography.bodySmall
                     )
 
-                    if (!hideScores) {
+                    val displayScore = entry.getDisplayScore(scoreFormat, hideScores)
+                    if (!hideScores && displayScore != "unrated") {
                         ScorePill(
-                            score = entry.getDisplayScore(scoreFormat, hideScores),
+                            score = displayScore,
                             scoreFormat = scoreFormat
                         )
                     }
@@ -599,9 +601,10 @@ private fun LargeMediaEntryCard(
                                 style = MaterialTheme.typography.bodySmall
                             )
 
-                            if (!hideScores) {
+                            val displayScore = entry.getDisplayScore(scoreFormat, hideScores)
+                            if (!hideScores && displayScore != "unrated") {
                                 ScorePill(
-                                    score = entry.getDisplayScore(scoreFormat, hideScores),
+                                    score = displayScore,
                                     scoreFormat = scoreFormat
                                 )
                             }
@@ -718,13 +721,14 @@ private fun LargeMediaEntryCard(
                             style = MaterialTheme.typography.bodySmall
                         )
 
-                        if (!hideScores) {
-                            ScorePill(
-                                score = entry.getDisplayScore(scoreFormat, hideScores),
-                                scoreFormat = scoreFormat
-                            )
+                            val displayScore = entry.getDisplayScore(scoreFormat, hideScores)
+                            if (!hideScores && displayScore != "unrated") {
+                                ScorePill(
+                                    score = displayScore,
+                                    scoreFormat = scoreFormat
+                                )
+                            }
                         }
-                    }
 
                     val isTv = LocalIsTv.current
                     if (!isTv) {
@@ -1128,9 +1132,10 @@ private fun MinimalistMediaEntryCard(
                         style = MaterialTheme.typography.bodySmall
                     )
 
-                    if (!hideScores) {
+                    val displayScore = entry.getDisplayScore(scoreFormat, hideScores)
+                    if (!hideScores && displayScore != "unrated") {
                         ScorePill(
-                            score = entry.getDisplayScore(scoreFormat, hideScores),
+                            score = displayScore,
                             scoreFormat = scoreFormat
                         )
                     }
@@ -1230,22 +1235,24 @@ private fun PosterGridMediaEntryCard(
             // Puan rozeti — SAĞ alt köşe (gizlenmemişse)
             if (!hideScores) {
                 val scoreText = entry.getDisplayScore(scoreFormat, hideScores)
-                val badgeText = if (scoreText == "unrated") "—" else "★ $scoreText"
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(5.dp)
-                        .clip(RoundedCornerShape(7.dp))
-                        .background(KitsugiColors.Background.copy(alpha = 0.80f))
-                        .padding(horizontal = 5.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = badgeText,
-                        color = accentColor,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1
-                    )
+                if (scoreText != "unrated") {
+                    val badgeText = "★ $scoreText"
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(5.dp)
+                            .clip(RoundedCornerShape(7.dp))
+                            .background(KitsugiColors.Background.copy(alpha = 0.80f))
+                            .padding(horizontal = 5.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = badgeText,
+                            color = accentColor,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1
+                        )
+                    }
                 }
             }
 

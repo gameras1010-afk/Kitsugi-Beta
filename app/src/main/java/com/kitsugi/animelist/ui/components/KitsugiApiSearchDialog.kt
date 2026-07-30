@@ -56,6 +56,8 @@ import com.kitsugi.animelist.ui.utils.KitsugiScrollDefaults
 import com.kitsugi.animelist.ui.utils.dpadVerticalFastScroll
 import com.kitsugi.animelist.utils.toFriendlySourceLabel
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.kitsugi.animelist.R
 
 @Composable
 fun KitsugiApiSearchDialog(
@@ -812,17 +814,17 @@ private fun ApiResultPreviewDialog(
 
                                 PreviewInfoRow(
                                     label = "Yıl",
-                                    value = result.year?.toString() ?: "-"
+                                    value = result.year?.toString() ?: stringResource(R.string.label_unknown)
                                 )
 
                                 PreviewInfoRow(
                                     label = "Toplam",
-                                    value = result.total?.toString() ?: "-"
+                                    value = result.total?.toString() ?: stringResource(R.string.label_unknown)
                                 )
 
                                 PreviewInfoRow(
                                     label = "Skor",
-                                    value = result.score?.let { "$it/10" } ?: "-"
+                                    value = result.score?.let { "$it/10" } ?: stringResource(R.string.score_unrated)
                                 )
 
                                 PreviewInfoRow(
@@ -931,17 +933,17 @@ private fun ApiResultPreviewDialog(
 
                             PreviewInfoRow(
                                 label = "Yıl",
-                                value = result.year?.toString() ?: "-"
+                                value = result.year?.toString() ?: stringResource(R.string.label_unknown)
                             )
 
                             PreviewInfoRow(
                                 label = "Toplam",
-                                value = result.total?.toString() ?: "-"
+                                value = result.total?.toString() ?: stringResource(R.string.label_unknown)
                             )
 
                             PreviewInfoRow(
                                 label = "Skor",
-                                value = result.score?.let { "$it/10" } ?: "-"
+                                value = result.score?.let { "$it/10" } ?: stringResource(R.string.score_unrated)
                             )
 
                             PreviewInfoRow(
@@ -1010,17 +1012,17 @@ private fun ApiResultPreviewDialog(
 
                         PreviewInfoRow(
                             label = "Yıl",
-                            value = result.year?.toString() ?: "-"
+                            value = result.year?.toString() ?: stringResource(R.string.label_unknown)
                         )
 
                         PreviewInfoRow(
                             label = "Toplam",
-                            value = result.total?.toString() ?: "-"
+                            value = result.total?.toString() ?: stringResource(R.string.label_unknown)
                         )
 
                         PreviewInfoRow(
                             label = "Skor",
-                            value = result.score?.let { "$it/10" } ?: "-"
+                            value = result.score?.let { "$it/10" } ?: stringResource(R.string.score_unrated)
                         )
 
                         PreviewInfoRow(

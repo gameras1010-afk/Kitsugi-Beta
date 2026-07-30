@@ -38,6 +38,8 @@ import com.kitsugi.animelist.utils.toFriendlySourceLabel
 import com.kitsugi.animelist.model.MediaType
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
+import androidx.compose.ui.res.stringResource
+import com.kitsugi.animelist.R
 
 @Composable
 fun KitsugiHeroPreviewDialog(
@@ -162,7 +164,11 @@ fun KitsugiHeroPreviewDialog(
                         )
                     }
 
-                    val displayScore = if (result.score == null || result.score == 0) "unrated" else "${result.score}/10"
+                    val displayScore = if (result.score == null || result.score == 0) {
+                        stringResource(R.string.score_unrated)
+                    } else {
+                        "${result.score}/10"
+                    }
                     HeroPill(
                         text = displayScore
                     )
@@ -185,7 +191,7 @@ fun KitsugiHeroPreviewDialog(
 
                 HeroInfoRow(
                     label = "Toplam",
-                    value = result.total?.toString() ?: "-"
+                    value = result.total?.toString() ?: stringResource(R.string.label_unknown)
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))

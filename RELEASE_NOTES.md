@@ -1,18 +1,21 @@
-# Kitsugi Release Notes
+# Kitsugi Release Notes - v2.4.116-beta
 
-## v2.4.115 – Çevrimdışı Anime İndirme ve Yerel Oynatma (Offline Playback)
+Bu sürümde, video indirme altyapısındaki kritik çalışma zamanı hataları giderilmiş, üçüncü taraf entegrasyonlar genişletilmiş ve platformlar arası senkronizasyon kararlılığı artırılmıştır.
 
-Kitsugi'nin bu sürümünde, kullanıcıların internete bağlı olmadıklarında bile anime izleyebilmelerini sağlayan tam özellikli çevrimdışı indirme ve yerel oynatma altyapısı entegre edilmiştir.
+### 🛠️ FFmpeg İndirme Çökme Hatası Giderildi
+- **Eksik Bağımlılık Çözümü:** Video indirme/dönüştürme işlemlerinde FFmpeg çalıştırılırken meydana gelen ve uygulamanın çökmesine yol açan `NoClassDefFoundError: Failed resolution of: Lcom/arthenica/smartexception/java/Exceptions;` hatası giderildi.
+- **Transitive Linking Desteği:** `smart-exception-java` ve `smart-exception-common` kütüphaneleri runtime sınıf yoluna (classpath) ve paketleme yapılandırmasına açıkça dahil edildi.
+- **R8 / ProGuard Optimizasyonu:** R8 kod daraltıcısının FFmpeg bağımlılıklarını silmesini engelleyen keep kuralları güncellendi ve doğrulandı.
 
-### 📥 Çevrimdışı İndirme ve Canlı Durum İzleme
-- **Stream Kartı İndirme Butonu:** Yayın kaynağı seçim ekranındaki akış kartlarına doğrudan indirme seçeneği eklendi.
-- **Bölüm Listesi İndirme Desteği:** Bölüm listelerindeki satırlara etkileşimli indirme butonları yerleştirilerek, istenen bölümlerin arka planda kuyruğa alınması sağlandı.
-- **Canlı İndirme Durumu:** Bölüm satırlarında indirme durumları (Kuyrukta, İndiriliyor, Tamamlandı, Duraklatıldı, Hata) ve yüzde olarak canlı ilerleme oranı (CircularProgressIndicator eşliğinde) reaktif şekilde gösterilmektedir.
+### 🌐 Gelişmiş Cloudstream Eklenti Depoları (Extensions)
+- **Doğrulanmış Türkçe & Küresel Depolar:** `CloudstreamExtensionsTab` içerisine tek tıkla kurulabilir 8 adet güncel ve çalışan Türkçe/Community eklenti deposu (aktif linkler) entegre edildi.
+- **Eklenti Lisans ve Anti-Leech Korumaları:** Türkçe eklentilerdeki sürüm kilitlerini ve RequestBlocker hız sınırlarını otomatik olarak aşan `applyHelperPatches` mantığı iyileştirildi.
 
-### 🎬 Sorunsuz Yerel Oynatma (Offline Playback)
-- **Dosya Yolu Algılama:** İndirmesi tamamlanan bölümlere tıklandığında, uygulama doğrudan yerel depolama dizinini algılar.
-- **Yerel Player Entegrasyonu:** Tamamlanan indirmeler, çevrimiçi akış yerine `file://` protokolü üzerinden mevcut gelişmiş video oynatıcı (`KitsugiFullscreenPlayerActivity`) ile kesintisiz ve yüksek performansla oynatılır.
+### 📺 NuvioTV Entegrasyon ve Eşitleme Çalışmaları
+- **NuvioIdResolver Altyapısı:** MyAnimeList (MAL), AniList ve TMDB medya kimlikleri arasında çapraz eşleştirme sağlayan kimlik çözücü tamamlandı.
+- **Birleşik Keşfet Desteği (Discover):** TV arayüzünde MAL, AniList ve TMDB verilerini tek bir ekranda birleştiren `DiscoverRepository` ve `MediaDiscoverScreen` entegrasyonu tamamlandı.
+- **PathClassLoader Dinamik Yükleme:** Harici TV eklentilerinin dinamik olarak güvenle yüklenmesi için `ExternalExtensionLoader` yapısı PathClassLoader ile yeniden tasarlandı.
 
-### ⚙️ Altyapı ve Depolama Optimizasyonları
-- **Aniyomi Paritesi:** Arka plan indirme kuyruğu, depolama organizasyonu, dosya isimlendirmesi ve Cloudflare korumalarını aşmak için kullanılan özel HTTP istek başlığı (FFmpeg entegrasyonu dahil) desteği Aniyomi standartlarına %100 uyumlu hale getirilmiştir.
-- **Kararlılık:** Büyük boyutlu video dosyalarının arka planda kararlı şekilde indirilmesi ve uygulama içi depolama izinleri optimize edilmiştir.
+### 🔄 Multi-Platform Eşitleme ve Hız Sınırlandırıcı (Throttling)
+- **Simkl Entegrasyonu:** AniList ve MyAnimeList entegrasyonlarının yanına Simkl de eklenerek 3 yönlü senkronizasyon sağlandı.
+- **API 429 Koruması:** Yoğun senkronizasyon isteklerinde API sunucularından 429 (Too Many Requests) hatası almayı önlemek için coroutine tabanlı akıllı gecikme (throttling) mekanizması devreye alındı.

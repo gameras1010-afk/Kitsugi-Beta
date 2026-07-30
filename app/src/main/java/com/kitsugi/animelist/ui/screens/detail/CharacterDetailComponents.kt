@@ -53,6 +53,7 @@ import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayTitle
 import com.kitsugi.animelist.utils.toTurkishLanguage
+import com.kitsugi.animelist.utils.toTurkishMediaTypeString
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -122,7 +123,7 @@ internal fun MediaAppearanceRow(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = "${appearance.mediaType.replaceFirstChar { it.uppercase() }} \u2022 ${stringResource(R.string.detail_role_prefix, appearance.characterRole)}",
+                text = "${appearance.mediaType.toTurkishMediaTypeString()} \u2022 ${stringResource(R.string.detail_role_prefix, appearance.characterRole)}",
                 color = KitsugiColors.TextMuted,
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Medium

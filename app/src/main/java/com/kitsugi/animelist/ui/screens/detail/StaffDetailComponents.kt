@@ -48,6 +48,8 @@ import com.kitsugi.animelist.data.remote.GalleryCategory
 import com.kitsugi.animelist.data.remote.KitsugiStaffDetail
 import com.kitsugi.animelist.utils.copyOnDoubleTap
 import com.kitsugi.animelist.utils.toFriendlySourceLabel
+import com.kitsugi.animelist.utils.toTurkishStaffRole
+import com.kitsugi.animelist.utils.toTurkishMediaTypeString
 import com.kitsugi.animelist.utils.KitsugiTranslateUtils.openTranslator
 import androidx.compose.ui.res.stringResource
 import com.kitsugi.animelist.R
@@ -181,7 +183,7 @@ internal fun StaffMediaWorkRow(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = "${work.mediaType.replaceFirstChar { it.uppercase() }} \u2022 ${stringResource(R.string.detail_role_prefix, work.staffRole)}",
+                text = "${work.mediaType.toTurkishMediaTypeString()} \u2022 ${stringResource(R.string.detail_role_prefix, work.staffRole.toTurkishStaffRole())}",
                 color = KitsugiColors.TextMuted,
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Medium

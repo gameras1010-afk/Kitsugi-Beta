@@ -98,6 +98,57 @@ object ExternalAuthManager {
         return prefs(context).getString(KEY_SIMKL_TOKEN, null)
     }
 
+    fun getAuthUrlAndPrepare(context: Context, serviceName: String): String {
+        val sharedPreferences = prefs(context)
+        return when (serviceName) {
+            "anilist" -> {
+                val codeVerifier = generateCodeVerifier()
+                val codeChallenge = generateCodeChallengeS256(codeVerifier)
+                sharedPreferences.edit()
+                    .putString(KEY_ANILIST_CODE_VERIFIER, codeVerifier)
+                    .remove(KEY_MAL_CODE_VERIFIER)
+                    .remove(KEY_SIMKL_CODE_VERIFIER)
+                    .apply()
+                "https://anilist.co/api/v2/oauth/authorize" +
+                        "?client_id=$ANILIST_CLIENT_ID" +
+                        "&redirect_uri=$REDIRECT_URI" +
+                        "&response_type=code" +
+                        "&code_challenge=$codeChallenge" +
+                        "&code_challenge_method=S256"
+            }
+            "mal" -> {
+                val codeVerifier = generateCodeVerifier()
+                sharedPreferences.edit()
+                    .putString(KEY_MAL_CODE_VERIFIER, codeVerifier)
+                    .remove(KEY_ANILIST_CODE_VERIFIER)
+                    .remove(KEY_SIMKL_CODE_VERIFIER)
+                    .apply()
+                "https://myanimelist.net/v1/oauth2/authorize?" +
+                        "response_type=code" +
+                        "&client_id=$MAL_CLIENT_ID" +
+                        "&code_challenge=$codeVerifier" +
+                        "&code_challenge_method=plain" +
+                        "&redirect_uri=${URLEncoder.encode(REDIRECT_URI, "UTF-8")}"
+            }
+            "simkl" -> {
+                val codeVerifier = generateCodeVerifier()
+                val codeChallenge = generateCodeChallengeS256(codeVerifier)
+                sharedPreferences.edit()
+                    .putString(KEY_SIMKL_CODE_VERIFIER, codeVerifier)
+                    .remove(KEY_ANILIST_CODE_VERIFIER)
+                    .remove(KEY_MAL_CODE_VERIFIER)
+                    .apply()
+                "https://simkl.com/oauth/authorize" +
+                        "?response_type=code" +
+                        "&client_id=$SIMKL_CLIENT_ID" +
+                        "&redirect_uri=${URLEncoder.encode(REDIRECT_URI, "UTF-8")}" +
+                        "&code_challenge=$codeChallenge" +
+                        "&code_challenge_method=S256"
+            }
+            else -> throw IllegalArgumentException("Bilinmeyen servis: $serviceName")
+        }
+    }
+
     fun startAuthentication(
         context: Context,
         serviceName: String,

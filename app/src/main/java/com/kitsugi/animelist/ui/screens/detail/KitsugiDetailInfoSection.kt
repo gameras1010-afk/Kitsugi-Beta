@@ -60,6 +60,8 @@ import androidx.compose.ui.focus.focusRequester
 import com.kitsugi.animelist.utils.PreferenceHelpers.getDisplayScore
 import com.kitsugi.animelist.utils.toTurkishGenre
 import com.kitsugi.animelist.utils.toEnglishGenreForSearch
+import androidx.compose.ui.res.stringResource
+import com.kitsugi.animelist.R
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -452,28 +454,28 @@ internal fun DetailOverviewStatsCard(
         ) {
             StatOverviewItem(
                 label = "Puan Sırası",
-                value = rank?.let { "#$it" } ?: "-",
+                value = rank?.let { "#$it" } ?: stringResource(R.string.label_unknown),
                 accentColor = LocalKitsugiAccent.current,
                 modifier = Modifier.weight(1f)
             )
 
             StatOverviewItem(
                 label = "Oy Sayısı",
-                value = scoredBy?.let { formatCompactNumber(it) } ?: "-",
+                value = scoredBy?.let { formatCompactNumber(it) } ?: stringResource(R.string.label_unknown),
                 accentColor = KitsugiColors.AccentGreen,
                 modifier = Modifier.weight(1f)
             )
 
             StatOverviewItem(
                 label = "Takip Edenler",
-                value = members?.let { formatCompactNumber(it) } ?: "-",
+                value = members?.let { formatCompactNumber(it) } ?: stringResource(R.string.label_unknown),
                 accentColor = KitsugiColors.AccentBlue,
                 modifier = Modifier.weight(1f)
             )
 
             StatOverviewItem(
                 label = "Popülerlik Sırası",
-                value = popularityRank?.let { "#$it" } ?: "-",
+                value = popularityRank?.let { "#$it" } ?: stringResource(R.string.label_unknown),
                 accentColor = KitsugiColors.AccentOrange,
                 modifier = Modifier.weight(1f)
             )
@@ -541,13 +543,13 @@ internal fun DateInfoCard(
         ) {
             DateMiniBox(
                 label = "Başlangıç",
-                value = entry.startDate ?: "-",
+                value = entry.startDate ?: stringResource(R.string.label_unknown),
                 modifier = Modifier.weight(1f)
             )
 
             DateMiniBox(
                 label = "Bitiş",
-                value = entry.endDate ?: "-",
+                value = entry.endDate ?: stringResource(R.string.label_unknown),
                 modifier = Modifier.weight(1f)
             )
         }

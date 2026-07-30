@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bookmarks
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -28,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.res.stringResource
 import com.kitsugi.animelist.R
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import androidx.compose.runtime.*
 import androidx.compose.runtime.withFrameNanos
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -158,8 +160,10 @@ fun TvDetailScreen(
     var trailerPlaybackSource by remember { mutableStateOf<com.kitsugi.animelist.data.trailer.TrailerPlaybackSource?>(null) }
     var trailerLoading by remember { mutableStateOf(false) }
     var trailerError by remember { mutableStateOf<String?>(null) }
+    var trailerOverlayTitle by remember { mutableStateOf("") }
 
     val loadAndShowTrailer = {
+        trailerOverlayTitle = displayTitle
         val tmdbIdStr = displayResult.tmdbId?.toString() ?: detailState?.tmdbId?.toString()
         if (tmdbIdStr == null && displayResult.title.isBlank()) {
             trailerError = context.getString(R.string.tv_detail_trailer_info_not_found)
@@ -196,6 +200,7 @@ fun TvDetailScreen(
     val trailerButtonFocusRequester = remember { FocusRequester() }
     val seasonTabsFocusRequester = remember { FocusRequester() }
     val episodesRowFocusRequester = remember { FocusRequester() }
+    val themesRowFocusRequester = remember { FocusRequester() }
     val charactersRowFocusRequester = remember { FocusRequester() }
     val staffRowFocusRequester = remember { FocusRequester() }
     val relationsRowFocusRequester = remember { FocusRequester() }
@@ -210,6 +215,8 @@ fun TvDetailScreen(
     val hasEpisodesRow = !isMovie &&
         episodesState is DetailTabState.Success &&
         ((episodesState as DetailTabState.Success<*>).data as? List<*>)?.isNotEmpty() == true
+    val hasThemesRow = detailState != null && 
+        (detailState?.openings?.isNotEmpty() == true || detailState?.endings?.isNotEmpty() == true)
     val hasCharactersRow = charactersState is DetailTabState.Success &&
         ((charactersState as DetailTabState.Success<*>).data as? List<*>)?.isNotEmpty() == true
     val hasStaffRow = staffState is DetailTabState.Success &&
@@ -425,6 +432,7 @@ fun TvDetailScreen(
                                         down = when {
                                             !isMovie && hasSeasonTabs  -> seasonTabsFocusRequester
                                             !isMovie && hasEpisodesRow -> episodesRowFocusRequester
+                                            hasThemesRow                -> themesRowFocusRequester
                                             hasCharactersRow            -> charactersRowFocusRequester
                                             else                        -> FocusRequester.Cancel
                                         }
@@ -444,6 +452,7 @@ fun TvDetailScreen(
                                         down = when {
                                             !isMovie && hasSeasonTabs  -> seasonTabsFocusRequester
                                             !isMovie && hasEpisodesRow -> episodesRowFocusRequester
+                                            hasThemesRow                -> themesRowFocusRequester
                                             hasCharactersRow            -> charactersRowFocusRequester
                                             else                        -> FocusRequester.Cancel
                                         }
@@ -462,6 +471,7 @@ fun TvDetailScreen(
                                         down = when {
                                             !isMovie && hasSeasonTabs  -> seasonTabsFocusRequester
                                             !isMovie && hasEpisodesRow -> episodesRowFocusRequester
+                                            hasThemesRow                -> themesRowFocusRequester
                                             hasCharactersRow            -> charactersRowFocusRequester
                                             else                        -> FocusRequester.Cancel
                                         }
@@ -491,7 +501,12 @@ fun TvDetailScreen(
                                         .focusGroup()
                                         .focusProperties {
                                             up = playButtonFocusRequester
-                                            down = if (hasEpisodesRow) episodesRowFocusRequester else FocusRequester.Cancel
+                                            down = when {
+                                                hasEpisodesRow   -> episodesRowFocusRequester
+                                                hasThemesRow     -> themesRowFocusRequester
+                                                hasCharactersRow -> charactersRowFocusRequester
+                                                else             -> FocusRequester.Cancel
+                                            }
                                         },
                                     horizontalArrangement = Arrangement.spacedBy(KitsugiTvTokens.Spacing.itemGap),
                                     contentPadding = PaddingValues(vertical = 4.dp)
@@ -560,7 +575,11 @@ fun TvDetailScreen(
                                                     .focusGroup()
                                                     .focusProperties {
                                                         up = if (hasSeasonTabs) seasonTabsFocusRequester else playButtonFocusRequester
-                                                        down = if (hasCharactersRow) charactersRowFocusRequester else FocusRequester.Cancel
+                                                        down = when {
+                                                            hasThemesRow     -> themesRowFocusRequester
+                                                            hasCharactersRow -> charactersRowFocusRequester
+                                                            else             -> FocusRequester.Cancel
+                                                        }
                                                     },
                                                 horizontalArrangement = Arrangement.spacedBy(KitsugiTvTokens.Spacing.itemGap),
                                                 contentPadding = PaddingValues(vertical = 4.dp)
@@ -621,7 +640,11 @@ fun TvDetailScreen(
                                                 .focusRestorer()
                                                 .focusGroup()
                                                 .focusProperties {
-                                                    up = if (!isMovie && hasEpisodesRow) episodesRowFocusRequester else playButtonFocusRequester
+                                                    up = when {
+                                                        hasThemesRow                -> themesRowFocusRequester
+                                                        !isMovie && hasEpisodesRow -> episodesRowFocusRequester
+                                                        else                        -> playButtonFocusRequester
+                                                    }
                                                     down = when {
                                                         hasStaffRow     -> staffRowFocusRequester
                                                         hasRelationsRow -> relationsRowFocusRequester
@@ -676,7 +699,12 @@ fun TvDetailScreen(
                                                 .focusRestorer()
                                                 .focusGroup()
                                                 .focusProperties {
-                                                    up = if (hasCharactersRow) charactersRowFocusRequester else playButtonFocusRequester
+                                                    up = when {
+                                                        hasCharactersRow -> charactersRowFocusRequester
+                                                        hasThemesRow     -> themesRowFocusRequester
+                                                        !isMovie && hasEpisodesRow -> episodesRowFocusRequester
+                                                        else             -> playButtonFocusRequester
+                                                    }
                                                     down = if (hasRelationsRow) relationsRowFocusRequester else FocusRequester.Cancel
                                                 },
                                             horizontalArrangement = Arrangement.spacedBy(KitsugiTvTokens.Spacing.itemGap),
@@ -728,9 +756,11 @@ fun TvDetailScreen(
                                                 .focusGroup()
                                                 .focusProperties {
                                                     up = when {
-                                                        hasStaffRow     -> staffRowFocusRequester
+                                                        hasStaffRow      -> staffRowFocusRequester
                                                         hasCharactersRow -> charactersRowFocusRequester
-                                                        else            -> playButtonFocusRequester
+                                                        hasThemesRow     -> themesRowFocusRequester
+                                                        !isMovie && hasEpisodesRow -> episodesRowFocusRequester
+                                                        else             -> playButtonFocusRequester
                                                     }
                                                     down = when {
                                                         hasStatsRow    -> statsRowFocusRequester
@@ -773,6 +803,78 @@ fun TvDetailScreen(
                         }
                     }
 
+                    // --- Opening & Ending Themes Section ---
+                    if (hasThemesRow) {
+                        item {
+                            Column(verticalArrangement = Arrangement.spacedBy(KitsugiTvTokens.Spacing.sm)) {
+                                Text(
+                                    text = "Açılış ve Kapanış Videoları",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = KitsugiColors.TextPrimary
+                                )
+
+                                val themesList = remember(detailState) {
+                                    val ops = detailState?.openings.orEmpty().map { it to true }
+                                    val eds = detailState?.endings.orEmpty().map { it to false }
+                                    ops + eds
+                                }
+
+                                LazyRow(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .focusRequester(themesRowFocusRequester)
+                                        .focusRestorer()
+                                        .focusGroup()
+                                        .focusProperties {
+                                            up = when {
+                                                !isMovie && hasEpisodesRow -> episodesRowFocusRequester
+                                                hasSeasonTabs              -> seasonTabsFocusRequester
+                                                else                       -> playButtonFocusRequester
+                                            }
+                                            down = when {
+                                                hasCharactersRow -> charactersRowFocusRequester
+                                                hasStaffRow      -> staffRowFocusRequester
+                                                hasRelationsRow  -> relationsRowFocusRequester
+                                                else             -> FocusRequester.Cancel
+                                            }
+                                        },
+                                    horizontalArrangement = Arrangement.spacedBy(KitsugiTvTokens.Spacing.itemGap),
+                                    contentPadding = PaddingValues(vertical = 4.dp)
+                                ) {
+                                    itemsIndexed(themesList) { index, pair ->
+                                        val theme = pair.first
+                                        val isOp = pair.second
+                                        val themeIdx = if (isOp) {
+                                            detailState?.openings.orEmpty().indexOf(theme)
+                                        } else {
+                                            detailState?.endings.orEmpty().indexOf(theme)
+                                        }
+
+                                        TvThemeCard(
+                                            theme = theme,
+                                            isOpening = isOp,
+                                            index = themeIdx.coerceAtLeast(0),
+                                            accentColor = accentColor,
+                                            onClick = {
+                                                if (!theme.videoUrl.isNullOrBlank()) {
+                                                    com.kitsugi.animelist.core.player.TvTrailerPlayerPoolHolder.get(context).yield()
+                                                    trailerPlaybackSource = com.kitsugi.animelist.data.trailer.TrailerPlaybackSource(
+                                                        videoUrl = theme.videoUrl,
+                                                        audioUrl = null
+                                                    )
+                                                    trailerOverlayTitle = theme.label
+                                                    trailerLoading = false
+                                                    trailerError = null
+                                                    showTrailerOverlay = true
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     // --- Stats Section ---
                     if (statsState is DetailTabState.Success) {
                         val statsData = (statsState as DetailTabState.Success<KitsugiStats?>).data
@@ -786,6 +888,8 @@ fun TvDetailScreen(
                                         hasRelationsRow  -> relationsRowFocusRequester
                                         hasStaffRow      -> staffRowFocusRequester
                                         hasCharactersRow -> charactersRowFocusRequester
+                                        hasThemesRow     -> themesRowFocusRequester
+                                        !isMovie && hasEpisodesRow -> episodesRowFocusRequester
                                         else             -> playButtonFocusRequester
                                     },
                                     focusDown = if (hasReviewsRow) reviewsRowFocusRequester else FocusRequester.Cancel
@@ -826,7 +930,7 @@ fun TvDetailScreen(
 
             if (showTrailerOverlay) {
                 com.kitsugi.animelist.ui.tv.components.TvSharedTrailerOverlay(
-                    title = displayTitle,
+                    title = if (trailerOverlayTitle.isNotBlank()) trailerOverlayTitle else displayTitle,
                     playbackSource = trailerPlaybackSource,
                     isLoading = trailerLoading,
                     errorMessage = trailerError,
@@ -834,7 +938,18 @@ fun TvDetailScreen(
                         showTrailerOverlay = false
                     },
                     onRetry = {
-                        loadAndShowTrailer()
+                        if (trailerOverlayTitle == displayTitle) {
+                            loadAndShowTrailer()
+                        } else {
+                            val currentSource = trailerPlaybackSource
+                            if (currentSource != null) {
+                                trailerPlaybackSource = null
+                                scope.launch {
+                                    delay(200)
+                                    trailerPlaybackSource = currentSource
+                                }
+                            }
+                        }
                     }
                 )
             }
@@ -1485,5 +1600,75 @@ private fun TvReviewCard(review: KitsugiReview) {
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun TvThemeCard(
+    theme: com.kitsugi.animelist.data.remote.KitsugiTheme,
+    isOpening: Boolean,
+    index: Int,
+    accentColor: Color,
+    onClick: () -> Unit
+) {
+    var isFocused by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .width(220.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(KitsugiColors.Surface)
+            .border(
+                BorderStroke(
+                    width = if (isFocused) KitsugiTvTokens.Cards.focusedBorderWidth else 0.dp,
+                    color = if (isFocused) accentColor else Color.Transparent
+                ),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .onFocusChanged { isFocused = it.isFocused }
+            .tvClickable(shape = RoundedCornerShape(12.dp), onClick = onClick)
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(accentColor.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.PlayArrow,
+                    contentDescription = null,
+                    tint = accentColor,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            Column {
+                Text(
+                    text = if (isOpening) "Açılış Teması ${index + 1}" else "Kapanış Teması ${index + 1}",
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                    color = accentColor
+                )
+                Text(
+                    text = "Uygulamada Oynat",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = KitsugiColors.TextMuted
+                )
+            }
+        }
+
+        Text(
+            text = theme.label,
+            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+            color = KitsugiColors.TextPrimary,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            minLines = 2
+        )
     }
 }

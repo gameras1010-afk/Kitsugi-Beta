@@ -119,7 +119,7 @@ internal object TmdbMediaDetailClient {
 
             KitsugiMediaDetail(
                 synopsis = finalOverview,
-                genres = genresList,
+                genres = genresList.toTurkishGenres(),
                 status = status,
                 season = null,
                 sourceMaterial = null,

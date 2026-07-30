@@ -17,6 +17,7 @@ youtubePlayer = "12.1.0"
 media3 = "1.8.0"
 gson = "2.10.1"
 ffmpeg-kit = "1.18"
+smartexception = "0.2.1"
 
 # TV, Supabase, Hilt & Serialization versions
 hilt = "2.55"
@@ -77,6 +78,8 @@ media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "medi
 media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "media3" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 ffmpeg-kit = { module = "com.github.jmir1:ffmpeg-kit", version.ref = "ffmpeg-kit" }
+smartexception = { module = "com.arthenica:smart-exception-java", version.ref = "smartexception" }
+smartexception-common = { module = "com.arthenica:smart-exception-common", version.ref = "smartexception" }
 
 # TV Material
 androidx-tv-material = { group = "androidx.tv", name = "tv-material", version.ref = "tvMaterial" }

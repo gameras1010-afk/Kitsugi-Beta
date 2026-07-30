@@ -20,9 +20,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Extension
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kitsugi.animelist.ui.components.KitsugiWebViewDialog
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -95,6 +97,7 @@ fun TvStreamScreen(
     val isResolvingId by viewModel.isResolvingId.collectAsStateWithLifecycle()
     val idResolveFailed by viewModel.idResolveFailed.collectAsStateWithLifecycle()
     val imdbId by viewModel.imdbId.collectAsStateWithLifecycle()
+    val webViewState by viewModel.webViewDialogState.collectAsStateWithLifecycle()
 
     val repository = remember { AddonStreamRepository(context) }
     val streamPrefs = remember { context.getSharedPreferences("KitsugiStreamPrefs", Context.MODE_PRIVATE) }
@@ -305,6 +308,9 @@ fun TvStreamScreen(
                 // Streams list container
                 val listState = rememberLazyListState()
                 val isAnyLoading = addonStates.any { it.isLoading }
+                val hasErrors = addonStates.any { state ->
+                    state.error != null && (selectedAddonFilter == null || state.addonName == selectedAddonFilter)
+                }
 
                 Box(
                     modifier = Modifier
@@ -315,7 +321,7 @@ fun TvStreamScreen(
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             CircularProgressIndicator(color = accentColor)
                         }
-                    } else if (filteredStreams.isEmpty() && !isAnyLoading) {
+                    } else if (filteredStreams.isEmpty() && !isAnyLoading && !hasErrors) {
                         Column(
                             modifier = Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.Center,
@@ -377,6 +383,22 @@ fun TvStreamScreen(
                                                 }
                                                 handlePlayStream(stream, resolvedUrl)
                                             }
+                                        }
+                                    )
+                                }
+
+                                val activeErrors = addonStates.filter { state ->
+                                    state.error != null && (selectedAddonFilter == null || state.addonName == selectedAddonFilter)
+                                }
+
+                                items(activeErrors) { addonState ->
+                                    val isVerifyAvailable = addonState.addonName.startsWith("⚡ ")
+                                    TvStreamErrorItem(
+                                        addonState = addonState,
+                                        accentColor = accentColor,
+                                        isVerifyAvailable = isVerifyAvailable,
+                                        onVerify = {
+                                            viewModel.onVerifyPlugin(addonState.addonName)
                                         }
                                     )
                                 }
@@ -464,6 +486,28 @@ fun TvStreamScreen(
                     }
                 }
             }
+        }
+
+        // Captcha WebView Dialog
+        webViewState?.let { state ->
+            KitsugiWebViewDialog(
+                title = state.displayName,
+                url = state.url,
+                onDismiss = {
+                    viewModel.onWebViewDismissed(
+                        dismissedPluginId = state.pluginId,
+                        dismissedDisplayName = state.displayName,
+                        title = args.title,
+                        alternativeTitles = alternativeTitles,
+                        startYear = args.startYear,
+                        season = args.season,
+                        episode = args.episode,
+                        malId = args.malId,
+                        aniListId = args.aniListId,
+                        tmdbId = args.tmdbId
+                    )
+                }
+            )
         }
     }
 }
@@ -619,5 +663,84 @@ private fun TvStreamBadge(text: String, color: Color, bgAlpha: Float, bgColor: C
             .padding(horizontal = 6.dp, vertical = 2.dp)
     ) {
         Text(text = text, color = color, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun TvStreamErrorItem(
+    addonState: AddonFetchState,
+    accentColor: Color,
+    isVerifyAvailable: Boolean,
+    onVerify: () -> Unit
+) {
+    var isFocused by remember { mutableStateOf(false) }
+
+    val containerColor = if (isFocused) Color.White.copy(alpha = 0.08f) else KitsugiColors.Surface
+    val borderColor = if (isFocused) Color.Red else Color.Transparent
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(containerColor)
+            .border(
+                BorderStroke(
+                    width = if (isFocused) KitsugiTvTokens.Cards.focusedBorderWidth else 0.dp,
+                    color = borderColor
+                ),
+                shape = RoundedCornerShape(8.dp)
+            )
+            .onFocusChanged { isFocused = it.isFocused }
+            .then(
+                if (isVerifyAvailable) {
+                    Modifier.tvClickable(shape = RoundedCornerShape(8.dp), onClick = onVerify)
+                } else Modifier
+            )
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Red indicator / Warning icon
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color.Red.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = if (isVerifyAvailable) Icons.Rounded.Extension else Icons.Rounded.Close,
+                contentDescription = null,
+                tint = Color.Red
+            )
+        }
+
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = addonState.addonName,
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                color = KitsugiColors.TextPrimary
+            )
+
+            Text(
+                text = addonState.error ?: "Bilinmeyen hata oluştu",
+                style = MaterialTheme.typography.labelSmall,
+                color = KitsugiColors.TextMuted,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            if (isVerifyAvailable && isFocused) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Doğrulamak için kumandanın OK tuşuna basın",
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                    color = accentColor
+                )
+            }
+        }
     }
 }
