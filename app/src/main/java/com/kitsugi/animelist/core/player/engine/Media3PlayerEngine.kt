@@ -102,7 +102,7 @@ class Media3PlayerEngine(
         get() = exoPlayer?.isPlaying ?: false
         
     override val currentSpeed: Float
-        get() = exoPlayer?.playbackParameters?.speed ?: 1.0f
+        get() = exoPlayer?.playbackParameters?.speed ?: settings.playerSpeed
         
     override val currentVolume: Float
         get() = exoPlayer?.volume ?: 1.0f
@@ -660,7 +660,7 @@ class Media3PlayerEngine(
                 )
             player.setMediaSource(sourceToSet)
 
-            player.setPlaybackSpeed(currentSpeed)
+            player.setPlaybackSpeed(settings.playerSpeed)
             player.playWhenReady = true
             player.prepare()
             if (startPositionMs > 0L) {

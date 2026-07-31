@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.OutlinedNumericChooser
@@ -98,11 +99,11 @@ fun SubtitleDelayPanel(
             extraSettings = {
                 if (affectedSubtitle == SubtitleDelayType.Primary) {
                     OutlinedNumericChooser(
-                        label = { Text("Hız") },
+                        label = { Text("Hız", color = Color.White) },
                         value = speed,
                         onChange = { speed = round(it * 1000) / 1000f },
                         max = 10f,
-                        step = .01f,
+                        step = .05f,
                         min = .1f,
                     )
                 }
@@ -128,15 +129,19 @@ private fun SubtitleDelayTitle(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         modifier = modifier.fillMaxWidth(),
     ) {
-        Text("Altyazı Gecikmesi", style = MaterialTheme.typography.headlineMedium)
+        Text("Alt yazı gecikmesi", style = MaterialTheme.typography.headlineMedium, color = Color.White)
         var showDropDown by remember { mutableStateOf(false) }
-        Row(modifier = Modifier.clickable { showDropDown = true }) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.clickable { showDropDown = true }
+        ) {
             Text(
                 affectedSubtitle.label,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = Color.White.copy(alpha = 0.8f),
                 style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(start = 4.dp)
             )
-            Icon(Icons.Default.ArrowDropDown, null)
+            Icon(Icons.Default.ArrowDropDown, null, tint = Color.White)
             DropdownMenu(expanded = showDropDown, onDismissRequest = { showDropDown = false }) {
                 SubtitleDelayType.entries.forEach {
                     DropdownMenuItem(
@@ -148,7 +153,7 @@ private fun SubtitleDelayTitle(
         }
         Spacer(Modifier.weight(1f))
         IconButton(onClose) {
-            Icon(Icons.Default.Close, null, modifier = Modifier.size(32.dp))
+            Icon(Icons.Default.Close, null, modifier = Modifier.size(32.dp), tint = Color.White)
         }
     }
 }

@@ -283,12 +283,7 @@ fun SettingsScreen(
                 },
                 dnsChoice = params.integrations.dnsChoice,
                 onDnsChoiceSelected = params.integrations.onDnsChoiceSelected,
-                customImageDownloadUri = params.general.customImageDownloadUri,
-                onCustomImageDownloadUriChanged = params.general.onCustomImageDownloadUriChanged,
-                videoDownloadUri = params.general.videoDownloadUri,
-                onVideoDownloadUriChanged = params.general.onVideoDownloadUriChanged,
-                downloaderPreference = params.general.downloaderPreference,
-                onDownloaderPreferenceSelected = params.general.onDownloaderPreferenceSelected,
+                download = params.download,
                 onDismiss = {
                     activeDialog = null
                 }

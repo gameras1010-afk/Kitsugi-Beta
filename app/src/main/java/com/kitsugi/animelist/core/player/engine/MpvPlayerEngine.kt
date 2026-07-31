@@ -47,7 +47,7 @@ class MpvPlayerEngine(
     override var isPlaying: Boolean = false
         private set
 
-    private var _currentSpeed: Float = 1.0f
+    private var _currentSpeed: Float = settings.playerSpeed
     override val currentSpeed: Float
         get() = _currentSpeed
 
@@ -115,7 +115,8 @@ class MpvPlayerEngine(
         "hwdec-current"     to MPV.mpvFormat.MPV_FORMAT_STRING,
         "video-params/w"    to MPV.mpvFormat.MPV_FORMAT_INT64,
         "video-params/h"    to MPV.mpvFormat.MPV_FORMAT_INT64,
-        "user-data/aniyomi" to MPV.mpvFormat.MPV_FORMAT_STRING
+        "user-data/aniyomi" to MPV.mpvFormat.MPV_FORMAT_STRING,
+        "user-data/current-anime/intro-length" to MPV.mpvFormat.MPV_FORMAT_INT64
     )
 
     override val activeStreamInfo: StreamInfoData
@@ -457,6 +458,9 @@ class MpvPlayerEngine(
             "chapter" -> {
                 // Bölüm değişimi bildirimi
             }
+            "user-data/current-anime/intro-length" -> {
+                listeners.forEach { it.onEngineEvent(property, value.toString()) }
+            }
         }
     }
 
@@ -501,6 +505,7 @@ class MpvPlayerEngine(
             // GPU renderer backend
             mpv.setPropertyString("gpu-api", "opengl")
             mpv.setPropertyString("vo", settings.mpvGpuRenderer.ifBlank { "gpu" })
+            mpv.setPropertyDouble("speed", settings.playerSpeed.toDouble())
 
             // Donanım kod çözme
             mpv.setPropertyString("hwdec", settings.mpvHwdecMode.ifBlank { "auto-safe" })

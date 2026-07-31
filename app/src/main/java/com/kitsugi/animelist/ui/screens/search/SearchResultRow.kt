@@ -144,14 +144,15 @@ fun SearchResultRow(
                         fontWeight = FontWeight.Medium
                     )
 
-                    if (mediaEntry.score != null) {
-                        Text(
-                            text = "★ ${mediaEntry.score}",
-                            color = KitsugiColors.AccentOrange,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    val displayScore = mediaEntry.getDisplayScore(scoreFormat, hideScores)
+                    val isUnrated = displayScore == "unrated" || displayScore == "Unrated" || displayScore == "Puanlanmamış" || displayScore == "Puan yok"
+                    val scoreText = if (isUnrated) stringResource(R.string.score_unrated) else "★ $displayScore"
+                    Text(
+                        text = scoreText,
+                        color = KitsugiColors.AccentOrange,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(2.dp))
@@ -169,7 +170,8 @@ fun SearchResultRow(
                 ) {
                     if (!hideScores) {
                         val displayScore = result.getDisplayScore(scoreFormat, hideScores)
-                        val scoreText = if (displayScore == "unrated") stringResource(R.string.score_unrated) else "★ $displayScore"
+                        val isUnrated = displayScore == "unrated" || displayScore == "Unrated" || displayScore == "Puanlanmamış" || displayScore == "Puan yok"
+                        val scoreText = if (isUnrated) stringResource(R.string.score_unrated) else "★ $displayScore"
                         Text(
                             text = scoreText,
                             color = KitsugiColors.AccentOrange,

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
@@ -134,6 +135,7 @@ class SettingsDataStore(
         val GestureScrollSensitivity = floatPreferencesKey("gesture_scroll_sensitivity")
         val DoubleTapSeekSeconds = intPreferencesKey("double_tap_seek_seconds")
         val HoldSpeedMultiplier = floatPreferencesKey("hold_speed_multiplier")
+        val PlayerSpeed = floatPreferencesKey("pref_player_speed")
         // ─── PIP (T2.3) ──────────────────────────────────────────────────────
         val PipEnabled = booleanPreferencesKey("pip_enabled")
         // ─── Audio Route Delay (T1.3) ─────────────────────────────────────────
@@ -189,6 +191,11 @@ class SettingsDataStore(
         val SubtitleShadowOffset = floatPreferencesKey("subtitle_shadow_offset")
         val SubtitleBorderColor = intPreferencesKey("subtitle_border_color")
         val SubtitleBorderSize = floatPreferencesKey("subtitle_border_size")
+        val SubtitleFont = stringPreferencesKey("subtitle_font")
+        val SubtitleBorderStyle = stringPreferencesKey("subtitle_border_style")
+        val SubtitleFontScale = floatPreferencesKey("subtitle_font_scale")
+        val SubtitlePos = intPreferencesKey("subtitle_pos")
+        val SubtitleOverrideAss = booleanPreferencesKey("subtitle_override_ass")
         // ─── Uyku Zamanlayıcısı ──────────────────────────────────────────────────
         val SleepTimerSeconds = intPreferencesKey("sleep_timer_seconds")
         // ─── Ses Boost Sınırı ─────────────────────────────────────────────────────
@@ -199,6 +206,31 @@ class SettingsDataStore(
         val PreciseSeeking = booleanPreferencesKey("precise_seeking")
         val AudioChannelsConfig = stringPreferencesKey("pref_audio_channels_config")
         val PlayerStatisticsPage = intPreferencesKey("pref_player_statistics_page")
+
+        // ─── Yeni İndirme Ayarları (Aniyomi Uyumlu) ──────────────────────────────────
+        val DownloadOnlyOverWifi = booleanPreferencesKey("pref_download_only_over_wifi_key")
+        val DownloadSpeedLimit = intPreferencesKey("download_speed_limit")
+        val SaveChaptersAsCBZ = booleanPreferencesKey("save_chapter_as_cbz")
+        val SplitTallImages = booleanPreferencesKey("split_tall_images")
+        val NumberOfDownloads = intPreferencesKey("download_slots")
+        val RemoveAfterMarkedAsRead = booleanPreferencesKey("pref_remove_after_marked_as_read_key")
+        val RemoveAfterReadSlots = intPreferencesKey("remove_after_read_slots")
+        val RemoveBookmarkedChapters = booleanPreferencesKey("pref_remove_bookmarked")
+        val DownloadFillermarkedItems = booleanPreferencesKey("pref_download_fillermarked")
+        val RemoveExcludeCategories = stringSetPreferencesKey("remove_exclude_categories")
+        val RemoveExcludeAnimeCategories = stringSetPreferencesKey("remove_exclude_anime_categories")
+        val DownloadNewEpisodes = booleanPreferencesKey("download_new_episode")
+        val DownloadNewChapters = booleanPreferencesKey("download_new")
+        val DownloadNewEpisodeCategories = stringSetPreferencesKey("download_new_anime_categories")
+        val DownloadNewChapterCategories = stringSetPreferencesKey("download_new_categories")
+        val DownloadNewEpisodeCategoriesExclude = stringSetPreferencesKey("download_new_anime_categories_exclude")
+        val DownloadNewChapterCategoriesExclude = stringSetPreferencesKey("download_new_categories_exclude")
+        val AutoDownloadWhileWatching = intPreferencesKey("auto_download_while_watching")
+        val AutoDownloadWhileReading = intPreferencesKey("auto_download_while_reading")
+        val UseExternalDownloader = booleanPreferencesKey("use_external_downloader")
+        val ExternalDownloaderSelection = stringPreferencesKey("external_downloader_selection")
+        val DownloadNewUnreadChaptersOnly = booleanPreferencesKey("download_new_unread_chapters_only")
+        val DownloadNewUnseenEpisodesOnly = booleanPreferencesKey("download_new_unread_episodes_only")
     }
 
     val settingsFlow: Flow<AppSettings> = kotlinx.coroutines.flow.flow {
@@ -226,7 +258,7 @@ class SettingsDataStore(
                     scoreFormat = preferences[Keys.ScoreFormat] ?: "POINT_10",
                     hideScores = preferences[Keys.HideScores] ?: false,
                     showAnimeLogos = preferences[Keys.ShowAnimeLogos] ?: false,
-                    playerPreference = preferences[Keys.PlayerPreference] ?: "INTERNAL",
+                    playerPreference = preferences[Keys.PlayerPreference] ?: "MPV",
                     isAutoplayEnabled = preferences[Keys.IsAutoplayEnabled] ?: true,
                     skipIntroDurationSec = preferences[Keys.SkipIntroDurationSec] ?: 5,
                     defaultSubtitleSize = preferences[Keys.DefaultSubtitleSize] ?: 16,
@@ -310,6 +342,7 @@ class SettingsDataStore(
                     gestureScrollSensitivity = preferences[Keys.GestureScrollSensitivity] ?: 1.0f,
                     doubleTapSeekSeconds = preferences[Keys.DoubleTapSeekSeconds] ?: 10,
                     holdSpeedMultiplier = preferences[Keys.HoldSpeedMultiplier] ?: 2.0f,
+                    playerSpeed = preferences[Keys.PlayerSpeed] ?: 1.0f,
                     pipEnabled = preferences[Keys.PipEnabled] ?: true,
                     audioDelayPerRouteJson = preferences[Keys.AudioDelayPerRouteJson] ?: "{}",
                     qualityProfileJson = preferences[Keys.QualityProfileJson] ?: "",
@@ -361,6 +394,11 @@ class SettingsDataStore(
                     subtitleShadowOffset = preferences[Keys.SubtitleShadowOffset] ?: 1.5f,
                     subtitleBorderColor = preferences[Keys.SubtitleBorderColor] ?: 0xFF000000.toInt(),
                     subtitleBorderSize = preferences[Keys.SubtitleBorderSize] ?: 1.5f,
+                    subtitleFont = preferences[Keys.SubtitleFont] ?: "Sans Serif",
+                    subtitleBorderStyle = preferences[Keys.SubtitleBorderStyle] ?: "outline-and-shadow",
+                    subtitleFontScale = preferences[Keys.SubtitleFontScale] ?: 1.0f,
+                    subtitlePos = preferences[Keys.SubtitlePos] ?: 100,
+                    subtitleOverrideAss = preferences[Keys.SubtitleOverrideAss] ?: false,
                     // ─── Uyku Zamanlayıcısı
                     sleepTimerSeconds = preferences[Keys.SleepTimerSeconds] ?: 0,
                     // ─── Ses Boost Sınırı
@@ -372,7 +410,30 @@ class SettingsDataStore(
                     audioChannels = runCatching {
                         AudioChannels.valueOf(preferences[Keys.AudioChannelsConfig] ?: "AutoSafe")
                     }.getOrDefault(AudioChannels.AutoSafe),
-                    playerStatisticsPage = preferences[Keys.PlayerStatisticsPage] ?: 0
+                    playerStatisticsPage = preferences[Keys.PlayerStatisticsPage] ?: 0,
+                    downloadOnlyOverWifi = preferences[Keys.DownloadOnlyOverWifi] ?: true,
+                    downloadSpeedLimit = preferences[Keys.DownloadSpeedLimit] ?: 0,
+                    saveChaptersAsCBZ = preferences[Keys.SaveChaptersAsCBZ] ?: true,
+                    splitTallImages = preferences[Keys.SplitTallImages] ?: true,
+                    numberOfDownloads = preferences[Keys.NumberOfDownloads] ?: 1,
+                    removeAfterMarkedAsRead = preferences[Keys.RemoveAfterMarkedAsRead] ?: false,
+                    removeAfterReadSlots = preferences[Keys.RemoveAfterReadSlots] ?: -1,
+                    removeBookmarkedChapters = preferences[Keys.RemoveBookmarkedChapters] ?: false,
+                    downloadFillermarkedItems = preferences[Keys.DownloadFillermarkedItems] ?: false,
+                    removeExcludeCategories = preferences[Keys.RemoveExcludeCategories] ?: emptySet(),
+                    removeExcludeAnimeCategories = preferences[Keys.RemoveExcludeAnimeCategories] ?: emptySet(),
+                    downloadNewEpisodes = preferences[Keys.DownloadNewEpisodes] ?: false,
+                    downloadNewChapters = preferences[Keys.DownloadNewChapters] ?: false,
+                    downloadNewEpisodeCategories = preferences[Keys.DownloadNewEpisodeCategories] ?: emptySet(),
+                    downloadNewChapterCategories = preferences[Keys.DownloadNewChapterCategories] ?: emptySet(),
+                    downloadNewEpisodeCategoriesExclude = preferences[Keys.DownloadNewEpisodeCategoriesExclude] ?: emptySet(),
+                    downloadNewChapterCategoriesExclude = preferences[Keys.DownloadNewChapterCategoriesExclude] ?: emptySet(),
+                    autoDownloadWhileWatching = preferences[Keys.AutoDownloadWhileWatching] ?: 0,
+                    autoDownloadWhileReading = preferences[Keys.AutoDownloadWhileReading] ?: 0,
+                    useExternalDownloader = preferences[Keys.UseExternalDownloader] ?: false,
+                    externalDownloaderSelection = preferences[Keys.ExternalDownloaderSelection] ?: "",
+                    downloadNewUnreadChaptersOnly = preferences[Keys.DownloadNewUnreadChaptersOnly] ?: false,
+                    downloadNewUnseenEpisodesOnly = preferences[Keys.DownloadNewUnseenEpisodesOnly] ?: false
                 )
             )
         }
@@ -966,6 +1027,10 @@ class SettingsDataStore(
         context.settingsDataStore.edit { it[Keys.HoldSpeedMultiplier] = multiplier }
     }
 
+    suspend fun setPlayerSpeed(speed: Float) {
+        context.settingsDataStore.edit { it[Keys.PlayerSpeed] = speed }
+    }
+
     suspend fun setPipEnabled(enabled: Boolean) {
         context.settingsDataStore.edit { it[Keys.PipEnabled] = enabled }
     }
@@ -1131,6 +1196,26 @@ class SettingsDataStore(
         context.settingsDataStore.edit { it[Keys.SubtitleBorderSize] = size.coerceIn(0f, 6f) }
     }
 
+    suspend fun setSubtitleFont(font: String) {
+        context.settingsDataStore.edit { it[Keys.SubtitleFont] = font }
+    }
+
+    suspend fun setSubtitleBorderStyle(style: String) {
+        context.settingsDataStore.edit { it[Keys.SubtitleBorderStyle] = style }
+    }
+
+    suspend fun setSubtitleFontScale(scale: Float) {
+        context.settingsDataStore.edit { it[Keys.SubtitleFontScale] = scale.coerceIn(0.1f, 5f) }
+    }
+
+    suspend fun setSubtitlePos(pos: Int) {
+        context.settingsDataStore.edit { it[Keys.SubtitlePos] = pos.coerceIn(0, 150) }
+    }
+
+    suspend fun setSubtitleOverrideAss(override: Boolean) {
+        context.settingsDataStore.edit { it[Keys.SubtitleOverrideAss] = override }
+    }
+
     // ─── Uyku Zamanlayıcısı ─────────────────────────────────────────────────────
 
     suspend fun setSleepTimerSeconds(seconds: Int) {
@@ -1163,5 +1248,99 @@ class SettingsDataStore(
 
     suspend fun setPlayerStatisticsPage(page: Int) {
         context.settingsDataStore.edit { it[Keys.PlayerStatisticsPage] = page }
+    }
+
+    // ─── Yeni İndirme Ayarları (Aniyomi Uyumlu Setterlar) ──────────────────────────
+
+    suspend fun setDownloadOnlyOverWifi(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.DownloadOnlyOverWifi] = enabled }
+    }
+
+    suspend fun setDownloadSpeedLimit(limit: Int) {
+        context.settingsDataStore.edit { it[Keys.DownloadSpeedLimit] = limit }
+    }
+
+    suspend fun setSaveChaptersAsCBZ(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.SaveChaptersAsCBZ] = enabled }
+    }
+
+    suspend fun setSplitTallImages(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.SplitTallImages] = enabled }
+    }
+
+    suspend fun setNumberOfDownloads(slots: Int) {
+        context.settingsDataStore.edit { it[Keys.NumberOfDownloads] = slots }
+    }
+
+    suspend fun setRemoveAfterMarkedAsRead(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.RemoveAfterMarkedAsRead] = enabled }
+    }
+
+    suspend fun setRemoveAfterReadSlots(slots: Int) {
+        context.settingsDataStore.edit { it[Keys.RemoveAfterReadSlots] = slots }
+    }
+
+    suspend fun setRemoveBookmarkedChapters(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.RemoveBookmarkedChapters] = enabled }
+    }
+
+    suspend fun setDownloadFillermarkedItems(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.DownloadFillermarkedItems] = enabled }
+    }
+
+    suspend fun setRemoveExcludeCategories(categories: Set<String>) {
+        context.settingsDataStore.edit { it[Keys.RemoveExcludeCategories] = categories }
+    }
+
+    suspend fun setRemoveExcludeAnimeCategories(categories: Set<String>) {
+        context.settingsDataStore.edit { it[Keys.RemoveExcludeAnimeCategories] = categories }
+    }
+
+    suspend fun setDownloadNewEpisodes(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.DownloadNewEpisodes] = enabled }
+    }
+
+    suspend fun setDownloadNewChapters(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.DownloadNewChapters] = enabled }
+    }
+
+    suspend fun setDownloadNewEpisodeCategories(categories: Set<String>) {
+        context.settingsDataStore.edit { it[Keys.DownloadNewEpisodeCategories] = categories }
+    }
+
+    suspend fun setDownloadNewChapterCategories(categories: Set<String>) {
+        context.settingsDataStore.edit { it[Keys.DownloadNewChapterCategories] = categories }
+    }
+
+    suspend fun setDownloadNewEpisodeCategoriesExclude(categories: Set<String>) {
+        context.settingsDataStore.edit { it[Keys.DownloadNewEpisodeCategoriesExclude] = categories }
+    }
+
+    suspend fun setDownloadNewChapterCategoriesExclude(categories: Set<String>) {
+        context.settingsDataStore.edit { it[Keys.DownloadNewChapterCategoriesExclude] = categories }
+    }
+
+    suspend fun setAutoDownloadWhileWatching(episodes: Int) {
+        context.settingsDataStore.edit { it[Keys.AutoDownloadWhileWatching] = episodes }
+    }
+
+    suspend fun setAutoDownloadWhileReading(chapters: Int) {
+        context.settingsDataStore.edit { it[Keys.AutoDownloadWhileReading] = chapters }
+    }
+
+    suspend fun setUseExternalDownloader(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.UseExternalDownloader] = enabled }
+    }
+
+    suspend fun setExternalDownloaderSelection(selection: String) {
+        context.settingsDataStore.edit { it[Keys.ExternalDownloaderSelection] = selection }
+    }
+
+    suspend fun setDownloadNewUnreadChaptersOnly(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.DownloadNewUnreadChaptersOnly] = enabled }
+    }
+
+    suspend fun setDownloadNewUnseenEpisodesOnly(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.DownloadNewUnseenEpisodesOnly] = enabled }
     }
 }

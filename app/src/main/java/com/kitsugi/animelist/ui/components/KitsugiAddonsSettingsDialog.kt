@@ -132,7 +132,8 @@ fun KitsugiAddonsSettingsDialog(
     KitsugiSheetOrDialog(
         onDismiss = onDismiss,
         heightFraction = 0.93f,
-        innerScrollState = activeListState
+        innerScrollState = activeListState,
+        sheetGesturesEnabled = false
     ) {
             // Header content (Title + Close button)
             Column(

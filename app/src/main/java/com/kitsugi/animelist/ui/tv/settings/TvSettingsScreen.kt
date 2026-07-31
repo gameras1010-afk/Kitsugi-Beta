@@ -375,9 +375,8 @@ fun TvSettingsScreen(
 
                         item {
                             val playerText = when (settings.playerPreference.uppercase()) {
-                                "MPV" -> "MPV Oynatıcı"
                                 "EXTERNAL" -> "Harici Oynatıcı"
-                                else -> "ExoPlayer (Dahili)"
+                                else -> "MPV Oynatıcı"
                             }
                             TvSettingsActionRow(
                                 title = "Oynatıcı Tercihi",
@@ -385,9 +384,8 @@ fun TvSettingsScreen(
                                 actionText = "Değiştir",
                                 onClick = {
                                     val nextPreference = when (settings.playerPreference.uppercase()) {
-                                        "INTERNAL" -> "MPV"
                                         "MPV" -> "EXTERNAL"
-                                        else -> "INTERNAL"
+                                        else -> "MPV"
                                     }
                                     scope.launch { settingsDataStore.setPlayerPreference(nextPreference) }
                                 }
@@ -573,58 +571,7 @@ fun TvSettingsScreen(
                             )
                         }
 
-                        item {
-                            val priorityText = when (settings.decoderPriority) {
-                                1 -> "Yazılım Fallback"
-                                2 -> "Yazılım Öncelikli"
-                                else -> "Donanım Öncelikli"
-                            }
-                            TvSettingsActionRow(
-                                title = "Dekoder Önceliği",
-                                description = "Yazılımsal/donanımsal kod çözücü önceliğini belirler. Şu anki: $priorityText",
-                                actionText = "Değiştir",
-                                onClick = {
-                                    val nextPriority = (settings.decoderPriority + 1) % 3
-                                    scope.launch { settingsDataStore.setDecoderPriority(nextPriority) }
-                                }
-                            )
-                        }
 
-                        item {
-                            val dvText = when (settings.dv7HandlingMode) {
-                                com.kitsugi.animelist.data.settings.Dv7HandlingMode.AUTO -> "Otomatik (Cihaz Desteğine Göre)"
-                                com.kitsugi.animelist.data.settings.Dv7HandlingMode.OFF -> "Kapalı (Doğal DV7)"
-                                com.kitsugi.animelist.data.settings.Dv7HandlingMode.DV81_LIBDOVI -> "DV8.1 Dönüştürme (libdovi)"
-                                com.kitsugi.animelist.data.settings.Dv7HandlingMode.HDR10_BASE_LAYER -> "HDR10 Base Layer"
-                                com.kitsugi.animelist.data.settings.Dv7HandlingMode.STRIP_DV -> "DV Metadatasını Ayıkla"
-                            }
-                            TvSettingsActionRow(
-                                title = "Dolby Vision (DV7) İşleme Modu",
-                                description = "Dolby Vision Profile 7 videoların işlenme şeklini belirler. Şu anki: $dvText",
-                                actionText = "Değiştir",
-                                onClick = {
-                                    val nextMode = when (settings.dv7HandlingMode) {
-                                        com.kitsugi.animelist.data.settings.Dv7HandlingMode.AUTO -> com.kitsugi.animelist.data.settings.Dv7HandlingMode.OFF
-                                        com.kitsugi.animelist.data.settings.Dv7HandlingMode.OFF -> com.kitsugi.animelist.data.settings.Dv7HandlingMode.DV81_LIBDOVI
-                                        com.kitsugi.animelist.data.settings.Dv7HandlingMode.DV81_LIBDOVI -> com.kitsugi.animelist.data.settings.Dv7HandlingMode.HDR10_BASE_LAYER
-                                        com.kitsugi.animelist.data.settings.Dv7HandlingMode.HDR10_BASE_LAYER -> com.kitsugi.animelist.data.settings.Dv7HandlingMode.STRIP_DV
-                                        com.kitsugi.animelist.data.settings.Dv7HandlingMode.STRIP_DV -> com.kitsugi.animelist.data.settings.Dv7HandlingMode.AUTO
-                                    }
-                                    scope.launch { settingsDataStore.setDv7HandlingMode(nextMode) }
-                                }
-                            )
-                        }
-
-                        item {
-                            TvSettingsToggleRow(
-                                title = "HDR10+ SEI Metadatasını Ayıkla",
-                                description = "HDR10+ akışlardaki dinamik SEI meta verilerini temizler.",
-                                checked = settings.stripHdr10PlusSei,
-                                onCheckedChange = { checked ->
-                                    scope.launch { settingsDataStore.setStripHdr10PlusSei(checked) }
-                                }
-                            )
-                        }
 
                         // ─── T1-10 · TV Parity – Ek Oynatıcı Ayarları ───────────────────────
 
@@ -715,16 +662,7 @@ fun TvSettingsScreen(
                             )
                         }
 
-                        item {
-                            TvSettingsToggleRow(
-                                title = "Paralel Parça İndirme",
-                                description = "Akış sırasında arka planda paralel HTTP aralığı istekleri yaparak tampon dolumunu hızlandırır.",
-                                checked = settings.parallelRangeEnabled,
-                                onCheckedChange = { checked ->
-                                    scope.launch { settingsDataStore.setParallelRangeEnabled(checked) }
-                                }
-                            )
-                        }
+
 
                         item {
                             TvSettingsToggleRow(

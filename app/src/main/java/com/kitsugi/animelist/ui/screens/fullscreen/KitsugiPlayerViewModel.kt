@@ -361,10 +361,12 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
     fun startTimer(seconds: Int) {
         timerJob?.cancel()
         _remainingTime.value = seconds
+        _sleepTimerSecondsLeft.value = seconds
         if (seconds < 1) return
         timerJob = viewModelScope.launch {
             for (time in seconds downTo 0) {
                 _remainingTime.value = time
+                _sleepTimerSecondsLeft.value = time
                 delay(1000)
             }
             activeEngine?.pause()
@@ -1219,6 +1221,7 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
 
     fun setPlaybackSpeed(speed: Float) {
         activeEngine?.setPlaybackSpeed(speed)
+        viewModelScope.launch { dataStore.setPlayerSpeed(speed) }
     }
 
     fun setAutoPlay(enabled: Boolean) {
@@ -1435,10 +1438,14 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         return malId ?: aniListId ?: animeTitle.hashCode()
     }
 
-    suspend fun getSavedPosition(mediaId: Int, episode: Int): Long {
+    suspend fun getSavedPosition(mediaId: Int, episode: Int, addonName: String? = null): Long {
         return try {
             val progress = historyRepository.getProgress(mediaId, episode)
-            progress?.lastPositionMs ?: 0L
+            if (progress != null && (addonName == null || progress.addonName == addonName)) {
+                progress.lastPositionMs
+            } else {
+                0L
+            }
         } catch (e: Exception) {
             Log.e("KitsugiPlayerViewModel", "Error getting saved position from DB", e)
             0L
@@ -1778,6 +1785,66 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         }
 
         mpvEngine?.mpvView?.mpv?.setPropertyString(property, "")
+    }
+
+    fun getAnimeSkipIntroLength(): Int {
+        val sharedPrefs = context.getSharedPreferences("kitsugi_player_prefs", Context.MODE_PRIVATE)
+        return sharedPrefs.getInt("intro_length_${getResolveMediaId()}", 85)
+    }
+
+    fun setAnimeSkipIntroLength(length: Int) {
+        val sharedPrefs = context.getSharedPreferences("kitsugi_player_prefs", Context.MODE_PRIVATE)
+        sharedPrefs.edit().putInt("intro_length_${getResolveMediaId()}", length).apply()
+        val mpvEngine = activeEngine as? com.kitsugi.animelist.core.player.engine.MpvPlayerEngine
+        mpvEngine?.mpvView?.mpv?.let { mpv ->
+            val currentVal = mpv.getPropertyInt("user-data/current-anime/intro-length") ?: -1
+            if (currentVal != length) {
+                mpv.setPropertyInt("user-data/current-anime/intro-length", length)
+            }
+        }
+    }
+
+    fun addAudio(uri: android.net.Uri) {
+        val url = uri.toString()
+        val isContentUri = url.startsWith("content://")
+        val path = if (isContentUri) uri.openContentFd(context) else url
+        if (path == null) return
+        val name = if (isContentUri) uri.getFileName(context) else null
+        if (name == null) {
+            activeEngine?.executeCommand(arrayOf("audio-add", path, "cached"))
+        } else {
+            activeEngine?.executeCommand(arrayOf("audio-add", path, "cached", name))
+        }
+    }
+
+    fun addSubtitle(uri: android.net.Uri) {
+        val url = uri.toString()
+        val isContentUri = url.startsWith("content://")
+        val path = if (isContentUri) uri.openContentFd(context) else url
+        if (path == null) return
+        val name = if (isContentUri) uri.getFileName(context) else null
+        if (name == null) {
+            activeEngine?.executeCommand(arrayOf("sub-add", path, "cached"))
+        } else {
+            activeEngine?.executeCommand(arrayOf("sub-add", path, "cached", name))
+        }
+    }
+
+    private fun android.net.Uri.openContentFd(context: Context): String? {
+        return context.contentResolver.openFileDescriptor(this, "r")?.detachFd()?.let {
+            `is`.xyz.mpv.Utils.findRealPath(it)?.also { _ ->
+                android.os.ParcelFileDescriptor.adoptFd(it).close()
+            } ?: "fd://$it"
+        }
+    }
+
+    private fun android.net.Uri.getFileName(context: Context): String? {
+        return context.contentResolver.query(this, null, null, null, null)?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+            if (nameIndex != -1 && cursor.moveToFirst()) {
+                cursor.getString(nameIndex)
+            } else null
+        }
     }
 }
 

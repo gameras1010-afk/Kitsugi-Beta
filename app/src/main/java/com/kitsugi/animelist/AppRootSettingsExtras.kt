@@ -360,6 +360,60 @@ internal fun SettingsContext.buildSettingsParams() =
             fanartTvApiKey = appSettings.fanartTvApiKey,
             onFanartTvApiKeyChanged = { onFanartTvApiKeyChanged(it) }
         ),
+        download = com.kitsugi.animelist.ui.screens.settings.DownloadSettings(
+            customImageDownloadUri = appSettings.customImageDownloadUri,
+            onCustomImageDownloadUriChanged = { onCustomImageDownloadUriChanged(it) },
+            videoDownloadUri = appSettings.videoDownloadUri,
+            onVideoDownloadUriChanged = { onVideoDownloadUriChanged(it) },
+            downloaderPreference = appSettings.downloaderPreference,
+            onDownloaderPreferenceSelected = { onDownloaderPreferenceSelected(it) },
+            downloadOnlyOverWifi = appSettings.downloadOnlyOverWifi,
+            onDownloadOnlyOverWifiChanged = { onDownloadOnlyOverWifiChanged(it) },
+            downloadSpeedLimit = appSettings.downloadSpeedLimit,
+            onDownloadSpeedLimitChanged = { onDownloadSpeedLimitChanged(it) },
+            saveChaptersAsCBZ = appSettings.saveChaptersAsCBZ,
+            onSaveChaptersAsCBZChanged = { onSaveChaptersAsCBZChanged(it) },
+            splitTallImages = appSettings.splitTallImages,
+            onSplitTallImagesChanged = { onSplitTallImagesChanged(it) },
+            numberOfDownloads = appSettings.numberOfDownloads,
+            onNumberOfDownloadsSelected = { onNumberOfDownloadsSelected(it) },
+            removeAfterMarkedAsRead = appSettings.removeAfterMarkedAsRead,
+            onRemoveAfterMarkedAsReadChanged = { onRemoveAfterMarkedAsReadChanged(it) },
+            removeAfterReadSlots = appSettings.removeAfterReadSlots,
+            onRemoveAfterReadSlotsSelected = { onRemoveAfterReadSlotsSelected(it) },
+            removeBookmarkedChapters = appSettings.removeBookmarkedChapters,
+            onRemoveBookmarkedChaptersChanged = { onRemoveBookmarkedChaptersChanged(it) },
+            downloadFillermarkedItems = appSettings.downloadFillermarkedItems,
+            onDownloadFillermarkedItemsChanged = { onDownloadFillermarkedItemsChanged(it) },
+            removeExcludeCategories = appSettings.removeExcludeCategories,
+            onRemoveExcludeCategoriesChanged = { onRemoveExcludeCategoriesChanged(it) },
+            removeExcludeAnimeCategories = appSettings.removeExcludeAnimeCategories,
+            onRemoveExcludeAnimeCategoriesChanged = { onRemoveExcludeAnimeCategoriesChanged(it) },
+            downloadNewEpisodes = appSettings.downloadNewEpisodes,
+            onDownloadNewEpisodesChanged = { onDownloadNewEpisodesChanged(it) },
+            downloadNewChapters = appSettings.downloadNewChapters,
+            onDownloadNewChaptersChanged = { onDownloadNewChaptersChanged(it) },
+            downloadNewEpisodeCategories = appSettings.downloadNewEpisodeCategories,
+            onDownloadNewEpisodeCategoriesChanged = { onDownloadNewEpisodeCategoriesChanged(it) },
+            downloadNewChapterCategories = appSettings.downloadNewChapterCategories,
+            onDownloadNewChapterCategoriesChanged = { onDownloadNewChapterCategoriesChanged(it) },
+            downloadNewEpisodeCategoriesExclude = appSettings.downloadNewEpisodeCategoriesExclude,
+            onDownloadNewEpisodeCategoriesExcludeChanged = { onDownloadNewEpisodeCategoriesExcludeChanged(it) },
+            downloadNewChapterCategoriesExclude = appSettings.downloadNewChapterCategoriesExclude,
+            onDownloadNewChapterCategoriesExcludeChanged = { onDownloadNewChapterCategoriesExcludeChanged(it) },
+            autoDownloadWhileWatching = appSettings.autoDownloadWhileWatching,
+            onAutoDownloadWhileWatchingSelected = { onAutoDownloadWhileWatchingSelected(it) },
+            autoDownloadWhileReading = appSettings.autoDownloadWhileReading,
+            onAutoDownloadWhileReadingSelected = { onAutoDownloadWhileReadingSelected(it) },
+            useExternalDownloader = appSettings.useExternalDownloader,
+            onUseExternalDownloaderChanged = { onUseExternalDownloaderChanged(it) },
+            externalDownloaderSelection = appSettings.externalDownloaderSelection,
+            onExternalDownloaderSelectionSelected = { onExternalDownloaderSelectionSelected(it) },
+            downloadNewUnreadChaptersOnly = appSettings.downloadNewUnreadChaptersOnly,
+            onDownloadNewUnreadChaptersOnlyChanged = { onDownloadNewUnreadChaptersOnlyChanged(it) },
+            downloadNewUnseenEpisodesOnly = appSettings.downloadNewUnseenEpisodesOnly,
+            onDownloadNewUnseenEpisodesOnlyChanged = { onDownloadNewUnseenEpisodesOnlyChanged(it) }
+        ),
         onOpenDownloads = {
             navState.navigateToDetail(DetailScreen.Downloads)
         },
@@ -867,3 +921,74 @@ internal fun SettingsContext.onDownloaderPreferenceSelected(preference: String) 
         appViewModel.showSnackbarMessage("İndirici tercihi güncellendi")
     }
 }
+
+internal fun SettingsContext.onDownloadOnlyOverWifiChanged(enabled: Boolean) {
+    coroutineScope.launch { settingsDataStore.setDownloadOnlyOverWifi(enabled) }
+}
+internal fun SettingsContext.onDownloadSpeedLimitChanged(limit: Int) {
+    coroutineScope.launch { settingsDataStore.setDownloadSpeedLimit(limit) }
+}
+internal fun SettingsContext.onSaveChaptersAsCBZChanged(enabled: Boolean) {
+    coroutineScope.launch { settingsDataStore.setSaveChaptersAsCBZ(enabled) }
+}
+internal fun SettingsContext.onSplitTallImagesChanged(enabled: Boolean) {
+    coroutineScope.launch { settingsDataStore.setSplitTallImages(enabled) }
+}
+internal fun SettingsContext.onNumberOfDownloadsSelected(slots: Int) {
+    coroutineScope.launch { settingsDataStore.setNumberOfDownloads(slots) }
+}
+internal fun SettingsContext.onRemoveAfterMarkedAsReadChanged(enabled: Boolean) {
+    coroutineScope.launch { settingsDataStore.setRemoveAfterMarkedAsRead(enabled) }
+}
+internal fun SettingsContext.onRemoveAfterReadSlotsSelected(slots: Int) {
+    coroutineScope.launch { settingsDataStore.setRemoveAfterReadSlots(slots) }
+}
+internal fun SettingsContext.onRemoveBookmarkedChaptersChanged(enabled: Boolean) {
+    coroutineScope.launch { settingsDataStore.setRemoveBookmarkedChapters(enabled) }
+}
+internal fun SettingsContext.onDownloadFillermarkedItemsChanged(enabled: Boolean) {
+    coroutineScope.launch { settingsDataStore.setDownloadFillermarkedItems(enabled) }
+}
+internal fun SettingsContext.onRemoveExcludeCategoriesChanged(categories: Set<String>) {
+    coroutineScope.launch { settingsDataStore.setRemoveExcludeCategories(categories) }
+}
+internal fun SettingsContext.onRemoveExcludeAnimeCategoriesChanged(categories: Set<String>) {
+    coroutineScope.launch { settingsDataStore.setRemoveExcludeAnimeCategories(categories) }
+}
+internal fun SettingsContext.onDownloadNewEpisodesChanged(enabled: Boolean) {
+    coroutineScope.launch { settingsDataStore.setDownloadNewEpisodes(enabled) }
+}
+internal fun SettingsContext.onDownloadNewChaptersChanged(enabled: Boolean) {
+    coroutineScope.launch { settingsDataStore.setDownloadNewChapters(enabled) }
+}
+internal fun SettingsContext.onDownloadNewEpisodeCategoriesChanged(categories: Set<String>) {
+    coroutineScope.launch { settingsDataStore.setDownloadNewEpisodeCategories(categories) }
+}
+internal fun SettingsContext.onDownloadNewChapterCategoriesChanged(categories: Set<String>) {
+    coroutineScope.launch { settingsDataStore.setDownloadNewChapterCategories(categories) }
+}
+internal fun SettingsContext.onDownloadNewEpisodeCategoriesExcludeChanged(categories: Set<String>) {
+    coroutineScope.launch { settingsDataStore.setDownloadNewEpisodeCategoriesExclude(categories) }
+}
+internal fun SettingsContext.onDownloadNewChapterCategoriesExcludeChanged(categories: Set<String>) {
+    coroutineScope.launch { settingsDataStore.setDownloadNewChapterCategoriesExclude(categories) }
+}
+internal fun SettingsContext.onAutoDownloadWhileWatchingSelected(episodes: Int) {
+    coroutineScope.launch { settingsDataStore.setAutoDownloadWhileWatching(episodes) }
+}
+internal fun SettingsContext.onAutoDownloadWhileReadingSelected(chapters: Int) {
+    coroutineScope.launch { settingsDataStore.setAutoDownloadWhileReading(chapters) }
+}
+internal fun SettingsContext.onUseExternalDownloaderChanged(enabled: Boolean) {
+    coroutineScope.launch { settingsDataStore.setUseExternalDownloader(enabled) }
+}
+internal fun SettingsContext.onExternalDownloaderSelectionSelected(selection: String) {
+    coroutineScope.launch { settingsDataStore.setExternalDownloaderSelection(selection) }
+}
+internal fun SettingsContext.onDownloadNewUnreadChaptersOnlyChanged(enabled: Boolean) {
+    coroutineScope.launch { settingsDataStore.setDownloadNewUnreadChaptersOnly(enabled) }
+}
+internal fun SettingsContext.onDownloadNewUnseenEpisodesOnlyChanged(enabled: Boolean) {
+    coroutineScope.launch { settingsDataStore.setDownloadNewUnseenEpisodesOnly(enabled) }
+}
+

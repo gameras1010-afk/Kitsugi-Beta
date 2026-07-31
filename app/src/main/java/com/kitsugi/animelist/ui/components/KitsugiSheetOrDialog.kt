@@ -19,6 +19,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.foundation.focusable
@@ -61,6 +63,9 @@ val LocalDismissAnimated = staticCompositionLocalOf<() -> Unit> { {} }
  *
  * [enableSwipeToDismiss]: Sürüklemeyle kapatmayı zorla engellemek için.
  *
+ * [sheetGesturesEnabled]: ModalBottomSheet gesture'larını (swipe-to-dismiss dahil) tamamen
+ * kontrol etmek için. HorizontalPager içeren sheet'lerde false veya dinamik geçirilmeli.
+ *
  * Usage: replace ModalBottomSheet { ... } with KitsugiSheetOrDialog(onDismiss = ...) { ... }
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,6 +78,12 @@ fun KitsugiSheetOrDialog(
     innerGridScrollState: LazyGridState? = null,
     innerColumnScrollState: androidx.compose.foundation.ScrollState? = null,
     enableSwipeToDismiss: Boolean = true,
+    /**
+     * null = auto-compute from scroll states (AniHyou style: gestures disabled when scrolled down)
+     * true = always enable gestures
+     * false = always disable gestures (use for HorizontalPager dialogs)
+     */
+    sheetGesturesEnabled: Boolean? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val isTv = LocalIsTv.current
@@ -124,6 +135,26 @@ fun KitsugiSheetOrDialog(
         // accidental horizontal scroll that the system interprets as a dismiss swipe).
         val isDismissing = remember { mutableStateOf(false) }
 
+        // Compute whether the content is at the top (AniHyou style)
+        val isAtTop by remember {
+            derivedStateOf {
+                when {
+                    innerScrollState != null ->
+                        innerScrollState.firstVisibleItemIndex == 0 &&
+                                innerScrollState.firstVisibleItemScrollOffset == 0
+                    innerGridScrollState != null ->
+                        innerGridScrollState.firstVisibleItemIndex == 0 &&
+                                innerGridScrollState.firstVisibleItemScrollOffset == 0
+                    innerColumnScrollState != null ->
+                        innerColumnScrollState.value == 0
+                    else -> true
+                }
+            }
+        }
+
+        // Effective gestures: explicit override wins; otherwise auto from scroll position
+        val effectiveGesturesEnabled = sheetGesturesEnabled ?: (isAtTop && enableSwipeToDismiss)
+
         fun safeDismiss() {
             if (!isDismissing.value) {
                 isDismissing.value = true
@@ -135,21 +166,9 @@ fun KitsugiSheetOrDialog(
         val sheetState = rememberModalBottomSheetState(
             skipPartiallyExpanded = true,
             confirmValueChange = { targetValue ->
-                if (targetValue == SheetValue.Hidden && enableSwipeToDismiss) {
-                    val atTop = when {
-                        innerScrollState != null ->
-                            innerScrollState.firstVisibleItemIndex == 0 &&
-                                    innerScrollState.firstVisibleItemScrollOffset == 0
-                        innerGridScrollState != null ->
-                            innerGridScrollState.firstVisibleItemIndex == 0 &&
-                                    innerGridScrollState.firstVisibleItemScrollOffset == 0
-                        innerColumnScrollState != null ->
-                            innerColumnScrollState.value == 0
-                        else -> true
-                    }
-                    atTop
-                } else if (!enableSwipeToDismiss && targetValue == SheetValue.Hidden) {
-                    false
+                if (targetValue == SheetValue.Hidden) {
+                    // Only allow hide if gestures enabled AND at top
+                    enableSwipeToDismiss && isAtTop
                 } else {
                     true
                 }

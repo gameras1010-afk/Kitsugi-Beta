@@ -113,9 +113,30 @@ fun WatchHistoryScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(history, key = { "${it.animeId}_${it.episode}_${it.watchedAtMs}" }) { entry ->
+                    val context = LocalContext.current
                     WatchHistoryItem(
                         entry = entry,
                         accentColor = accentColor,
+                        onClick = {
+                            if (!entry.source.isNullOrBlank()) {
+                                context.getSharedPreferences("StreamPrefs", android.content.Context.MODE_PRIVATE)
+                                    .edit()
+                                    .putString("last_addon_name", entry.source)
+                                    .apply()
+                            }
+                            com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity.start(
+                                context = context,
+                                malId = entry.malId,
+                                aniListId = entry.aniListId,
+                                tmdbId = null,
+                                episode = entry.episode,
+                                season = entry.season,
+                                isMovie = entry.isMovie,
+                                title = entry.animeTitle,
+                                posterUrl = entry.posterUrl,
+                                isAutoplay = true
+                            )
+                        },
                         onDelete = {
                             WatchHistoryManager.remove(entry.animeId, entry.episode)
                         }
@@ -158,9 +179,27 @@ fun WatchHistoryScreen(
 }
 
 @Composable
+private fun HistoryBadge(
+    text: String,
+    color: androidx.compose.ui.graphics.Color,
+    bgColor: androidx.compose.ui.graphics.Color,
+    bgAlpha: Float
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(bgColor.copy(alpha = bgAlpha))
+            .padding(horizontal = 6.dp, vertical = 2.dp)
+    ) {
+        Text(text = text, color = color, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
 private fun WatchHistoryItem(
     entry: WatchHistoryEntry,
     accentColor: androidx.compose.ui.graphics.Color,
+    onClick: () -> Unit,
     onDelete: () -> Unit
 ) {
     val dateStr = remember(entry.watchedAtMs) {
@@ -172,6 +211,7 @@ private fun WatchHistoryItem(
         modifier = Modifier
             .fillMaxWidth()
             .background(KitsugiColors.SurfaceSoft, RoundedCornerShape(14.dp))
+            .tvClickable(shape = RoundedCornerShape(14.dp), onClick = onClick)
             .padding(10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -212,7 +252,7 @@ private fun WatchHistoryItem(
         }
 
         // Info
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 text = entry.animeTitle,
                 color = KitsugiColors.TextPrimary,
@@ -221,21 +261,63 @@ private fun WatchHistoryItem(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            Text(
-                text = if (entry.isMovie) "Film" else "Sezon ${entry.season} · Bölüm ${entry.episode}",
-                color = accentColor,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            if (!entry.source.isNullOrBlank() || !entry.quality.isNullOrBlank()) {
-                Text(
-                    text = listOfNotNull(entry.source, entry.quality).joinToString(" · "),
-                    color = KitsugiColors.TextMuted,
-                    fontSize = 11.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+
+            // Badges row
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Media Type / Episode Badge
+                HistoryBadge(
+                    text = if (entry.isMovie) "Film" else "S${entry.season} · E${entry.episode}",
+                    color = accentColor,
+                    bgColor = accentColor,
+                    bgAlpha = 0.15f
+                )
+
+                // Addon/Source Badge
+                if (!entry.source.isNullOrBlank()) {
+                    HistoryBadge(
+                        text = entry.source,
+                        color = KitsugiColors.AccentPurple,
+                        bgColor = KitsugiColors.AccentPurple,
+                        bgAlpha = 0.12f
+                    )
+                }
+
+                // Quality Badge
+                if (!entry.quality.isNullOrBlank()) {
+                    val qualityColor = when {
+                        entry.quality.contains("4K", ignoreCase = true) || entry.quality.contains("2160", ignoreCase = true) -> KitsugiColors.AccentRed
+                        entry.quality.contains("1080", ignoreCase = true) -> KitsugiColors.AccentBlue
+                        entry.quality.contains("720", ignoreCase = true)  -> KitsugiColors.AccentGreen
+                        else -> KitsugiColors.AccentOrange
+                    }
+                    HistoryBadge(
+                        text = entry.quality,
+                        color = qualityColor,
+                        bgColor = qualityColor,
+                        bgAlpha = 0.15f
+                    )
+                }
+            }
+
+            // Progress Bar if watched progress exists
+            if (entry.durationMs > 0L && entry.positionMs > 0L) {
+                val progress = entry.positionMs.toFloat() / entry.durationMs.toFloat()
+                val remainingMin = ((entry.durationMs - entry.positionMs) / 60000L).coerceAtLeast(0L)
+                val remainingText = if (remainingMin > 0) "$remainingMin dk kaldı" else "Az süre kaldı"
+
+                com.kitsugi.animelist.ui.components.ContinueWatchingProgressLabel(
+                    episodeLabel = "İlerleme",
+                    progress = progress,
+                    remainingText = remainingText,
+                    accentColor = accentColor,
+                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp)
                 )
             }
+
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 Icon(Icons.Rounded.AccessTime, null, tint = KitsugiColors.TextMuted, modifier = Modifier.size(11.dp))
                 Text(text = dateStr, color = KitsugiColors.TextMuted, fontSize = 11.sp)

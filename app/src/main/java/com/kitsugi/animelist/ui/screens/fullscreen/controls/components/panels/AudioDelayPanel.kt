@@ -28,6 +28,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+import androidx.compose.ui.graphics.Color
+
 @Composable
 fun AudioDelayPanel(
     onDismissRequest: () -> Unit,
@@ -74,11 +76,12 @@ private fun AudioDelayCardTitle(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            "Ses Gecikmesi",
+            "Ses gecikmesi",
             style = MaterialTheme.typography.headlineMedium,
+            color = Color.White
         )
         IconButton(onClose) {
-            Icon(Icons.Default.Close, null, modifier = Modifier.size(32.dp))
+            Icon(Icons.Default.Close, null, modifier = Modifier.size(32.dp), tint = Color.White)
         }
     }
 }

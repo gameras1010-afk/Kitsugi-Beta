@@ -358,7 +358,8 @@ fun FullScreenMediaGridPage(
                     itemsIndexed(
                         displayedResults,
                         key = { idx, item -> "${item.source}_${item.malId}_g$idx" }
-                    ) { _, result ->
+                    ) { index, result ->
+                        val showRank = categoryType != ExploreCategoryType.SEASONAL_ANIME
                         KitsugiExploreMediaCard(
                             result = result,
                             alreadyInList = alreadyInList(result),
@@ -368,7 +369,8 @@ fun FullScreenMediaGridPage(
                             scoreFormat = scoreFormat,
                             hideScores = hideScores,
                             blurAdultMedia = blurAdultMedia,
-                            forceVertical = !isLandscape
+                            forceVertical = !isLandscape,
+                            rankIndex = if (showRank) index + 1 else null
                         )
                     }
                 }

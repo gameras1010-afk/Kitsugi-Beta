@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DropdownMenu
@@ -57,7 +58,7 @@ fun <T> KitsugiChipWithMenu(
             onDismissRequest = { menuOpened = false },
             modifier = Modifier
                 .widthIn(min = 160.dp)
-                .verticalScroll(rememberScrollState())
+                .heightIn(max = 280.dp)
         ) {
             values.forEach { item ->
                 DropdownMenuItem(

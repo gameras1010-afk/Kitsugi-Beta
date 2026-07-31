@@ -665,7 +665,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                             }.getOrDefault(emptyList())
                         }
                         val tmdbDeferred = async {
-                            if (state.selectedMediaType == MediaType.Manga) {
+                            if (state.selectedMediaType == MediaType.Manga || state.selectedMediaType == MediaType.Anime) {
                                 emptyList()
                             } else {
                                 val tmdbGenreId = getTmdbGenreId(state.genres.firstOrNull() ?: state.tags.firstOrNull(), state.selectedMediaType == MediaType.Movie)

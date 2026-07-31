@@ -98,6 +98,14 @@ class KitsugiStreamActivity : ComponentActivity() {
                 .putLong(KEY_POS_PFX + key, result.positionMs)
                 .also { editor -> result.durationMs?.let { editor.putLong("${KEY_POS_PFX}dur_$key", it) } }
                 .apply()
+
+            val mediaIdForHistory = currentMalId ?: currentAniList ?: currentTitle.hashCode()
+            com.kitsugi.animelist.data.local.WatchHistoryManager.updateProgress(
+                animeId = mediaIdForHistory.toString(),
+                episode = currentEpisode,
+                positionMs = result.positionMs,
+                durationMs = result.durationMs ?: 0L
+            )
         }
 
         // T1.8: Otomatik sonraki bölümü başlatma

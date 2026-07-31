@@ -62,7 +62,8 @@ fun KitsugiExploreMediaCard(
     scoreFormat: String = "POINT_10",
     hideScores: Boolean = false,
     blurAdultMedia: Boolean = false,
-    forceVertical: Boolean = false
+    forceVertical: Boolean = false,
+    rankIndex: Int? = null
 ) {
     val accentColor = LocalKitsugiAccent.current
     val displayTitle = result.getDisplayTitle(titleLanguage)
@@ -123,6 +124,26 @@ fun KitsugiExploreMediaCard(
                                 .align(Alignment.BottomEnd)
                         )
                     }
+
+                    val rankNumber = result.rank ?: rankIndex
+                    if (rankNumber != null) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(5.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(LocalKitsugiAccent.current.copy(alpha = 0.88f))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = "#$rankNumber",
+                                color = KitsugiColors.Background,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 9.sp
+                            )
+                        }
+                    }
                 }
 
                 // Başlık + meta bilgi
@@ -156,17 +177,18 @@ fun KitsugiExploreMediaCard(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
-                            if (mediaEntry.score != null) {
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = "• ★${mediaEntry.score}",
-                                    color = KitsugiColors.TextMuted,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 9.sp,
-                                    maxLines = 1
-                                )
-                            }
+                            val displayScore = mediaEntry.getDisplayScore(scoreFormat, hideScores)
+                            val isUnrated = displayScore == "unrated" || displayScore == "Unrated" || displayScore == "Puanlanmamış" || displayScore == "Puan yok"
+                            val scoreLabel = if (isUnrated) "—" else "★ $displayScore"
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "• $scoreLabel",
+                                color = KitsugiColors.TextMuted,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 9.sp,
+                                maxLines = 1
+                            )
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         EpisodeProgressBar(
@@ -237,6 +259,26 @@ fun KitsugiExploreMediaCard(
                                 .align(Alignment.BottomEnd)
                         )
                     }
+
+                    val rankNumber = result.rank ?: rankIndex
+                    if (rankNumber != null) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(5.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(LocalKitsugiAccent.current.copy(alpha = 0.88f))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = "#$rankNumber",
+                                color = KitsugiColors.Background,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 9.sp
+                            )
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.width(14.dp))
@@ -275,15 +317,16 @@ fun KitsugiExploreMediaCard(
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold
                             )
-                            if (mediaEntry.score != null) {
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "• ★${mediaEntry.score}",
-                                    color = KitsugiColors.TextMuted,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                            val displayScore = mediaEntry.getDisplayScore(scoreFormat, hideScores)
+                            val isUnrated = displayScore == "unrated" || displayScore == "Unrated" || displayScore == "Puanlanmamış" || displayScore == "Puan yok"
+                            val scoreLabel = if (isUnrated) "—" else "★ $displayScore"
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "• $scoreLabel",
+                                color = KitsugiColors.TextMuted,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                         Spacer(modifier = Modifier.height(6.dp))
                         EpisodeProgressBar(
@@ -355,6 +398,26 @@ fun KitsugiExploreMediaCard(
                                 .align(Alignment.BottomEnd)
                         )
                     }
+
+                    val rankNumber = result.rank ?: rankIndex
+                    if (rankNumber != null) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(6.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(LocalKitsugiAccent.current.copy(alpha = 0.88f))
+                                .padding(horizontal = 7.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                text = "#$rankNumber",
+                                color = KitsugiColors.Background,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.sp
+                            )
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -390,15 +453,16 @@ fun KitsugiExploreMediaCard(
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold
                         )
-                        if (mediaEntry.score != null) {
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "• ★${mediaEntry.score}",
-                                color = KitsugiColors.TextMuted,
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                        val displayScore = mediaEntry.getDisplayScore(scoreFormat, hideScores)
+                        val isUnrated = displayScore == "unrated" || displayScore == "Unrated" || displayScore == "Puanlanmamış" || displayScore == "Puan yok"
+                        val scoreLabel = if (isUnrated) "—" else "★ $displayScore"
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "• $scoreLabel",
+                            color = KitsugiColors.TextMuted,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                     Spacer(modifier = Modifier.height(6.dp))
                     EpisodeProgressBar(
@@ -545,14 +609,15 @@ private fun buildMetaText(
         }
         if (!hideScores) {
             val scoreStr = result.getDisplayScore(scoreFormat, hideScores)
-            if (scoreStr.isNotEmpty() && scoreStr != "N/A" && scoreStr != "0" && scoreStr != "unrated") {
-                val formattedScore = if (!scoreStr.contains("★") && !scoreStr.contains("☆") && !scoreStr.contains("😊") && !scoreStr.contains("😐") && !scoreStr.contains("🙁")) {
-                    "★ $scoreStr"
-                } else {
-                    scoreStr
-                }
-                add(formattedScore)
+            val isUnrated = scoreStr.isEmpty() || scoreStr == "N/A" || scoreStr == "0" || scoreStr == "unrated" || scoreStr == "Unrated" || scoreStr == "Puanlanmamış" || scoreStr == "Puan yok"
+            val formattedScore = if (isUnrated) {
+                "—"
+            } else if (!scoreStr.contains("★") && !scoreStr.contains("☆") && !scoreStr.contains("😊") && !scoreStr.contains("😐") && !scoreStr.contains("🙁")) {
+                "★ $scoreStr"
+            } else {
+                scoreStr
             }
+            add(formattedScore)
         }
 
         val sourceLabel = result.source.toFriendlySourceLabel()

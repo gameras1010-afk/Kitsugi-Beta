@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -26,6 +27,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.LocalPlayerButtonsClickEvent
+import com.kitsugi.animelist.ui.theme.KitsugiColors
 
 private const val DISABLED_ALPHA = 0.38f
 
@@ -115,8 +117,14 @@ fun FilledControlsButton(
     val clickEvent = LocalPlayerButtonsClickEvent.current
 
     Box(modifier = modifier.padding(end = 8.dp)) {
-        Button(onClick = {}) {
-            Text(text = text)
+        Button(
+            onClick = {},
+            colors = ButtonDefaults.buttonColors(
+                containerColor = KitsugiColors.Accent,
+                contentColor = Color.White
+            )
+        ) {
+            Text(text = text, color = Color.White)
         }
         Box(
             modifier = Modifier

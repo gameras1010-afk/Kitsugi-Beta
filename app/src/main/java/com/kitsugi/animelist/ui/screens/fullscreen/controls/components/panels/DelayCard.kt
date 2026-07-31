@@ -8,17 +8,23 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -27,19 +33,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.OutlinedNumericChooser
+import com.kitsugi.animelist.ui.theme.KitsugiColors
 import kotlinx.coroutines.delay
+
+enum class DelayType { Audio, Subtitle }
 
 val CARDS_MAX_WIDTH = 420.dp
 
 @Composable
 fun panelCardsColors() = CardDefaults.cardColors(
-    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
-    disabledContainerColor = MaterialTheme.colorScheme.surfaceDim.copy(alpha = 0.9f),
+    containerColor = Color.Black,
+    contentColor = Color.White,
 )
-
-enum class DelayType { Audio, Subtitle }
 
 @Suppress("LambdaParameterInRestartableEffect")
 @Composable
@@ -58,79 +66,111 @@ fun DelayCard(
             .widthIn(max = CARDS_MAX_WIDTH)
             .animateContentSize(),
         colors = panelCardsColors(),
+        shape = RoundedCornerShape(16.dp),
     ) {
-        Column(
-            modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            title()
+        CompositionLocalProvider(LocalContentColor provides Color.White) {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                title()
 
-            OutlinedNumericChooser(
-                label = { Text("Gecikme") },
-                value = delay,
-                onChange = onDelayChange,
-                step = 50,
-                min = Int.MIN_VALUE,
-                max = Int.MAX_VALUE,
-                suffix = { Text("ms") },
-            )
+                OutlinedNumericChooser(
+                    label = { Text("Gecikme", color = Color.White) },
+                    value = delay,
+                    onChange = onDelayChange,
+                    step = 50,
+                    min = Int.MIN_VALUE,
+                    max = Int.MAX_VALUE,
+                    suffix = { Text("ms", color = Color.White) },
+                )
 
-            Column(modifier = Modifier.animateContentSize()) { extraSettings() }
+                Column(modifier = Modifier.animateContentSize()) { extraSettings() }
 
-            // True = heard→spotted (audio forward), false = spotted→heard (audio backward)
-            var isDirectionPositive by remember { mutableStateOf<Boolean?>(null) }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                var timerStart by remember { mutableStateOf<Long?>(null) }
-                var finalDelay by remember { mutableIntStateOf(delay) }
+                // True = heard→spotted (audio forward), false = spotted→heard (audio backward)
+                var isDirectionPositive by remember { mutableStateOf<Boolean?>(null) }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    var timerStart by remember { mutableStateOf<Long?>(null) }
+                    var finalDelay by remember { mutableIntStateOf(delay) }
 
-                LaunchedEffect(isDirectionPositive) {
-                    if (isDirectionPositive == null) {
-                        onDelayChange(finalDelay)
-                        return@LaunchedEffect
+                    LaunchedEffect(isDirectionPositive) {
+                        if (isDirectionPositive == null) {
+                            onDelayChange(finalDelay)
+                            return@LaunchedEffect
+                        }
+                        finalDelay = delay
+                        timerStart = System.currentTimeMillis()
+                        val startingDelay = finalDelay
+                        while (isDirectionPositive != null && timerStart != null) {
+                            val elapsed = System.currentTimeMillis() - timerStart!!
+                            finalDelay = startingDelay + (if (isDirectionPositive!!) elapsed else -elapsed).toInt()
+                            delay(20)
+                        }
                     }
-                    finalDelay = delay
-                    timerStart = System.currentTimeMillis()
-                    val startingDelay = finalDelay
-                    while (isDirectionPositive != null && timerStart != null) {
-                        val elapsed = System.currentTimeMillis() - timerStart!!
-                        finalDelay = startingDelay + (if (isDirectionPositive!!) elapsed else -elapsed).toInt()
-                        delay(20)
+
+                    val (labelA, labelB) = if (delayType == DelayType.Audio) {
+                        "Duyulan ses" to "Algılanan ses"
+                    } else {
+                        "Duyulan ses" to "Görülen metin"
+                    }
+
+                    Button(
+                        onClick = {
+                            isDirectionPositive = if (isDirectionPositive == null) delayType == DelayType.Audio else null
+                        },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(50),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = KitsugiColors.Accent,
+                            contentColor = Color.White,
+                            disabledContainerColor = KitsugiColors.Accent.copy(alpha = 0.5f),
+                            disabledContentColor = Color.White.copy(alpha = 0.5f)
+                        ),
+                    ) {
+                        Text(labelA, fontWeight = FontWeight.Bold, color = Color.White)
+                    }
+
+                    Button(
+                        onClick = {
+                            isDirectionPositive = if (isDirectionPositive == null) delayType != DelayType.Audio else null
+                        },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(50),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = KitsugiColors.Accent,
+                            contentColor = Color.White,
+                            disabledContainerColor = KitsugiColors.Accent.copy(alpha = 0.5f),
+                            disabledContentColor = Color.White.copy(alpha = 0.5f)
+                        ),
+                    ) {
+                        Text(labelB, fontWeight = FontWeight.Bold, color = Color.White)
                     }
                 }
 
-                val (labelA, labelB) = if (delayType == DelayType.Audio) {
-                    "Ses duyuldu" to "Ses görüldü"
-                } else {
-                    "Ses duyuldu" to "Altyazı göründü"
-                }
-
-                Button(
-                    onClick = {
-                        isDirectionPositive = if (isDirectionPositive == null) delayType == DelayType.Audio else null
-                    },
-                    modifier = Modifier.weight(1f),
-                    enabled = isDirectionPositive != (delayType == DelayType.Audio),
-                ) { Text(labelA) }
-
-                Button(
-                    onClick = {
-                        isDirectionPositive = if (isDirectionPositive == null) delayType != DelayType.Audio else null
-                    },
-                    modifier = Modifier.weight(1f),
-                    enabled = isDirectionPositive != (delayType == DelayType.Subtitle),
-                ) { Text(labelB) }
-            }
-
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(
-                    onClick = onApply,
-                    modifier = Modifier.weight(1f),
-                    enabled = true,
-                ) { Text("Varsayılan Yap") }
-                FilledIconButton(onClick = onReset) {
-                    Icon(Icons.Default.Refresh, null)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                        onClick = onApply,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(50),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = KitsugiColors.Accent,
+                            contentColor = Color.White
+                        ),
+                    ) {
+                        Text("Varsayılan olarak ayarla", fontWeight = FontWeight.Bold, color = Color.White)
+                    }
+                    FilledIconButton(
+                        onClick = onReset,
+                        shape = CircleShape,
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = KitsugiColors.Accent,
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Icon(Icons.Default.Refresh, null, tint = Color.White)
+                    }
                 }
             }
         }

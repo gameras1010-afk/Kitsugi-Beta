@@ -6,22 +6,17 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.documentfile.provider.DocumentFile
-import com.arthenica.ffmpegkit.FFmpegKit
-import com.arthenica.ffmpegkit.FFmpegKitConfig
-import com.arthenica.ffmpegkit.Level
-import com.arthenica.ffmpegkit.LogCallback
-import com.arthenica.ffmpegkit.StatisticsCallback
+import com.kitsugi.animelist.core.network.KitsugiHttpClient
 import com.kitsugi.animelist.core.player.OfflinePlaybackHelper
 import com.kitsugi.animelist.data.model.AnimeDownload
-import com.kitsugi.animelist.data.local.AnimeDownloadManager
 import com.kitsugi.animelist.data.settings.SettingsDataStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.ensureActive
+import okhttp3.Request
 import java.io.File
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.coroutineContext
 
 class AnimeDownloader(private val context: Context) {
 
@@ -52,48 +47,93 @@ class AnimeDownloader(private val context: Context) {
         val destDir = File(rootDir, mediaId).also { it.mkdirs() }
         val localFile = File(destDir, "video.mp4")
 
-        // Build FFmpeg -headers string from requestHeaders (same as player uses them)
-        val headersArg = if (download.requestHeaders.isNotEmpty()) {
-            val headerLines = download.requestHeaders.entries.joinToString("\r\n") { (k, v) -> "$k: $v" }
-            "-headers \"$headerLines\r\n\""
-        } else ""
-
         try {
-            // Get duration using ffprobe
-            val ffprobeCommand = "$headersArg -v quiet -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \"${download.url}\""
-            val probeSession = FFmpegKit.execute(ffprobeCommand)
-            val output = probeSession.output
-            val durationSec = output?.trim()?.toDoubleOrNull()?.toLong() ?: 0L
-            val durationMs = durationSec * 1000L
-
-            // Run FFmpeg to mux/download (with headers for Cloudflare-protected streams)
-            val ffmpegCommand = "-y $headersArg -i \"${download.url}\" -c copy -bsf:a aac_adtstoasc \"${localFile.absolutePath}\""
-
-            suspendCancellableCoroutine<Unit> { continuation ->
-                val session = FFmpegKit.executeAsync(
-                    ffmpegCommand,
-                    { completedSession ->
-                        if (completedSession.returnCode.isValueSuccess) {
-                            continuation.resume(Unit)
-                        } else {
-                            continuation.resumeWithException(Exception("FFmpeg exited with error: ${completedSession.failStackTrace}"))
+            val isHls = download.url.contains(".m3u8", ignoreCase = true)
+            if (isHls) {
+                // Fetch the main playlist
+                val playlistContent = getUrlContent(download.url, download.requestHeaders)
+                
+                // Parse lines
+                val lines = playlistContent.lines()
+                val isMasterPlaylist = lines.any { it.startsWith("#EXT-X-STREAM-INF") }
+                
+                var mediaPlaylistUrl = download.url
+                var mediaPlaylistContent = playlistContent
+                
+                if (isMasterPlaylist) {
+                    var bestUrl: String? = null
+                    var maxBandwidth = 0L
+                    var i = 0
+                    while (i < lines.size) {
+                        val line = lines[i].trim()
+                        if (line.startsWith("#EXT-X-STREAM-INF")) {
+                            val bandwidthRegex = Regex("""BANDWIDTH=(\d+)""")
+                            val match = bandwidthRegex.find(line)
+                            val bandwidth = match?.groupValues?.get(1)?.toLongOrNull() ?: 0L
+                            
+                            var nextLineIndex = i + 1
+                            while (nextLineIndex < lines.size && lines[nextLineIndex].trim().startsWith("#")) {
+                                nextLineIndex++
+                            }
+                            if (nextLineIndex < lines.size) {
+                                val subUrl = lines[nextLineIndex].trim()
+                                if (subUrl.isNotEmpty()) {
+                                    if (bandwidth > maxBandwidth || bestUrl == null) {
+                                        maxBandwidth = bandwidth
+                                        bestUrl = subUrl
+                                    }
+                                }
+                            }
                         }
-                    },
-                    { /* LogCallback */ },
-                    { stats ->
-                        val timeMs = stats.time
-                        val progress = if (durationMs > 0) {
-                            (100 * timeMs / durationMs).toInt().coerceIn(0, 100)
-                        } else {
-                            0
-                        }
-                        onProgress(progress, stats.size, durationMs)
+                        i++
                     }
-                )
-
-                continuation.invokeOnCancellation {
-                    session.cancel()
+                    if (bestUrl != null) {
+                        mediaPlaylistUrl = resolveUrl(download.url, bestUrl)
+                        mediaPlaylistContent = getUrlContent(mediaPlaylistUrl, download.requestHeaders)
+                    }
                 }
+                
+                // Parse segments
+                val segments = mutableListOf<String>()
+                var initSegmentUrl: String? = null
+                
+                mediaPlaylistContent.lines().forEach { line ->
+                    val trimmed = line.trim()
+                    if (trimmed.isEmpty()) return@forEach
+                    if (trimmed.startsWith("#")) {
+                        if (trimmed.startsWith("#EXT-X-MAP:")) {
+                            val uriRegex = Regex("""URI=["']([^"']+)["']""")
+                            val match = uriRegex.find(trimmed)
+                            val uri = match?.groupValues?.get(1)
+                            if (uri != null) {
+                                initSegmentUrl = resolveUrl(mediaPlaylistUrl, uri)
+                            }
+                        }
+                        return@forEach
+                    }
+                    segments.add(resolveUrl(mediaPlaylistUrl, trimmed))
+                }
+                
+                if (segments.isEmpty()) {
+                    throw Exception("No segments found in HLS playlist")
+                }
+                
+                localFile.outputStream().use { outputStream ->
+                    if (initSegmentUrl != null) {
+                        downloadSegmentToStream(initSegmentUrl!!, download.requestHeaders, outputStream)
+                    }
+                    val totalSegments = segments.size
+                    for ((index, segmentUrl) in segments.withIndex()) {
+                        coroutineContext.ensureActive()
+                        downloadSegmentToStream(segmentUrl, download.requestHeaders, outputStream)
+                        
+                        val progress = (100 * (index + 1) / totalSegments).coerceIn(0, 100)
+                        onProgress(progress, localFile.length(), 0L)
+                    }
+                }
+            } else {
+                // Direct file download
+                downloadDirectFile(download.url, download.requestHeaders, localFile, onProgress)
             }
 
             // Create metadata.json for OfflinePlaybackHelper
@@ -102,7 +142,7 @@ class AnimeDownloader(private val context: Context) {
                 {
                   "mediaId": "$mediaId",
                   "title": "${download.animeTitle} - Bölüm ${download.episode}",
-                  "durationMs": $durationMs,
+                  "durationMs": 0,
                   "downloadedAtMs": ${System.currentTimeMillis()}
                 }
             """.trimIndent()
@@ -141,6 +181,93 @@ class AnimeDownloader(private val context: Context) {
             android.util.Log.e("AnimeDownloader", "Download failed", e)
             localFile.delete()
             onStatusChanged(AnimeDownload.Status.ERROR, null)
+        }
+    }
+
+    private suspend fun getUrlContent(url: String, headers: Map<String, String>): String = withContext(Dispatchers.IO) {
+        val requestBuilder = Request.Builder().url(url)
+        headers.forEach { (k, v) -> requestBuilder.header(k, v) }
+        KitsugiHttpClient.client.newCall(requestBuilder.build()).execute().use { response ->
+            if (!response.isSuccessful) {
+                throw Exception("Failed to fetch HLS playlist: ${response.code} ${response.message}")
+            }
+            response.body?.string() ?: throw Exception("Empty playlist content")
+        }
+    }
+
+    private suspend fun downloadSegmentToStream(
+        url: String,
+        headers: Map<String, String>,
+        outputStream: java.io.OutputStream
+    ) = withContext(Dispatchers.IO) {
+        val requestBuilder = Request.Builder().url(url)
+        headers.forEach { (k, v) -> requestBuilder.header(k, v) }
+        KitsugiHttpClient.client.newCall(requestBuilder.build()).execute().use { response ->
+            if (!response.isSuccessful) {
+                throw Exception("Failed to download segment: ${response.code} ${response.message}")
+            }
+            val body = response.body ?: throw Exception("Empty segment body")
+            body.byteStream().use { inputStream ->
+                inputStream.copyTo(outputStream)
+            }
+        }
+    }
+
+    private suspend fun downloadDirectFile(
+        url: String,
+        headers: Map<String, String>,
+        localFile: File,
+        onProgress: (Int, Long, Long) -> Unit
+    ) = withContext(Dispatchers.IO) {
+        val requestBuilder = Request.Builder().url(url)
+        headers.forEach { (k, v) -> requestBuilder.header(k, v) }
+        KitsugiHttpClient.client.newCall(requestBuilder.build()).execute().use { response ->
+            if (!response.isSuccessful) {
+                throw Exception("Failed to download file: ${response.code} ${response.message}")
+            }
+            val body = response.body ?: throw Exception("Empty response body")
+            val totalBytes = body.contentLength()
+            
+            body.byteStream().use { inputStream ->
+                localFile.outputStream().use { outputStream ->
+                    val buffer = ByteArray(8192)
+                    var bytesRead: Int
+                    var bytesDownloaded = 0L
+                    
+                    while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                        coroutineContext.ensureActive()
+                        outputStream.write(buffer, 0, bytesRead)
+                        bytesDownloaded += bytesRead
+                        
+                        val progress = if (totalBytes > 0) {
+                            (100 * bytesDownloaded / totalBytes).toInt().coerceIn(0, 100)
+                        } else {
+                            0
+                        }
+                        onProgress(progress, bytesDownloaded, totalBytes)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun resolveUrl(baseUrl: String, relativeUrl: String): String {
+        try {
+            val baseUri = java.net.URI(baseUrl)
+            val resolvedUri = baseUri.resolve(relativeUrl)
+            return resolvedUri.toString()
+        } catch (e: Exception) {
+            if (relativeUrl.startsWith("http://") || relativeUrl.startsWith("https://")) {
+                return relativeUrl
+            }
+            val baseWithoutQuery = baseUrl.substringBefore("?")
+            val lastSlash = baseWithoutQuery.lastIndexOf('/')
+            return if (lastSlash != -1) {
+                val directory = baseWithoutQuery.substring(0, lastSlash + 1)
+                directory + relativeUrl
+            } else {
+                relativeUrl
+            }
         }
     }
 

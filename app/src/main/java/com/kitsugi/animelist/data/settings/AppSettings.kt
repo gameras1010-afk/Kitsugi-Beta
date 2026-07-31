@@ -27,7 +27,7 @@ data class AppSettings(
     // MoeList'ten: Puanları gizle
     val hideScores: Boolean = false,
     val showAnimeLogos: Boolean = false,
-    val playerPreference: String = "INTERNAL",
+    val playerPreference: String = "MPV",
     val isAutoplayEnabled: Boolean = true,
     val skipIntroDurationSec: Int = 5,
     val defaultSubtitleSize: Int = 16,
@@ -205,6 +205,16 @@ data class AppSettings(
     val subtitleBorderColor: Int = 0xFF000000.toInt(),
     /** Altyazı kenarlık kalınlığı (dp) */
     val subtitleBorderSize: Float = 1.5f,
+    /** Altyazı yazı tipi adı; boş = "Sans Serif" */
+    val subtitleFont: String = "Sans Serif",
+    /** Altyazı kenarlık stili: "outline-and-shadow", "opaque-box", "background-box" */
+    val subtitleBorderStyle: String = "outline-and-shadow",
+    /** Altyazı ölçeği (sub-scale); 1.0 = varsayılan */
+    val subtitleFontScale: Float = 1.0f,
+    /** Altyazı dikey konumu (sub-pos); 100 = alt */
+    val subtitlePos: Int = 100,
+    /** ASS/SSA altyazı geçersizleştirme (sub-ass-override force) */
+    val subtitleOverrideAss: Boolean = false,
     // ─── Uyku Zamanlayıcısı (Sleep Timer) ────────────────────────────────────
     /** Uyku zamanlayıcısı kalan saniye; 0 = kapalı */
     val sleepTimerSeconds: Int = 0,
@@ -212,7 +222,32 @@ data class AppSettings(
     /** MPV volume-max değeri (yüzde) — 100–200 arası */
     val volumeBoostCap: Int = 200,
     val audioChannels: AudioChannels = AudioChannels.AutoSafe,
-    val playerStatisticsPage: Int = 0
+    val playerStatisticsPage: Int = 0,
+    val playerSpeed: Float = 1.0f,
+    // ─── Yeni İndirme Ayarları (Aniyomi Uyumlu) ──────────────────────────────────
+    val downloadOnlyOverWifi: Boolean = true,
+    val downloadSpeedLimit: Int = 0,
+    val saveChaptersAsCBZ: Boolean = true,
+    val splitTallImages: Boolean = true,
+    val numberOfDownloads: Int = 1,
+    val removeAfterMarkedAsRead: Boolean = false,
+    val removeAfterReadSlots: Int = -1,
+    val removeBookmarkedChapters: Boolean = false,
+    val downloadFillermarkedItems: Boolean = false,
+    val removeExcludeCategories: Set<String> = emptySet(),
+    val removeExcludeAnimeCategories: Set<String> = emptySet(),
+    val downloadNewEpisodes: Boolean = false,
+    val downloadNewChapters: Boolean = false,
+    val downloadNewEpisodeCategories: Set<String> = emptySet(),
+    val downloadNewChapterCategories: Set<String> = emptySet(),
+    val downloadNewEpisodeCategoriesExclude: Set<String> = emptySet(),
+    val downloadNewChapterCategoriesExclude: Set<String> = emptySet(),
+    val autoDownloadWhileWatching: Int = 0,
+    val autoDownloadWhileReading: Int = 0,
+    val useExternalDownloader: Boolean = false,
+    val externalDownloaderSelection: String = "",
+    val downloadNewUnreadChaptersOnly: Boolean = false,
+    val downloadNewUnseenEpisodesOnly: Boolean = false
 )
 
 enum class FrameRateMatchingMode {

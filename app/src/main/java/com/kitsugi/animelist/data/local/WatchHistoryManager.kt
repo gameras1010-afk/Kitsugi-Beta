@@ -36,6 +36,27 @@ object WatchHistoryManager {
     }
 
     /**
+     * Güncel izleme konumunu ve süresini kaydeder.
+     */
+    fun updateProgress(animeId: String, episode: Int, positionMs: Long, durationMs: Long) {
+        val current = _history.value.toMutableList()
+        val index = current.indexOfFirst { it.animeId == animeId && it.episode == episode }
+        if (index != -1) {
+            val oldEntry = current[index]
+            val updatedEntry = oldEntry.copy(
+                positionMs = positionMs,
+                durationMs = durationMs,
+                watchedAtMs = System.currentTimeMillis()
+            )
+            current.removeAt(index)
+            current.add(0, updatedEntry)
+            _history.value = current
+            store.saveHistory(current)
+        }
+    }
+
+
+    /**
      * Belirli bir kaydı sil.
      */
     fun remove(animeId: String, episode: Int) {

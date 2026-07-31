@@ -80,6 +80,7 @@ import com.kitsugi.animelist.core.player.engine.Media3PlayerEngine
 import com.kitsugi.animelist.core.player.engine.MpvPlayerEngine
 // Legacy gesture imports removed
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.changedToUp
@@ -162,6 +163,34 @@ fun KitsugiFullscreenPlayerScreen(
 
     // ViewModel Integration
     val viewModel: KitsugiPlayerViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+
+    val subtitlesPicker = rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        if (uri != null) {
+            runCatching {
+                context.contentResolver.takePersistableUriPermission(
+                    uri,
+                    android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            }
+            viewModel.addSubtitle(uri)
+        }
+    }
+
+    val audioPicker = rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        if (uri != null) {
+            runCatching {
+                context.contentResolver.takePersistableUriPermission(
+                    uri,
+                    android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            }
+            viewModel.addAudio(uri)
+        }
+    }
     
     LaunchedEffect(videoId, videoUrl, audioUrl, title, initialIndex, episode, tmdbId) {
         viewModel.initialize(
@@ -283,13 +312,13 @@ fun KitsugiFullscreenPlayerScreen(
     val mediaIdForHistory = remember(malId, aniListId, animeTitle) {
         malId ?: aniListId ?: animeTitle.hashCode()
     }
-    var savedPos by remember(mediaIdForHistory, currentEpisode) { mutableStateOf<Long?>(null) }
-    var showResumeDialog by remember(mediaIdForHistory, currentEpisode) { mutableStateOf(false) }
+    var savedPos by remember(mediaIdForHistory, currentEpisode, currentAddonName) { mutableStateOf<Long?>(null) }
+    var showResumeDialog by remember(mediaIdForHistory, currentEpisode, currentAddonName) { mutableStateOf(false) }
     var pendingResumePos by remember { mutableStateOf(0L) }
-    var hasCheckedResume by remember(mediaIdForHistory, currentEpisode) { mutableStateOf(false) }
+    var hasCheckedResume by remember(mediaIdForHistory, currentEpisode, currentAddonName) { mutableStateOf(false) }
 
-    LaunchedEffect(mediaIdForHistory, currentEpisode) {
-        savedPos = viewModel.getSavedPosition(mediaIdForHistory, currentEpisode)
+    LaunchedEffect(mediaIdForHistory, currentEpisode, currentAddonName) {
+        savedPos = viewModel.getSavedPosition(mediaIdForHistory, currentEpisode, currentAddonName)
     }
 
     fun playEpisode(targetEp: Int) {
@@ -509,6 +538,12 @@ fun KitsugiFullscreenPlayerScreen(
                                     durationMs = duration,
                                     addonName = currentAddonName
                                 )
+                                com.kitsugi.animelist.data.local.WatchHistoryManager.updateProgress(
+                                    animeId = mediaIdForHistory.toString(),
+                                    episode = currentEpisode,
+                                    positionMs = currentPosition,
+                                    durationMs = duration
+                                )
                             }
                             viewModel.onPositionChanged(currentPosition, duration, playerEngine.isPlaying)
                             delay(1000)
@@ -590,6 +625,8 @@ fun KitsugiFullscreenPlayerScreen(
                                     hasCheckedResume = true
                                 }
                                 playerEngine.setPlaybackSpeed(currentSpeed)
+                                val mpvEngine = playerEngine as? com.kitsugi.animelist.core.player.engine.MpvPlayerEngine
+                                mpvEngine?.mpvView?.mpv?.setPropertyInt("user-data/current-anime/intro-length", viewModel.getAnimeSkipIntroLength())
                                 viewModel.orchestrator.errorRecovery.onPlaybackReady()
                             } else if (state == PlayerEngine.State.ENDED) {
                                 Log.d("KitsugiPlayerDebug", "Player ENDED: calling onEpisodeEnded")
@@ -610,7 +647,7 @@ fun KitsugiFullscreenPlayerScreen(
                                 errorCode = errorCode,
                                 errorMsg  = errorMsg,
                                 cause     = cause
-                            )
+                             )
 
                             // Try falling back engine (MEDIA3 -> MPV -> EXTERNAL)
                             val mpvEnabled = safeSettings.playerPreference.equals("MPV", ignoreCase = true)
@@ -638,7 +675,11 @@ fun KitsugiFullscreenPlayerScreen(
                         }
 
                         override fun onEngineEvent(property: String, value: String) {
-                            viewModel.handleLuaInvocation(property, value)
+                            if (property == "user-data/current-anime/intro-length") {
+                                viewModel.setAnimeSkipIntroLength(value.toIntOrNull() ?: 85)
+                            } else {
+                                viewModel.handleLuaInvocation(property, value)
+                            }
                         }
                     }
                     playerEngine.addListener(listener)
@@ -653,6 +694,12 @@ fun KitsugiFullscreenPlayerScreen(
                                 lastPositionMs = finalPos,
                                 durationMs = duration,
                                 addonName = currentAddonName
+                            )
+                            com.kitsugi.animelist.data.local.WatchHistoryManager.updateProgress(
+                                animeId = mediaIdForHistory.toString(),
+                                episode = currentEpisode,
+                                positionMs = finalPos,
+                                durationMs = duration
                             )
                         }
                         playerEngine.release()
@@ -1001,11 +1048,11 @@ fun KitsugiFullscreenPlayerScreen(
                         },
                         selectedSubtitleIndex = if (isSubtitleDisabled) -1 else textTrackOptions.indexOfFirst { it.isSelected },
                         onSelectSubtitle = { idx -> textTrackOptions.getOrNull(idx)?.let { playerEngine.selectTrack(it) } },
-                        onAddSubtitleFile = {},
+                        onAddSubtitleFile = { subtitlesPicker.launch(arrayOf("*/*")) },
                         audioTrackLabels = audioTrackOptions.map { it.label },
                         selectedAudioIndex = audioTrackOptions.indexOfFirst { it.isSelected },
                         onSelectAudio = { idx -> audioTrackOptions.getOrNull(idx)?.let { playerEngine.selectTrack(it) } },
-                        onAddAudioFile = {},
+                        onAddAudioFile = { audioPicker.launch(arrayOf("*/*")) },
                         streamSources = currentStreamSources,
                         selectedSourceIndex = currentSourceIndex,
                         onSelectSource = { idx ->

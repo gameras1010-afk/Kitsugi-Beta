@@ -99,7 +99,8 @@ fun KitsugiPreferencesSettingsDialog(
     KitsugiSheetOrDialog(
         onDismiss = onDismiss,
         heightFraction = 0.85f,
-        innerColumnScrollState = activeScrollState
+        innerColumnScrollState = activeScrollState,
+        sheetGesturesEnabled = false
     ) {
             // Header
             Column(

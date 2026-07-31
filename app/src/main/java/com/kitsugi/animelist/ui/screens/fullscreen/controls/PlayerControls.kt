@@ -172,6 +172,20 @@ fun PlayerControls(
         }
     }
     LaunchedEffect(brightness, isBrightnessSliderShown) {
+        var ctx = context
+        var activity: android.app.Activity? = null
+        while (ctx is android.content.ContextWrapper) {
+            if (ctx is android.app.Activity) {
+                activity = ctx
+                break
+            }
+            ctx = ctx.baseContext
+        }
+        if (activity != null) {
+            val params = activity.window.attributes
+            params.screenBrightness = brightness.coerceIn(0.01f, 1f)
+            activity.window.attributes = params
+        }
         if (isBrightnessSliderShown) {
             delay(2000)
             viewModel.isBrightnessSliderShown.value = false

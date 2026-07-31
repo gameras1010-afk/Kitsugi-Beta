@@ -155,7 +155,8 @@ fun StreamScreenContent(
                 filteredAddonStates = filteredAddonStates, totalFilteredStreamsCount = totalFilteredStreamsCount,
                 hasActiveFilter = hasActiveFilter, onStreamSelected = onStreamSelected,
                 onDownloadSelected = onDownloadSelected,
-                onVerifyPlugin = onVerifyPlugin, onOpenSettings = onOpenSettings
+                onVerifyPlugin = onVerifyPlugin, onOpenSettings = onOpenSettings,
+                onOpenHistory = onOpenHistory
             )
         } else {
             PortraitLayout(
@@ -413,7 +414,8 @@ private fun LandscapeLayout(
     onAddonFilterChange: (String?) -> Unit, onBack: () -> Unit,
     isResolvingId: Boolean, idResolveFailed: Boolean, isAnyLoading: Boolean,
     filteredAddonStates: List<AddonFetchState>, totalFilteredStreamsCount: Int, hasActiveFilter: Boolean,
-    onStreamSelected: (StreamSource) -> Unit, onDownloadSelected: (StreamSource) -> Unit, onVerifyPlugin: ((String) -> Unit)?, onOpenSettings: (() -> Unit)?
+    onStreamSelected: (StreamSource) -> Unit, onDownloadSelected: (StreamSource) -> Unit, onVerifyPlugin: ((String) -> Unit)?, onOpenSettings: (() -> Unit)?,
+    onOpenHistory: (() -> Unit)? = null
 ) {
     val listState = rememberLazyListState()
 
@@ -444,8 +446,18 @@ private fun LandscapeLayout(
                     "Geri",
                     color = KitsugiColors.TextSecondary,
                     style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
                 )
+                if (onOpenHistory != null) {
+                    IconButton(
+                        onClick = onOpenHistory,
+                        colors = IconButtonDefaults.iconButtonColors(containerColor = KitsugiColors.SurfaceStrong.copy(alpha = 0.5f)),
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(Icons.Rounded.History, "İzleme Geçmişi", tint = KitsugiColors.TextSecondary, modifier = Modifier.size(18.dp))
+                    }
+                }
             }
 
             Box(
