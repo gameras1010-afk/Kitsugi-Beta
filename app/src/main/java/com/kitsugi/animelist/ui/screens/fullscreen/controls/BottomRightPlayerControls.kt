@@ -22,6 +22,9 @@ fun BottomRightPlayerControls(
     onLongPressCustomButton: () -> Unit,
     skipIntroButton: String?,
     onPressSkipIntroButton: () -> Unit,
+    /** AniSkip interval aktif değilken gösterilecek sabit atlama süresi (saniye). */
+    fixedSkipSec: Int = 85,
+    onPressFixedSkip: () -> Unit = {},
     isPipAvailable: Boolean,
     onAspectClick: () -> Unit,
     onPipClick: () -> Unit,
@@ -31,17 +34,25 @@ fun BottomRightPlayerControls(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // AniSkip/AnimeSkip interval aktifse dinamik butonu göster,
+        // yoksa sabit "+Xs Geç" butonunu göster
         if (skipIntroButton != null) {
             FilledControlsButton(
                 text = skipIntroButton,
                 onClick = onPressSkipIntroButton,
                 onLongClick = {},
             )
+        } else {
+            // Her zaman görünen sabit intro-atlama butonu
+            FilledControlsButton(
+                text = "+${fixedSkipSec}s",
+                onClick = onPressFixedSkip,
+                onLongClick = {},
+            )
         }
+
         if (customButton != null) {
-            if (skipIntroButton != null) {
-                Spacer(modifier = Modifier.width(8.dp))
-            }
+            Spacer(modifier = Modifier.width(8.dp))
             FilledControlsButton(
                 text = customButtonTitle,
                 onClick = onPressCustomButton,

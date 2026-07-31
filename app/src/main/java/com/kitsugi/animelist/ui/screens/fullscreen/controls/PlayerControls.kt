@@ -132,7 +132,7 @@ fun PlayerControls(
         }
     }
 
-    // Skip-intro button text
+    // Skip-intro button text (AniSkip aralığı varsa dinamik, yoksa null)
     val currentPosSec = posMs / 1000f
     val skipIntroText = remember(skipIntervals, currentPosSec) {
         skipIntervals.firstOrNull { interval ->
@@ -146,6 +146,9 @@ fun PlayerControls(
             }
         }
     }
+
+    // Sabit skip-intro süresi (SharedPrefs'ten, varsayılan 85sn)
+    val introSkipLength = remember { viewModel.getAnimeSkipIntroLength() }
 
     // Chapters as Segment list for seekbar
     val seekSegments = remember(chapters) {
@@ -473,6 +476,11 @@ fun PlayerControls(
                                 }?.let { interval ->
                                     viewModel.seekTo((interval.endTime * 1000f).toLong())
                                 }
+                                resetTimer()
+                            },
+                            fixedSkipSec         = introSkipLength,
+                            onPressFixedSkip     = {
+                                viewModel.seekTo(posMs + introSkipLength * 1000L)
                                 resetTimer()
                             },
                             isPipAvailable       = settings.pipEnabled,

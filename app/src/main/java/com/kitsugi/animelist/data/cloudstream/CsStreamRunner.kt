@@ -543,6 +543,30 @@ object CsStreamRunner {
     }
 
     /**
+     * LoadResponse nesnesinden posterUrl alanını reflection ile okur.
+     * Cloudstream API sürümleri arasında alan adı farklılık gösterebileceğinden
+     * birden fazla olası isim denenir.
+     */
+    private fun extractPosterUrl(response: LoadResponse): String? {
+        val candidates = listOf("posterUrl", "poster", "posterimage", "coverImage", "coverUrl", "backgroundPosterUrl")
+        for (fieldName in candidates) {
+            try {
+                var clazz: Class<*>? = response.javaClass
+                while (clazz != null) {
+                    try {
+                        val field = clazz.getDeclaredField(fieldName)
+                        field.isAccessible = true
+                        val value = field.get(response)
+                        if (value is String && value.isNotBlank()) return value
+                    } catch (_: NoSuchFieldException) {}
+                    clazz = clazz.superclass
+                }
+            } catch (_: Exception) {}
+        }
+        return null
+    }
+
+    /**
      * Embed URL'yi (VK, Sibnet, Vidmoly, Filemoon, Okru, StreamWish vb.) CS3 loadExtractor sistemiyle çözer.
      * CS3 ExtractorApi'leri gerçek .mp4/.m3u8 URL'lerini ve gerekli HTTP başlıklarını döndürür.
      */
@@ -552,7 +576,8 @@ object CsStreamRunner {
         rawLinkName: String,
         rawHeaders: Map<String, String>,
         referer: String,
-        subtitleCallback: (SubtitleInput) -> Unit
+        subtitleCallback: (SubtitleInput) -> Unit,
+        thumbnailUrl: String? = null
     ): List<StreamSource> {
         val resolvedUrl = resolveHrefLi(rawUrl)
         Log.d(TAG, "[$providerName] Embed URL çözümleniyor: $resolvedUrl")
@@ -603,7 +628,8 @@ object CsStreamRunner {
                                 isCS           = true,
                                 quality        = getQualityString(link.quality),
                                 qualityValue   = link.quality,
-                                subtitles      = emptyList()
+                                subtitles      = emptyList(),
+                                thumbnailUrl   = thumbnailUrl
                             )
                         )
                     }
@@ -625,17 +651,18 @@ object CsStreamRunner {
             }
             resolvedStreams.add(
                 StreamSource(
-                    addonName = providerName,
-                    name = "$providerName • $rawLinkName (Embed)",
-                    title = rawLinkName,
-                    url = rawUrl,
-                    infoHash = null,
-                    fileIndex = null,
+                    addonName    = providerName,
+                    name         = "$providerName • $rawLinkName (Embed)",
+                    title        = rawLinkName,
+                    url          = rawUrl,
+                    infoHash     = null,
+                    fileIndex    = null,
                     requestHeaders = headers,
-                    isCS = true,
-                    quality = "720p",
+                    isCS         = true,
+                    quality      = "720p",
                     qualityValue = 720,
-                    subtitles = emptyList()
+                    subtitles    = emptyList(),
+                    thumbnailUrl = thumbnailUrl
                 )
             )
         }
@@ -647,6 +674,10 @@ object CsStreamRunner {
         loadResponse: LoadResponse,
         episodeData: String
     ): List<StreamSource> {
+        // Kaynağa özgü kapak görseli — LoadResponse.posterUrl varsa StreamSource'a aktarılır
+        val posterUrl = extractPosterUrl(loadResponse)
+        Log.d(TAG, "[${api.name}] posterUrl=${posterUrl ?: "(yok)"}")
+
         val streams = mutableListOf<StreamSource>()
         val subtitleList = mutableListOf<SubtitleInput>()
         val pendingEmbedUrls = mutableListOf<Triple<String, String, Map<String, String>>>() // (rawUrl, linkName, headers)
@@ -695,17 +726,18 @@ object CsStreamRunner {
                                 }
                                 streams.add(
                                     StreamSource(
-                                        addonName = api.name,
-                                        name = "${api.name} • ${link.name}",
-                                        title = link.name,
-                                        url = cleanUrl,
-                                        infoHash = null,
-                                        fileIndex = null,
+                                        addonName    = api.name,
+                                        name         = "${api.name} • ${link.name}",
+                                        title        = link.name,
+                                        url          = cleanUrl,
+                                        infoHash     = null,
+                                        fileIndex    = null,
                                         requestHeaders = headers,
-                                        isCS = true,
-                                        quality = getQualityString(link.quality),
+                                        isCS         = true,
+                                        quality      = getQualityString(link.quality),
                                         qualityValue = link.quality,
-                                        subtitles = emptyList()
+                                        subtitles    = emptyList(),
+                                        thumbnailUrl = posterUrl
                                     )
                                 )
                             }
@@ -725,12 +757,13 @@ object CsStreamRunner {
             val referer = try { api.mainUrl } catch (_: Exception) { "https://google.com" }
             for ((rawUrl, linkName, rawHeaders) in pendingEmbedUrls) {
                 val resolved = resolveEmbedUrl(
-                    providerName    = api.name,
-                    rawUrl          = rawUrl,
-                    rawLinkName     = linkName,
-                    rawHeaders      = rawHeaders,
-                    referer         = referer,
-                    subtitleCallback = { sub -> subtitleList.add(sub) }
+                    providerName     = api.name,
+                    rawUrl           = rawUrl,
+                    rawLinkName      = linkName,
+                    rawHeaders       = rawHeaders,
+                    referer          = referer,
+                    subtitleCallback = { sub -> subtitleList.add(sub) },
+                    thumbnailUrl     = posterUrl
                 )
                 if (resolved.isNotEmpty()) {
                     streams.addAll(resolved)
@@ -753,7 +786,8 @@ object CsStreamRunner {
                                 isCS           = true,
                                 quality        = "HD",
                                 qualityValue   = 1080,
-                                subtitles      = emptyList()
+                                subtitles      = emptyList(),
+                                thumbnailUrl   = posterUrl
                             )
                         )
                     } else {

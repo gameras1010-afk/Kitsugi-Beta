@@ -1,17 +1,16 @@
-# Kitsugi Release Notes - v2.4.125-beta
+# Kitsugi Release Notes - v2.4.126-beta
 
-Bu sürümde video veri çekme ekranında kaynak bazlı kapak görselleri (thumbnail) entegre edilmiş, izleme geçmişinden anında oynatma desteği (Direct Play) sunulmuş, oynatıcı ayarlarında ExoPlayer geri getirilmiş ve indirme/bildirim performansı iyileştirilmiştir.
+Bu sürümde CS3 (Cloudstream) kaynaklarında kaynak bazlı kapak görsellerinin getirilmesi ve oynatıcıda her zaman görünen +85s intro atlama butonu eklendi.
 
-### 🖼️ Video Kaynak Görselleri (Thumbnail)
-- **Kaynak Bazlı Kapak Görselleri:** Video veri çekme ekranındaki her bir kaynağın sol tarafında, varsa eklentiden dönen özel kapak görseli (thumbnail) listelenmektedir. Yazı ve hizalamalar, resimlerin varlığından etkilenmeyecek şekilde dinamik olarak ölçeklenir.
+### 🖼️ CS3 Kaynak Bazlı Kapak Görselleri
 
-### 📜 Geçmiş Sayfası İyileştirmeleri (Anında Oynatma)
-- **Geçmişten Direkt Oynatma (Direct Play):** Geçmiş sayfasındaki kayıtlar için çözümlenmiş kaynak URL'si ve HTTP başlıkları önbelleğe alınarak, tüm kaynakları arama adımı atlanıp oynatıcı doğrudan başlatılabilmektedir.
-- **Anında Oynatma Rozeti:** Doğrudan oynatılabilecek geçmiş ögeleri için görsel bir ⚡ **Anında** rozeti eklenmiştir.
+- **Cloudstream (CS3) Thumbnail Desteği:** Cloudstream eklentilerinden dönen `LoadResponse.posterUrl` alanı artık reflection ile okunuyor. Elde edilen kapak görseli, o eklentiden üretilen her `StreamSource`'a aktarılıyor.
+- **Tüm Link Türlerinde Geçerli:** Doğrudan link, embed extractor (VK, Sibnet, Filemoon vb.), extractor fallback ve ham embed fallback dahil tüm CS3 stream oluşturma yollarında `thumbnailUrl` alanı dolduruluyor.
+- **Çoklu Alan Adı Desteği:** `posterUrl`, `poster`, `coverImage`, `coverUrl`, `backgroundPosterUrl` gibi farklı CS3 eklenti versiyonlarında kullanılan alan adları refleksif olarak taranıyor; hangisi doluysa kullanılıyor.
 
-### 📺 Oynatıcı Ayarları
-- **ExoPlayer Geri Getirildi:** Oynatıcı ayarlarından yanlışlıkla kaldırılmış olan Dahili Oynatıcı (ExoPlayer) seçeneği tekrar listeye eklenmiştir.
+### ⏩ Oynatıcıda Kalıcı "+Xs Giriş Atlama" Butonu
 
-### 📥 İndirme ve Bildirim İyileştirmeleri
-- **Akıllı Bildirim Güncellemesi (Throttling):** Video indirilirken bildirim panelini kilitleyen yüksek frekanslı ilerleme güncellemeleri saniyede en fazla 1 kez çalışacak şekilde sınırlanmıştır.
-- **Akıcı İndirme Navigasyonu:** Bir video indirilmeye başlandığı an kullanıcı otomatik olarak "İndirmeler" ekranına yönlendirilir; geri çıkıldığında ise kalınan video veri çekme ekranına geri dönülür.
+- **Her Zaman Görünen Skip Butonu:** Oynatıcı kontrol çubuğuna kalıcı bir `+85s` butonu eklendi. AniSkip/AnimeSkip verisi olmayan kaynaklarda bile giriş bölümünü tek tıkla atlatmak mümkün.
+- **AniSkip Önceliği:** AniSkip veya AnimeSkip sistemleri aktif bir intro/outro/özet aralığı tespit ettiğinde, sabit butonun yerine dinamik "Giriş'i Atla" / "Bitişi Atla" butonu gösterilir.
+- **Ayarlanabilir Süre:** Atlama süresi `getAnimeSkipIntroLength()` ile SharedPreferences'tan okunuyor; varsayılan 85 saniyedir ve MPV script üzerinden da değiştirilebilir.
+
