@@ -75,6 +75,7 @@ class KitsugiFullscreenPlayerActivity : ComponentActivity() {
         const val EXTRA_START_YEAR = "extra_start_year"
         const val EXTRA_DESCRIPTION = "extra_description"
         const val EXTRA_CAST_JSON   = "extra_cast_json"
+        const val EXTRA_IS_MOVIE    = "extra_is_movie"
 
         @Volatile
         var tempStreamSources: List<StreamSource>? = null
@@ -116,7 +117,8 @@ class KitsugiFullscreenPlayerActivity : ComponentActivity() {
             titleNative: String? = null,
             startYear: Int? = null,
             description: String? = null,
-            cast: List<MetaCastMember> = emptyList()
+            cast: List<MetaCastMember> = emptyList(),
+            isMovie: Boolean = false
         ) {
             tempSubtitles = subtitles
             tempStreamSources = allSources
@@ -145,6 +147,7 @@ class KitsugiFullscreenPlayerActivity : ComponentActivity() {
                     putExtra(EXTRA_TITLE_NATIVE, titleNative)
                     startYear?.let { putExtra(EXTRA_START_YEAR, it) }
                     description?.let { putExtra(EXTRA_DESCRIPTION, it) }
+                    putExtra(EXTRA_IS_MOVIE, isMovie)
                     
                     val gson = com.google.gson.Gson()
                     if (subtitles.isNotEmpty()) {
@@ -272,6 +275,7 @@ class KitsugiFullscreenPlayerActivity : ComponentActivity() {
         val titleNative = intent.getStringExtra(EXTRA_TITLE_NATIVE)
         val startYear = intent.getIntExtra(EXTRA_START_YEAR, -1).takeIf { it != -1 }
         val description = intent.getStringExtra(EXTRA_DESCRIPTION)
+        val isMovie = intent.getBooleanExtra(EXTRA_IS_MOVIE, false)
 
         val castList: List<MetaCastMember> = tempCast ?: run {
             val castJson = intent.getStringExtra(EXTRA_CAST_JSON)
@@ -330,6 +334,7 @@ class KitsugiFullscreenPlayerActivity : ComponentActivity() {
                     startYear        = startYear,
                     description      = description,
                     castList         = castList,
+                    isMovie          = isMovie,
                     onBack           = { finish() }
                 )
             }

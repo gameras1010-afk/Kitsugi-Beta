@@ -208,7 +208,8 @@ fun KitsugiStreamScreen(
                     malId = malId, aniListId = aniListId, tmdbId = tmdbId, season = season, episode = episode,
                     animeTitle = title, posterUrl = posterUrl,
                     titleEnglish = titleEnglish, titleRomaji = titleRomaji, titleNative = titleNative,
-                    startYear = startYear, description = description, cast = castList
+                    startYear = startYear, description = description, cast = castList,
+                    isMovie = isMovie
                 )
             } else {
                 if (onLaunchExternalPlayer != null) {
@@ -227,7 +228,8 @@ fun KitsugiStreamScreen(
                         malId = malId, aniListId = aniListId, tmdbId = tmdbId, season = season, episode = episode,
                         animeTitle = title, posterUrl = posterUrl,
                         titleEnglish = titleEnglish, titleRomaji = titleRomaji, titleNative = titleNative,
-                        startYear = startYear, description = description, cast = castList
+                        startYear = startYear, description = description, cast = castList,
+                        isMovie = isMovie
                     )
                 }
             }
@@ -326,7 +328,8 @@ fun KitsugiStreamScreen(
                         season = season,
                         url = resolvedUrl,
                         quality = source.quality ?: "Bilinmeyen",
-                        requestHeaders = source.requestHeaders ?: emptyMap()
+                        requestHeaders = source.requestHeaders ?: emptyMap(),
+                        subtitles = source.subtitles
                     )
                     android.widget.Toast.makeText(context, "İndirme kuyruğa eklendi", android.widget.Toast.LENGTH_SHORT).show()
                     context.startActivity(
@@ -377,7 +380,8 @@ fun KitsugiStreamScreen(
                     season = season,
                     url = resolvedUrl,
                     quality = source.quality ?: "Bilinmeyen",
-                    requestHeaders = source.requestHeaders ?: emptyMap()
+                    requestHeaders = source.requestHeaders ?: emptyMap(),
+                    subtitles = source.subtitles
                 )
                 android.widget.Toast.makeText(context, "İndirme kuyruğa eklendi", android.widget.Toast.LENGTH_SHORT).show()
                 context.startActivity(

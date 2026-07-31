@@ -87,6 +87,7 @@ import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.changedToUp
 import com.kitsugi.animelist.ui.screens.fullscreen.components.PreviewGenerator
 import com.kitsugi.animelist.ui.screens.fullscreen.components.formatMs
+import com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
@@ -112,6 +113,7 @@ fun KitsugiFullscreenPlayerScreen(
     startYear: Int? = null,
     description: String? = null,
     castList: List<MetaCastMember> = emptyList(),
+    isMovie: Boolean = false,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -309,6 +311,12 @@ fun KitsugiFullscreenPlayerScreen(
         }
     }
 
+    LaunchedEffect(currentAspectMode) {
+        if (isSettingsLoaded) {
+            viewModel.setAspectMode(currentAspectMode)
+        }
+    }
+
     // Stream diagnostics
     var streamInfoData by remember { mutableStateOf(StreamInfoData(playerEngine = "ExoPlayer")) }
 
@@ -409,7 +417,32 @@ fun KitsugiFullscreenPlayerScreen(
                         }
                     },
                     onRetry = { playEpisode(currentEpisode) },
-                    onSwitchSource = { viewModel.showSheet(KitsugiSheets.QualityTracks) }
+                    onSwitchSource = {
+                        if (currentStreamSources.isNotEmpty()) {
+                            viewModel.showSheet(KitsugiSheets.QualityTracks)
+                        } else {
+                            KitsugiStreamActivity.start(
+                                context = context,
+                                malId = malId,
+                                aniListId = aniListId,
+                                tmdbId = tmdbId,
+                                episode = currentEpisode,
+                                season = season,
+                                isMovie = isMovie,
+                                title = animeTitle.ifBlank { title },
+                                posterUrl = posterUrl,
+                                titleEnglish = titleEnglish,
+                                titleRomaji = titleRomaji,
+                                titleNative = titleNative,
+                                startYear = startYear,
+                                description = description,
+                                cast = castList,
+                                isAutoplay = true
+                            )
+                            activity?.finish()
+                        }
+                    },
+                    switchSourceText = if (currentStreamSources.isNotEmpty()) null else "Kaynakları Yeniden Ara"
                 )
             }
 
@@ -1056,7 +1089,13 @@ fun KitsugiFullscreenPlayerScreen(
                             )
                         },
                         selectedSubtitleIndex = if (isSubtitleDisabled) -1 else textTrackOptions.indexOfFirst { it.isSelected },
-                        onSelectSubtitle = { idx -> textTrackOptions.getOrNull(idx)?.let { playerEngine.selectTrack(it) } },
+                        onSelectSubtitle = { idx ->
+                            if (idx == -99) {
+                                playerEngine.disableSubtitles()
+                            } else {
+                                textTrackOptions.getOrNull(idx)?.let { playerEngine.selectTrack(it) }
+                            }
+                        },
                         onAddSubtitleFile = { subtitlesPicker.launch(arrayOf("*/*")) },
                         audioTrackLabels = audioTrackOptions.map { it.label },
                         selectedAudioIndex = audioTrackOptions.indexOfFirst { it.isSelected },

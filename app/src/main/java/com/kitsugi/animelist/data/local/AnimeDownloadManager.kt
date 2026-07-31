@@ -33,7 +33,8 @@ object AnimeDownloadManager {
         season: Int,
         url: String,
         quality: String,
-        requestHeaders: Map<String, String> = emptyMap()
+        requestHeaders: Map<String, String> = emptyMap(),
+        subtitles: List<com.kitsugi.animelist.core.player.SubtitleInput> = emptyList()
     ) {
         val current = _downloads.value.toMutableList()
         val exists = current.any { it.animeId == animeId && it.episode == episode }
@@ -48,6 +49,7 @@ object AnimeDownloadManager {
             url = url,
             quality = quality,
             requestHeaders = requestHeaders,
+            subtitles = subtitles,
             status = AnimeDownload.Status.QUEUE
         )
         current.add(newDownload)

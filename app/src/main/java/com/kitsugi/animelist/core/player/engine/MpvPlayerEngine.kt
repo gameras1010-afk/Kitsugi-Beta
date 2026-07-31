@@ -311,6 +311,15 @@ class MpvPlayerEngine(
         runCatching {
             mpvView?.mpv?.setPropertyString("video-aspect-override", aspectProp)
         }
+        val mpvAspectMode = when (mode) {
+            com.kitsugi.animelist.core.player.PlayerAspectMode.ORIGINAL -> AspectMode.ORIGINAL
+            com.kitsugi.animelist.core.player.PlayerAspectMode.FIT -> AspectMode.ORIGINAL
+            com.kitsugi.animelist.core.player.PlayerAspectMode.FILL -> AspectMode.STRETCH
+            com.kitsugi.animelist.core.player.PlayerAspectMode.ZOOM -> AspectMode.FULL_SCREEN
+            com.kitsugi.animelist.core.player.PlayerAspectMode.CROP_16_9 -> AspectMode.FULL_SCREEN
+            com.kitsugi.animelist.core.player.PlayerAspectMode.CROP_4_3 -> AspectMode.FULL_SCREEN
+        }
+        mpvView?.applyAspectMode(mpvAspectMode)
     }
 
     override fun selectTrack(trackOption: TrackOption) {
@@ -318,6 +327,7 @@ class MpvPlayerEngine(
             mpvView?.selectAudioTrackById(trackOption.trackIndex)
         } else if (trackOption.groupIndex == 1) {
             mpvView?.selectSubtitleTrackById(trackOption.trackIndex)
+            _isSubtitleDisabled = false
         }
         updateTracks()
     }
@@ -505,7 +515,7 @@ class MpvPlayerEngine(
             // GPU renderer backend
             mpv.setPropertyString("gpu-api", "opengl")
             mpv.setPropertyString("vo", settings.mpvGpuRenderer.ifBlank { "gpu" })
-            mpv.setPropertyDouble("speed", settings.playerSpeed.toDouble())
+            mpv.setPropertyDouble("speed", _currentSpeed.toDouble())
 
             // Donanım kod çözme
             mpv.setPropertyString("hwdec", settings.mpvHwdecMode.ifBlank { "auto-safe" })

@@ -98,6 +98,7 @@ fun PlayerErrorView(
     onOpenExternal: () -> Unit,
     onRetry: (() -> Unit)? = null,
     onSwitchSource: (() -> Unit)? = null,
+    switchSourceText: String? = null,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -163,7 +164,7 @@ fun PlayerErrorView(
                         ),
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text(stringResource(R.string.player_btn_switch_source), color = Color.White)
+                        Text(switchSourceText ?: stringResource(R.string.player_btn_switch_source), color = Color.White)
                     }
                 }
 

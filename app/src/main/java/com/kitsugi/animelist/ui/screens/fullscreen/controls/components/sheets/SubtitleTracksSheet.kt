@@ -41,8 +41,15 @@ fun SubtitleTracksSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val allTracks = androidx.compose.runtime.remember(tracks) {
+        listOf(SubtitleTrackInfo(id = -99, label = "Altyazıyı Kapat")) + tracks
+    }
+    val allSelected = androidx.compose.runtime.remember(selectedIndices) {
+        if (selectedIndices.isEmpty()) listOf(-99) else selectedIndices
+    }
+
     GenericTracksSheet(
-        tracks = tracks,
+        tracks = allTracks,
         onDismissRequest = onDismissRequest,
         header = {
             TrackSheetTitle(
@@ -72,8 +79,8 @@ fun SubtitleTracksSheet(
         },
         track = { track ->
             SubtitleTrackRow(
-                title = buildTrackTitle(track),
-                selected = selectedIndices.indexOf(track.id),
+                title = if (track.id == -99) track.label else buildTrackTitle(track),
+                selected = if (allSelected.contains(track.id)) 0 else -1,
                 onClick = { onSelect(track.id) },
             )
         },

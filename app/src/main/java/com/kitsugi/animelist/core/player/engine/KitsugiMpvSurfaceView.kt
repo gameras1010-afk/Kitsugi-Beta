@@ -307,7 +307,7 @@ class KitsugiMpvSurfaceView @JvmOverloads constructor(
     fun applySubtitleStyle(style: SubtitleStyleSettings) {
         if (!initialized) return
         runCatching {
-            val scale = (style.size / 100.0).coerceIn(0.5, 3.0)
+            val scale = (style.size / 20.0).coerceIn(0.5, 3.0)
             // Default outline size if enabled
             val outlineSize = if (style.outlineEnabled) 2.0 else 0.0
             
@@ -318,6 +318,9 @@ class KitsugiMpvSurfaceView @JvmOverloads constructor(
             mpv.setPropertyBoolean("sub-bold", style.bold)
             mpv.setPropertyDouble("sub-outline-size", outlineSize)
             mpv.setPropertyString("sub-color", textColorStr)
+
+            val subPos = (100.0 - (style.verticalOffset.toDouble() / 5.0)).coerceIn(0.0, 150.0)
+            mpv.setPropertyDouble("sub-pos", subPos)
         }.onFailure {
             Log.w(TAG, "Failed to apply subtitle style on mpv: ${it.message}")
         }

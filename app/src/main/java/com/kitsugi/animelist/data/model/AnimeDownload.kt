@@ -10,6 +10,7 @@ data class AnimeDownload(
     val quality: String,
     /** HTTP request headers to use when downloading (e.g. Cookie, Referer, User-Agent from CS3 addons). */
     val requestHeaders: Map<String, String> = emptyMap(),
+    val subtitles: List<com.kitsugi.animelist.core.player.SubtitleInput> = emptyList(),
     var status: Status = Status.QUEUE,
     var progress: Int = 0,
     var totalBytes: Long = 0L,

@@ -73,6 +73,7 @@ class Media3PlayerEngine(
     private var exoPlayer: ExoPlayer? = null
     private var trackSelector: androidx.media3.exoplayer.trackselection.DefaultTrackSelector? = null
     private var playerView: PlayerView? = null
+    private var assSubtitleView: View? = null
     private val listeners = mutableListOf<PlayerEngine.Listener>()
     private val gainAudioProcessor = com.kitsugi.animelist.core.player.GainAudioProcessor().apply {
         setGainDb(settings.defaultAudioBoost * 6f)
@@ -660,7 +661,7 @@ class Media3PlayerEngine(
                 )
             player.setMediaSource(sourceToSet)
 
-            player.setPlaybackSpeed(settings.playerSpeed)
+            player.playbackParameters = androidx.media3.common.PlaybackParameters(settings.playerSpeed)
             player.playWhenReady = true
             player.prepare()
             if (startPositionMs > 0L) {
@@ -690,7 +691,7 @@ class Media3PlayerEngine(
 
     override fun setPlaybackSpeed(speed: Float) {
         runOnMainThread {
-            exoPlayer?.setPlaybackSpeed(speed)
+            exoPlayer?.playbackParameters = androidx.media3.common.PlaybackParameters(speed)
         }
     }
 
@@ -789,9 +790,10 @@ class Media3PlayerEngine(
             if (settings.enableAssExtractor) {
                 val assHandler = exoPlayer?.getAssHandlerCompat()
                 if (assHandler != null) {
-                    val assSubtitleView = io.github.peerless2012.ass.media.widget.AssSubtitleView(context, assHandler)
+                    val assView = io.github.peerless2012.ass.media.widget.AssSubtitleView(context, assHandler)
+                    assSubtitleView = assView
                     pv.addView(
-                        assSubtitleView,
+                        assView,
                         android.widget.FrameLayout.LayoutParams(
                             android.view.ViewGroup.LayoutParams.MATCH_PARENT,
                             android.view.ViewGroup.LayoutParams.MATCH_PARENT
@@ -835,7 +837,9 @@ class Media3PlayerEngine(
             )
             
             val density = context.resources.displayMetrics.density
-            subtitleView.translationY = -currentSubtitleStyle.verticalOffset.toFloat() * density
+            val translation = -currentSubtitleStyle.verticalOffset.toFloat() * density
+            subtitleView.translationY = translation
+            assSubtitleView?.translationY = translation
         }
     }
 

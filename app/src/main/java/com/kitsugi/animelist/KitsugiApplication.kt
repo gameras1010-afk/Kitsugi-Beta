@@ -30,6 +30,8 @@ class KitsugiApplication : Application(), SingletonImageLoader.Factory {
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     companion object {
+        val APP_LAUNCH_TIME = System.currentTimeMillis()
+
         @Volatile
         var activeActivity: android.app.Activity? = null
 

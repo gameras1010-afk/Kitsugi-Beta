@@ -136,6 +136,28 @@ class AnimeDownloader(private val context: Context) {
                 downloadDirectFile(download.url, download.requestHeaders, localFile, onProgress)
             }
 
+            // ── Download subtitles (if any) ──────────────────────────────────
+            if (!download.subtitles.isNullOrEmpty()) {
+                val subsDir = File(destDir, "subs").also { it.mkdirs() }
+                for (subtitle in download.subtitles) {
+                    try {
+                        val extension = when {
+                            subtitle.url.contains(".vtt", ignoreCase = true) -> "vtt"
+                            subtitle.url.contains(".ass", ignoreCase = true) -> "ass"
+                            subtitle.url.contains(".ssa", ignoreCase = true) -> "ssa"
+                            else -> "srt"
+                        }
+                        val safeLang = subtitle.lang.lowercase().filter { it.isLetterOrDigit() }.takeIf { it.isNotEmpty() } ?: "en"
+                        val safeName = subtitle.name.replace(Regex("[\\\\/:*?\"<>|\\s]"), "_")
+                        val subFile = File(subsDir, "${safeLang}_${safeName}.$extension")
+                        
+                        downloadSubtitleFile(subtitle.url, download.requestHeaders, subFile)
+                    } catch (e: Exception) {
+                        android.util.Log.e("AnimeDownloader", "Failed to download subtitle: ${subtitle.name}", e)
+                    }
+                }
+            }
+
             // Create metadata.json for OfflinePlaybackHelper
             val metaFile = File(destDir, "metadata.json")
             val metaJson = """
@@ -246,6 +268,26 @@ class AnimeDownloader(private val context: Context) {
                         }
                         onProgress(progress, bytesDownloaded, totalBytes)
                     }
+                }
+            }
+        }
+    }
+
+    private suspend fun downloadSubtitleFile(
+        url: String,
+        headers: Map<String, String>,
+        destFile: File
+    ) = withContext(Dispatchers.IO) {
+        val requestBuilder = Request.Builder().url(url)
+        headers.forEach { (k, v) -> requestBuilder.header(k, v) }
+        KitsugiHttpClient.client.newCall(requestBuilder.build()).execute().use { response ->
+            if (!response.isSuccessful) {
+                throw Exception("Failed to download subtitle: ${response.code} ${response.message}")
+            }
+            val body = response.body ?: throw Exception("Empty subtitle response body")
+            body.byteStream().use { inputStream ->
+                destFile.outputStream().use { outputStream ->
+                    inputStream.copyTo(outputStream)
                 }
             }
         }

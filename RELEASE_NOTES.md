@@ -1,16 +1,16 @@
-# Kitsugi Release Notes - v2.4.126-beta
+# Kitsugi Release Notes - v2.4.127-beta
 
-Bu sürümde CS3 (Cloudstream) kaynaklarında kaynak bazlı kapak görsellerinin getirilmesi ve oynatıcıda her zaman görünen +85s intro atlama butonu eklendi.
+Bu sürümde izleme geçmişi kararlılığı artırıldı, yayın kartı arayüzü mobil cihazlar için duyarlı hale getirildi ve internetsiz ortamda izleme için otomatik altyazı indirme desteği eklendi.
 
-### 🖼️ CS3 Kaynak Bazlı Kapak Görselleri
+### ⏱️ İzleme Geçmişi Otomatik Yenileme (Auto-Refresher)
+- **Oturum Bazlı Geçersiz Kılma:** Uygulama kapatılıp açıldığında veya oynatma bağlantısının üzerinden 30 dakika geçtiğinde, eskiyen/geçersizleşen izleme linkleri otomatik olarak algılanır.
+- **Kesintisiz Oynatma:** Geçmiş sekmesinden eski bir bölüme tıklandığında oynatıcı siyah ekranda kalmaz; sistem arka planda yayını taze bağlantıyla otomatik olarak yeniden çözümler (Auto-Resolve) ve kaldığı yerden oynatır.
 
-- **Cloudstream (CS3) Thumbnail Desteği:** Cloudstream eklentilerinden dönen `LoadResponse.posterUrl` alanı artık reflection ile okunuyor. Elde edilen kapak görseli, o eklentiden üretilen her `StreamSource`'a aktarılıyor.
-- **Tüm Link Türlerinde Geçerli:** Doğrudan link, embed extractor (VK, Sibnet, Filemoon vb.), extractor fallback ve ham embed fallback dahil tüm CS3 stream oluşturma yollarında `thumbnailUrl` alanı dolduruluyor.
-- **Çoklu Alan Adı Desteği:** `posterUrl`, `poster`, `coverImage`, `coverUrl`, `backgroundPosterUrl` gibi farklı CS3 eklenti versiyonlarında kullanılan alan adları refleksif olarak taranıyor; hangisi doluysa kullanılıyor.
+### 📱 Mobil Uyumlu ve Duyarlı Yayın Kartı (StreamCard)
+- **Dinamik Ekran Adaptasyonu:** Yayın seçme ekranındaki kartlar `BoxWithConstraints` ile yeniden yazıldı.
+- **Büyük Posterler:** Kapak görselleri daha belirgin ve seçilebilir olması için büyütüldü (küçük ekranlar için 95x135dp, büyük ekranlar için 115x162dp).
+- **Esnek Yerleşim:** Dikey modda veya dar ekranlarda (genişlik < 400dp) butonların yazıyı ezmesini önlemek için "Oynat" ve "İndir" butonları otomatik olarak alt alta hizalanacak şekilde konumlandırıldı.
 
-### ⏩ Oynatıcıda Kalıcı "+Xs Giriş Atlama" Butonu
-
-- **Her Zaman Görünen Skip Butonu:** Oynatıcı kontrol çubuğuna kalıcı bir `+85s` butonu eklendi. AniSkip/AnimeSkip verisi olmayan kaynaklarda bile giriş bölümünü tek tıkla atlatmak mümkün.
-- **AniSkip Önceliği:** AniSkip veya AnimeSkip sistemleri aktif bir intro/outro/özet aralığı tespit ettiğinde, sabit butonun yerine dinamik "Giriş'i Atla" / "Bitişi Atla" butonu gösterilir.
-- **Ayarlanabilir Süre:** Atlama süresi `getAnimeSkipIntroLength()` ile SharedPreferences'tan okunuyor; varsayılan 85 saniyedir ve MPV script üzerinden da değiştirilebilir.
-
+### 📥 Otomatik Altyazı İndirme Sistemi
+- **Birlikte İndir:** Bir videoyu indirdiğinizde, o yayına ait tüm harici altyazılar da (eklenti kaynaklı veya OpenSubtitles eşleşmeli altyazılar) video ile birlikte otomatik olarak indirilir.
+- **Yerel Altyazı Eşleşmesi:** İndirilen altyazılar yerel diskteki `subs/` klasörüne dil koduna göre (`tr_Turkce.srt` vb.) kaydedilir. Çevrimdışı oynatıcı bu dosyaları otomatik olarak tarayıp oynatıcıya yükler.

@@ -1237,6 +1237,10 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         viewModelScope.launch { dataStore.setAutoplayEnabled(enabled) }
     }
 
+    fun setAspectMode(mode: com.kitsugi.animelist.core.player.PlayerAspectMode) {
+        viewModelScope.launch { dataStore.setAspectMode(mode.name) }
+    }
+
     // ── Episode navigation helpers ─────────────────────────────────────────────
     val hasPreviousEpisode: StateFlow<Boolean> = _currentEpisode
         .map { it > 1 }

@@ -121,7 +121,11 @@ fun WatchHistoryScreen(
                         accentColor = accentColor,
                         onClick = {
                             val savedUrl = entry.streamUrl
-                            if (!savedUrl.isNullOrBlank()) {
+                            val isExpired = !savedUrl.isNullOrBlank() && (
+                                System.currentTimeMillis() - entry.watchedAtMs > 30 * 60 * 1000 ||
+                                entry.watchedAtMs < com.kitsugi.animelist.KitsugiApplication.APP_LAUNCH_TIME
+                            )
+                            if (!savedUrl.isNullOrBlank() && !isExpired) {
                                 // ── Direkt oynatma: kaynak yeniden araştırılmaz ──────────────
                                 KitsugiFullscreenPlayerActivity.startWithStreamUrls(
                                     context = context,
@@ -135,7 +139,8 @@ fun WatchHistoryScreen(
                                     season = entry.season,
                                     episode = entry.episode,
                                     animeTitle = entry.animeTitle,
-                                    posterUrl = entry.posterUrl
+                                    posterUrl = entry.posterUrl,
+                                    isMovie = entry.isMovie
                                 )
                             } else {
                                 // ── Geri dönüş: tüm kaynakları tara ────────────────────────
@@ -309,7 +314,10 @@ private fun WatchHistoryItem(
                 }
 
                 // Direkt oynatma rozeti
-                if (!entry.streamUrl.isNullOrBlank()) {
+                val isExpired = remember(entry.streamUrl, entry.watchedAtMs) {
+                    !entry.streamUrl.isNullOrBlank() && (System.currentTimeMillis() - entry.watchedAtMs > 2 * 60 * 60 * 1000)
+                }
+                if (!entry.streamUrl.isNullOrBlank() && !isExpired) {
                     HistoryBadge(
                         text = "⚡ Anında",
                         color = KitsugiColors.AccentGreen,
