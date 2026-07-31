@@ -1,4 +1,4 @@
-# Kitsugi Release Notes - v2.4.122-beta
+# Kitsugi Release Notes - v2.4.123-beta
 
 Bu sürümde izleme geçmişinden anında oynatma desteği (Direct Play), oynatıcı ayarlarında ExoPlayer'ın geri getirilmesi ve indirme/bildirim performansı iyileştirmeleri yapılmıştır.
 

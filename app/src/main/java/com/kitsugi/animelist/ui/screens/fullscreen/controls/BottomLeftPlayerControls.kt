@@ -28,7 +28,7 @@ fun BottomLeftPlayerControls(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         ControlsButton(
