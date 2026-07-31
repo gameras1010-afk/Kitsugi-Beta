@@ -287,7 +287,9 @@ data class StreamResponseItem(
     val url: String?,
     val infoHash: String?,
     val fileIndex: Int?,
-    val behaviorHints: StreamBehaviorHintsDto?
+    val behaviorHints: StreamBehaviorHintsDto?,
+    /** Episode/stream thumbnail URL returned by some addons (e.g. Cloudstream, Torrentio) */
+    val thumbnail: String? = null
 )
 
 /**

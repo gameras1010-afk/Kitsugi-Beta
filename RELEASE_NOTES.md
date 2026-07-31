@@ -1,6 +1,9 @@
-# Kitsugi Release Notes - v2.4.124-beta
+# Kitsugi Release Notes - v2.4.125-beta
 
-Bu sürümde izleme geçmişinden anında oynatma desteği (Direct Play), oynatıcı ayarlarında ExoPlayer'ın geri getirilmesi ve indirme/bildirim performansı iyileştirmeleri yapılmıştır.
+Bu sürümde video veri çekme ekranında kaynak bazlı kapak görselleri (thumbnail) entegre edilmiş, izleme geçmişinden anında oynatma desteği (Direct Play) sunulmuş, oynatıcı ayarlarında ExoPlayer geri getirilmiş ve indirme/bildirim performansı iyileştirilmiştir.
+
+### 🖼️ Video Kaynak Görselleri (Thumbnail)
+- **Kaynak Bazlı Kapak Görselleri:** Video veri çekme ekranındaki her bir kaynağın sol tarafında, varsa eklentiden dönen özel kapak görseli (thumbnail) listelenmektedir. Yazı ve hizalamalar, resimlerin varlığından etkilenmeyecek şekilde dinamik olarak ölçeklenir.
 
 ### 📜 Geçmiş Sayfası İyileştirmeleri (Anında Oynatma)
 - **Geçmişten Direkt Oynatma (Direct Play):** Geçmiş sayfasındaki kayıtlar için çözümlenmiş kaynak URL'si ve HTTP başlıkları önbelleğe alınarak, tüm kaynakları arama adımı atlanıp oynatıcı doğrudan başlatılabilmektedir.

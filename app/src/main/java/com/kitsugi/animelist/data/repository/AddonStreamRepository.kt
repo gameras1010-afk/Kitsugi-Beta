@@ -137,7 +137,8 @@ class AddonStreamRepository(private val context: Context) {
                         fileIndex = responseItem.fileIndex,
                         requestHeaders = responseItem.behaviorHints?.proxyHeaders?.request,
                         quality   = parsedQuality,
-                        qualityValue = parsedQualityValue
+                        qualityValue = parsedQualityValue,
+                        thumbnailUrl = responseItem.thumbnail
                     )
                 }
             }
@@ -205,7 +206,9 @@ data class StreamSource(
     val isCS: Boolean = false,
     val quality: String? = null,
     val qualityValue: Int? = null,
-    val subtitles: List<com.kitsugi.animelist.core.player.SubtitleInput> = emptyList()
+    val subtitles: List<com.kitsugi.animelist.core.player.SubtitleInput> = emptyList(),
+    /** Episode/source thumbnail URL from the stream provider (e.g. episode cover art from Cloudstream). */
+    val thumbnailUrl: String? = null
 ) : java.io.Serializable
 
 /**

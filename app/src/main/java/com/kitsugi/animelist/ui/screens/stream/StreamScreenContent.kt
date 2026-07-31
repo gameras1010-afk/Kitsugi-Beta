@@ -662,17 +662,30 @@ private fun PortraitLayout(
                 }
             }
 
-            // Item 2: Hero Poster Card (Cloudstream-style)
+            // Item 2: Poster Card
             item(key = "poster_card") {
-                MediaHeroCard(
-                    title = title,
-                    posterUrl = posterUrl,
-                    episode = episode,
-                    season = season,
-                    isMovie = isMovie,
-                    isDownloadMode = isDownloadMode,
-                    imdbId = imdbId
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth().background(KitsugiColors.Surface.copy(alpha = 0.2f), RoundedCornerShape(12.dp)).padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(modifier = Modifier.size(width = 60.dp, height = 90.dp).clip(RoundedCornerShape(8.dp)).background(KitsugiColors.SurfaceStrong)) {
+                        if (!posterUrl.isNullOrBlank()) AsyncImage(model = posterUrl, contentDescription = title, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                        else Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Icon(Icons.Rounded.Movie, null, tint = KitsugiColors.TextMuted, modifier = Modifier.size(24.dp)) }
+                    }
+                    Spacer(Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(title, color = KitsugiColors.TextPrimary, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            if (isMovie) {
+                                if (isDownloadMode) "Film (İndir)" else "Film"
+                            } else {
+                                if (isDownloadMode) "İndir · Sezon $season · Bölüm $episode" else "Sezon $season · Bölüm $episode"
+                            },
+                            color = KitsugiColors.TextSecondary, style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
             }
 
             // Item 3: Stream Search Bar & Quick Tags
@@ -850,154 +863,3 @@ private fun ImdbBadge(imdbId: String) {
     }
 }
 
-/**
- * Cloudstream-style hero header card shown at the top of the stream picker.
- * Displays a large cover poster (88×138dp) on the left, with title/episode
- * metadata and IMDB badge on the right — identical layout to
- * bottom_resultview_preview.xml in Cloudstream.
- */
-@Composable
-private fun MediaHeroCard(
-    title: String,
-    posterUrl: String?,
-    episode: Int,
-    season: Int,
-    isMovie: Boolean,
-    isDownloadMode: Boolean,
-    imdbId: String?
-) {
-    val shimmerTransition = rememberInfiniteTransition(label = "posterShimmer")
-    val shimmerAlpha by shimmerTransition.animateFloat(
-        initialValue = 0.15f,
-        targetValue  = 0.40f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(900, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "shimmerAlpha"
-    )
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(KitsugiColors.Surface.copy(alpha = 0.30f))
-            .border(1.dp, KitsugiColors.SurfaceStrong.copy(alpha = 0.40f), RoundedCornerShape(16.dp))
-            .padding(12.dp),
-        verticalAlignment = Alignment.Top,
-        horizontalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
-        // ── Cover poster (Cloudstream: 88×138dp) ─────────────────────────────
-        Box(
-            modifier = Modifier
-                .size(width = 88.dp, height = 138.dp)
-                .shadow(elevation = 8.dp, shape = RoundedCornerShape(12.dp), clip = false)
-                .clip(RoundedCornerShape(12.dp))
-                .background(KitsugiColors.SurfaceStrong)
-        ) {
-            if (!posterUrl.isNullOrBlank()) {
-                SubcomposeAsyncImage(
-                    model = posterUrl,
-                    contentDescription = title,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                    loading = {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(KitsugiColors.SurfaceStrong.copy(alpha = shimmerAlpha))
-                        )
-                    }
-                )
-                // Bottom gradient overlay for subtle depth
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                        .align(Alignment.BottomCenter)
-                        .background(
-                            Brush.verticalGradient(
-                                listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f))
-                            )
-                        )
-                )
-            } else {
-                // Placeholder shimmer when no poster
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(KitsugiColors.SurfaceStrong.copy(alpha = shimmerAlpha)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Movie,
-                        contentDescription = null,
-                        tint = KitsugiColors.TextMuted,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-            }
-        }
-
-        // ── Metadata column ───────────────────────────────────────────────────
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .height(138.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                // Title
-                Text(
-                    text = title,
-                    color = KitsugiColors.TextPrimary,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis,
-                    lineHeight = 20.sp
-                )
-
-                // Episode / Movie label
-                val episodeLabel = when {
-                    isMovie && isDownloadMode -> "🎬 Film · İndir"
-                    isMovie                  -> "🎬 Film"
-                    isDownloadMode           -> "📥 İndir · S${season} · B${episode}"
-                    else                     -> "📺 Sezon $season · Bölüm $episode"
-                }
-                Text(
-                    text = episodeLabel,
-                    color = KitsugiColors.TextSecondary,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                // "Kaynak Aranıyor" live loading label
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(5.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(7.dp)
-                            .clip(RoundedCornerShape(50))
-                            .background(KitsugiColors.AccentGreen.copy(alpha = 0.85f))
-                    )
-                    Text(
-                        text = "Kaynak Taranıyor...",
-                        color = KitsugiColors.AccentGreen.copy(alpha = 0.85f),
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            }
-
-            // IMDB badge at bottom of metadata column
-            imdbId?.let {
-                ImdbBadge(it)
-            }
-        }
-    }
-}

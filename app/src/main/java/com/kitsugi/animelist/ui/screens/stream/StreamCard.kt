@@ -1,5 +1,11 @@
 package com.kitsugi.animelist.ui.screens.stream
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import com.kitsugi.animelist.ui.utils.tvClickable
 import androidx.compose.foundation.layout.*
@@ -8,21 +14,35 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Movie
+import coil3.compose.AsyncImage
 import com.kitsugi.animelist.data.repository.StreamSource
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 
 /**
  * A single stream card showing quality/cache/addon badges and triggering playback on tap.
+ *
+ * Layout (left → right):
+ *   [Thumbnail 72×72dp, only if thumbnailUrl exists]
+ *   [Text column weight(1f) — badges row, source name, subtitle]
+ *   [Download icon + Play circle button]
+ *
+ * The text column uses weight(1f) so it always fills the remaining space
+ * correctly whether a thumbnail is present or not — no text overflow or
+ * overlapping with the thumbnail or action buttons.
  */
 @Composable
 fun StreamCard(
@@ -34,6 +54,18 @@ fun StreamCard(
     val (quality, size) = remember(source) { parseStreamQuality(source) }
     val langType = remember(source) { detectStreamLang(source) }
     val cacheState = remember(source) { getCacheState(source) }
+
+    // Shimmer for thumbnail placeholder
+    val shimmerTransition = rememberInfiniteTransition(label = "thumbShimmer")
+    val shimmerAlpha by shimmerTransition.animateFloat(
+        initialValue = 0.15f,
+        targetValue  = 0.45f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(800, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "thumbAlpha"
+    )
 
     Card(
         modifier = Modifier
@@ -47,14 +79,45 @@ fun StreamCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            // ── Thumbnail (optional, 72×72dp) ────────────────────────────────
+            if (!source.thumbnailUrl.isNullOrBlank()) {
+                Box(
+                    modifier = Modifier
+                        .size(72.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(KitsugiColors.Surface)
+                ) {
+                    AsyncImage(
+                        model = source.thumbnailUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                    // Subtle bottom gradient so badges/text overlay reads cleanly if needed
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(24.dp)
+                            .align(Alignment.BottomCenter)
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(Color.Transparent, Color.Black.copy(alpha = 0.45f))
+                                )
+                            )
+                    )
+                }
+            }
+
+            // ── Text column (weight=1f keeps it from pushing buttons off-screen) ──
             Column(modifier = Modifier.weight(1f)) {
                 // Badge row
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
                     modifier = Modifier.padding(bottom = 6.dp)
                 ) {
                     val qualityColor = when {
@@ -63,26 +126,15 @@ fun StreamCard(
                         quality.contains("720", ignoreCase = true)  -> KitsugiColors.AccentGreen
                         else -> KitsugiColors.AccentOrange
                     }
-                    StreamBadge(
-                        text = quality,
-                        color = qualityColor,
-                        bgAlpha = 0.15f,
-                        bgColor = qualityColor
-                    )
+                    StreamBadge(text = quality, color = qualityColor, bgAlpha = 0.15f, bgColor = qualityColor)
 
-                    // Sub / Dub Badge
                     val (langText, langColor) = when (langType) {
-                        StreamLangType.DUB  -> "🎙️ Dublaj" to KitsugiColors.AccentOrange
-                        StreamLangType.SUB  -> "💬 Altyazılı" to KitsugiColors.AccentBlue
-                        StreamLangType.DUAL -> "🌐 Dual" to KitsugiColors.AccentPurple
-                        StreamLangType.UNKNOWN -> "🎬 Standart" to KitsugiColors.TextSecondary
+                        StreamLangType.DUB     -> "🎙️ Dublaj"     to KitsugiColors.AccentOrange
+                        StreamLangType.SUB     -> "💬 Altyazılı"  to KitsugiColors.AccentBlue
+                        StreamLangType.DUAL    -> "🌐 Dual"       to KitsugiColors.AccentPurple
+                        StreamLangType.UNKNOWN -> "🎬 Standart"   to KitsugiColors.TextSecondary
                     }
-                    StreamBadge(
-                        text = langText,
-                        color = langColor,
-                        bgAlpha = 0.15f,
-                        bgColor = langColor
-                    )
+                    StreamBadge(text = langText, color = langColor, bgAlpha = 0.15f, bgColor = langColor)
 
                     StreamBadge(
                         text = source.addonName,
@@ -90,17 +142,20 @@ fun StreamCard(
                         bgAlpha = 0.10f,
                         bgColor = KitsugiColors.AccentPurple
                     )
+
                     val (cacheText, cacheColor) = when (cacheState) {
-                        DebridCacheState.CACHED     -> "Önbellekte" to KitsugiColors.AccentGreen
-                        DebridCacheState.NOT_CACHED -> "İndirilecek" to KitsugiColors.AccentOrange
+                        DebridCacheState.CACHED     -> "Önbellekte"    to KitsugiColors.AccentGreen
+                        DebridCacheState.NOT_CACHED -> "İndirilecek"   to KitsugiColors.AccentOrange
                         DebridCacheState.P2P        -> "Torrent (P2P)" to KitsugiColors.AccentBlue
                     }
                     StreamBadge(text = cacheText, color = cacheColor, bgAlpha = 0.15f, bgColor = cacheColor)
+
                     if (size.isNotBlank()) {
                         Text(text = size, color = KitsugiColors.TextMuted, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
 
+                // Source name
                 Text(
                     text = source.name,
                     color = KitsugiColors.TextPrimary,
@@ -110,6 +165,7 @@ fun StreamCard(
                     overflow = TextOverflow.Ellipsis
                 )
 
+                // Subtitle / detail text
                 if (source.title.isNotBlank() && source.title != source.name) {
                     Text(
                         text = source.title.trim(),
@@ -117,16 +173,15 @@ fun StreamCard(
                         fontSize = 11.sp,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = 4.dp)
+                        modifier = Modifier.padding(top = 3.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
-
+            // ── Action buttons (fixed width, never pushed) ───────────────────
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 IconButton(
                     onClick = onDownloadClick,
@@ -170,3 +225,4 @@ private fun StreamBadge(text: String, color: Color, bgAlpha: Float, bgColor: Col
         Text(text = text, color = color, fontSize = 11.sp, fontWeight = FontWeight.Bold)
     }
 }
+
