@@ -24,6 +24,9 @@ class AnimeDownloadService : Service() {
 
     private val serviceScope = CoroutineScope(Dispatchers.IO + Job())
     private var downloadJob: Job? = null
+    private var activeDownloadJob: Job? = null
+    private var currentDownloadingAnimeId: String? = null
+    private var currentDownloadingEpisode: Int? = null
     private lateinit var downloader: AnimeDownloader
     private lateinit var notificationManager: NotificationManager
 
@@ -37,6 +40,23 @@ class AnimeDownloadService : Service() {
         downloader = AnimeDownloader(this)
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         createNotificationChannel()
+
+        serviceScope.launch {
+            AnimeDownloadManager.downloads.collect { list ->
+                val activeId = currentDownloadingAnimeId
+                val activeEp = currentDownloadingEpisode
+                if (activeId != null && activeEp != null) {
+                    val stillExistsAndDownloading = list.any {
+                        it.animeId == activeId &&
+                        it.episode == activeEp &&
+                        (it.status == AnimeDownload.Status.DOWNLOADING || it.status == AnimeDownload.Status.QUEUE)
+                    }
+                    if (!stillExistsAndDownloading) {
+                        activeDownloadJob?.cancel()
+                    }
+                }
+            }
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -61,47 +81,67 @@ class AnimeDownloadService : Service() {
                         break
                     }
                 } else {
-                    try {
-                        var lastNotificationTime = 0L
-                        downloader.download(
-                            download = next,
-                            onProgress = { progress, size, duration ->
-                                AnimeDownloadManager.updateProgress(
-                                    animeId = next.animeId,
-                                    episode = next.episode,
-                                    progress = progress,
-                                    downloadedBytes = size,
-                                    totalBytes = duration
-                                )
-                                val currentTime = System.currentTimeMillis()
-                                if (currentTime - lastNotificationTime >= 1000L || progress == 100) {
-                                    lastNotificationTime = currentTime
-                                    val text = "${next.animeTitle} - Bölüm ${next.episode} (%$progress)"
-                                    notificationManager.notify(NOTIFICATION_ID, buildNotification(text, progress, false))
+                    currentDownloadingAnimeId = next.animeId
+                    currentDownloadingEpisode = next.episode
+
+                    val activeJob = launch {
+                        try {
+                            var lastNotificationTime = 0L
+                            downloader.download(
+                                download = next,
+                                onProgress = { progress, size, duration ->
+                                    AnimeDownloadManager.updateProgress(
+                                        animeId = next.animeId,
+                                        episode = next.episode,
+                                        progress = progress,
+                                        downloadedBytes = size,
+                                        totalBytes = duration
+                                    )
+                                    val currentTime = System.currentTimeMillis()
+                                    if (currentTime - lastNotificationTime >= 1000L || progress == 100) {
+                                        lastNotificationTime = currentTime
+                                        val text = "${next.animeTitle} - Bölüm ${next.episode} (%$progress)"
+                                        notificationManager.notify(NOTIFICATION_ID, buildNotification(text, progress, false))
+                                    }
+                                },
+                                onStatusChanged = { status, localPath ->
+                                    AnimeDownloadManager.updateStatus(
+                                        animeId = next.animeId,
+                                        episode = next.episode,
+                                        status = status,
+                                        localPath = localPath
+                                    )
+                                    if (status == AnimeDownload.Status.COMPLETED) {
+                                        val text = "${next.animeTitle} - Bölüm ${next.episode} indirildi"
+                                        showCompletedNotification(next, text)
+                                    } else if (status == AnimeDownload.Status.ERROR) {
+                                        val text = "${next.animeTitle} - Bölüm ${next.episode} indirilirken hata oluştu"
+                                        showCompletedNotification(next, text)
+                                    }
                                 }
-                            },
-                            onStatusChanged = { status, localPath ->
+                            )
+                        } catch (e: kotlinx.coroutines.CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            if (isActive) {
                                 AnimeDownloadManager.updateStatus(
                                     animeId = next.animeId,
                                     episode = next.episode,
-                                    status = status,
-                                    localPath = localPath
+                                    status = AnimeDownload.Status.ERROR
                                 )
-                                if (status == AnimeDownload.Status.COMPLETED) {
-                                    val text = "${next.animeTitle} - Bölüm ${next.episode} indirildi"
-                                    showCompletedNotification(next, text)
-                                } else if (status == AnimeDownload.Status.ERROR) {
-                                    val text = "${next.animeTitle} - Bölüm ${next.episode} indirilirken hata oluştu"
-                                    showCompletedNotification(next, text)
-                                }
                             }
-                        )
+                        }
+                    }
+
+                    activeDownloadJob = activeJob
+                    try {
+                        activeJob.join()
                     } catch (e: Exception) {
-                        AnimeDownloadManager.updateStatus(
-                            animeId = next.animeId,
-                            episode = next.episode,
-                            status = AnimeDownload.Status.ERROR
-                        )
+                        e.printStackTrace()
+                    } finally {
+                        currentDownloadingAnimeId = null
+                        currentDownloadingEpisode = null
+                        activeDownloadJob = null
                     }
                 }
                 delay(1000L)

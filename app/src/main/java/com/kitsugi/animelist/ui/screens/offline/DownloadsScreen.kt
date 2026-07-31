@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import com.kitsugi.animelist.core.player.OfflinePlaybackHelper
 import com.kitsugi.animelist.data.model.AnimeDownload
 import com.kitsugi.animelist.data.local.AnimeDownloadManager
 import com.kitsugi.animelist.ui.screens.fullscreen.KitsugiFullscreenPlayerActivity
@@ -104,14 +105,27 @@ fun DownloadsScreen(
                         download = download,
                         accentColor = accentColor,
                         onPlay = {
-                            download.localPath?.let { path ->
+                            val mediaId = "${download.animeId}_${download.episode}"
+                            val localMedia = OfflinePlaybackHelper.getLocalMedia(context, mediaId)
+                            val params = localMedia?.let { OfflinePlaybackHelper.buildPlayerParams(it) }
+                            if (params != null) {
                                 KitsugiFullscreenPlayerActivity.startWithStreamUrls(
                                     context = context,
-                                    videoUrl = "file://$path",
-                                    title = "${download.animeTitle} - Bölüm ${download.episode}",
-                                    headers = emptyMap(),
-                                    subtitles = emptyList()
+                                    videoUrl = params.videoUri,
+                                    title = params.title,
+                                    headers = params.headers,
+                                    subtitles = params.subtitles
                                 )
+                            } else {
+                                download.localPath?.let { path ->
+                                    KitsugiFullscreenPlayerActivity.startWithStreamUrls(
+                                        context = context,
+                                        videoUrl = "file://$path",
+                                        title = "${download.animeTitle} - Bölüm ${download.episode}",
+                                        headers = emptyMap(),
+                                        subtitles = emptyList()
+                                    )
+                                }
                             }
                         },
                         onPause = {
