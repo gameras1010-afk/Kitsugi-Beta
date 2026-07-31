@@ -371,9 +371,10 @@ fun KitsugiPlayerSettingsDialog(
                                     // Player Preference Selection
                                     Box {
                                         val playerOptions = listOf(
-                                            "MPV" to "Dahili Oynatıcı (MPV)",
+                                            "MPV"      to "Dahili Oynatıcı (MPV)",
+                                            "INTERNAL" to "Dahili Oynatıcı (ExoPlayer)",
                                             "EXTERNAL" to "Harici Oynatıcı (MPV/VLC vb.)",
-                                            "ASK" to "Her Seferinde Sor"
+                                            "ASK"      to "Her Seferinde Sor"
                                         )
                                         val currentPlayerName = playerOptions.find { it.first == playerPreference }?.second ?: "Dahili Oynatıcı (MPV)"
                                         KitsugiSettingsListItem(

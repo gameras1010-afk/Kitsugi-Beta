@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.kitsugi.animelist.data.local.WatchHistoryManager
 import com.kitsugi.animelist.data.model.WatchHistoryEntry
+import com.kitsugi.animelist.ui.screens.fullscreen.KitsugiFullscreenPlayerActivity
+import com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.utils.tvClickable
@@ -118,24 +120,44 @@ fun WatchHistoryScreen(
                         entry = entry,
                         accentColor = accentColor,
                         onClick = {
-                            if (!entry.source.isNullOrBlank()) {
-                                context.getSharedPreferences("StreamPrefs", android.content.Context.MODE_PRIVATE)
-                                    .edit()
-                                    .putString("last_addon_name", entry.source)
-                                    .apply()
+                            val savedUrl = entry.streamUrl
+                            if (!savedUrl.isNullOrBlank()) {
+                                // ── Direkt oynatma: kaynak yeniden araştırılmaz ──────────────
+                                KitsugiFullscreenPlayerActivity.startWithStreamUrls(
+                                    context = context,
+                                    videoUrl = savedUrl,
+                                    title = "${entry.animeTitle} - Bölüm ${entry.episode}",
+                                    headers = entry.streamHeaders,
+                                    subtitles = emptyList(),
+                                    malId = entry.malId,
+                                    aniListId = entry.aniListId,
+                                    tmdbId = entry.tmdbId,
+                                    season = entry.season,
+                                    episode = entry.episode,
+                                    animeTitle = entry.animeTitle,
+                                    posterUrl = entry.posterUrl
+                                )
+                            } else {
+                                // ── Geri dönüş: tüm kaynakları tara ────────────────────────
+                                if (!entry.source.isNullOrBlank()) {
+                                    context.getSharedPreferences("KitsugiStreamPrefs", android.content.Context.MODE_PRIVATE)
+                                        .edit()
+                                        .putString("last_addon_name", entry.source)
+                                        .apply()
+                                }
+                                KitsugiStreamActivity.start(
+                                    context = context,
+                                    malId = entry.malId,
+                                    aniListId = entry.aniListId,
+                                    tmdbId = entry.tmdbId,
+                                    episode = entry.episode,
+                                    season = entry.season,
+                                    isMovie = entry.isMovie,
+                                    title = entry.animeTitle,
+                                    posterUrl = entry.posterUrl,
+                                    isAutoplay = true
+                                )
                             }
-                            com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity.start(
-                                context = context,
-                                malId = entry.malId,
-                                aniListId = entry.aniListId,
-                                tmdbId = null,
-                                episode = entry.episode,
-                                season = entry.season,
-                                isMovie = entry.isMovie,
-                                title = entry.animeTitle,
-                                posterUrl = entry.posterUrl,
-                                isAutoplay = true
-                            )
                         },
                         onDelete = {
                             WatchHistoryManager.remove(entry.animeId, entry.episode)
@@ -283,6 +305,16 @@ private fun WatchHistoryItem(
                         color = KitsugiColors.AccentPurple,
                         bgColor = KitsugiColors.AccentPurple,
                         bgAlpha = 0.12f
+                    )
+                }
+
+                // Direkt oynatma rozeti
+                if (!entry.streamUrl.isNullOrBlank()) {
+                    HistoryBadge(
+                        text = "⚡ Anında",
+                        color = KitsugiColors.AccentGreen,
+                        bgColor = KitsugiColors.AccentGreen,
+                        bgAlpha = 0.13f
                     )
                 }
 

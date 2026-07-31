@@ -55,6 +55,29 @@ object WatchHistoryManager {
         }
     }
 
+    /**
+     * Çözümlenmiş stream URL'sini ve başlıklarını geçmiş kaydına yazar.
+     * Bir sonraki seferde geçmişten direkt oynatma mümkün olur.
+     */
+    fun updateStreamUrl(
+        animeId: String,
+        episode: Int,
+        streamUrl: String,
+        streamHeaders: Map<String, String>?
+    ) {
+        val current = _history.value.toMutableList()
+        val index = current.indexOfFirst { it.animeId == animeId && it.episode == episode }
+        if (index != -1) {
+            val updated = current[index].copy(
+                streamUrl = streamUrl,
+                streamHeaders = streamHeaders
+            )
+            current[index] = updated
+            _history.value = current
+            store.saveHistory(current)
+        }
+    }
+
 
     /**
      * Belirli bir kaydı sil.

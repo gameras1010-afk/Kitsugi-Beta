@@ -192,7 +192,10 @@ fun KitsugiStreamScreen(
                     quality = source.quality,
                     source = source.addonName,
                     malId = malId,
-                    aniListId = aniListId
+                    aniListId = aniListId,
+                    tmdbId = tmdbId,
+                    streamUrl = resolvedUrl,
+                    streamHeaders = source.requestHeaders
                 )
             )
 
