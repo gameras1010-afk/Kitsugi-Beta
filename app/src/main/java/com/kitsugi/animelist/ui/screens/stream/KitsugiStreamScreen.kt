@@ -326,7 +326,9 @@ fun KitsugiStreamScreen(
                         requestHeaders = source.requestHeaders ?: emptyMap()
                     )
                     android.widget.Toast.makeText(context, "İndirme kuyruğa eklendi", android.widget.Toast.LENGTH_SHORT).show()
-                    onBack()
+                    context.startActivity(
+                        android.content.Intent(context, com.kitsugi.animelist.ui.screens.offline.DownloadsActivity::class.java)
+                    )
                 } else {
                     handlePlayStream(source, resolvedUrl)
                 }
@@ -375,7 +377,9 @@ fun KitsugiStreamScreen(
                     requestHeaders = source.requestHeaders ?: emptyMap()
                 )
                 android.widget.Toast.makeText(context, "İndirme kuyruğa eklendi", android.widget.Toast.LENGTH_SHORT).show()
-                onBack()
+                context.startActivity(
+                    android.content.Intent(context, com.kitsugi.animelist.ui.screens.offline.DownloadsActivity::class.java)
+                )
             }
             activeStreamJob = job
         },

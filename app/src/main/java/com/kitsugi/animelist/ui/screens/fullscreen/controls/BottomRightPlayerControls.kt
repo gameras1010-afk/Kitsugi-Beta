@@ -1,12 +1,15 @@
 package com.kitsugi.animelist.ui.screens.fullscreen.controls
 
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AspectRatio
 import androidx.compose.material.icons.filled.PictureInPictureAlt
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.ControlsButton
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.FilledControlsButton
 import com.kitsugi.animelist.data.local.CustomButton
@@ -34,7 +37,11 @@ fun BottomRightPlayerControls(
                 onClick = onPressSkipIntroButton,
                 onLongClick = {},
             )
-        } else if (customButton != null) {
+        }
+        if (customButton != null) {
+            if (skipIntroButton != null) {
+                Spacer(modifier = Modifier.width(8.dp))
+            }
             FilledControlsButton(
                 text = customButtonTitle,
                 onClick = onPressCustomButton,

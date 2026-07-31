@@ -62,6 +62,7 @@ class AnimeDownloadService : Service() {
                     }
                 } else {
                     try {
+                        var lastNotificationTime = 0L
                         downloader.download(
                             download = next,
                             onProgress = { progress, size, duration ->
@@ -72,8 +73,12 @@ class AnimeDownloadService : Service() {
                                     downloadedBytes = size,
                                     totalBytes = duration
                                 )
-                                val text = "${next.animeTitle} - Bölüm ${next.episode} (%$progress)"
-                                notificationManager.notify(NOTIFICATION_ID, buildNotification(text, progress, false))
+                                val currentTime = System.currentTimeMillis()
+                                if (currentTime - lastNotificationTime >= 1000L || progress == 100) {
+                                    lastNotificationTime = currentTime
+                                    val text = "${next.animeTitle} - Bölüm ${next.episode} (%$progress)"
+                                    notificationManager.notify(NOTIFICATION_ID, buildNotification(text, progress, false))
+                                }
                             },
                             onStatusChanged = { status, localPath ->
                                 AnimeDownloadManager.updateStatus(

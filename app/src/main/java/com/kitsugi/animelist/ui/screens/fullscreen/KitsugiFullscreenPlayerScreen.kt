@@ -61,6 +61,7 @@ import com.kitsugi.animelist.ui.screens.fullscreen.controls.PlayerControls
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.PlayerSheetsHost
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.PlayerPanelsHost
 import com.kitsugi.animelist.ui.screens.fullscreen.controls.PlayerDialogsHost
+import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.BrightnessOverlay
 import android.util.Log
 import com.kitsugi.animelist.core.player.PlayerLogger
 import com.kitsugi.animelist.data.settings.SettingsDataStore
@@ -243,6 +244,8 @@ fun KitsugiFullscreenPlayerScreen(
 
 
     val sleepTimerSecondsLeft by viewModel.sleepTimerSecondsLeft.collectAsState()
+    val currentBrightness by viewModel.currentBrightness.collectAsState()
+    val playbackSpeed by viewModel.playbackSpeed.collectAsState()
 
     // ── New Aniyomi-style reactive UI state ──────────────────────────────────
     val sheetShown by viewModel.sheetShown.collectAsState()
@@ -497,11 +500,14 @@ fun KitsugiFullscreenPlayerScreen(
                 var isBufferingState by remember { mutableStateOf(false) }
                 var isPlaybackEnded by remember { mutableStateOf(false) }
                 
-                var currentSpeed by remember { mutableStateOf(1.0f) }
                 var aspectFeedback by remember { mutableStateOf<String?>(null) }
 
                 LaunchedEffect(playerEngine, currentAspectMode) {
                     playerEngine.setAspectMode(currentAspectMode)
+                }
+
+                LaunchedEffect(playerEngine, playbackSpeed) {
+                    playerEngine.setPlaybackSpeed(playbackSpeed)
                 }
 
                 // ─── Gesture Controller (T2.1 + T2.7) ─────────────────────────────────
@@ -624,7 +630,7 @@ fun KitsugiFullscreenPlayerScreen(
                                     // savedPos < 10s — mark as checked without pause/dialog
                                     hasCheckedResume = true
                                 }
-                                playerEngine.setPlaybackSpeed(currentSpeed)
+                                playerEngine.setPlaybackSpeed(playbackSpeed)
                                 val mpvEngine = playerEngine as? com.kitsugi.animelist.core.player.engine.MpvPlayerEngine
                                 mpvEngine?.mpvView?.mpv?.setPropertyInt("user-data/current-anime/intro-length", viewModel.getAnimeSkipIntroLength())
                                 viewModel.orchestrator.errorRecovery.onPlaybackReady()
@@ -732,7 +738,7 @@ fun KitsugiFullscreenPlayerScreen(
                         isCS      = currentStreamSources.getOrNull(currentSourceIndex)?.isCS == true
                     )
                     
-                    playerEngine.setPlaybackSpeed(currentSpeed)
+                    playerEngine.setPlaybackSpeed(playbackSpeed)
 
                     val activeSource = currentStreamSources.getOrNull(currentSourceIndex)
                     val startPos = if (safeVideoUrl == lastPreparedUrl) playerEngine.currentPosition else 0L
@@ -878,18 +884,9 @@ fun KitsugiFullscreenPlayerScreen(
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // PauseOverlay — buffering veya çözümleme sırasında gösterme
-                    PauseOverlay(
-                        visible = !isPlayingState && !isBufferingState && !isResolvingStream && panelShown == KitsugiPanels.None && sheetShown == KitsugiSheets.None && !isInPipMode,
-                        onClose = { playerEngine.play() },
-                        title = animeTitle.ifBlank { currentTitle },
-                        posterUrl = posterUrl,
-                        episodeTitle = currentTitle,
-                        season = season,
-                        episode = currentEpisode,
-                        year = startYear?.toString(),
-                        description = description,
-                        cast = castList
+                    BrightnessOverlay(
+                        brightness = currentBrightness,
+                        modifier = Modifier.fillMaxSize()
                     )
 
                     // Legacy gesture progress bars and overlays removed (GestureHandler & PlayerControls manage overlays)
@@ -912,6 +909,20 @@ fun KitsugiFullscreenPlayerScreen(
                                     ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE -> "Yönlendirme: Yatay (Kilitli)"
                                     ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT -> "Yönlendirme: Dikey (Kilitli)"
                                     else -> ""
+                                }
+                                aspectFeedback = text
+                            },
+                            onAspectClick = {
+                                val modes = com.kitsugi.animelist.core.player.PlayerAspectMode.values()
+                                val nextMode = modes[(currentAspectMode.ordinal + 1) % modes.size]
+                                currentAspectMode = nextMode
+                                val text = when (nextMode) {
+                                    com.kitsugi.animelist.core.player.PlayerAspectMode.ORIGINAL -> "Orijinal"
+                                    com.kitsugi.animelist.core.player.PlayerAspectMode.FIT -> "Sığdır"
+                                    com.kitsugi.animelist.core.player.PlayerAspectMode.FILL -> "Doldur"
+                                    com.kitsugi.animelist.core.player.PlayerAspectMode.CROP_16_9 -> "16:9"
+                                    com.kitsugi.animelist.core.player.PlayerAspectMode.CROP_4_3 -> "4:3"
+                                    com.kitsugi.animelist.core.player.PlayerAspectMode.ZOOM -> "Yakınlaştır (Kırp)"
                                 }
                                 aspectFeedback = text
                             },
@@ -1025,14 +1036,12 @@ fun KitsugiFullscreenPlayerScreen(
                         onClickCustomButton = viewModel::executeCustomButton,
                         onLongClickCustomButton = viewModel::executeCustomButtonLongPress,
                         onOpenPanel = { panel -> viewModel.showPanel(panel) },
-                        currentSpeed = currentSpeed,
+                        currentSpeed = playbackSpeed,
                         onSpeedChange = { speed ->
-                            currentSpeed = speed
-                            playerEngine.setPlaybackSpeed(speed)
+                            viewModel.setPlaybackSpeed(speed)
                         },
                         onSetSpeedAsDefault = { speed ->
-                            currentSpeed = speed
-                            playerEngine.setPlaybackSpeed(speed)
+                            viewModel.setPlaybackSpeed(speed)
                         },
                         currentChapter = currentChapter,
                         chapters = chapters,

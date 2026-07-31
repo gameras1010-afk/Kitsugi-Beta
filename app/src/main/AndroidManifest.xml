@@ -235,6 +235,14 @@
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|density"
             android:theme="@style/Theme.KitsugiAnimeList" />
 
+        <!-- DownloadsActivity: Standalone screen for browsing downloads -->
+        <activity
+            android:name=".ui.screens.offline.DownloadsActivity"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|density"
+            android:theme="@style/Theme.KitsugiAnimeList" />
+
         <!-- B1.10: TV Channel refresh background job (15dk periyodik + anlik) -->
         <service
             android:name=".core.recommendations.TvChannelRefreshJobService"

@@ -1,20 +1,14 @@
-# Kitsugi Release Notes - v2.4.119-beta
+# Kitsugi Release Notes - v2.4.120-beta
 
-Bu sürümde arama doğruluğu artırılmış, puanlama kartlarındaki görsel tutarsızlıklar giderilmiş, izleme geçmişi ekranı zenginleştirilmiş ve kaldığı yerden devam etme mekanizmaları kaynağa duyarlı hale getirilerek kararlılık artırılmıştır.
+Bu sürümde oynatıcı stabilizasyonu tamamlanmış, en-boy oranı döngüsü ve reaktif kontroller entegre edilmiş, indirme sırasındaki bildirim kasması giderilmiş ve indirme başlangıcı navigasyon akışı optimize edilmiştir.
 
-### 🔍 Arama Temizliği ve Platform Filtreleme
-- **Akıllı Arama Filtreleme:** Arama ekranında "Anime" veya "Manga" platformları seçildiğinde, TMDB sonuçlarının getirilmesi engellenerek keşif alakasızlığı ortadan kaldırıldı.
+### 📺 Oynatıcı Stabilizasyonu ve Reaktif Kontroller
+- **Reaktif Oynatma Hızı:** Oynatma hızı ayarları `StateFlow` mimarisine bağlanarak oynatıcı motoruyla anlık ve kararlı şekilde senkronize edildi.
+- **Döngüsel En-Boy Oranı Kontrolü:** Kontrol paneline en-boy oranını (Orijinal, Sığdır, Doldur, 16:9, 4:3, Yakınlaştır) sırayla değiştiren döngüsel buton ve ekran üzeri geri bildirim (feedback) mesajları eklendi.
+- **Ekstra Karartma Desteği:** Parlaklık durumuna bağlı çalışan ve ekranı karartabilen `BrightnessOverlay` oynatıcının üzerine konumlandırılarak geri getirildi.
+- **Kararlılık Artırımı:** Oynatıcı üzerindeki kararsızlığa yol açan tepkisiz `PauseOverlay` tamamen kaldırıldı.
+- **Buton Görünürlüğü:** Yatay modda "Girişi Atla" (Skip Intro) butonu aktifken diğer özel eylem butonlarının gizlenmesi önlendi, yan yana yerleşim sağlandı.
 
-### 📊 Kart Arayüzü ve Puanlama İyileştirmeleri
-- **Tutarlı Puanlama Gösterimi:** Puanı henüz bulunmayan veya oylanmamış yapımlarda puan alanının boş kalması yerine standart bir "—" rozeti gösterilerek görsel boşluklar ve hizalama kaymaları giderildi.
-- **Sıralama Göstergeleri:** Tüm ekranlardaki keşif listelerinde ve çift resimli sıralı kategorilerde sıralama rozetleri (#1, #2 vb.) eklenerek görsel tutarlılık sağlandı.
-
-### 📺 Yatay Modda İzleme Geçmişi Butonu
-- **Tasarım Eşitliği:** Oynatıcı bilgi ekranının yatay yerleşim modunda eksik olan "İzleme Geçmişi" butonu dikey modla eşitlenerek tüm ekran yönelimlerinde erişilebilir hale getirildi.
-
-### ⏳ İnteraktif İzleme Geçmişi ve İlerleme Çubukları
-- **İlerleme Durum Göstergesi:** Geçmiş ekranındaki her bir ögeye, videonun yüzde kaçının izlendiğini ve bitmesine kaç dakika kaldığını gösteren hassas ilerleme çubuğu (`ContinueWatchingProgressLabel`) entegre edildi.
-- **Kaldığı Yerden Doğrudan Devam Etme:** Geçmiş ekranındaki ögelere tıklama özelliği eklenerek; tercih edilen kaynak bilgisini kaydeden ve oynatıcıyı otomatik oynatma (autoplay) aktif olarak doğrudan başlatan derin bağlantı (deep-linking) sistemi kuruldu.
-
-### 🔄 Kaynak Bazlı (Contextual) Oynatma Resimilasyonu
-- **Akıllı Devam Etme Uyarısı:** Oynatıcıdaki "kaldığınız yerden devam edin" uyarı penceresi, sadece videonun izlendiği kaynak eklentisi (addon) eşleştiğinde görünecek şekilde sınırlandırıldı. Bu sayede farklı kaynaklar arası geçişte yanlış sürelerden başlama sorunu çözüldü.
+### 📥 İndirme ve Bildirim İyileştirmeleri
+- **Akıllı Bildirim Güncellemesi (Throttling):** Video indirilirken bildirim panelini kilitleyen yüksek frekanslı ilerleme güncellemeleri saniyede en fazla 1 kez çalışacak şekilde optimize edildi.
+- **Akıcı İndirme Navigasyonu:** Bir video indirilmeye başlandığı an, kullanıcı otomatik olarak "İndirmeler" ekranına yönlendirilir. Kullanıcı bu ekrandan geri çıktığında ise kaldığı video veri çekme ekranına kesintisiz olarak dönebilir.

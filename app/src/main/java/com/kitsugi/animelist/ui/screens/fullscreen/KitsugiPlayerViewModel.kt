@@ -81,6 +81,9 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
     private val _primaryButtonTitle = MutableStateFlow("")
     val primaryButtonTitle: StateFlow<String> = _primaryButtonTitle.asStateFlow()
 
+    private val _playbackSpeed = MutableStateFlow(1f)
+    val playbackSpeed: StateFlow<Float> = _playbackSpeed.asStateFlow()
+
     init {
         viewModelScope.launch {
             customButtons.collect { buttons ->
@@ -92,6 +95,11 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
                         setPrimaryCustomButtonTitle(fav)
                     }
                 }
+            }
+        }
+        viewModelScope.launch {
+            appSettings.collect { settings ->
+                _playbackSpeed.value = settings.playerSpeed
             }
         }
     }
@@ -1220,6 +1228,7 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
     }
 
     fun setPlaybackSpeed(speed: Float) {
+        _playbackSpeed.value = speed
         activeEngine?.setPlaybackSpeed(speed)
         viewModelScope.launch { dataStore.setPlayerSpeed(speed) }
     }

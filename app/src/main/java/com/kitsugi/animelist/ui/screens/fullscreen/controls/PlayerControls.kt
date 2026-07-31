@@ -79,6 +79,7 @@ fun PlayerControls(
     viewModel: KitsugiPlayerViewModel,
     onBackClick: () -> Unit,
     onRotateClick: () -> Unit,
+    onAspectClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // ── Collect all state from ViewModel ──────────────────────────────────────
@@ -112,6 +113,7 @@ fun PlayerControls(
     val controlsResetTrigger by viewModel.controlsResetTrigger.collectAsState()
     val customButton      by viewModel.primaryButton.collectAsState()
     val customButtonTitle by viewModel.primaryButtonTitle.collectAsState()
+    val playbackSpeed     by viewModel.playbackSpeed.collectAsState()
     val context           = LocalContext.current
 
     val showLoadingCircle = isLoading || isLoadingEpisode ||
@@ -433,7 +435,7 @@ fun PlayerControls(
                         verticalAlignment     = Alignment.CenterVertically
                     ) {
                         BottomLeftPlayerControls(
-                            playbackSpeed       = 1f, // managed locally in screen for now
+                            playbackSpeed       = playbackSpeed,
                             currentChapter      = currentChapter,
                             onLockControls      = {
                                 viewModel.lockControls()
@@ -443,7 +445,10 @@ fun PlayerControls(
                                 onRotateClick()
                                 resetTimer()
                             },
-                            onPlaybackSpeedChange = { /* speed cycles handled locally */ },
+                            onPlaybackSpeedChange = { speed ->
+                                viewModel.setPlaybackSpeed(speed)
+                                resetTimer()
+                            },
                             onOpenSheet         = { sheet ->
                                 viewModel.showSheet(sheet)
                                 resetTimer()
@@ -471,7 +476,10 @@ fun PlayerControls(
                                 resetTimer()
                             },
                             isPipAvailable       = settings.pipEnabled,
-                            onAspectClick        = { resetTimer() },
+                            onAspectClick        = {
+                                onAspectClick()
+                                resetTimer()
+                            },
                             onPipClick           = {
                                 val activity = (context as? android.app.Activity)
                                 if (activity != null) {
