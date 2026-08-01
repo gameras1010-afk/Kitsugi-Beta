@@ -1,8 +1,9 @@
-# Kitsugi Release Notes - v2.4.135-beta
+# Kitsugi Release Notes - v2.4.136-beta
 
-Bu sürümde, kullanıcıların video izleme/akış seçimi ekranındayken manuel olarak kaynak değiştirmesini ve tüm eklentiler üzerinde arama yapabilmesini sağlayan Manuel Arama özelliği entegre edilmiştir.
+Bu sürümde, Cloudstream eklentileriyle tam uyumlu, zenginleştirilmiş Keşfet ve Özel Arama özellikleri entegre edilmiştir.
 
-### 🔍 Eklentilerde Manuel Arama Entegrasyonu (Cloudstream 3 Uyumlu)
-- **Manuel Arama Desteği:** Akış seçimi ekranına (hem dikey hem de yatay modlarda) yeni bir arama simgesi (büyüteç butonu) yerleştirilmiştir. Bu sayede otomatik arama sonuç vermediğinde veya alternatif kaynaklar aranmak istendiğinde kullanıcılar manuel arama başlatabilir.
-- **Toplu Eklenti Araması:** Arama çubuğuna girilen anime, dizi veya film isimleri tüm aktif Cloudstream 3 (CS3) eklentilerinde eş zamanlı olarak aranır ve sonuçlar listelenir.
-- **Akış Değiştirme:** Arama sonuçlarından herhangi bir kaynağa tıklandığında, sistem doğrudan o kaynağın URL ve API verilerini kullanarak yeni yayınları (StreamSource) çözümler ve ekranı günceller.
+### 🌐 Cloudstream Eklenti Keşfi ve Detaylı Arama Arayüzü
+- **Eklentiye Özel Keşfet (Explore) Ekranı:** Arama sayfasındaki eklentiler listesinden bir eklentiye tıklandığında, o eklentiye özel Keşfet arayüzü açılır. Eklentinin sağladığı tüm ana sayfa içerikleri (Trending, Popüler, Son Eklenenler vb.) yatay şeritler halinde kategorize edilerek gösterilir.
+- **Bellek İçi Önbellek (AddonExploreCache):** Eklentilerin ana sayfa verileri bellek içinde önbelleğe alınarak, sayfalar arası geçişlerde ve geri dönüşlerde anlık yükleme performansı sağlanmıştır.
+- **Kartlarda Kaynak İsmi ve Kalite Badgeleri:** Her bir medya kartının altında içeriğin hangi eklentiden geldiği (kaynak ismi) açıkça belirtilir. Ayrıca, eklentiden gelen veri kalitesi (HD, 1080p, BlueRay vb.) kartların sağ üst köşesinde yarı saydam şık bir etiketle gösterilir.
+- **Lokal Eklenti Araması:** Keşfet ekranı içerisine yerleştirilen lokal arama çubuğu ile yalnızca seçili eklenti üzerinde hızlıca arama yapılabilir.

@@ -28,6 +28,9 @@ object KitsugiMarkdownUtils {
     /** AniList img syntax: img(url), img720(url), img720{url}, etc. */
     private val aniListImgRegex = Regex("""img\d*%*[({\[](.*?)[)}\]]""")
 
+    /** Standard markdown image syntax: ![alt](url) */
+    private val markdownImgRegex = Regex("""!\[.*?\]\((.*?)\)""")
+
     /** Eski spoiler formatı: > ⚠️ *Spoiler:* ... */
     private val oldSpoilerRegex = Regex(""">\s*⚠️\s*\*?Spoiler:\*?\s*(.*)""", RegexOption.IGNORE_CASE)
 
@@ -66,6 +69,7 @@ object KitsugiMarkdownUtils {
         val bbConverted = cleaned.convertBBCodeToMarkdown()
         var current = bbConverted
             .replace(htmlBrRegex, "\n\n")
+            .replace(markdownImgRegex) { "img(${it.groupValues[1]})" }
             .replace(boldUnderscoreRegex) { "**${it.groupValues[1]}**" }
             .formatAniListImageTags()
 

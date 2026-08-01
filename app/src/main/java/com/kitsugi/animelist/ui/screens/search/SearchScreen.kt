@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.SearchOff
 import androidx.compose.material3.*
@@ -77,6 +78,7 @@ fun SearchScreen(
     var openPlatformDialog by remember { mutableStateOf(false) }
     var openTmdbFormatDialog by remember { mutableStateOf(false) }
     var openTmdbGenreDialog by remember { mutableStateOf(false) }
+    var openAddonSearchDialog by remember { mutableStateOf(false) }
 
     val entryMap = remember(currentEntries) {
         val mapping = mutableMapOf<String, MediaEntry>()
@@ -204,82 +206,103 @@ fun SearchScreen(
 
                 // Premium Search Bar (inspired by AniHyou)
                 var isFocused by remember { mutableStateOf(false) }
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .clip(RoundedCornerShape(22.dp))
-                        .onFocusChanged { isFocused = it.hasFocus }
-                        .border(
-                            width = if (isFocused) 1.5.dp else 1.dp,
-                            color = if (isFocused) accentColor else KitsugiColors.Border,
-                            shape = RoundedCornerShape(22.dp)
-                        )
-                        .background(KitsugiColors.Surface)
-                        .padding(horizontal = 16.dp),
-                    contentAlignment = Alignment.CenterStart
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp)
+                            .clip(RoundedCornerShape(22.dp))
+                            .onFocusChanged { isFocused = it.hasFocus }
+                            .border(
+                                width = if (isFocused) 1.5.dp else 1.dp,
+                                color = if (isFocused) accentColor else KitsugiColors.Border,
+                                shape = RoundedCornerShape(22.dp)
+                            )
+                            .background(KitsugiColors.Surface)
+                            .padding(horizontal = 16.dp),
+                        contentAlignment = Alignment.CenterStart
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Search,
-                            contentDescription = "Ara",
-                            tint = KitsugiColors.TextMuted,
-                            modifier = Modifier.size(20.dp)
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Search,
+                                contentDescription = "Ara",
+                                tint = KitsugiColors.TextMuted,
+                                modifier = Modifier.size(20.dp)
+                            )
 
-                        BasicTextField(
-                            value = uiState.query,
-                            onValueChange = viewModel::setQuery,
-                            modifier = Modifier.weight(1f),
-                            singleLine = true,
-                            cursorBrush = SolidColor(accentColor),
-                            textStyle = MaterialTheme.typography.bodyMedium.copy(
-                                color = KitsugiColors.TextPrimary,
-                                fontWeight = FontWeight.Normal
-                            ),
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                            keyboardActions = KeyboardActions(
-                                onSearch = {
-                                    viewModel.search()
-                                    keyboardController?.hide()
+                            BasicTextField(
+                                value = uiState.query,
+                                onValueChange = viewModel::setQuery,
+                                modifier = Modifier.weight(1f),
+                                singleLine = true,
+                                cursorBrush = SolidColor(accentColor),
+                                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                                    color = KitsugiColors.TextPrimary,
+                                    fontWeight = FontWeight.Normal
+                                ),
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                                keyboardActions = KeyboardActions(
+                                    onSearch = {
+                                        viewModel.search()
+                                        keyboardController?.hide()
+                                    }
+                                ),
+                                decorationBox = { innerTextField ->
+                                    if (uiState.query.isEmpty()) {
+                                        Text(
+                                            text = "Anime, dizi veya film ara...",
+                                            color = KitsugiColors.TextMuted,
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    }
+                                    innerTextField()
                                 }
-                            ),
-                            decorationBox = { innerTextField ->
-                                if (uiState.query.isEmpty()) {
-                                    Text(
-                                        text = "Anime, dizi veya film ara...",
-                                        color = KitsugiColors.TextMuted,
-                                        style = MaterialTheme.typography.bodyMedium
+                            )
+
+                            AnimatedVisibility(
+                                visible = uiState.query.isNotEmpty(),
+                                enter = fadeIn() + scaleIn(),
+                                exit = fadeOut() + scaleOut()
+                            ) {
+                                IconButton(
+                                    onClick = {
+                                        viewModel.clearQuery()
+                                        keyboardController?.hide()
+                                    },
+                                    modifier = Modifier.size(36.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Temizle",
+                                        tint = KitsugiColors.TextMuted,
+                                        modifier = Modifier.size(18.dp)
                                     )
                                 }
-                                innerTextField()
-                            }
-                        )
-
-                        AnimatedVisibility(
-                            visible = uiState.query.isNotEmpty(),
-                            enter = fadeIn() + scaleIn(),
-                            exit = fadeOut() + scaleOut()
-                        ) {
-                            IconButton(
-                                onClick = {
-                                    viewModel.clearQuery()
-                                    keyboardController?.hide()
-                                },
-                                modifier = Modifier.size(36.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "Temizle",
-                                    tint = KitsugiColors.TextMuted,
-                                    modifier = Modifier.size(18.dp)
-                                )
                             }
                         }
+                    }
+
+                    IconButton(
+                        onClick = { openAddonSearchDialog = true },
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(RoundedCornerShape(22.dp))
+                            .background(KitsugiColors.Surface)
+                            .border(1.dp, KitsugiColors.Border, RoundedCornerShape(22.dp))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Extension,
+                            contentDescription = "Eklenti Araması",
+                            tint = accentColor
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.height(14.dp))
@@ -607,6 +630,12 @@ fun SearchScreen(
                 viewModel.updateFilters(updated)
             },
             onDismiss = { openTmdbGenreDialog = false }
+        )
+    }
+
+    if (openAddonSearchDialog) {
+        com.kitsugi.animelist.ui.screens.search.components.AddonSearchDialog(
+            onDismissRequest = { openAddonSearchDialog = false }
         )
     }
 }
