@@ -186,3 +186,4 @@
 -keep class com.lagradost.cloudstream3.R { *; }
 -keep class com.lagradost.cloudstream3.R$* { *; }
 -keep class org.schabi.newpipe.extractor.** { *; }
+-keep class androidx.appcompat.** { *; }

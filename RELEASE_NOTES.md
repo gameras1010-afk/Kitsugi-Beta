@@ -1,12 +1,10 @@
-# Kitsugi Release Notes - v2.4.132-beta
+# Kitsugi Release Notes - v2.4.133-beta
 
-Bu sürümde uygulama açılışındaki kritik çökmeler giderildi, eklenti yükleme kararlılığı artırıldı ve Youtube eklentisi için gerekli bağımlılıklar sisteme entegre edildi.
+Bu sürümde dinamik eklentilerin (özellikle SynclerPlugin) ihtiyaç duyduğu AndroidX AppCompat ve AndroidX Navigation Fragment kütüphane bağımlılıkları projeye dahil edilerek başlangıç çökmeleri tamamen giderilmiştir.
 
-### 🚀 Başlangıç Çökmeleri ve Syncler Eklenti Hatası Düzeltildi
-- **Dinamik R Sınıfı Stub'ı:** Syncler eklentisinin (`SynclerPlugin`) açılışta `com.lagradost.cloudstream3.R$id` sınıfına ve onun altındaki `nav_host_fragment` ile `navigation_player` ID'lerine yaptığı doğrudan erişimlerin sebep olduğu `NoClassDefFoundError` hatası, dinamik R kaynak stub sınıfı oluşturularak tamamen çözüldü.
+### 🚀 Eklenti Sınıf Yükleme Çökmeleri Giderildi
+- **Navigation Fragment Entegrasyonu:** Syncler ve benzeri eklentilerin çalışma zamanında ihtiyaç duyduğu `androidx.navigation.fragment.NavHostFragment` sınıfının eksikliğinden kaynaklanan `NoClassDefFoundError` çökmesi, projeye `navigation-fragment-ktx` kütüphanesi dahil edilerek çözüldü.
+- **AppCompat Desteği:** Eklentilerde kullanılan AppCompat arayüz sınıfları (örneğin `AppCompatActivity` ve `AlertDialog`) için projeye `androidx.appcompat:appcompat` kütüphanesi eklendi.
 
-### 📺 Youtube Eklentisi Yükleme Hatası Çözüldü
-- **NewPipe Extractor Bağımlılığı:** Youtube eklentisinin yüklenmesi esnasında oluşan `java.lang.NoClassDefFoundError: Failed resolution of: Lorg/schabi/newpipe/extractor/ServiceList;` hatasını gidermek amacıyla, Gradle konfigürasyonundaki `newpipeextractor` exclusion (hariç tutma) kuralı kaldırılarak gerekli bağımlılıklar tekrar etkinleştirildi.
-
-### 🛡️ R8/ProGuard Kararlılık İyileştirmeleri
-- ProGuard kuralları güncellenerek yeni eklenen `com.lagradost.cloudstream3.R` stub sınıfları ve `org.schabi.newpipe.extractor` paketlerindeki sınıfların R8 optimizasyonları/minify sırasında silinmesi veya şifrelenmesi engellendi. Böylece dinamik eklentilerin çalışma zamanında çökmesi önlendi.
+### 🛡️ R8/ProGuard Koruma Kuralları
+- ProGuard yapılandırma dosyasına (`proguard-rules.pro`) AppCompat sınıflarını koruma kuralları (`-keep class androidx.appcompat.** { *; }`) eklenerek R8 optimizasyonları esnasında bu sınıfların temizlenmesi önlendi.
