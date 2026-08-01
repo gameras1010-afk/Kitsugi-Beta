@@ -34,7 +34,10 @@ object AnimeDownloadManager {
         url: String,
         quality: String,
         requestHeaders: Map<String, String> = emptyMap(),
-        subtitles: List<com.kitsugi.animelist.core.player.SubtitleInput> = emptyList()
+        subtitles: List<com.kitsugi.animelist.core.player.SubtitleInput> = emptyList(),
+        malId: Int? = null,
+        aniListId: Int? = null,
+        tmdbId: Int? = null
     ) {
         val current = _downloads.value.toMutableList()
         val exists = current.any { it.animeId == animeId && it.episode == episode }
@@ -50,7 +53,10 @@ object AnimeDownloadManager {
             quality = quality,
             requestHeaders = requestHeaders,
             subtitles = subtitles,
-            status = AnimeDownload.Status.QUEUE
+            status = AnimeDownload.Status.QUEUE,
+            malId = malId,
+            aniListId = aniListId,
+            tmdbId = tmdbId
         )
         current.add(newDownload)
         saveAndEmit(current)
@@ -77,29 +83,25 @@ object AnimeDownloadManager {
     }
 
     fun deleteDownload(context: Context, animeId: String, episode: Int) {
-        val toDelete = _downloads.value.find { it.animeId == animeId && it.episode == episode }
         val current = _downloads.value.filterNot { it.animeId == animeId && it.episode == episode }
         saveAndEmit(current)
 
-        toDelete?.localPath?.let { path ->
-            try {
-                val file = File(path)
-                if (file.exists()) {
-                    file.delete()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+        try {
+            val mediaId = "${animeId}_ep$episode"
+            com.kitsugi.animelist.core.player.OfflinePlaybackHelper.deleteDownload(context, mediaId)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    fun updateProgress(animeId: String, episode: Int, progress: Int, downloadedBytes: Long, totalBytes: Long) {
+    fun updateProgress(animeId: String, episode: Int, progress: Int, downloadedBytes: Long, totalBytes: Long, downloadedSegments: Int = 0) {
         val current = _downloads.value.map {
             if (it.animeId == animeId && it.episode == episode) {
                 it.copy(
                     progress = progress,
                     downloadedBytes = downloadedBytes,
-                    totalBytes = totalBytes
+                    totalBytes = totalBytes,
+                    downloadedSegments = downloadedSegments
                 )
             } else it
         }

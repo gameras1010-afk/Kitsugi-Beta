@@ -321,7 +321,7 @@ fun KitsugiStreamScreen(
                 if (isDownloadMode) {
                     com.kitsugi.animelist.data.local.AnimeDownloadManager.addDownload(
                         context = context,
-                        animeId = if (aniListId != null) aniListId.toString() else malId?.toString() ?: "",
+                        animeId = if (aniListId != null) aniListId.toString() else if (malId != null) malId.toString() else tmdbId?.toString() ?: "",
                         animeTitle = title,
                         posterUrl = posterUrl,
                         episode = episode,
@@ -329,7 +329,10 @@ fun KitsugiStreamScreen(
                         url = resolvedUrl,
                         quality = source.quality ?: "Bilinmeyen",
                         requestHeaders = source.requestHeaders ?: emptyMap(),
-                        subtitles = source.subtitles
+                        subtitles = source.subtitles,
+                        malId = malId,
+                        aniListId = aniListId,
+                        tmdbId = tmdbId
                     )
                     android.widget.Toast.makeText(context, "İndirme kuyruğa eklendi", android.widget.Toast.LENGTH_SHORT).show()
                     context.startActivity(
@@ -373,7 +376,7 @@ fun KitsugiStreamScreen(
 
                 com.kitsugi.animelist.data.local.AnimeDownloadManager.addDownload(
                     context = context,
-                    animeId = if (aniListId != null) aniListId.toString() else malId?.toString() ?: "",
+                    animeId = if (aniListId != null) aniListId.toString() else if (malId != null) malId.toString() else tmdbId?.toString() ?: "",
                     animeTitle = title,
                     posterUrl = posterUrl,
                     episode = episode,
@@ -381,7 +384,10 @@ fun KitsugiStreamScreen(
                     url = resolvedUrl,
                     quality = source.quality ?: "Bilinmeyen",
                     requestHeaders = source.requestHeaders ?: emptyMap(),
-                    subtitles = source.subtitles
+                    subtitles = source.subtitles,
+                    malId = malId,
+                    aniListId = aniListId,
+                    tmdbId = tmdbId
                 )
                 android.widget.Toast.makeText(context, "İndirme kuyruğa eklendi", android.widget.Toast.LENGTH_SHORT).show()
                 context.startActivity(

@@ -11,6 +11,9 @@ import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.DownloadForOffline
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -105,7 +108,7 @@ fun DownloadsScreen(
                         download = download,
                         accentColor = accentColor,
                         onPlay = {
-                            val mediaId = "${download.animeId}_${download.episode}"
+                            val mediaId = "${download.animeId}_ep${download.episode}"
                             val localMedia = OfflinePlaybackHelper.getLocalMedia(context, mediaId)
                             val params = localMedia?.let { OfflinePlaybackHelper.buildPlayerParams(it) }
                             if (params != null) {
@@ -153,127 +156,196 @@ fun DownloadItemRow(
     onResume: () -> Unit,
     onDelete: () -> Unit
 ) {
-    Row(
+    val context = LocalContext.current
+    var isExpanded by remember { mutableStateOf(false) }
+
+    val mediaId = "${download.animeId}_ep${download.episode}"
+    val localMedia = remember(download) { OfflinePlaybackHelper.getLocalMedia(context, mediaId) }
+    val localSubs = localMedia?.subtitles ?: emptyList()
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(KitsugiColors.SurfaceSoft, shape = RoundedCornerShape(12.dp))
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(12.dp)
     ) {
-        // Anime Poster
-        AsyncImage(
-            model = download.posterUrl,
-            contentDescription = null,
-            modifier = Modifier
-                .size(width = 60.dp, height = 90.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(KitsugiColors.SurfaceStrong),
-            contentScale = ContentScale.Crop
-        )
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        // Info & Progress
-        Column(
-            modifier = Modifier.weight(1f)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = download.animeTitle,
-                color = KitsugiColors.TextPrimary,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+            // Anime Poster
+            AsyncImage(
+                model = download.posterUrl,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(width = 60.dp, height = 90.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(KitsugiColors.SurfaceStrong),
+                contentScale = ContentScale.Crop
             )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = "Bölüm ${download.episode} • ${download.quality}",
-                color = KitsugiColors.TextSecondary,
-                fontSize = 13.sp
-            )
-            Spacer(modifier = Modifier.height(8.dp))
 
-            when (download.status) {
-                AnimeDownload.Status.DOWNLOADING -> {
-                    LinearProgressIndicator(
-                        progress = { download.progress / 100f },
-                        modifier = Modifier.fillMaxWidth().height(4.dp),
-                        color = accentColor,
-                        trackColor = KitsugiColors.SurfaceStrong
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    val sizeText = if (download.totalBytes > 0) {
-                        "${formatBytes(download.downloadedBytes)} / ${formatBytes(download.totalBytes)}"
-                    } else {
-                        formatBytes(download.downloadedBytes)
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Info & Progress
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = download.animeTitle,
+                    color = KitsugiColors.TextPrimary,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Bölüm ${download.episode} • ${download.quality}",
+                    color = KitsugiColors.TextSecondary,
+                    fontSize = 13.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                when (download.status) {
+                    AnimeDownload.Status.DOWNLOADING -> {
+                        LinearProgressIndicator(
+                            progress = { download.progress / 100f },
+                            modifier = Modifier.fillMaxWidth().height(4.dp),
+                            color = accentColor,
+                            trackColor = KitsugiColors.SurfaceStrong
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        val sizeText = if (download.totalBytes > 0) {
+                            "${formatBytes(download.downloadedBytes)} / ${formatBytes(download.totalBytes)}"
+                        } else {
+                            formatBytes(download.downloadedBytes)
+                        }
+                        Text(
+                            text = "İndiriliyor... $sizeText (%${download.progress})",
+                            color = accentColor,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
-                    Text(
-                        text = "İndiriliyor... $sizeText (%${download.progress})",
-                        color = accentColor,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    AnimeDownload.Status.QUEUE -> {
+                        Text(
+                            text = "Sırada bekliyor...",
+                            color = KitsugiColors.TextMuted,
+                            fontSize = 12.sp
+                        )
+                    }
+                    AnimeDownload.Status.PAUSED -> {
+                        Text(
+                            text = "Duraklatıldı",
+                            color = KitsugiColors.TextMuted,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    AnimeDownload.Status.COMPLETED -> {
+                        Text(
+                            text = "Tamamlandı",
+                            color = KitsugiColors.AccentGreen,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    AnimeDownload.Status.ERROR -> {
+                        Text(
+                            text = "Hata oluştu!",
+                            color = KitsugiColors.AccentRed,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
-                AnimeDownload.Status.QUEUE -> {
-                    Text(
-                        text = "Sırada bekliyor...",
-                        color = KitsugiColors.TextMuted,
-                        fontSize = 12.sp
-                    )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Actions
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                // If there are downloaded subtitles, show an expand toggle button
+                if (localSubs.isNotEmpty()) {
+                    IconButton(onClick = { isExpanded = !isExpanded }) {
+                        Icon(
+                            imageVector = if (isExpanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
+                            contentDescription = "Altyazılar",
+                            tint = KitsugiColors.TextSecondary
+                        )
+                    }
                 }
-                AnimeDownload.Status.PAUSED -> {
-                    Text(
-                        text = "Duraklatıldı",
-                        color = KitsugiColors.TextMuted,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+
+                when (download.status) {
+                    AnimeDownload.Status.DOWNLOADING -> {
+                        IconButton(onClick = onPause) {
+                            Icon(Icons.Rounded.Pause, contentDescription = "Duraklat", tint = KitsugiColors.TextPrimary)
+                        }
+                    }
+                    AnimeDownload.Status.PAUSED, AnimeDownload.Status.ERROR, AnimeDownload.Status.QUEUE -> {
+                        IconButton(onClick = onResume) {
+                            Icon(Icons.Rounded.PlayArrow, contentDescription = "Başlat", tint = accentColor)
+                        }
+                    }
+                    AnimeDownload.Status.COMPLETED -> {
+                        IconButton(onClick = onPlay) {
+                            Icon(Icons.Rounded.PlayArrow, contentDescription = "Oynat", tint = KitsugiColors.AccentGreen)
+                        }
+                    }
                 }
-                AnimeDownload.Status.COMPLETED -> {
-                    Text(
-                        text = "Tamamlandı",
-                        color = KitsugiColors.AccentGreen,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                AnimeDownload.Status.ERROR -> {
-                    Text(
-                        text = "Hata oluştu!",
-                        color = KitsugiColors.AccentRed,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                IconButton(onClick = onDelete) {
+                    Icon(Icons.Rounded.Delete, contentDescription = "Sil", tint = KitsugiColors.AccentRed)
                 }
             }
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
+        // Expanded subtitle list
+        if (isExpanded && localSubs.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider(color = KitsugiColors.Border.copy(alpha = 0.5f))
+            Spacer(modifier = Modifier.height(8.dp))
 
-        // Actions
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            when (download.status) {
-                AnimeDownload.Status.DOWNLOADING -> {
-                    IconButton(onClick = onPause) {
-                        Icon(Icons.Rounded.Pause, contentDescription = "Duraklat", tint = KitsugiColors.TextPrimary)
-                    }
+            Text(
+                text = "İndirilen Altyazılar (${localSubs.size})",
+                color = KitsugiColors.TextSecondary,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 6.dp)
+            )
+
+            localSubs.forEach { sub ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.CheckCircle,
+                        contentDescription = null,
+                        tint = KitsugiColors.AccentGreen,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = sub.label,
+                        color = KitsugiColors.TextPrimary,
+                        fontSize = 13.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = sub.uri.substringAfterLast(".").uppercase(),
+                        color = KitsugiColors.TextMuted,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .background(KitsugiColors.SurfaceStrong, shape = RoundedCornerShape(4.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
                 }
-                AnimeDownload.Status.PAUSED, AnimeDownload.Status.ERROR, AnimeDownload.Status.QUEUE -> {
-                    IconButton(onClick = onResume) {
-                        Icon(Icons.Rounded.PlayArrow, contentDescription = "Başlat", tint = accentColor)
-                    }
-                }
-                AnimeDownload.Status.COMPLETED -> {
-                    IconButton(onClick = onPlay) {
-                        Icon(Icons.Rounded.PlayArrow, contentDescription = "Oynat", tint = KitsugiColors.AccentGreen)
-                    }
-                }
-            }
-            IconButton(onClick = onDelete) {
-                Icon(Icons.Rounded.Delete, contentDescription = "Sil", tint = KitsugiColors.AccentRed)
             }
         }
     }

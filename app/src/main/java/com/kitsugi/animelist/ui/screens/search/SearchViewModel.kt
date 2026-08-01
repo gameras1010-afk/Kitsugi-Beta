@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.ensureActive
 import com.kitsugi.animelist.data.local.KitsugiDatabase
 import com.kitsugi.animelist.data.repository.SearchHistoryRepository
 
@@ -80,6 +81,16 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
 
     fun setPlatform(value: SearchPlatform) {
         _uiState.update { it.copy(selectedPlatform = value) }
+        search()
+    }
+
+    fun setPlatformAndMediaType(platform: SearchPlatform, mediaType: MediaType) {
+        _uiState.update {
+            it.copy(
+                selectedPlatform = platform,
+                selectedMediaType = mediaType
+            )
+        }
         search()
     }
 
@@ -446,30 +457,45 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
         searchJob = viewModelScope.launch {
-            val rawQuery = state.query.trim()
-            val fallbackCandidates = generateFallbackQueries(rawQuery)
+            try {
+                val rawQuery = state.query.trim()
+                val fallbackCandidates = generateFallbackQueries(rawQuery)
 
-            var results = executeSearchForQuery(rawQuery)
-            if (results.isEmpty()) {
-                for (fallback in fallbackCandidates) {
-                    if (fallback != rawQuery) {
-                        results = executeSearchForQuery(fallback)
-                        if (results.isNotEmpty()) break
+                var results = executeSearchForQuery(rawQuery)
+                if (results.isEmpty()) {
+                    for (fallback in fallbackCandidates) {
+                        if (fallback != rawQuery) {
+                            results = executeSearchForQuery(fallback)
+                            if (results.isNotEmpty()) break
+                        }
                     }
                 }
-            }
 
-            if (newHistoryItem != null && searchHistoryEnabledState && results.isNotEmpty()) {
-                searchHistoryRepository.insertSearchQuery(newHistoryItem)
-            }
+                ensureActive()
 
-            _uiState.update {
-                it.copy(
-                    results = results,
-                    isLoading = false,
-                    hasSearched = true,
-                    errorMessage = if (results.isEmpty()) "Sonuç bulunamadı." else null
-                )
+                if (newHistoryItem != null && searchHistoryEnabledState && results.isNotEmpty()) {
+                    searchHistoryRepository.insertSearchQuery(newHistoryItem)
+                }
+
+                ensureActive()
+
+                _uiState.update {
+                    it.copy(
+                        results = results,
+                        isLoading = false,
+                        hasSearched = true,
+                        errorMessage = if (results.isEmpty()) "Sonuç bulunamadı." else null
+                    )
+                }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = e.message ?: "Arama sırasında bir hata oluştu."
+                    )
+                }
             }
         }
     }
@@ -624,7 +650,10 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                                     }
                                 }
                                 res
-                            }.getOrDefault(emptyList())
+                            }.getOrElse { e ->
+                                if (e is kotlinx.coroutines.CancellationException) throw e
+                                emptyList()
+                            }
                         }
                         val aniListDeferred = async {
                             runCatching {
@@ -662,7 +691,10 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                                     }
                                 }
                                 res
-                            }.getOrDefault(emptyList())
+                            }.getOrElse { e ->
+                                if (e is kotlinx.coroutines.CancellationException) throw e
+                                emptyList()
+                            }
                         }
                         val tmdbDeferred = async {
                             if (state.selectedMediaType == MediaType.Manga || state.selectedMediaType == MediaType.Anime) {
@@ -672,7 +704,10 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                                 if (queryText.isBlank() && tmdbGenreId != null) {
                                     runCatching {
                                         TmdbApiClient().discoverByGenre(tmdbGenreId, state.selectedMediaType == MediaType.Movie)
-                                    }.getOrDefault(emptyList())
+                                    }.getOrElse { e ->
+                                        if (e is kotlinx.coroutines.CancellationException) throw e
+                                        emptyList()
+                                    }
                                 } else if (queryText.isNotBlank()) {
                                     runCatching {
                                         var res = TmdbApiClient().search(queryText)
@@ -683,7 +718,10 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                                             }
                                         }
                                         res
-                                    }.getOrDefault(emptyList())
+                                    }.getOrElse { e ->
+                                        if (e is kotlinx.coroutines.CancellationException) throw e
+                                        emptyList()
+                                    }
                                 } else {
                                     emptyList()
                                 }
@@ -715,9 +753,11 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                     }
                 }
             }
-        }.getOrDefault(emptyList())
+        }.getOrElse { e ->
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            emptyList()
+        }
     }
-
 
     fun clearHistory() {
         viewModelScope.launch {

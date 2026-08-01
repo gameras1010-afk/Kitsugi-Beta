@@ -455,7 +455,7 @@ fun MyListContentPage(
             )
         }
     ) {
-        if (!isConnected) {
+        if (!isConnected && searchQuery.isBlank()) {
             LazyColumn(
                 state = pageScrollState,
                 modifier = Modifier
@@ -471,7 +471,7 @@ fun MyListContentPage(
                     Spacer(modifier = Modifier.height(90.dp))
                 }
             }
-        } else if (pageEntries.isEmpty()) {
+        } else if (pageEntries.isEmpty() && searchQuery.isBlank()) {
             LazyColumn(
                 state = pageScrollState,
                 modifier = Modifier
@@ -481,8 +481,8 @@ fun MyListContentPage(
                 item { MyListSyncPromptState() }
             }
         } else {
-            val displayEntries = if (pageTabIndex == selectedTabIndex) visibleEntries else pageEntries
-            val displayGrouped = if (pageTabIndex == selectedTabIndex) {
+            val displayEntries = if (pageTabIndex == selectedTabIndex || searchQuery.isNotBlank()) visibleEntries else pageEntries
+            val displayGrouped = if (pageTabIndex == selectedTabIndex || searchQuery.isNotBlank()) {
                 groupedVisibleEntries
             } else {
                 val statusOrder = listOf(

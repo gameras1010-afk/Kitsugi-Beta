@@ -193,12 +193,14 @@ object OfflinePlaybackHelper {
         return subsDir.listFiles()
             ?.filter { it.isFile && it.extension.lowercase() in subExtensions }
             ?.map { file ->
-                val lang = file.nameWithoutExtension.lowercase().take(2)
-                val label = when (lang) {
+                val name = file.nameWithoutExtension
+                val lang = name.substringBefore("_", "en")
+                val rest = name.substringAfter("_", "").replace("_", " ").trim().replace(Regex("\\s+"), " ")
+                val label = if (rest.isNotEmpty()) rest else when (lang) {
                     "tr" -> "Türkçe"
                     "en" -> "İngilizce"
                     "ja" -> "Japonca"
-                    else -> file.nameWithoutExtension.uppercase()
+                    else -> lang.uppercase()
                 }
                 LocalSubtitle(language = lang, label = label, uri = "file://${file.absolutePath}")
             }

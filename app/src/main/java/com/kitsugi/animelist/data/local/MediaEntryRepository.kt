@@ -19,15 +19,27 @@ class MediaEntryRepository(
     }
 
     suspend fun insert(entry: MediaEntry) {
-        val newId = dao.insert(entry.copy(id = 0).toEntity())
+        val entryWithTime = if (entry.updatedAt == 0L) {
+            entry.copy(updatedAt = System.currentTimeMillis() / 1000L)
+        } else {
+            entry
+        }
+        val newId = dao.insert(entryWithTime.copy(id = 0).toEntity())
         // DB'de oluşan gerçek id ile sync yap (AniList entryId geri yazımı doğru entity'yi yakalar)
-        val persistedEntry = dao.getById(newId.toInt())?.toDomain() ?: entry.copy(id = newId.toInt())
+        val persistedEntry = dao.getById(newId.toInt())?.toDomain() ?: entryWithTime.copy(id = newId.toInt())
         syncEntryIfPossible(persistedEntry)
     }
 
     suspend fun insertAll(entries: List<MediaEntry>) {
         if (entries.isEmpty()) return
-        dao.insertAll(entries.map { it.copy(id = 0).toEntity() })
+        val entriesWithTime = entries.map { entry ->
+            if (entry.updatedAt == 0L) {
+                entry.copy(updatedAt = System.currentTimeMillis() / 1000L)
+            } else {
+                entry
+            }
+        }
+        dao.insertAll(entriesWithTime.map { it.copy(id = 0).toEntity() })
     }
 
     /**
@@ -59,12 +71,14 @@ class MediaEntryRepository(
 
         for (imported in importedEntries) {
             val existingEntity = existing[imported.malId]
+            val importTime = if (imported.updatedAt > 0L) imported.updatedAt else (System.currentTimeMillis() / 1000L)
+            val finalImported = imported.copy(updatedAt = importTime)
             if (existingEntity == null) {
                 // Yeni kayıt → insert
-                toInsert.add(imported.copy(id = 0).toEntity())
-            } else if (hasChanged(existingEntity.toDomain(), imported)) {
+                toInsert.add(finalImported.copy(id = 0).toEntity())
+            } else if (hasChanged(existingEntity.toDomain(), finalImported)) {
                 // Değişmiş kayıt → id'yi koruyarak güncelle
-                toUpdate.add(imported.copy(id = existingEntity.id).toEntity())
+                toUpdate.add(finalImported.copy(id = existingEntity.id).toEntity())
             }
             // Değişmemiş kayıt → atla (Flow tetiklememe)
         }
@@ -101,12 +115,13 @@ class MediaEntryRepository(
     }
 
     suspend fun update(entry: MediaEntry, syncExternal: Boolean = true, advancedScores: List<Double>? = null) {
+        val entryWithTime = entry.copy(updatedAt = System.currentTimeMillis() / 1000L)
         dao.update(
-            entry.toEntity()
+            entryWithTime.toEntity()
         )
 
         if (syncExternal) {
-            syncEntryIfPossible(entry, advancedScores)
+            syncEntryIfPossible(entryWithTime, advancedScores)
         }
     }
 

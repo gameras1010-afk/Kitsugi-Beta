@@ -1313,37 +1313,47 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
                 val kitsuId = resolvedIds.kitsuId
 
                 val type = if (isMovieType) "movie" else "series"
-                var queryId = when {
-                    !imdbId.isNullOrBlank() -> if (isMovieType) imdbId else "$imdbId:$currentS:$currentEp"
-                    kitsuId != null -> if (isMovieType) "kitsu:$kitsuId" else "kitsu:$kitsuId:$currentEp"
-                    else -> null
+                val queryIds = mutableListOf<String>()
+                if (!imdbId.isNullOrBlank()) {
+                    queryIds.add(if (isMovieType) imdbId else "$imdbId:$currentS:$currentEp")
+                }
+                if (kitsuId != null) {
+                    queryIds.add(if (isMovieType) "kitsu:$kitsuId" else "kitsu:$kitsuId:$currentEp")
                 }
 
-                if (queryId == null) {
-                    Log.w("KitsugiPlayerViewModel", "Altyaz\u0131 atland\u0131: ID \u00e7\u00f6z\u00fcmlenemedi (malId=$currentMalId, aniListId=$currentAniList). ARM veri taban\u0131nda bulunmuyor olabilir.")
+                if (queryIds.isEmpty()) {
+                    Log.w("KitsugiPlayerViewModel", "Altyazı atlandı: ID çözümlenemedi (malId=$currentMalId, aniListId=$currentAniList). ARM veri tabanında bulunmuyor olabilir.")
                     return@launch
                 }
 
                 val selectedSource = _currentStreamSources.value.getOrNull(_currentSourceIndex.value)
-                    val guessedFilename = selectedSource?.title?.takeIf { it.isNotBlank() }
-                        ?: _currentVideoUrl.value?.let { url ->
-                            try {
-                                val lastSeg = android.net.Uri.parse(url).lastPathSegment
-                                if (!lastSeg.isNullOrBlank() && lastSeg.contains(".")) lastSeg else null
-                            } catch (_: Exception) { null }
-                        }
-                    val cleanedFilename = guessedFilename?.substringBefore("\n")?.substringBefore("\r")?.trim()
+                val guessedFilename = selectedSource?.title?.takeIf { it.isNotBlank() }
+                    ?: _currentVideoUrl.value?.let { url ->
+                        try {
+                            val lastSeg = android.net.Uri.parse(url).lastPathSegment
+                            if (!lastSeg.isNullOrBlank() && lastSeg.contains(".")) lastSeg else null
+                        } catch (_: Exception) { null }
+                    }
+                val cleanedFilename = guessedFilename?.substringBefore("\n")?.substringBefore("\r")?.trim()
 
-                    Log.d("KitsugiPlayerViewModel", "Fetching subtitles for queryId=$queryId, type=$type, filename=$cleanedFilename")
+                Log.d("KitsugiPlayerViewModel", "Fetching subtitles for queryIds=$queryIds, type=$type, filename=$cleanedFilename")
 
-                    val subRepo = com.kitsugi.animelist.data.repository.SubtitleRepositoryImpl(context)
-                    val remoteSubs = subRepo.getSubtitles(
-                        type = type,
-                        id = queryId,
-                        videoUrl = _currentVideoUrl.value,
-                        videoHeaders = _currentHeaders.value,
-                        filename = cleanedFilename
-                    )
+                val subRepo = com.kitsugi.animelist.data.repository.SubtitleRepositoryImpl(context)
+                val remoteSubs = mutableListOf<com.kitsugi.animelist.core.player.model.Subtitle>()
+                for (queryId in queryIds) {
+                    try {
+                        val subs = subRepo.getSubtitles(
+                            type = type,
+                            id = queryId,
+                            videoUrl = _currentVideoUrl.value,
+                            videoHeaders = _currentHeaders.value,
+                            filename = cleanedFilename
+                        )
+                        remoteSubs.addAll(subs)
+                    } catch (e: Exception) {
+                        Log.e("KitsugiPlayerViewModel", "Failed to fetch subtitles for queryId=$queryId", e)
+                    }
+                }
 
                     val settings = SettingsDataStore(context).settingsFlow.first()
                     val preferredLangs = settings.preferredSubtitleLanguages.split(",").map { it.trim().lowercase() }

@@ -89,13 +89,14 @@ class AnimeDownloadService : Service() {
                             var lastNotificationTime = 0L
                             downloader.download(
                                 download = next,
-                                onProgress = { progress, size, duration ->
+                                onProgress = { progress, size, duration, segmentsDownloaded ->
                                     AnimeDownloadManager.updateProgress(
                                         animeId = next.animeId,
                                         episode = next.episode,
                                         progress = progress,
                                         downloadedBytes = size,
-                                        totalBytes = duration
+                                        totalBytes = duration,
+                                        downloadedSegments = segmentsDownloaded
                                     )
                                     val currentTime = System.currentTimeMillis()
                                     if (currentTime - lastNotificationTime >= 1000L || progress == 100) {

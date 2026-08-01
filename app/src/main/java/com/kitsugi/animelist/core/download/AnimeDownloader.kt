@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.delay
 import okhttp3.Request
 import java.io.File
 import kotlin.coroutines.coroutineContext
@@ -22,7 +23,7 @@ class AnimeDownloader(private val context: Context) {
 
     suspend fun download(
         download: AnimeDownload,
-        onProgress: (Int, Long, Long) -> Unit,
+        onProgress: (Int, Long, Long, Int) -> Unit,
         onStatusChanged: (AnimeDownload.Status, String?) -> Unit
     ) {
         val settings = SettingsDataStore(context).settingsFlow.first()
@@ -37,7 +38,7 @@ class AnimeDownloader(private val context: Context) {
 
     private suspend fun downloadInternal(
         download: AnimeDownload,
-        onProgress: (Int, Long, Long) -> Unit,
+        onProgress: (Int, Long, Long, Int) -> Unit,
         onStatusChanged: (AnimeDownload.Status, String?) -> Unit
     ) = withContext(Dispatchers.IO) {
         onStatusChanged(AnimeDownload.Status.DOWNLOADING, null)
@@ -118,28 +119,110 @@ class AnimeDownloader(private val context: Context) {
                     throw Exception("No segments found in HLS playlist")
                 }
                 
-                localFile.outputStream().use { outputStream ->
-                    if (initSegmentUrl != null) {
+                val hasFile = localFile.exists() && localFile.length() > 0
+                val startSegmentIndex = if (hasFile) download.downloadedSegments else 0
+                val appendMode = startSegmentIndex > 0 && hasFile
+                
+                java.io.FileOutputStream(localFile, appendMode).use { outputStream ->
+                    if (startSegmentIndex == 0 && initSegmentUrl != null) {
                         downloadSegmentToStream(initSegmentUrl!!, download.requestHeaders, outputStream)
                     }
                     val totalSegments = segments.size
-                    for ((index, segmentUrl) in segments.withIndex()) {
+                    for (index in startSegmentIndex until totalSegments) {
                         coroutineContext.ensureActive()
+                        val segmentUrl = segments[index]
                         downloadSegmentToStream(segmentUrl, download.requestHeaders, outputStream)
                         
                         val progress = (100 * (index + 1) / totalSegments).coerceIn(0, 100)
-                        onProgress(progress, localFile.length(), 0L)
+                        onProgress(progress, localFile.length(), 0L, index + 1)
                     }
                 }
             } else {
                 // Direct file download
-                downloadDirectFile(download.url, download.requestHeaders, localFile, onProgress)
+                downloadDirectFile(download.url, download.requestHeaders, localFile, { p, b, t ->
+                    onProgress(p, b, t, 0)
+                }, download)
             }
 
-            // ── Download subtitles (if any) ──────────────────────────────────
+            // ── Resolve and download subtitles ────────────────────────────────
+            val allResolvedSubtitles = mutableListOf<com.kitsugi.animelist.core.player.SubtitleInput>()
+            
+            // First, add existing subtitles passed with the download
             if (!download.subtitles.isNullOrEmpty()) {
+                allResolvedSubtitles.addAll(download.subtitles)
+            }
+            
+            // Fetch external and OpenSubtitles in the background
+            try {
+                val dMalId = download.malId
+                val dAniListId = download.aniListId
+                val dTmdbId = download.tmdbId ?: if (dMalId == null && dAniListId == null) download.animeId.toIntOrNull() else null
+                
+                if (dMalId != null || dAniListId != null || dTmdbId != null) {
+                    val resolvedIds = com.kitsugi.animelist.data.remote.KitsugiIdResolver.resolveIds(
+                        malId = dMalId,
+                        aniListId = dAniListId,
+                        tmdbId = dTmdbId
+                    )
+                    val imdbId = resolvedIds.imdbId
+                    val kitsuId = resolvedIds.kitsuId
+                    
+                    val isMovieType = download.season == 0 && download.episode <= 1
+                    val type = if (isMovieType) "movie" else "series"
+                    val queryIds = mutableListOf<String>()
+                    if (!imdbId.isNullOrBlank()) {
+                        queryIds.add(if (isMovieType) imdbId else "$imdbId:${download.season}:${download.episode}")
+                    }
+                    if (kitsuId != null) {
+                        queryIds.add(if (isMovieType) "kitsu:$kitsuId" else "kitsu:$kitsuId:${download.episode}")
+                    }
+                    
+                    if (queryIds.isNotEmpty()) {
+                        val guessedFilename = download.url.let { url ->
+                            try {
+                                val lastSeg = android.net.Uri.parse(url).lastPathSegment
+                                if (!lastSeg.isNullOrBlank() && lastSeg.contains(".")) lastSeg else null
+                            } catch (_: Exception) { null }
+                        }
+                        val cleanedFilename = guessedFilename?.substringBefore("\n")?.substringBefore("\r")?.trim()
+                        
+                        val subRepo = com.kitsugi.animelist.data.repository.SubtitleRepositoryImpl(context)
+                        val remoteSubs = mutableListOf<com.kitsugi.animelist.core.player.model.Subtitle>()
+                        for (queryId in queryIds) {
+                            try {
+                                val subs = subRepo.getSubtitles(
+                                    type = type,
+                                    id = queryId,
+                                    videoUrl = download.url,
+                                    videoHeaders = download.requestHeaders,
+                                    filename = cleanedFilename
+                                )
+                                remoteSubs.addAll(subs)
+                            } catch (e: Exception) {
+                                android.util.Log.e("AnimeDownloader", "Failed to fetch subtitles for queryId=$queryId", e)
+                            }
+                        }
+                        
+                        for (sub in remoteSubs.distinctBy { it.url }) {
+                            val friendlyLangName = com.kitsugi.animelist.core.player.PlayerSubtitleUtils.getFriendlyLanguageName(sub.lang)
+                            allResolvedSubtitles.add(
+                                com.kitsugi.animelist.core.player.SubtitleInput(
+                                    url = sub.url,
+                                    name = "$friendlyLangName (${sub.addonName})",
+                                    lang = sub.lang
+                                )
+                            )
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("AnimeDownloader", "Failed to resolve subtitles in downloader", e)
+            }
+
+            val dedupedSubs = allResolvedSubtitles.distinctBy { it.url }
+            if (dedupedSubs.isNotEmpty()) {
                 val subsDir = File(destDir, "subs").also { it.mkdirs() }
-                for (subtitle in download.subtitles) {
+                for (subtitle in dedupedSubs) {
                     try {
                         val extension = when {
                             subtitle.url.contains(".vtt", ignoreCase = true) -> "vtt"
@@ -148,10 +231,24 @@ class AnimeDownloader(private val context: Context) {
                             else -> "srt"
                         }
                         val safeLang = subtitle.lang.lowercase().filter { it.isLetterOrDigit() }.takeIf { it.isNotEmpty() } ?: "en"
-                        val safeName = subtitle.name.replace(Regex("[\\\\/:*?\"<>|\\s]"), "_")
+                        // Keep spaces and parentheses for filename readability, only strip illegal characters: \ / : * ? " < > |
+                        val safeName = subtitle.name.replace(Regex("[\\\\/:*?\"<>|]"), "_")
                         val subFile = File(subsDir, "${safeLang}_${safeName}.$extension")
                         
-                        downloadSubtitleFile(subtitle.url, download.requestHeaders, subFile)
+                        // Only use video request headers if the subtitle URL belongs to the same host
+                        val useHeaders = try {
+                            val subHost = java.net.URI(subtitle.url).host
+                            val videoHost = java.net.URI(download.url).host
+                            if (subHost != null && subHost.equals(videoHost, ignoreCase = true)) {
+                                download.requestHeaders
+                            } else {
+                                emptyMap()
+                            }
+                        } catch (_: Exception) {
+                            emptyMap()
+                        }
+                        
+                        downloadSubtitleFile(subtitle.url, useHeaders, subFile)
                     } catch (e: Exception) {
                         android.util.Log.e("AnimeDownloader", "Failed to download subtitle: ${subtitle.name}", e)
                     }
@@ -201,7 +298,6 @@ class AnimeDownloader(private val context: Context) {
 
         } catch (e: Exception) {
             android.util.Log.e("AnimeDownloader", "Download failed", e)
-            localFile.delete()
             onStatusChanged(AnimeDownload.Status.ERROR, null)
         }
     }
@@ -222,53 +318,97 @@ class AnimeDownloader(private val context: Context) {
         headers: Map<String, String>,
         outputStream: java.io.OutputStream
     ) = withContext(Dispatchers.IO) {
-        val requestBuilder = Request.Builder().url(url)
-        headers.forEach { (k, v) -> requestBuilder.header(k, v) }
-        KitsugiHttpClient.client.newCall(requestBuilder.build()).execute().use { response ->
-            if (!response.isSuccessful) {
-                throw Exception("Failed to download segment: ${response.code} ${response.message}")
-            }
-            val body = response.body ?: throw Exception("Empty segment body")
-            body.byteStream().use { inputStream ->
-                inputStream.copyTo(outputStream)
+        var lastException: Exception? = null
+        for (attempt in 1..3) {
+            try {
+                val requestBuilder = Request.Builder().url(url)
+                headers.forEach { (k, v) -> requestBuilder.header(k, v) }
+                KitsugiHttpClient.client.newCall(requestBuilder.build()).execute().use { response ->
+                    if (!response.isSuccessful) {
+                        throw Exception("Failed to download segment: ${response.code} ${response.message}")
+                    }
+                    val body = response.body ?: throw Exception("Empty segment body")
+                    body.byteStream().use { inputStream ->
+                        inputStream.copyTo(outputStream)
+                    }
+                }
+                return@withContext // Success!
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                lastException = e
+                android.util.Log.w("AnimeDownloader", "Segment download attempt $attempt failed: ${e.message}")
+                if (attempt < 3) {
+                    delay(1000L * attempt)
+                }
             }
         }
+        throw lastException ?: Exception("Unknown error downloading segment")
     }
 
     private suspend fun downloadDirectFile(
         url: String,
         headers: Map<String, String>,
         localFile: File,
-        onProgress: (Int, Long, Long) -> Unit
+        onProgress: (Int, Long, Long) -> Unit,
+        download: AnimeDownload
     ) = withContext(Dispatchers.IO) {
-        val requestBuilder = Request.Builder().url(url)
-        headers.forEach { (k, v) -> requestBuilder.header(k, v) }
-        KitsugiHttpClient.client.newCall(requestBuilder.build()).execute().use { response ->
-            if (!response.isSuccessful) {
-                throw Exception("Failed to download file: ${response.code} ${response.message}")
-            }
-            val body = response.body ?: throw Exception("Empty response body")
-            val totalBytes = body.contentLength()
-            
-            body.byteStream().use { inputStream ->
-                localFile.outputStream().use { outputStream ->
-                    val buffer = ByteArray(8192)
-                    var bytesRead: Int
-                    var bytesDownloaded = 0L
-                    
-                    while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                        coroutineContext.ensureActive()
-                        outputStream.write(buffer, 0, bytesRead)
-                        bytesDownloaded += bytesRead
-                        
-                        val progress = if (totalBytes > 0) {
-                            (100 * bytesDownloaded / totalBytes).toInt().coerceIn(0, 100)
-                        } else {
-                            0
+        var attempts = 0
+        val maxAttempts = 3
+        while (attempts < maxAttempts) {
+            attempts++
+            try {
+                val existingLength = if (localFile.exists()) localFile.length() else 0L
+                val requestBuilder = Request.Builder().url(url)
+                headers.forEach { (k, v) -> requestBuilder.header(k, v) }
+                
+                if (existingLength > 0) {
+                    requestBuilder.header("Range", "bytes=$existingLength-")
+                }
+                
+                KitsugiHttpClient.client.newCall(requestBuilder.build()).execute().use { response ->
+                    if (!response.isSuccessful) {
+                        if (response.code == 416) {
+                            localFile.delete()
+                            throw Exception("416 Range Not Satisfiable")
                         }
-                        onProgress(progress, bytesDownloaded, totalBytes)
+                        throw Exception("Failed to download file: ${response.code} ${response.message}")
+                    }
+                    
+                    val isRange = response.code == 206
+                    val body = response.body ?: throw Exception("Empty response body")
+                    val contentLength = body.contentLength()
+                    val totalBytes = if (isRange) contentLength + existingLength else contentLength
+                    val appendMode = isRange && existingLength > 0
+                    
+                    body.byteStream().use { inputStream ->
+                        java.io.FileOutputStream(localFile, appendMode).use { outputStream ->
+                            val buffer = ByteArray(8192)
+                            var bytesRead: Int
+                            var bytesDownloaded = if (appendMode) existingLength else 0L
+                            
+                            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                                coroutineContext.ensureActive()
+                                outputStream.write(buffer, 0, bytesRead)
+                                bytesDownloaded += bytesRead
+                                
+                                val progress = if (totalBytes > 0) {
+                                    (100 * bytesDownloaded / totalBytes).toInt().coerceIn(0, 100)
+                                } else {
+                                    0
+                                }
+                                onProgress(progress, bytesDownloaded, totalBytes)
+                            }
+                        }
                     }
                 }
+                return@withContext // Success!
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                android.util.Log.w("AnimeDownloader", "Direct download attempt $attempts failed: ${e.message}")
+                if (attempts >= maxAttempts) {
+                    throw e
+                }
+                delay(2000L * attempts)
             }
         }
     }

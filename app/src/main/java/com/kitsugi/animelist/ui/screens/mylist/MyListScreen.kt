@@ -201,13 +201,17 @@ fun MyListScreen(
         }
     }
 
-    val selectedTabEntries = remember(entriesAfterAdultFilter, selectedTabIndex) {
-        entriesAfterAdultFilter.filter { entry ->
-            val src = entry.source.lowercase()
-            when (selectedTabIndex) {
-                0 -> src == "anilist"
-                1 -> src == "mal" || src == "jikan" || src == "myanimelist"
-                else -> src == "simkl"
+    val selectedTabEntries = remember(entriesAfterAdultFilter, selectedTabIndex, searchQuery) {
+        if (searchQuery.isNotBlank()) {
+            entriesAfterAdultFilter
+        } else {
+            entriesAfterAdultFilter.filter { entry ->
+                val src = entry.source.lowercase()
+                when (selectedTabIndex) {
+                    0 -> src == "anilist"
+                    1 -> src == "mal" || src == "jikan" || src == "myanimelist"
+                    else -> src == "simkl"
+                }
             }
         }
     }

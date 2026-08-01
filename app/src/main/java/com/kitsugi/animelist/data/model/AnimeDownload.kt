@@ -16,7 +16,11 @@ data class AnimeDownload(
     var totalBytes: Long = 0L,
     var downloadedBytes: Long = 0L,
     var localPath: String? = null,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val downloadedSegments: Int = 0,
+    val malId: Int? = null,
+    val aniListId: Int? = null,
+    val tmdbId: Int? = null
 ) {
     enum class Status {
         QUEUE,

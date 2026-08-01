@@ -301,8 +301,7 @@ fun SearchScreen(
                         label = "Anime",
                         selected = isAnimeSelected,
                         onClick = {
-                            viewModel.setPlatform(SearchPlatform.All)
-                            viewModel.setMediaType(MediaType.Anime)
+                            viewModel.setPlatformAndMediaType(SearchPlatform.All, MediaType.Anime)
                         }
                     )
 
@@ -311,8 +310,7 @@ fun SearchScreen(
                         label = "Manga",
                         selected = isMangaSelected,
                         onClick = {
-                            viewModel.setPlatform(SearchPlatform.All)
-                            viewModel.setMediaType(MediaType.Manga)
+                            viewModel.setPlatformAndMediaType(SearchPlatform.All, MediaType.Manga)
                         }
                     )
 
@@ -321,8 +319,7 @@ fun SearchScreen(
                         label = "Film & Dizi (TMDB)",
                         selected = isTmdbSelected,
                         onClick = {
-                            viewModel.setPlatform(SearchPlatform.TMDB)
-                            viewModel.setMediaType(MediaType.Movie)
+                            viewModel.setPlatformAndMediaType(SearchPlatform.TMDB, MediaType.Movie)
                         }
                     )
                 }
