@@ -154,6 +154,7 @@
 -keep class androidx.compose.** { *; }
 -keep class androidx.navigation.** { *; }
 -keep class androidx.lifecycle.** { *; }
+-keep class androidx.fragment.** { *; }
 
 # ── Uygulama veri sınıfları (Gson/Jackson ile JSON'a yazılanlar) ──────────────
 -keep class com.kitsugi.animelist.data.** { *; }

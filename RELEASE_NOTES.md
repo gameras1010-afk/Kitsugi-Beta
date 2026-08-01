@@ -1,4 +1,4 @@
-# Kitsugi Release Notes - v2.4.130-beta
+# Kitsugi Release Notes - v2.4.131-beta
 
 Bu sürümde Kitsugi medya galerisine karakter ve görsel meta veri entegrasyonu yapıldı, galeri ve küçük resim (thumbnail) bileşenleri zenginleştirildi ve video akış seçim ekranına indirme yöneticisi için hızlı erişim kısayolu eklendi.
 
