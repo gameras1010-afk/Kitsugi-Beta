@@ -198,15 +198,16 @@ class AddonStreamClient {
 
         // Stremio subtitle URL formatı (NuvioTV SubtitleRepositoryImpl referansı):
         // {baseUrl}/subtitles/{type}/{id}/{videoHash=x&videoSize=y&filename=z}.json
-        // NOT: id segmenti encode edilmez (içindeki ':' Stremio ID'nin parçası)
+        // NOT: id segmenti URL-encode edilmelidir çünkü ':' gibi karakterler yönlendirmeyi bozabilir.
         // NOT: extraParams path segment içine eklenir, query string'e değil
         val encodedType = encodePathSegment(type)
+        val encodedId = encodePathSegment(id)
         val extraParamStr = buildSubtitleExtraParams(extraParams)
 
         val resourceUrl = if (extraParamStr.isNotBlank()) {
-            "$baseUrl/subtitles/$encodedType/$id/$extraParamStr.json"
+            "$baseUrl/subtitles/$encodedType/$encodedId/$extraParamStr.json"
         } else {
-            "$baseUrl/subtitles/$encodedType/$id.json"
+            "$baseUrl/subtitles/$encodedType/$encodedId.json"
         }
         val finalUrl = if (query.isEmpty()) resourceUrl else "$resourceUrl?$query"
         Log.d("AddonStreamClient", "fetchSubtitles URL: $finalUrl")
