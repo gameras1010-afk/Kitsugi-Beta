@@ -52,12 +52,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
+import coil3.compose.AsyncImage
 
 import com.kitsugi.animelist.core.player.QualityProfile
 import com.kitsugi.animelist.core.player.QualityDataHelper
@@ -91,6 +96,8 @@ fun KitsugiStreamScreen(
     castList: List<MetaCastMember> = emptyList(),
     isAutoplay: Boolean = false,
     isDownloadMode: Boolean = false,
+    cs3Url: String? = null,
+    cs3ApiName: String? = null,
     onBack: () -> Unit,
     onLaunchExternalPlayer: ((input: ExternalPlayerInput, streamKey: String) -> Unit)? = null,
     onOpenHistory: (() -> Unit)? = null,
@@ -99,6 +106,7 @@ fun KitsugiStreamScreen(
     val context = LocalContext.current
     val accentColor = LocalKitsugiAccent.current
     val scope = rememberCoroutineScope()
+    var showManualSearchDialog by remember { mutableStateOf(false) }
 
     // ── ViewModel (survives backgrounding & rotation) ──────────────────────────
     val viewModel: StreamViewModel = viewModel()
@@ -162,7 +170,7 @@ fun KitsugiStreamScreen(
     }
 
     // ── Trigger fetch — ViewModel guards against duplicate/redundant calls ────
-    LaunchedEffect(malId, aniListId, tmdbId, episode, season) {
+    LaunchedEffect(malId, aniListId, tmdbId, episode, season, cs3Url) {
         viewModel.startFetch(
             malId             = malId,
             aniListId         = aniListId,
@@ -171,7 +179,9 @@ fun KitsugiStreamScreen(
             season            = season,
             title             = title,
             alternativeTitles = alternativeTitles,
-            startYear         = startYear
+            startYear         = startYear,
+            cs3Url            = cs3Url,
+            cs3ApiName        = cs3ApiName
         )
     }
 
@@ -186,7 +196,7 @@ fun KitsugiStreamScreen(
                 com.kitsugi.animelist.data.model.WatchHistoryEntry(
                     animeId = if (aniListId != null) aniListId.toString() else malId?.toString() ?: "",
                     animeTitle = title,
-                    posterUrl = posterUrl,
+                    posterUrl = source.thumbnailUrl.takeIf { !it.isNullOrBlank() } ?: posterUrl,
                     episode = episode,
                     season = season,
                     isMovie = isMovie,
@@ -196,7 +206,9 @@ fun KitsugiStreamScreen(
                     aniListId = aniListId,
                     tmdbId = tmdbId,
                     streamUrl = resolvedUrl,
-                    streamHeaders = source.requestHeaders
+                    streamHeaders = source.requestHeaders,
+                    streamTitle = source.title,
+                    streamName = source.name
                 )
             )
 
@@ -324,7 +336,7 @@ fun KitsugiStreamScreen(
                         context = context,
                         animeId = if (aniListId != null) aniListId.toString() else if (malId != null) malId.toString() else tmdbId?.toString() ?: "",
                         animeTitle = title,
-                        posterUrl = posterUrl,
+                        posterUrl = source.thumbnailUrl.takeIf { !it.isNullOrBlank() } ?: posterUrl,
                         episode = episode,
                         season = season,
                         url = resolvedUrl,
@@ -333,7 +345,10 @@ fun KitsugiStreamScreen(
                         subtitles = source.subtitles,
                         malId = malId,
                         aniListId = aniListId,
-                        tmdbId = tmdbId
+                        tmdbId = tmdbId,
+                        source = source.addonName,
+                        streamTitle = source.title,
+                        streamName = source.name
                     )
                     android.widget.Toast.makeText(context, "İndirme kuyruğa eklendi", android.widget.Toast.LENGTH_SHORT).show()
                     context.startActivity(
@@ -379,7 +394,7 @@ fun KitsugiStreamScreen(
                     context = context,
                     animeId = if (aniListId != null) aniListId.toString() else if (malId != null) malId.toString() else tmdbId?.toString() ?: "",
                     animeTitle = title,
-                    posterUrl = posterUrl,
+                    posterUrl = source.thumbnailUrl.takeIf { !it.isNullOrBlank() } ?: posterUrl,
                     episode = episode,
                     season = season,
                     url = resolvedUrl,
@@ -388,7 +403,10 @@ fun KitsugiStreamScreen(
                     subtitles = source.subtitles,
                     malId = malId,
                     aniListId = aniListId,
-                    tmdbId = tmdbId
+                    tmdbId = tmdbId,
+                    source = source.addonName,
+                    streamTitle = source.title,
+                    streamName = source.name
                 )
                 android.widget.Toast.makeText(context, "İndirme kuyruğa eklendi", android.widget.Toast.LENGTH_SHORT).show()
                 context.startActivity(
@@ -416,8 +434,145 @@ fun KitsugiStreamScreen(
         },
         onOpenSettings = { showSettingsDialog = true },
         onOpenHistory = onOpenHistory,
-        onOpenDownloads = onOpenDownloads
+        onOpenDownloads = onOpenDownloads,
+        onManualSearchClick = { showManualSearchDialog = true }
     )
+
+    if (showManualSearchDialog) {
+        var queryText by remember { mutableStateOf(title) }
+        var isSearching by remember { mutableStateOf(false) }
+        var searchResults by remember { mutableStateOf<List<com.kitsugi.animelist.data.remote.JikanSearchResult>>(emptyList()) }
+
+        AlertDialog(
+            onDismissRequest = { showManualSearchDialog = false },
+            title = { Text("Eklentilerde Manuel Arama", color = Color.White, fontWeight = FontWeight.Bold) },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedTextField(
+                        value = queryText,
+                        onValueChange = { queryText = it },
+                        placeholder = { Text("Anime/Dizi/Film adı yazın...", color = KitsugiColors.TextMuted) },
+                        singleLine = true,
+                        trailingIcon = {
+                            IconButton(
+                                onClick = {
+                                    isSearching = true
+                                    scope.launch {
+                                        try {
+                                            val raw = com.kitsugi.animelist.data.cloudstream.CsStreamRunner.searchAllAddons(context, queryText)
+                                            searchResults = raw.map { (api, response) ->
+                                                com.kitsugi.animelist.data.remote.JikanSearchResult(
+                                                    malId = response.url.hashCode(),
+                                                    title = response.name,
+                                                    subtitle = api.name,
+                                                    type = com.kitsugi.animelist.model.MediaType.Anime,
+                                                    total = null,
+                                                    score = null,
+                                                    isAdult = false,
+                                                    imageUrl = response.posterUrl,
+                                                    year = null,
+                                                    source = "cs3",
+                                                    cs3Url = response.url,
+                                                    cs3ApiName = api.name
+                                                )
+                                            }
+                                        } catch (e: Exception) {
+                                            Log.e("ManualSearch", "Search failed: ${e.message}")
+                                        } finally {
+                                            isSearching = false
+                                        }
+                                    }
+                                }
+                            ) {
+                                Icon(Icons.Rounded.Search, contentDescription = "Ara", tint = accentColor)
+                            }
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = accentColor,
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.3f)
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    if (isSearching) {
+                        Box(modifier = Modifier.fillMaxWidth().height(100.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = accentColor)
+                        }
+                    } else if (searchResults.isEmpty()) {
+                        Box(modifier = Modifier.fillMaxWidth().height(100.dp), contentAlignment = Alignment.Center) {
+                            Text("Sonuç yok. Arama yapın veya farklı terim deneyin.", color = KitsugiColors.TextMuted)
+                        }
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth().weight(1f)
+                        ) {
+                            items(searchResults.size) { index ->
+                                val res = searchResults[index]
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(KitsugiColors.SurfaceStrong.copy(alpha = 0.3f))
+                                        .tvClickable {
+                                            showManualSearchDialog = false
+                                            viewModel.startFetch(
+                                                malId = malId,
+                                                aniListId = aniListId,
+                                                tmdbId = tmdbId,
+                                                episode = episode,
+                                                season = season,
+                                                title = title,
+                                                alternativeTitles = alternativeTitles,
+                                                startYear = startYear,
+                                                cs3Url = res.cs3Url,
+                                                cs3ApiName = res.cs3ApiName
+                                            )
+                                        }
+                                        .padding(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(width = 40.dp, height = 60.dp)
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(KitsugiColors.SurfaceStrong)
+                                    ) {
+                                        if (!res.imageUrl.isNullOrBlank()) {
+                                            AsyncImage(
+                                                model = res.imageUrl,
+                                                contentDescription = null,
+                                                contentScale = ContentScale.Crop,
+                                                modifier = Modifier.fillMaxSize()
+                                            )
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(res.title, color = Color.White, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                        Text(res.subtitle ?: "", color = KitsugiColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
+                                    }
+                                    Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = null, tint = KitsugiColors.TextMuted)
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showManualSearchDialog = false }) {
+                    Text("Kapat", color = accentColor)
+                }
+            },
+            containerColor = KitsugiColors.Surface
+        )
+    }
 
     if (showSettingsDialog) {
         val isTv = LocalIsTvDevice.current

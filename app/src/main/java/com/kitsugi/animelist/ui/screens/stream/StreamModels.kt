@@ -7,7 +7,7 @@ import com.kitsugi.animelist.data.repository.StreamSource
  */
 data class AddonFetchState(
     val addonName: String,
-    val manifestUrl: String,
+    val manifestUrl: String = "",
     val isLoading: Boolean = true,
     val streams: List<StreamSource> = emptyList(),
     val error: String? = null

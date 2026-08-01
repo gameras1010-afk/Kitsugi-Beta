@@ -1,7 +1,8 @@
-# Kitsugi Release Notes - v2.4.134-beta
+# Kitsugi Release Notes - v2.4.135-beta
 
-Bu sürümde, Stremio altyazı eklentileri (TurkceAltyazi.org, YTS Subtitles vb.) üzerinden dizi ve anime altyazılarının çekilememesi ve indirilememesi sorunu giderilmiştir.
+Bu sürümde, kullanıcıların video izleme/akış seçimi ekranındayken manuel olarak kaynak değiştirmesini ve tüm eklentiler üzerinde arama yapabilmesini sağlayan Manuel Arama özelliği entegre edilmiştir.
 
-### 🎬 Stremio Altyazı Eklentileri Çekim Hatası Düzeltildi
-- **URL Encoding Desteği:** Dizi ve anime bölümlerinin Stremio altyazı eklentilerine gönderilen sorgu parametrelerindeki `id` (örneğin IMDb ID'si olan `tt2560140:1:1` formatı) artık standart RFC 3986 formatında URL-encode edilerek (`tt2560140%3A1%3A1`) gönderilmektedir.
-- **Sunucu İletişim Uyumsuzluğu Giderildi:** Web sunucularının ve yönlendiricilerin unencoded `:` (iki nokta) karakterini hatalı yorumlaması ve istekleri reddetmesi veya boş yanıt döndürmesi engellenmiştir. Bu sayede TurkceAltyazi.org ve YTS gibi Türkçe ve diğer harici altyazı sağlayıcıları aktif olarak çalışmaktadır.
+### 🔍 Eklentilerde Manuel Arama Entegrasyonu (Cloudstream 3 Uyumlu)
+- **Manuel Arama Desteği:** Akış seçimi ekranına (hem dikey hem de yatay modlarda) yeni bir arama simgesi (büyüteç butonu) yerleştirilmiştir. Bu sayede otomatik arama sonuç vermediğinde veya alternatif kaynaklar aranmak istendiğinde kullanıcılar manuel arama başlatabilir.
+- **Toplu Eklenti Araması:** Arama çubuğuna girilen anime, dizi veya film isimleri tüm aktif Cloudstream 3 (CS3) eklentilerinde eş zamanlı olarak aranır ve sonuçlar listelenir.
+- **Akış Değiştirme:** Arama sonuçlarından herhangi bir kaynağa tıklandığında, sistem doğrudan o kaynağın URL ve API verilerini kullanarak yeni yayınları (StreamSource) çözümler ve ekranı günceller.

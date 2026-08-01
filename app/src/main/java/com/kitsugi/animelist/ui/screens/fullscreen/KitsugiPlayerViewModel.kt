@@ -402,7 +402,7 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
 
     val isVolumeSliderShown = MutableStateFlow(false)
     val isBrightnessSliderShown = MutableStateFlow(false)
-    val currentBrightness = MutableStateFlow(0.5f)
+    val currentBrightness = MutableStateFlow(-2.0f)
     val currentMPVVolume = MutableStateFlow(100)
 
     private val audioManager by lazy { context.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager }
@@ -467,6 +467,17 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         val params = activity.window.attributes
         params.screenBrightness = brightness.coerceIn(0f, 1f)
         activity.window.attributes = params
+    }
+
+    fun getSystemBrightness(): Float {
+        return try {
+            android.provider.Settings.System.getInt(
+                context.contentResolver,
+                android.provider.Settings.System.SCREEN_BRIGHTNESS
+            ) / 255f
+        } catch (e: Exception) {
+            0.5f
+        }
     }
 
     private fun Context.findActivity(): android.app.Activity? {
@@ -1314,17 +1325,30 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
 
                 val type = if (isMovieType) "movie" else "series"
                 val queryIds = mutableListOf<String>()
+
+                // 1. IMDB ID varsa ekle (en yaygın format, çoğu addon destekler)
                 if (!imdbId.isNullOrBlank()) {
                     queryIds.add(if (isMovieType) imdbId else "$imdbId:$currentS:$currentEp")
                 }
+                // 2. Kitsu ID varsa ekle (anime-specific eklentiler için)
                 if (kitsuId != null) {
                     queryIds.add(if (isMovieType) "kitsu:$kitsuId" else "kitsu:$kitsuId:$currentEp")
                 }
+                // 3. Anime başlığı ile PARALEL arama — her zaman eklenir.
+                // Bazı altyazı eklentileri (türkçealtyazi.org gibi) isim aramasını da
+                // destekleyebilir. ID'ler varsa ekstra coverage sağlar, yoksa tek seçenektir.
+                // 0 maliyetle çalışır çünkü diğer sorgularla zaten paralel atılıyor.
+                val titleQuery = animeTitle.trim().takeIf { it.isNotBlank() }
+                if (titleQuery != null) {
+                    queryIds.add(if (isMovieType) titleQuery else "$titleQuery:$currentS:$currentEp")
+                }
 
                 if (queryIds.isEmpty()) {
-                    Log.w("KitsugiPlayerViewModel", "Altyazı atlandı: ID çözümlenemedi (malId=$currentMalId, aniListId=$currentAniList). ARM veri tabanında bulunmuyor olabilir.")
+                    Log.w("KitsugiPlayerViewModel", "Altyazı atlandı: ID ve başlık çözümlenemedi (malId=$currentMalId, aniListId=$currentAniList).")
                     return@launch
                 }
+
+                Log.d("KitsugiPlayerViewModel", "Altyazı sorgulama: queryIds=$queryIds, type=$type (imdb=$imdbId, kitsu=$kitsuId, title=$titleQuery)")
 
                 val selectedSource = _currentStreamSources.value.getOrNull(_currentSourceIndex.value)
                 val guessedFilename = selectedSource?.title?.takeIf { it.isNotBlank() }
@@ -1336,24 +1360,28 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
                     }
                 val cleanedFilename = guessedFilename?.substringBefore("\n")?.substringBefore("\r")?.trim()
 
-                Log.d("KitsugiPlayerViewModel", "Fetching subtitles for queryIds=$queryIds, type=$type, filename=$cleanedFilename")
+                Log.d("KitsugiPlayerViewModel", "Fetching subtitles: queryIds=$queryIds, type=$type, filename=$cleanedFilename")
 
                 val subRepo = com.kitsugi.animelist.data.repository.SubtitleRepositoryImpl(context)
-                val remoteSubs = mutableListOf<com.kitsugi.animelist.core.player.model.Subtitle>()
-                for (queryId in queryIds) {
-                    try {
-                        val subs = subRepo.getSubtitles(
-                            type = type,
-                            id = queryId,
-                            videoUrl = _currentVideoUrl.value,
-                            videoHeaders = _currentHeaders.value,
-                            filename = cleanedFilename
-                        )
-                        remoteSubs.addAll(subs)
-                    } catch (e: Exception) {
-                        Log.e("KitsugiPlayerViewModel", "Failed to fetch subtitles for queryId=$queryId", e)
-                    }
-                }
+                // Tüm queryId'ler için paralel sorgu — IMDB + kitsu + title hepsi aynı anda
+                val remoteSubs = kotlinx.coroutines.coroutineScope {
+                    queryIds.map { queryId ->
+                        async(kotlinx.coroutines.Dispatchers.IO) {
+                            try {
+                                subRepo.getSubtitles(
+                                    type = type,
+                                    id = queryId,
+                                    videoUrl = _currentVideoUrl.value,
+                                    videoHeaders = _currentHeaders.value,
+                                    filename = cleanedFilename
+                                )
+                            } catch (e: Exception) {
+                                Log.e("KitsugiPlayerViewModel", "Failed to fetch subtitles for queryId=$queryId", e)
+                                emptyList()
+                            }
+                        }
+                    }.awaitAll().flatten().distinctBy { it.url }
+                }.toMutableList()
 
                     val settings = SettingsDataStore(context).settingsFlow.first()
                     val preferredLangs = settings.preferredSubtitleLanguages.split(",").map { it.trim().lowercase() }

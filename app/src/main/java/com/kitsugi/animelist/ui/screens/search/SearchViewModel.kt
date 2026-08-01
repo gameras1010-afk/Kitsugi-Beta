@@ -752,6 +752,25 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                         uniqueResults
                     }
                 }
+                SearchPlatform.CS3 -> {
+                    val rawResults = com.kitsugi.animelist.data.cloudstream.CsStreamRunner.searchAllAddons(getApplication(), queryText)
+                    rawResults.map { (api, response) ->
+                        JikanSearchResult(
+                            malId = response.url.hashCode(),
+                            title = response.name,
+                            subtitle = api.name,
+                            type = MediaType.Anime,
+                            total = null,
+                            score = null,
+                            isAdult = false,
+                            imageUrl = response.posterUrl,
+                            year = null,
+                            source = "cs3",
+                            cs3Url = response.url,
+                            cs3ApiName = api.name
+                        )
+                    }
+                }
             }
         }.getOrElse { e ->
             if (e is kotlinx.coroutines.CancellationException) throw e

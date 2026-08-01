@@ -412,7 +412,9 @@ internal fun SettingsContext.buildSettingsParams() =
             downloadNewUnreadChaptersOnly = appSettings.downloadNewUnreadChaptersOnly,
             onDownloadNewUnreadChaptersOnlyChanged = { onDownloadNewUnreadChaptersOnlyChanged(it) },
             downloadNewUnseenEpisodesOnly = appSettings.downloadNewUnseenEpisodesOnly,
-            onDownloadNewUnseenEpisodesOnlyChanged = { onDownloadNewUnseenEpisodesOnlyChanged(it) }
+            onDownloadNewUnseenEpisodesOnlyChanged = { onDownloadNewUnseenEpisodesOnlyChanged(it) },
+            subtitleDownloadLanguages = appSettings.subtitleDownloadLanguages,
+            onSubtitleDownloadLanguagesChanged = { onSubtitleDownloadLanguagesChanged(it) }
         ),
         onOpenDownloads = {
             navState.navigateToDetail(DetailScreen.Downloads)
@@ -990,5 +992,8 @@ internal fun SettingsContext.onDownloadNewUnreadChaptersOnlyChanged(enabled: Boo
 }
 internal fun SettingsContext.onDownloadNewUnseenEpisodesOnlyChanged(enabled: Boolean) {
     coroutineScope.launch { settingsDataStore.setDownloadNewUnseenEpisodesOnly(enabled) }
+}
+internal fun SettingsContext.onSubtitleDownloadLanguagesChanged(langs: String) {
+    coroutineScope.launch { settingsDataStore.setSubtitleDownloadLanguages(langs) }
 }
 

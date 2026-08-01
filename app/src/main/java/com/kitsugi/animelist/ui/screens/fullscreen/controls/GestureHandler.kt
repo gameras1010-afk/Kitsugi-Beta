@@ -210,7 +210,7 @@ fun GestureHandler(
                 var mpvVolumeStartingY = 0f
                 var originalVolume = currentVolume
                 var originalMPVVolume = currentMPVVolume
-                var originalBrightness = currentBrightness
+                var originalBrightness = if (currentBrightness == -2f) viewModel.getSystemBrightness() else currentBrightness
                 val brightnessGestureSens = 0.001f
                 val volumeGestureSens = 0.001f * viewModel.maxVolume
                 val mpvVolumeGestureSens = if (volumeBoostingCap > 0) 0.001f * volumeBoostingCap else 0f
@@ -235,7 +235,7 @@ fun GestureHandler(
                         mpvVolumeStartingY = 0f
                         originalVolume = currentVolume
                         originalMPVVolume = currentMPVVolume
-                        originalBrightness = currentBrightness
+                        originalBrightness = if (currentBrightness == -2f) viewModel.getSystemBrightness() else currentBrightness
                     },
                 ) { change, amount ->
                     val changeVolume: () -> Unit = {

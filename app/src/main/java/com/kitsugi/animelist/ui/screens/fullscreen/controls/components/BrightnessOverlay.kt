@@ -17,7 +17,7 @@ fun BrightnessOverlay(
     brightness: Float,
     modifier: Modifier = Modifier,
 ) {
-    if (brightness >= 0f) return
+    if (brightness >= 0f || brightness == -2f) return
     val alpha = (-brightness).coerceIn(0f, 0.75f)
     Box(
         modifier = modifier

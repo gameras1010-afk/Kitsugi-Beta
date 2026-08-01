@@ -44,7 +44,7 @@ enum class PlayerSettingsSubScreen {
     Gelismis
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun KitsugiPlayerSettingsDialog(
     playerPreference: String,
@@ -1174,26 +1174,118 @@ fun KitsugiPlayerSettingsDialog(
 
                             item {
                                 KitsugiSettingsSection(title = "Altyazı Dil Tercihleri") {
-                                    // Preferred subtitle languages input (Direct text modification)
-                                    var textState by remember(preferredSubtitleLanguages) { mutableStateOf(preferredSubtitleLanguages) }
-                                    OutlinedTextField(
-                                        value = textState,
-                                        onValueChange = {
-                                            textState = it
-                                            onPreferredSubtitleLanguagesSelected(it)
-                                        },
-                                        label = { Text("Tercih Edilen Altyazı Dilleri") },
-                                        placeholder = { Text("tr,en,ja vb. (virgülle ayırın)") },
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                                        colors = OutlinedTextFieldDefaults.colors(
-                                            focusedBorderColor = accentColor,
-                                            focusedLabelColor = accentColor,
-                                            focusedTextColor = KitsugiColors.TextPrimary,
-                                            unfocusedTextColor = KitsugiColors.TextPrimary
+                                    // ── Chip tabanlı çok-seçimli dil seçici ──────────────────
+                                    // Dil kodları ISO 639-1 standardında virgülle ayrılmış string
+                                    // olarak kaydedilir (örn: "tr,en"). Varsayılan: "tr"
+                                    val allSubtitleLanguages = remember {
+                                        listOf(
+                                            "tr" to "Türkçe",
+                                            "en" to "İngilizce",
+                                            "ja" to "Japonca",
+                                            "ar" to "Arapça",
+                                            "zh" to "Çince",
+                                            "ko" to "Korece",
+                                            "fr" to "Fransızca",
+                                            "de" to "Almanca",
+                                            "es" to "İspanyolca",
+                                            "pt" to "Portekizce",
+                                            "it" to "İtalyanca",
+                                            "ru" to "Rusça",
+                                            "nl" to "Hollandaca",
+                                            "pl" to "Lehçe",
+                                            "sv" to "İsveççe",
+                                            "no" to "Norveççe",
+                                            "da" to "Danca",
+                                            "fi" to "Fince",
+                                            "uk" to "Ukraynaca",
+                                            "ro" to "Romence",
+                                            "cs" to "Çekçe",
+                                            "hu" to "Macarca",
+                                            "he" to "İbranice",
+                                            "id" to "Endonezyaca",
+                                            "th" to "Tayca",
+                                            "vi" to "Vietnamca"
                                         )
-                                    )
+                                    }
+                                    val selectedLangs = remember(preferredSubtitleLanguages) {
+                                        mutableStateOf(
+                                            preferredSubtitleLanguages
+                                                .split(",")
+                                                .map { it.trim().lowercase() }
+                                                .filter { it.isNotBlank() }
+                                                .toMutableSet()
+                                        )
+                                    }
+
+                                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Language,
+                                                contentDescription = null,
+                                                tint = accentColor,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Column {
+                                                Text(
+                                                    text = "Tercih Edilen Altyazı Dilleri",
+                                                    color = KitsugiColors.TextPrimary,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    fontSize = 14.sp
+                                                )
+                                                Text(
+                                                    text = if (selectedLangs.value.isEmpty())
+                                                        "Dil seçilmedi — tüm diller indirilir"
+                                                    else
+                                                        "Seçili: ${selectedLangs.value.joinToString(", ").uppercase()} · Öncelik: ilk seçilen",
+                                                    color = KitsugiColors.TextSecondary,
+                                                    fontSize = 12.sp
+                                                )
+                                            }
+                                        }
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                        // Chip grid
+                                        FlowRow(
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            allSubtitleLanguages.forEach { (code, label) ->
+                                                val isSelected = code in selectedLangs.value
+                                                FilterChip(
+                                                    selected = isSelected,
+                                                    onClick = {
+                                                        val updated = selectedLangs.value.toMutableSet()
+                                                        if (isSelected) {
+                                                            updated.remove(code)
+                                                        } else {
+                                                            updated.add(code)
+                                                        }
+                                                        selectedLangs.value = updated
+                                                        val saved = updated.joinToString(",")
+                                                        onPreferredSubtitleLanguagesSelected(saved)
+                                                    },
+                                                    label = {
+                                                        Text(
+                                                            text = "$code · $label",
+                                                            fontSize = 12.sp,
+                                                            color = if (isSelected) accentColor else KitsugiColors.TextSecondary
+                                                        )
+                                                    },
+                                                    colors = FilterChipDefaults.filterChipColors(
+                                                        selectedContainerColor = accentColor.copy(alpha = 0.18f),
+                                                        selectedLabelColor = accentColor,
+                                                        containerColor = KitsugiColors.Surface
+                                                    ),
+                                                    border = FilterChipDefaults.filterChipBorder(
+                                                        enabled = true,
+                                                        selected = isSelected,
+                                                        selectedBorderColor = accentColor,
+                                                        borderColor = KitsugiColors.TextSecondary.copy(alpha = 0.3f)
+                                                    )
+                                                )
+                                            }
+                                        }
+                                    }
 
                                     KitsugiSettingsDivider()
 
@@ -1207,7 +1299,7 @@ fun KitsugiPlayerSettingsDialog(
                                             title = "Altyazı Yükleme Başlangıç Modu",
                                             description = "Eklentiden altyazıların nasıl çekileceği",
                                             value = currentStartupModeName,
-                                            icon = Icons.Rounded.Language,
+                                            icon = Icons.Rounded.FilterList,
                                             iconColor = accentColor,
                                             onClick = { subStartupDropdownExpanded = true }
                                         )

@@ -20,7 +20,10 @@ data class AnimeDownload(
     val downloadedSegments: Int = 0,
     val malId: Int? = null,
     val aniListId: Int? = null,
-    val tmdbId: Int? = null
+    val tmdbId: Int? = null,
+    val source: String? = null,
+    val streamTitle: String? = null,
+    val streamName: String? = null
 ) {
     enum class Status {
         QUEUE,

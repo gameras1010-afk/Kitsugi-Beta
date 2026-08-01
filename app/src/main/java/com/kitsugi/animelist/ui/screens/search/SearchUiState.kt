@@ -103,7 +103,8 @@ enum class SearchPlatform(val label: String) {
     All("Tümü"),
     MAL("MAL"),
     AniList("AniList"),
-    TMDB("TMDB")
+    TMDB("TMDB"),
+    CS3("Eklentiler")
 }
 
 /**

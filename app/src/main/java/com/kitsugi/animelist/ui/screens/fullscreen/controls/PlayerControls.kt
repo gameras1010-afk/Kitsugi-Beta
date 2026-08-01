@@ -188,7 +188,11 @@ fun PlayerControls(
         }
         if (activity != null) {
             val params = activity.window.attributes
-            params.screenBrightness = brightness.coerceIn(0.01f, 1f)
+            if (brightness == -2f) {
+                params.screenBrightness = -1f
+            } else {
+                params.screenBrightness = brightness.coerceIn(0.01f, 1f)
+            }
             activity.window.attributes = params
         }
         if (isBrightnessSliderShown) {
@@ -231,7 +235,7 @@ fun PlayerControls(
                 .padding(horizontal = 24.dp)
         ) {
             BrightnessSlider(
-                brightness = brightness,
+                brightness = if (brightness == -2f) viewModel.getSystemBrightness() else brightness,
                 positiveRange = 0f..1f,
                 negativeRange = 0f..0.75f,
             )

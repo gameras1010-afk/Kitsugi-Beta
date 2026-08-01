@@ -181,12 +181,12 @@ fun StreamCard(
                         }
                     }
 
-                    // Source name
+                    // Source name (Sitenin asıl yayın adı)
                     Text(
                         text = source.name,
-                        color = KitsugiColors.TextPrimary,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.ExtraBold,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )

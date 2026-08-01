@@ -7,6 +7,7 @@ import com.lagradost.cloudstream3.LoadResponse
 import com.lagradost.cloudstream3.AnimeLoadResponse
 import com.lagradost.cloudstream3.TvSeriesLoadResponse
 import com.lagradost.cloudstream3.MovieLoadResponse
+import com.lagradost.cloudstream3.newAnimeSearchResponse
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.loadExtractor
@@ -15,6 +16,7 @@ import com.kitsugi.animelist.data.remote.KitsugiIdResolver
 import com.kitsugi.animelist.core.player.SubtitleInput
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
@@ -809,7 +811,7 @@ object CsStreamRunner {
     private fun buildTitleVariants(main: String, alts: List<String>, season: Int): List<String> =
         CsTitleMatcher.buildTitleVariants(main, alts, season)
 
-    private suspend fun safeSearch(api: MainAPI, query: String): List<SearchResponse> {
+    internal suspend fun safeSearch(api: MainAPI, query: String): List<SearchResponse> {
         // Session bloklist kontrolü
         if (CsPluginStatusTracker.isBlocked(api.name)) {
             Log.w(TAG, "[${api.name}] safeSearch: Engellendi — atlanıyor.")
@@ -1350,4 +1352,70 @@ object CsStreamRunner {
         360 -> "360p"
         else -> if (quality > 0) "${quality}p" else "HD"
     }
+
+    suspend fun searchAllAddons(context: android.content.Context, query: String): List<Pair<MainAPI, SearchResponse>> = withContext(Dispatchers.IO) {
+        if (!isDomainListFetched.get()) {
+            runnerScope.launch {
+                fetchRemoteDomains()
+            }
+        }
+        val db = com.kitsugi.animelist.data.local.KitsugiDatabase.getDatabase(context.applicationContext)
+        val enabledPlugins = db.csPluginDao().getEnabledPlugins()
+        for (plugin in enabledPlugins) {
+            try {
+                com.kitsugi.animelist.data.cloudstream.CsPluginLoader.loadExtension(context, plugin.id)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to load extension ${plugin.name} during global search: ${e.message}")
+            }
+        }
+        val enabledIds = enabledPlugins.map { it.id }.toSet()
+        val activeApis = com.lagradost.cloudstream3.APIHolder.allProviders.filter { api ->
+            val pluginId = java.io.File(api.sourcePlugin).nameWithoutExtension
+            enabledIds.contains(pluginId)
+        }
+        if (activeApis.isEmpty()) {
+            return@withContext emptyList()
+        }
+        val results = mutableListOf<Pair<MainAPI, SearchResponse>>()
+        kotlinx.coroutines.supervisorScope {
+            val jobs = activeApis.map { api ->
+                async {
+                    try {
+                        val searchRes = safeSearch(api, query)
+                        synchronized(results) {
+                            searchRes.forEach { results.add(api to it) }
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Search failed for provider ${api.name}: ${e.message}")
+                    }
+                }
+            }
+            jobs.forEach {
+                try {
+                    it.await()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Await failed: ${e.message}")
+                }
+            }
+        }
+        results
+    }
+
+    suspend fun getStreamsForUrl(
+        api: MainAPI,
+        url: String,
+        season: Int,
+        episode: Int
+    ): List<StreamSource> = withContext(Dispatchers.IO) {
+        applyDomainFix(api)
+        if (api.name in KNOWN_BROKEN_PLUGINS) return@withContext emptyList()
+        val searchResponse = api.newAnimeSearchResponse(
+            name = api.name,
+            url = url,
+            type = com.lagradost.cloudstream3.TvType.Anime,
+            fix = false
+        )
+        loadAndExtractStreams(api, searchResponse, season, episode)
+    }
 }
+

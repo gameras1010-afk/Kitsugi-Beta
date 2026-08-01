@@ -43,6 +43,7 @@ class AnimeDownloader(private val context: Context) {
     ) = withContext(Dispatchers.IO) {
         onStatusChanged(AnimeDownload.Status.DOWNLOADING, null)
 
+        val settings = SettingsDataStore(context).settingsFlow.first()
         val mediaId = "${download.animeId}_ep${download.episode}"
         val rootDir = OfflinePlaybackHelper.getDownloadsDir(context)
         val destDir = File(rootDir, mediaId).also { it.mkdirs() }
@@ -220,9 +221,24 @@ class AnimeDownloader(private val context: Context) {
             }
 
             val dedupedSubs = allResolvedSubtitles.distinctBy { it.url }
-            if (dedupedSubs.isNotEmpty()) {
+            val dlLangs = settings.subtitleDownloadLanguages
+                .split(",")
+                .map { it.trim().lowercase() }
+                .filter { it.isNotBlank() }
+
+            val filteredSubs = if (dlLangs.isEmpty()) {
+                dedupedSubs
+            } else {
+                dedupedSubs.filter { sub ->
+                    dlLangs.any { targetLang ->
+                        com.kitsugi.animelist.core.player.PlayerSubtitleUtils.matchesLanguageCode(sub.lang ?: "", targetLang)
+                    }
+                }
+            }
+
+            if (filteredSubs.isNotEmpty()) {
                 val subsDir = File(destDir, "subs").also { it.mkdirs() }
-                for (subtitle in dedupedSubs) {
+                for (subtitle in filteredSubs) {
                     try {
                         val extension = when {
                             subtitle.url.contains(".vtt", ignoreCase = true) -> "vtt"
@@ -268,7 +284,6 @@ class AnimeDownloader(private val context: Context) {
             metaFile.writeText(metaJson)
 
             // Copy to user custom folder if set
-            val settings = SettingsDataStore(context).settingsFlow.first()
             val customDirUriStr = settings.videoDownloadUri
             if (customDirUriStr.isNotBlank()) {
                 try {

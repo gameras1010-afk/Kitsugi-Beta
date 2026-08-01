@@ -198,12 +198,53 @@ fun DownloadItemRow(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+                if (!download.streamName.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "Yayın: ${download.streamName}",
+                        color = accentColor,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                if (!download.streamTitle.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = download.streamTitle,
+                        color = KitsugiColors.TextMuted,
+                        fontSize = 11.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
                 Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "Bölüm ${download.episode} • ${download.quality}",
-                    color = KitsugiColors.TextSecondary,
-                    fontSize = 13.sp
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = "Bölüm ${download.episode} • ${download.quality}",
+                        color = KitsugiColors.TextSecondary,
+                        fontSize = 13.sp
+                    )
+                    if (!download.source.isNullOrBlank()) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(KitsugiColors.AccentPurple.copy(alpha = 0.12f))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = download.source,
+                                color = KitsugiColors.AccentPurple,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.height(8.dp))
 
                 when (download.status) {

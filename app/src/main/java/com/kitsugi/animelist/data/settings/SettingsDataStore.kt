@@ -231,6 +231,8 @@ class SettingsDataStore(
         val ExternalDownloaderSelection = stringPreferencesKey("external_downloader_selection")
         val DownloadNewUnreadChaptersOnly = booleanPreferencesKey("download_new_unread_chapters_only")
         val DownloadNewUnseenEpisodesOnly = booleanPreferencesKey("download_new_unread_episodes_only")
+        // ── Altyazı İndirme Dil Filtresi ──────────────────────────────────────
+        val SubtitleDownloadLanguages = stringPreferencesKey("subtitle_download_languages")
     }
 
     val settingsFlow: Flow<AppSettings> = kotlinx.coroutines.flow.flow {
@@ -433,7 +435,8 @@ class SettingsDataStore(
                     useExternalDownloader = preferences[Keys.UseExternalDownloader] ?: false,
                     externalDownloaderSelection = preferences[Keys.ExternalDownloaderSelection] ?: "",
                     downloadNewUnreadChaptersOnly = preferences[Keys.DownloadNewUnreadChaptersOnly] ?: false,
-                    downloadNewUnseenEpisodesOnly = preferences[Keys.DownloadNewUnseenEpisodesOnly] ?: false
+                    downloadNewUnseenEpisodesOnly = preferences[Keys.DownloadNewUnseenEpisodesOnly] ?: false,
+                    subtitleDownloadLanguages = preferences[Keys.SubtitleDownloadLanguages] ?: "tr"
                 )
             )
         }
@@ -999,6 +1002,12 @@ class SettingsDataStore(
     suspend fun setAddonSubtitleStartupMode(mode: String) {
         context.settingsDataStore.edit { preferences ->
             preferences[Keys.AddonSubtitleStartupMode] = mode
+        }
+    }
+
+    suspend fun setSubtitleDownloadLanguages(langs: String) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[Keys.SubtitleDownloadLanguages] = langs
         }
     }
 

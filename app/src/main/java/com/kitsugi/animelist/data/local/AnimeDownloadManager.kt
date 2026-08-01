@@ -37,7 +37,10 @@ object AnimeDownloadManager {
         subtitles: List<com.kitsugi.animelist.core.player.SubtitleInput> = emptyList(),
         malId: Int? = null,
         aniListId: Int? = null,
-        tmdbId: Int? = null
+        tmdbId: Int? = null,
+        source: String? = null,
+        streamTitle: String? = null,
+        streamName: String? = null
     ) {
         val current = _downloads.value.toMutableList()
         val exists = current.any { it.animeId == animeId && it.episode == episode }
@@ -56,7 +59,10 @@ object AnimeDownloadManager {
             status = AnimeDownload.Status.QUEUE,
             malId = malId,
             aniListId = aniListId,
-            tmdbId = tmdbId
+            tmdbId = tmdbId,
+            source = source,
+            streamTitle = streamTitle,
+            streamName = streamName
         )
         current.add(newDownload)
         saveAndEmit(current)

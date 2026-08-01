@@ -289,6 +289,26 @@ private fun WatchHistoryItem(
                 overflow = TextOverflow.Ellipsis
             )
 
+            if (!entry.streamName.isNullOrBlank()) {
+                Text(
+                    text = "Yayın: ${entry.streamName}",
+                    color = LocalKitsugiAccent.current,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            if (!entry.streamTitle.isNullOrBlank()) {
+                Text(
+                    text = entry.streamTitle,
+                    color = KitsugiColors.TextMuted,
+                    fontSize = 11.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
             // Badges row
             Row(
                 verticalAlignment = Alignment.CenterVertically,

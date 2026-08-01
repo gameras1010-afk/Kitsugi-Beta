@@ -111,4 +111,4 @@ if defined UPLOAD_ASSETS (
 )
 
 echo.
-pause
+REM pause

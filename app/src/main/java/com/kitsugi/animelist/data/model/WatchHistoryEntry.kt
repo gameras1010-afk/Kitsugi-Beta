@@ -18,5 +18,7 @@ data class WatchHistoryEntry(
     // Direkt oynatma için saklanan son stream URL'si ve başlıkları.
     // Boş değilse geçmişten devam ederken KitsugiStreamActivity'yi atlar.
     val streamUrl: String? = null,
-    val streamHeaders: Map<String, String>? = null
+    val streamHeaders: Map<String, String>? = null,
+    val streamTitle: String? = null,
+    val streamName: String? = null
 )

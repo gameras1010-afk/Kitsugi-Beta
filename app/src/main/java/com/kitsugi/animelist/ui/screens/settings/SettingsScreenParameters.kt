@@ -422,5 +422,10 @@ data class DownloadSettings(
     val downloadNewUnreadChaptersOnly: Boolean = false,
     val onDownloadNewUnreadChaptersOnlyChanged: (Boolean) -> Unit = {},
     val downloadNewUnseenEpisodesOnly: Boolean = false,
-    val onDownloadNewUnseenEpisodesOnlyChanged: (Boolean) -> Unit = {}
+    val onDownloadNewUnseenEpisodesOnlyChanged: (Boolean) -> Unit = {},
+    // ── Altyazı İndirme Dil Tercihleri ────────────────────────────────────────
+    // Otomatik indirilen altyazılar bu dil listesiyle filtreler.
+    // ISO 639-1 kodları, virgülle ayrılmış (örn: "tr,en"). Varsayılan: "tr"
+    val subtitleDownloadLanguages: String = "tr",
+    val onSubtitleDownloadLanguagesChanged: (String) -> Unit = {}
 )

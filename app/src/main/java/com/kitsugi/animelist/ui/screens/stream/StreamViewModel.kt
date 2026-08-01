@@ -93,9 +93,11 @@ class StreamViewModel(application: Application) : AndroidViewModel(application) 
         season: Int,
         title: String,
         alternativeTitles: List<String>,
-        startYear: Int?
+        startYear: Int?,
+        cs3Url: String? = null,
+        cs3ApiName: String? = null
     ) {
-        val newKey = "$malId:$aniListId:$tmdbId:$season:$episode"
+        val newKey = "$malId:$aniListId:$tmdbId:$season:$episode:$cs3Url"
 
         // ── Cache hit: same combination, data already present ─────────────────
         if (newKey == currentFetchKey) {
@@ -128,7 +130,9 @@ class StreamViewModel(application: Application) : AndroidViewModel(application) 
                 season = season,
                 title = title,
                 alternativeTitles = alternativeTitles,
-                startYear = startYear
+                startYear = startYear,
+                cs3Url = cs3Url,
+                cs3ApiName = cs3ApiName
             )
             isFetchInProgress = false
         }
@@ -236,8 +240,58 @@ class StreamViewModel(application: Application) : AndroidViewModel(application) 
         season: Int,
         title: String,
         alternativeTitles: List<String>,
-        startYear: Int?
+        startYear: Int?,
+        cs3Url: String? = null,
+        cs3ApiName: String? = null
     ) {
+        if (cs3Url != null && cs3ApiName != null) {
+            _isResolvingId.value = false
+            _addonStates.value = listOf(AddonFetchState(cs3ApiName, isLoading = true))
+            try {
+                val db = KitsugiDatabase.getDatabase(context)
+                val csPlugin = db.csPluginDao().getEnabledPlugins()
+                    .firstOrNull { it.name.equals(cs3ApiName, ignoreCase = true) }
+                if (csPlugin != null) {
+                    withContext(Dispatchers.IO) {
+                        CsPluginLoader.loadExtension(context, csPlugin.id)
+                    }
+                }
+                val activeApi = com.lagradost.cloudstream3.APIHolder.allProviders.firstOrNull {
+                    it.name.equals(cs3ApiName, ignoreCase = true)
+                }
+                if (activeApi != null) {
+                    val resolved = CsStreamRunner.getStreamsForUrl(
+                        api = activeApi,
+                        url = cs3Url,
+                        season = season,
+                        episode = episode
+                    )
+                    updateAddonStateSync(
+                        cs3ApiName,
+                        isLoading = false,
+                        streams = resolved,
+                        error = if (resolved.isEmpty()) "Bu kaynak için akış bulunamadı" else null
+                    )
+                } else {
+                    updateAddonStateSync(
+                        cs3ApiName,
+                        isLoading = false,
+                        streams = emptyList(),
+                        error = "Eklenti yüklenemedi: $cs3ApiName"
+                    )
+                }
+            } catch (e: Throwable) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                updateAddonStateSync(
+                    cs3ApiName,
+                    isLoading = false,
+                    streams = emptyList(),
+                    error = "Hata: ${e.localizedMessage ?: e.javaClass.simpleName}"
+                )
+            }
+            return
+        }
+
         // ── 1. Resolve IDs ────────────────────────────────────────────────────
         val realAniListId = when {
             aniListId != null && aniListId >= 100_000_000 -> aniListId - 100_000_000

@@ -36,6 +36,8 @@ class KitsugiStreamActivity : ComponentActivity() {
 
         private const val EXTRA_IS_AUTOPLAY    = "extra_is_autoplay"
         private const val EXTRA_IS_DOWNLOAD_MODE = "extra_is_download_mode"
+        private const val EXTRA_CS3_URL        = "extra_cs3_url"
+        private const val EXTRA_CS3_API_NAME   = "extra_cs3_api_name"
 
         const val PREFS_NAME  = "KitsugiStreamPrefs"
         const val KEY_POS_PFX = "pos_"
@@ -60,7 +62,9 @@ class KitsugiStreamActivity : ComponentActivity() {
             description: String? = null,
             cast: List<MetaCastMember> = emptyList(),
             isAutoplay: Boolean = false,
-            isDownloadMode: Boolean = false
+            isDownloadMode: Boolean = false,
+            cs3Url: String? = null,
+            cs3ApiName: String? = null
         ) {
             tempCast = cast
             context.startActivity(
@@ -80,6 +84,8 @@ class KitsugiStreamActivity : ComponentActivity() {
                     description?.let    { putExtra(EXTRA_DESCRIPTION, it) }
                     putExtra(EXTRA_IS_AUTOPLAY, isAutoplay)
                     putExtra(EXTRA_IS_DOWNLOAD_MODE, isDownloadMode)
+                    cs3Url?.let         { putExtra(EXTRA_CS3_URL, it) }
+                    cs3ApiName?.let     { putExtra(EXTRA_CS3_API_NAME, it) }
                 }
             )
         }
@@ -160,6 +166,8 @@ class KitsugiStreamActivity : ComponentActivity() {
     private var currentDescription: String? = null
     private var isAutoplayMode: Boolean = false
     private var isDownloadMode: Boolean = false
+    private var currentCs3Url: String? = null
+    private var currentCs3ApiName: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -181,6 +189,8 @@ class KitsugiStreamActivity : ComponentActivity() {
         currentDescription  = intent.getStringExtra(EXTRA_DESCRIPTION)
         isAutoplayMode      = intent.getBooleanExtra(EXTRA_IS_AUTOPLAY, false)
         isDownloadMode      = intent.getBooleanExtra(EXTRA_IS_DOWNLOAD_MODE, false)
+        currentCs3Url       = intent.getStringExtra(EXTRA_CS3_URL)
+        currentCs3ApiName   = intent.getStringExtra(EXTRA_CS3_API_NAME)
 
         val castList: List<MetaCastMember> = tempCast ?: run {
             val castJson = intent.getStringExtra(EXTRA_CAST_JSON)
@@ -202,6 +212,8 @@ class KitsugiStreamActivity : ComponentActivity() {
                     description = currentDescription, castList = castList,
                     isAutoplay = isAutoplayMode,
                     isDownloadMode = isDownloadMode,
+                    cs3Url = currentCs3Url,
+                    cs3ApiName = currentCs3ApiName,
                     onBack = { finish() },
                     onLaunchExternalPlayer = { input, streamKey ->
                         currentStreamKey = streamKey

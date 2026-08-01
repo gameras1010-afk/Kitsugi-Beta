@@ -81,7 +81,8 @@ fun StreamScreenContent(
     onOpenSettings: (() -> Unit)? = null,
     onVerifyPlugin: ((addonName: String) -> Unit)? = null,
     onOpenHistory: (() -> Unit)? = null,
-    onOpenDownloads: (() -> Unit)? = null
+    onOpenDownloads: (() -> Unit)? = null,
+    onManualSearchClick: (() -> Unit)? = null
 ) {
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
@@ -167,7 +168,8 @@ fun StreamScreenContent(
                 onDownloadSelected = onDownloadSelected,
                 onVerifyPlugin = onVerifyPlugin, onOpenSettings = onOpenSettings,
                 onOpenHistory = onOpenHistory,
-                onOpenDownloads = onOpenDownloads
+                onOpenDownloads = onOpenDownloads,
+                onManualSearchClick = onManualSearchClick
             )
         } else {
             PortraitLayout(
@@ -183,7 +185,8 @@ fun StreamScreenContent(
                 onDownloadSelected = onDownloadSelected,
                 onVerifyPlugin = onVerifyPlugin, onOpenSettings = onOpenSettings,
                 onOpenHistory = onOpenHistory,
-                onOpenDownloads = onOpenDownloads
+                onOpenDownloads = onOpenDownloads,
+                onManualSearchClick = onManualSearchClick
             )
         }
 
@@ -428,7 +431,8 @@ private fun LandscapeLayout(
     filteredAddonStates: List<AddonFetchState>, totalFilteredStreamsCount: Int, hasActiveFilter: Boolean,
     onStreamSelected: (StreamSource) -> Unit, onDownloadSelected: (StreamSource) -> Unit, onVerifyPlugin: ((String) -> Unit)?, onOpenSettings: (() -> Unit)?,
     onOpenHistory: (() -> Unit)? = null,
-    onOpenDownloads: (() -> Unit)? = null
+    onOpenDownloads: (() -> Unit)? = null,
+    onManualSearchClick: (() -> Unit)? = null
 ) {
     val listState = rememberLazyListState()
 
@@ -479,6 +483,16 @@ private fun LandscapeLayout(
                         modifier = Modifier.size(36.dp)
                     ) {
                         Icon(Icons.Rounded.History, "İzleme Geçmişi", tint = KitsugiColors.TextSecondary, modifier = Modifier.size(18.dp))
+                    }
+                }
+                if (onManualSearchClick != null) {
+                    Spacer(Modifier.width(4.dp))
+                    IconButton(
+                        onClick = onManualSearchClick,
+                        colors = IconButtonDefaults.iconButtonColors(containerColor = KitsugiColors.SurfaceStrong.copy(alpha = 0.5f)),
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(Icons.Rounded.Search, "Manuel Arama", tint = KitsugiColors.TextSecondary, modifier = Modifier.size(18.dp))
                     }
                 }
             }
@@ -624,7 +638,8 @@ private fun PortraitLayout(
     filteredAddonStates: List<AddonFetchState>, totalFilteredStreamsCount: Int, hasActiveFilter: Boolean,
     onStreamSelected: (StreamSource) -> Unit, onDownloadSelected: (StreamSource) -> Unit, onVerifyPlugin: ((String) -> Unit)?, onOpenSettings: (() -> Unit)?,
     onOpenHistory: (() -> Unit)?,
-    onOpenDownloads: (() -> Unit)? = null
+    onOpenDownloads: (() -> Unit)? = null,
+    onManualSearchClick: (() -> Unit)? = null
 ) {
     val listState = rememberLazyListState()
     val showFloatingHeader by remember {
@@ -682,6 +697,16 @@ private fun PortraitLayout(
                             modifier = Modifier.size(36.dp)
                         ) {
                             Icon(Icons.Rounded.History, "İzleme Geçmişi", tint = KitsugiColors.TextSecondary, modifier = Modifier.size(18.dp))
+                        }
+                    }
+                    if (onManualSearchClick != null) {
+                        Spacer(Modifier.width(4.dp))
+                        IconButton(
+                            onClick = onManualSearchClick,
+                            colors = IconButtonDefaults.iconButtonColors(containerColor = KitsugiColors.SurfaceStrong.copy(alpha = 0.5f)),
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(Icons.Rounded.Search, "Manuel Arama", tint = KitsugiColors.TextSecondary, modifier = Modifier.size(18.dp))
                         }
                     }
                 }

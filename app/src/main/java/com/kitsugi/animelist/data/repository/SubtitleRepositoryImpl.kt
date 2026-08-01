@@ -81,16 +81,12 @@ class SubtitleRepositoryImpl(private val context: Context) {
                 Log.d(TAG, "Addon '${addon.name}' dahil edildi: subtitleTypes=null ama altyazı addon'u olabilir")
             }
 
-            // idPrefixes kontrolü (NuvioTV supportsType() mantığı):
-            // Addon belirli prefix'leri tanımlıyorsa, ID bu prefix ile başlamalı
-            val idPrefixes = parseIdPrefixes(addon)
-            if (!idPrefixes.isNullOrEmpty()) {
-                val matches = idPrefixes.any { prefix -> id.startsWith(prefix) }
-                if (!matches) {
-                    Log.d(TAG, "Addon '${addon.name}' atlandı: id='$id' prefix listesiyle eşleşmiyor (prefixes=$idPrefixes)")
-                    return@filter false
-                }
-            }
+            // NOT: idPrefixes filtresi altyazı addon'ları için UYGULANMIYOR.
+            // NuvioTV kaynak kodu incelemesinde görüldüğü üzere, altyazı eklentileri
+            // top-level idPrefixes=["tt"] tanımlayabilir ama bu yalnızca stream resource içindir.
+            // Subtitle resource'unun kendi idPrefixes'i yoksa tüm ID'lerle denenmelidir.
+            // (örn: türkçealtyazi.org, YTS Subtitle eklentileri "tt" prefix tanımlıyor
+            //  ama bu kitsu:/anilist: ID'leriyle de sorgulanabilmeleri için engel değil)
             true
         }
 

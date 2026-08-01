@@ -71,6 +71,7 @@ fun SearchScreen(
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val keyboardController = LocalSoftwareKeyboardController.current
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     // Active Dialog States
     var openPlatformDialog by remember { mutableStateOf(false) }
@@ -351,6 +352,7 @@ fun SearchScreen(
                         val sourceLabel = when (uiState.selectedPlatform) {
                             SearchPlatform.MAL -> "MAL"
                             SearchPlatform.AniList -> "AniList"
+                            SearchPlatform.CS3 -> "Eklentiler"
                             else -> "Tümü"
                         }
                         SearchFilterChip(
@@ -488,7 +490,23 @@ fun SearchScreen(
                     result = result,
                     alreadyInList = isAlreadyInList(result),
                     mediaEntry = getMediaEntry(result),
-                    onItemClick = { onOpenApiDetail(result) },
+                    onItemClick = {
+                        if (result.source == "cs3") {
+                            com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity.start(
+                                context = context,
+                                malId = null,
+                                aniListId = null,
+                                episode = 1,
+                                season = 1,
+                                title = result.title,
+                                posterUrl = result.imageUrl,
+                                cs3Url = result.cs3Url,
+                                cs3ApiName = result.cs3ApiName
+                            )
+                        } else {
+                            onOpenApiDetail(result)
+                        }
+                    },
                     onAddClick = {
                         onAddSelectionToList(ApiSearchSelection(result = result, synopsis = null))
                     },
@@ -545,7 +563,7 @@ fun SearchScreen(
 
     // Dialog: Platform selection
     if (openPlatformDialog) {
-        val platforms = listOf(SearchPlatform.All, SearchPlatform.MAL, SearchPlatform.AniList)
+        val platforms = listOf(SearchPlatform.All, SearchPlatform.MAL, SearchPlatform.AniList, SearchPlatform.CS3)
         DialogWithRadioSelection(
             title = "Kaynak Platform Seç",
             options = platforms,

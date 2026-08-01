@@ -247,7 +247,11 @@ data class AppSettings(
     val useExternalDownloader: Boolean = false,
     val externalDownloaderSelection: String = "",
     val downloadNewUnreadChaptersOnly: Boolean = false,
-    val downloadNewUnseenEpisodesOnly: Boolean = false
+    val downloadNewUnseenEpisodesOnly: Boolean = false,
+    // ── Altyazı İndirme Dil Filtresi ──────────────────────────────────────────
+    // Otomatik indirme sırasında hangi dillerde altyazı çekileceğini belirler.
+    // ISO 639-1 kodları, virgülle ayrılmış (örn: "tr,en"). Varsayılan: "tr"
+    val subtitleDownloadLanguages: String = "tr"
 )
 
 enum class FrameRateMatchingMode {

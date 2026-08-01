@@ -657,6 +657,70 @@ private fun StorageSettingsTab(
                 )
             }
         }
+
+        // --- 5. Altyazı İndirme Dil Tercihleri ---
+        @OptIn(ExperimentalLayoutApi::class)
+        @Suppress("UNUSED_EXPRESSION")
+        KitsugiSettingsSection(title = "Altyazı İndirme Dil Tercihleri") {
+            val allSubLangs = remember {
+                listOf(
+                    "tr" to "Türkçe", "en" to "İngilizce", "ja" to "Japonca",
+                    "ar" to "Arapça", "zh" to "Çince", "ko" to "Korece",
+                    "fr" to "Fransızca", "de" to "Almanca", "es" to "İspanyolca",
+                    "pt" to "Portekizce", "it" to "İtalyanca", "ru" to "Rusça",
+                    "nl" to "Hollandaca", "pl" to "Lehçe", "ro" to "Romence",
+                    "vi" to "Vietnamca", "id" to "Endonezyaca", "th" to "Tayca"
+                )
+            }
+            val selectedDlLangs = remember(download.subtitleDownloadLanguages) {
+                mutableStateOf(
+                    download.subtitleDownloadLanguages
+                        .split(",").map { it.trim().lowercase() }.filter { it.isNotBlank() }.toMutableSet()
+                )
+            }
+            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+                Text(
+                    text = if (selectedDlLangs.value.isEmpty()) "Dil seçilmedi — tüm diller indirilir"
+                    else "Seçili: ${selectedDlLangs.value.joinToString(", ").uppercase()} · TR öncelikli",
+                    color = KitsugiColors.TextSecondary,
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    allSubLangs.forEach { (code, label) ->
+                        val isSel = code in selectedDlLangs.value
+                        FilterChip(
+                            selected = isSel,
+                            onClick = {
+                                val upd = selectedDlLangs.value.toMutableSet()
+                                if (isSel) upd.remove(code) else upd.add(code)
+                                selectedDlLangs.value = upd
+                                download.onSubtitleDownloadLanguagesChanged(upd.joinToString(","))
+                            },
+                            label = {
+                                Text(
+                                    text = "$code · $label",
+                                    fontSize = 12.sp,
+                                    color = if (isSel) LocalKitsugiAccent.current else KitsugiColors.TextSecondary
+                                )
+                            },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = LocalKitsugiAccent.current.copy(alpha = 0.18f),
+                                containerColor = KitsugiColors.Surface
+                            ),
+                            border = FilterChipDefaults.filterChipBorder(
+                                enabled = true, selected = isSel,
+                                selectedBorderColor = LocalKitsugiAccent.current,
+                                borderColor = KitsugiColors.TextSecondary.copy(alpha = 0.3f)
+                            )
+                        )
+                    }
+                }
+            }
+        }
     }
 
     // --- Choice Dialogs ---
