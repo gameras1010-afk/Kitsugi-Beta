@@ -128,3 +128,81 @@ fun parseStreamTitle(title: String): Pair<String, String> {
     val size = sizeRegex.find(title)?.value?.uppercase(Locale.ROOT) ?: ""
     return quality to size
 }
+
+/**
+ * Extracts a clean and descriptive video name or domain name from the source stream url or title.
+ */
+fun getCleanVideoSourceLabel(stream: StreamSource): String {
+    // 1. Torrent / Magnet
+    val isTorrent = !stream.infoHash.isNullOrBlank() || stream.url?.startsWith("magnet:", ignoreCase = true) == true
+    if (isTorrent) {
+        if (!stream.title.isNullOrBlank()) {
+            return stream.title.trim()
+        }
+        return "Torrent: ${stream.infoHash?.take(8) ?: "Magnet"}"
+    }
+
+    // 2. Direct or Embed HTTP Link
+    val url = stream.url
+    if (!url.isNullOrBlank()) {
+        try {
+            // Unescape href.li if present
+            val cleanUrl = if (url.contains("href.li/?", ignoreCase = true)) {
+                val idx = url.indexOf("href.li/?")
+                url.substring(idx + "href.li/?".length)
+            } else {
+                url
+            }
+
+            val uri = java.net.URI(cleanUrl)
+            val host = uri.host
+            val path = uri.path
+
+            val hostLabel = if (!host.isNullOrBlank()) {
+                var h = host.lowercase(Locale.ROOT)
+                if (h.startsWith("www.")) h = h.substring(4)
+                val parts = h.split(".")
+                if (parts.size >= 2) parts.takeLast(2).joinToString(".") else h
+            } else {
+                ""
+            }
+
+            val pathLabel = if (!path.isNullOrBlank()) {
+                val segments = path.split("/").filter { it.isNotBlank() }
+                if (segments.isNotEmpty()) {
+                    val lastSegment = segments.last()
+                    // If the last segment is just generic like "master.m3u8", "index.m3u8", "playlist.m3u8", "video.mp4", "play.html", etc.
+                    val isGeneric = lastSegment.equals("master.m3u8", ignoreCase = true) ||
+                            lastSegment.equals("index.m3u8", ignoreCase = true) ||
+                            lastSegment.equals("playlist.m3u8", ignoreCase = true) ||
+                            lastSegment.equals("video.mp4", ignoreCase = true) ||
+                            lastSegment.equals("play", ignoreCase = true) ||
+                            lastSegment.equals("play.html", ignoreCase = true) ||
+                            lastSegment.matches(Regex("""\d+""")) // only digits
+                    
+                    if (isGeneric && segments.size >= 2) {
+                        segments[segments.size - 2] + "/" + lastSegment
+                    } else {
+                        lastSegment
+                    }
+                } else {
+                    ""
+                }
+            } else {
+                ""
+            }
+
+            return when {
+                !hostLabel.isNullOrBlank() && !pathLabel.isNullOrBlank() -> "$hostLabel • $pathLabel"
+                !hostLabel.isNullOrBlank() -> hostLabel
+                !pathLabel.isNullOrBlank() -> pathLabel
+                else -> stream.title.ifBlank { "Doğrudan Bağlantı" }
+            }
+        } catch (e: Exception) {
+            // Fallback
+        }
+    }
+
+    return stream.title.ifBlank { "Doğrudan Bağlantı" }
+}
+

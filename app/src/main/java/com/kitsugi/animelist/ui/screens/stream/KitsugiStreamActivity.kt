@@ -14,6 +14,7 @@ import com.kitsugi.animelist.ui.theme.KitsugiAnimeListTheme
 import android.util.Log
 import com.kitsugi.animelist.DeviceProfile
 import com.kitsugi.animelist.DeviceFormFactor
+import com.kitsugi.animelist.ui.screens.offline.DownloadsActivity
 
 class KitsugiStreamActivity : ComponentActivity() {
 
@@ -210,6 +211,11 @@ class KitsugiStreamActivity : ComponentActivity() {
                     onOpenHistory = {
                         startActivity(
                             android.content.Intent(this, WatchHistoryActivity::class.java)
+                        )
+                    },
+                    onOpenDownloads = {
+                        startActivity(
+                            android.content.Intent(this, DownloadsActivity::class.java)
                         )
                     }
                 )

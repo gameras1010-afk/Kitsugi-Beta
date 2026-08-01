@@ -93,7 +93,8 @@ fun KitsugiStreamScreen(
     isDownloadMode: Boolean = false,
     onBack: () -> Unit,
     onLaunchExternalPlayer: ((input: ExternalPlayerInput, streamKey: String) -> Unit)? = null,
-    onOpenHistory: (() -> Unit)? = null
+    onOpenHistory: (() -> Unit)? = null,
+    onOpenDownloads: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val accentColor = LocalKitsugiAccent.current
@@ -414,7 +415,8 @@ fun KitsugiStreamScreen(
             viewModel.onVerifyPlugin(addonDisplayName)
         },
         onOpenSettings = { showSettingsDialog = true },
-        onOpenHistory = onOpenHistory
+        onOpenHistory = onOpenHistory,
+        onOpenDownloads = onOpenDownloads
     )
 
     if (showSettingsDialog) {

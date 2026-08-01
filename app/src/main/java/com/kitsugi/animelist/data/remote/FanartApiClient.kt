@@ -269,7 +269,13 @@ object FanartApiClient {
             val urlStr = obj.optString("url", "").trim()
             if (urlStr.isBlank()) continue
             val lang = obj.optString("lang", "").trim()
-            val item = GalleryItem(url = urlStr, source = "Fanart.tv", category = category)
+            val extractedName = extractNameFromUrl(urlStr)
+            val item = GalleryItem(
+                url = urlStr,
+                source = "Fanart.tv",
+                category = category,
+                description = extractedName
+            )
             when {
                 lang == preferredLanguage      -> preferred.add(item)
                 lang.isBlank() || lang == "00" -> neutral.add(item)
@@ -280,6 +286,44 @@ object FanartApiClient {
 
         // Tüm öğeleri ekle — limit yok
         target.addAll(preferred + neutral + english + other)
+    }
+
+    /**
+     * URL'den temiz, baş harfleri büyük karakter adını veya görsel adını ayıklar.
+     * Örn: .../monkey-d-luffy-5231c69c6f2df.png -> Monkey D Luffy
+     */
+    fun extractNameFromUrl(url: String): String? {
+        return try {
+            val uri = java.net.URI.create(url)
+            val path = uri.path ?: return null
+            val filename = path.substringAfterLast('/').substringBeforeLast('.')
+            if (filename.isBlank()) return null
+
+            // Trailing hash ayıklama (örn: -5231c69c6f2df)
+            val nameWithoutHash = if (filename.contains('-')) {
+                val lastHyphenIndex = filename.lastIndexOf('-')
+                val suffix = filename.substring(lastHyphenIndex + 1)
+                val isLikelyHash = suffix.length in 10..20 && suffix.all { it.isLetterOrDigit() }
+                if (isLikelyHash) {
+                    filename.substring(0, lastHyphenIndex)
+                } else {
+                    filename
+                }
+            } else {
+                filename
+            }
+
+            // Tire ve alt çizgileri boşlukla değiştir, kelimelerin baş harflerini büyüt
+            nameWithoutHash
+                .replace('-', ' ')
+                .replace('_', ' ')
+                .trim()
+                .split(' ')
+                .filter { it.isNotEmpty() }
+                .joinToString(" ") { it.replaceFirstChar { char -> if (char.isLowerCase()) char.titlecase() else char.toString() } }
+        } catch (e: Exception) {
+            null
+        }
     }
 
     /**

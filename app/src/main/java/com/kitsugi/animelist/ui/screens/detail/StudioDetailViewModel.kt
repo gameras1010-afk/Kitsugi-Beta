@@ -100,7 +100,7 @@ class StudioDetailViewModel(application: Application) : AndroidViewModel(applica
                     GalleryCategory.POSTER
                 }
                 val src = if (imageUrl.contains("image.tmdb.org") || imageUrl.contains("tmdb.org")) "TMDB" else "Jikan"
-                _galleryItems.value = listOf(GalleryItem(url = imageUrl, source = src, category = category))
+                _galleryItems.value = listOf(GalleryItem(url = imageUrl, source = src, category = category, description = lastStudioName))
             } else {
                 _galleryItems.value = emptyList()
             }

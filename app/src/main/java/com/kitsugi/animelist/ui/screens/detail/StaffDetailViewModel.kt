@@ -179,11 +179,11 @@ class StaffDetailViewModel(application: Application) : AndroidViewModel(applicat
 
         val items = buildList {
             if (!mainImageUrl.isNullOrBlank()) {
-                add(GalleryItem(url = mainImageUrl, source = "Jikan", category = GalleryCategory.CHARACTER))
+                add(GalleryItem(url = mainImageUrl, source = "Jikan", category = GalleryCategory.CHARACTER, description = lastStaffName))
             }
             for (url in pictureUrls) {
                 if (url != mainImageUrl && url.isNotBlank()) {
-                    add(GalleryItem(url = url, source = "Jikan", category = GalleryCategory.CHARACTER))
+                    add(GalleryItem(url = url, source = "Jikan", category = GalleryCategory.CHARACTER, description = lastStaffName))
                 }
             }
         }.distinctBy { it.url }

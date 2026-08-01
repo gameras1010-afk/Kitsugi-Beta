@@ -9,7 +9,8 @@ package com.kitsugi.animelist.data.remote
 data class GalleryItem(
     val url: String,
     val source: String,
-    val category: GalleryCategory = GalleryCategory.OTHER
+    val category: GalleryCategory = GalleryCategory.OTHER,
+    val description: String? = null
 )
 
 enum class GalleryCategory(val label: String) {

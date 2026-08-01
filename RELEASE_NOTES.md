@@ -1,16 +1,15 @@
-# Kitsugi Release Notes - v2.4.129-beta
+# Kitsugi Release Notes - v2.4.130-beta
 
-Bu sürümde Kitaplığım (MyList) senkronizasyon/arama deneyimi tamamen iyileştirildi, dizi/film (TMDB) indirmelerine altyazı desteği getirildi ve altyazı eklentileri için çift kimlikli (IMDb + Kitsu) paralel arama sistemi kuruldu.
+Bu sürümde Kitsugi medya galerisine karakter ve görsel meta veri entegrasyonu yapıldı, galeri ve küçük resim (thumbnail) bileşenleri zenginleştirildi ve video akış seçim ekranına indirme yöneticisi için hızlı erişim kısayolu eklendi.
 
-### 🔄 Kitaplığım (MyList) Senkronizasyon & Arama
-- **Son Güncelleme Zamanı (updatedAt):** Veritabanı sürümü 27'ye yükseltilerek tüm kayıtlara `updatedAt` sütunu eklendi. Artık listemdeki içerikler en son izlenme veya eklenme tarihine göre kusursuz bir şekilde sıralanıyor.
-- **Küresel Arama (Global Search):** Kitaplığım ekranında bir arama yapıldığında platform tabanlı filtreler otomatik olarak devre dışı bırakılır. Arama sorgusu girildiğinde veritabanındaki tüm AniList, MAL ve Simkl içerikleri tek bir ekranda listelenir.
-- **Giriş/Boş Ekran Uyarılarının Bypass Edilmesi:** Arama yapıldığı esnada giriş yapılmamış tablar veya boş sayfalar için çıkan uyarılar gizlenerek doğrudan arama sonuçları gösterilir.
+### 🎭 Karakter & Görsel Meta Veri Entegrasyonu
+- **Galeri Veri Modeli Genişletmesi:** `GalleryItem` modeline görsel açıklaması (`description`) desteği eklendi.
+- **Fanart.tv URL Ayrıştırıcı:** Fanart.tv'den gelen görsellerin URL'lerinden (örn. `monkey-d-luffy-xxx.png`) karakter isimleri otomatik olarak çıkartılarak okunabilir formatta (`Monkey D Luffy`) kaydedilir.
+- **Karakter, Kadro & Stüdyo Desteği:** Karakter, Staff ve Studio detay sayfalarında ilgili entity adları otomatik olarak galeri görsellerine açıklama olarak atandı.
 
-### 🌍 Çift Kimlikli Paralel Altyazı Arama (IMDb + Kitsu)
-- **Çift Sorgu Desteği:** Altyazı aratılırken sadece tek bir kimlik formatı seçmek yerine, eğer videonun hem IMDb hem de Kitsu kimlikleri mevcutsa, her iki kimlik ile de altyazı eklentileri paralel olarak taranır ve gelen sonuçlar birleştirilir.
-- **Evrensel Eklenti Uyumu:** Sadece IMDb destekleyen genel altyazı sağlayıcıları (TürkçeAltyazı.org, YTS, OpenSubtitles) ile anime eklentilerinden gelen altyazılar aynı anda çözümlenip hem oynatıcıda gösterilir hem de indirilebilir.
+### 🖼️ Galeri Arayüzü & Görsel Badgeleri
+- **Detaylı Tam Ekran Görünüm:** Tam ekran galeri penceresinde (`KitsugiImageGalleryDialog`) görselin açıklaması/karakter ismi sol alt kısımda kaynak ve kategori badge'lerinin yanına estetik bir dikey çizgi ile ayrılmış badge olarak eklendi.
+- **Thumbnail Üzerinde Overlay:** Detay sayfalarındaki galeri listesinde (`DetailGalleryCard`) her küçük resmin sol üst köşesine yarı şeffaf badge olarak karakter adı/görsel açıklaması yerleştirildi.
 
-### 📥 TMDB İndirmelerine Altyazı Desteği
-- **İndirme Metadata Genişletmesi:** İndirme modeline (`AnimeDownload`) `tmdbId` desteği eklendi.
-- **Otomatik Altyazı Çözümleme:** Dizi ve film (TMDB) indirmeleri başlatıldığında TMDB kimlikleri altyazı servisine iletilerek doğru IMDb kodları çözümlenir ve altyazıları video ile birlikte sorunsuz indirilir.
+### 📥 Akış Seçim Sayfasına İndirme Kısayolu
+- **İndirilenler Kısayolu:** Akış seçim sayfasında (yatay ve dikey görünümlerde) izleme geçmişi butonunun hemen sol yanına doğrudan İndirilenler (`DownloadsActivity`) sayfasına yönlendirme yapan İndirme Kısayol butonu (`Icons.Rounded.Download`) eklendi.

@@ -4,8 +4,7 @@
     TR manga siteleri genellikle HTTP ve karma içerik kullanıyor.
 -->
 <network-security-config>
-    <!-- Tüm trafik için varsayılan olarak cleartext (HTTP) yasaklanır, yalnızca güvenli HTTPS trafiğine izin verilir -->
-    <base-config cleartextTrafficPermitted="false">
+    <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
             <certificates src="system" />
             <certificates src="user" />

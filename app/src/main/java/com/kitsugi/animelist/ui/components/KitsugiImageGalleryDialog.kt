@@ -344,6 +344,23 @@ fun KitsugiImageGalleryDialog(
                                                 fontSize = 11.sp,
                                                 fontWeight = FontWeight.SemiBold
                                             )
+
+                                            if (!item.description.isNullOrBlank()) {
+                                                Spacer(
+                                                    modifier = Modifier
+                                                        .width(1.dp)
+                                                        .height(12.dp)
+                                                        .background(KitsugiColors.Border)
+                                                )
+                                                Text(
+                                                    text = item.description,
+                                                    color = KitsugiColors.TextPrimary,
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis
+                                                )
+                                            }
                                         }
                                     }
                                 }

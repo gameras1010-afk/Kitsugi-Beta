@@ -180,11 +180,11 @@ class CharacterDetailViewModel(application: Application) : AndroidViewModel(appl
 
         val items = buildList {
             if (!mainImageUrl.isNullOrBlank()) {
-                add(GalleryItem(url = mainImageUrl, source = "Jikan", category = GalleryCategory.CHARACTER))
+                add(GalleryItem(url = mainImageUrl, source = "Jikan", category = GalleryCategory.CHARACTER, description = lastCharacterName))
             }
             for (url in pictureUrls) {
                 if (url != mainImageUrl && url.isNotBlank()) {
-                    add(GalleryItem(url = url, source = "Jikan", category = GalleryCategory.CHARACTER))
+                    add(GalleryItem(url = url, source = "Jikan", category = GalleryCategory.CHARACTER, description = lastCharacterName))
                 }
             }
         }.distinctBy { it.url }

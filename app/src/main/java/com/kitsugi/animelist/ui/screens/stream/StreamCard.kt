@@ -36,6 +36,8 @@ import com.kitsugi.animelist.ui.theme.KitsugiColors
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
+import com.kitsugi.animelist.ui.components.KitsugiImageGalleryDialog
 
 /**
  * A single stream card showing quality/cache/addon badges and triggering playback on tap.
@@ -57,51 +59,14 @@ fun StreamCard(
 
     var showImageDialog by remember { mutableStateOf(false) }
 
-    // Fullscreen thumbnail preview dialog
+    // Fullscreen thumbnail preview using the app's standard image gallery dialog
     if (showImageDialog && !source.thumbnailUrl.isNullOrBlank()) {
-        Dialog(
-            onDismissRequest = { showImageDialog = false },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.9f))
-                    .clickable { showImageDialog = false },
-                contentAlignment = Alignment.Center
-            ) {
-                Card(
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = KitsugiColors.SurfaceStrong),
-                    modifier = Modifier
-                        .fillMaxWidth(0.9f)
-                        .fillMaxHeight(0.8f)
-                        .clickable(enabled = false) {} // Prevent click-through dismissal
-                ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        AsyncImage(
-                            model = source.thumbnailUrl,
-                            contentDescription = null,
-                            contentScale = ContentScale.Fit,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                        IconButton(
-                            onClick = { showImageDialog = false },
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(12.dp)
-                                .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(18.dp))
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Close,
-                                contentDescription = "Kapat",
-                                tint = Color.White
-                            )
-                        }
-                    }
-                }
-            }
-        }
+        KitsugiImageGalleryDialog(
+            imageUrls = listOf(source.thumbnailUrl!!),
+            initialIndex = 0,
+            title = source.name,
+            onDismiss = { showImageDialog = false }
+        )
     }
 
     Card(
@@ -153,21 +118,7 @@ fun StreamCard(
                                     )
                                 )
                         )
-                        // Zoom indicator icon overlay
-                        Box(
-                            modifier = Modifier
-                                .size(28.dp)
-                                .align(Alignment.Center)
-                                .background(Color.Black.copy(alpha = 0.4f), RoundedCornerShape(14.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.ZoomIn,
-                                contentDescription = "Büyüt",
-                                tint = Color.White,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
+
                     }
                 }
 
@@ -240,16 +191,30 @@ fun StreamCard(
                         overflow = TextOverflow.Ellipsis
                     )
 
-                    // Subtitle / detail text
-                    if (source.title.isNotBlank() && source.title != source.name) {
-                        Text(
-                            text = source.title.trim(),
-                            color = KitsugiColors.TextSecondary,
-                            fontSize = 11.sp,
-                            maxLines = 3,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.padding(top = 3.dp)
-                        )
+                    // Clean video source details label (filename or hosting domain)
+                    val sourceLabel = remember(source) { getCleanVideoSourceLabel(source) }
+                    if (sourceLabel.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(KitsugiColors.Surface.copy(alpha = 0.5f))
+                                .border(
+                                    width = 1.dp,
+                                    color = KitsugiColors.SurfaceStrong.copy(alpha = 0.8f),
+                                    shape = RoundedCornerShape(6.dp)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = sourceLabel,
+                                color = KitsugiColors.TextSecondary,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     }
 
                     // Action buttons inside column for compact screens

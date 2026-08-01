@@ -80,7 +80,8 @@ fun StreamScreenContent(
     onRememberChoice: (String) -> Unit = {},
     onOpenSettings: (() -> Unit)? = null,
     onVerifyPlugin: ((addonName: String) -> Unit)? = null,
-    onOpenHistory: (() -> Unit)? = null
+    onOpenHistory: (() -> Unit)? = null,
+    onOpenDownloads: (() -> Unit)? = null
 ) {
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
@@ -165,7 +166,8 @@ fun StreamScreenContent(
                 hasActiveFilter = hasActiveFilter, onStreamSelected = onStreamSelected,
                 onDownloadSelected = onDownloadSelected,
                 onVerifyPlugin = onVerifyPlugin, onOpenSettings = onOpenSettings,
-                onOpenHistory = onOpenHistory
+                onOpenHistory = onOpenHistory,
+                onOpenDownloads = onOpenDownloads
             )
         } else {
             PortraitLayout(
@@ -180,7 +182,8 @@ fun StreamScreenContent(
                 hasActiveFilter = hasActiveFilter, onStreamSelected = onStreamSelected,
                 onDownloadSelected = onDownloadSelected,
                 onVerifyPlugin = onVerifyPlugin, onOpenSettings = onOpenSettings,
-                onOpenHistory = onOpenHistory
+                onOpenHistory = onOpenHistory,
+                onOpenDownloads = onOpenDownloads
             )
         }
 
@@ -424,7 +427,8 @@ private fun LandscapeLayout(
     isResolvingId: Boolean, idResolveFailed: Boolean, isAnyLoading: Boolean,
     filteredAddonStates: List<AddonFetchState>, totalFilteredStreamsCount: Int, hasActiveFilter: Boolean,
     onStreamSelected: (StreamSource) -> Unit, onDownloadSelected: (StreamSource) -> Unit, onVerifyPlugin: ((String) -> Unit)?, onOpenSettings: (() -> Unit)?,
-    onOpenHistory: (() -> Unit)? = null
+    onOpenHistory: (() -> Unit)? = null,
+    onOpenDownloads: (() -> Unit)? = null
 ) {
     val listState = rememberLazyListState()
 
@@ -458,6 +462,16 @@ private fun LandscapeLayout(
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
                 )
+                if (onOpenDownloads != null) {
+                    IconButton(
+                        onClick = onOpenDownloads,
+                        colors = IconButtonDefaults.iconButtonColors(containerColor = KitsugiColors.SurfaceStrong.copy(alpha = 0.5f)),
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(Icons.Rounded.Download, "İndirmeler", tint = KitsugiColors.TextSecondary, modifier = Modifier.size(18.dp))
+                    }
+                    Spacer(Modifier.width(4.dp))
+                }
                 if (onOpenHistory != null) {
                     IconButton(
                         onClick = onOpenHistory,
@@ -609,7 +623,8 @@ private fun PortraitLayout(
     isResolvingId: Boolean, idResolveFailed: Boolean, isAnyLoading: Boolean,
     filteredAddonStates: List<AddonFetchState>, totalFilteredStreamsCount: Int, hasActiveFilter: Boolean,
     onStreamSelected: (StreamSource) -> Unit, onDownloadSelected: (StreamSource) -> Unit, onVerifyPlugin: ((String) -> Unit)?, onOpenSettings: (() -> Unit)?,
-    onOpenHistory: (() -> Unit)?
+    onOpenHistory: (() -> Unit)?,
+    onOpenDownloads: (() -> Unit)? = null
 ) {
     val listState = rememberLazyListState()
     val showFloatingHeader by remember {
@@ -649,6 +664,16 @@ private fun PortraitLayout(
                         )
                     }
                     imdbId?.let { ImdbBadge(it) }
+                    if (onOpenDownloads != null) {
+                        Spacer(Modifier.width(4.dp))
+                        IconButton(
+                            onClick = onOpenDownloads,
+                            colors = IconButtonDefaults.iconButtonColors(containerColor = KitsugiColors.SurfaceStrong.copy(alpha = 0.5f)),
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(Icons.Rounded.Download, "İndirmeler", tint = KitsugiColors.TextSecondary, modifier = Modifier.size(18.dp))
+                        }
+                    }
                     if (onOpenHistory != null) {
                         Spacer(Modifier.width(4.dp))
                         IconButton(
