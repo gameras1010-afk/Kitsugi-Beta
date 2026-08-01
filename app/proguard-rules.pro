@@ -181,3 +181,8 @@
 -dontwarn com.arthenica.ffmpegkit.**
 -keep class com.arthenica.ffmpegkit.** { *; }
 -keep class com.arthenica.smartexception.** { *; }
+
+# ── Cloudstream compatibility stubs ──────────────────────────────────────────
+-keep class com.lagradost.cloudstream3.R { *; }
+-keep class com.lagradost.cloudstream3.R$* { *; }
+-keep class org.schabi.newpipe.extractor.** { *; }

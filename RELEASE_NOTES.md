@@ -1,15 +1,12 @@
-# Kitsugi Release Notes - v2.4.131-beta
+# Kitsugi Release Notes - v2.4.132-beta
 
-Bu sürümde Kitsugi medya galerisine karakter ve görsel meta veri entegrasyonu yapıldı, galeri ve küçük resim (thumbnail) bileşenleri zenginleştirildi ve video akış seçim ekranına indirme yöneticisi için hızlı erişim kısayolu eklendi.
+Bu sürümde uygulama açılışındaki kritik çökmeler giderildi, eklenti yükleme kararlılığı artırıldı ve Youtube eklentisi için gerekli bağımlılıklar sisteme entegre edildi.
 
-### 🎭 Karakter & Görsel Meta Veri Entegrasyonu
-- **Galeri Veri Modeli Genişletmesi:** `GalleryItem` modeline görsel açıklaması (`description`) desteği eklendi.
-- **Fanart.tv URL Ayrıştırıcı:** Fanart.tv'den gelen görsellerin URL'lerinden (örn. `monkey-d-luffy-xxx.png`) karakter isimleri otomatik olarak çıkartılarak okunabilir formatta (`Monkey D Luffy`) kaydedilir.
-- **Karakter, Kadro & Stüdyo Desteği:** Karakter, Staff ve Studio detay sayfalarında ilgili entity adları otomatik olarak galeri görsellerine açıklama olarak atandı.
+### 🚀 Başlangıç Çökmeleri ve Syncler Eklenti Hatası Düzeltildi
+- **Dinamik R Sınıfı Stub'ı:** Syncler eklentisinin (`SynclerPlugin`) açılışta `com.lagradost.cloudstream3.R$id` sınıfına ve onun altındaki `nav_host_fragment` ile `navigation_player` ID'lerine yaptığı doğrudan erişimlerin sebep olduğu `NoClassDefFoundError` hatası, dinamik R kaynak stub sınıfı oluşturularak tamamen çözüldü.
 
-### 🖼️ Galeri Arayüzü & Görsel Badgeleri
-- **Detaylı Tam Ekran Görünüm:** Tam ekran galeri penceresinde (`KitsugiImageGalleryDialog`) görselin açıklaması/karakter ismi sol alt kısımda kaynak ve kategori badge'lerinin yanına estetik bir dikey çizgi ile ayrılmış badge olarak eklendi.
-- **Thumbnail Üzerinde Overlay:** Detay sayfalarındaki galeri listesinde (`DetailGalleryCard`) her küçük resmin sol üst köşesine yarı şeffaf badge olarak karakter adı/görsel açıklaması yerleştirildi.
+### 📺 Youtube Eklentisi Yükleme Hatası Çözüldü
+- **NewPipe Extractor Bağımlılığı:** Youtube eklentisinin yüklenmesi esnasında oluşan `java.lang.NoClassDefFoundError: Failed resolution of: Lorg/schabi/newpipe/extractor/ServiceList;` hatasını gidermek amacıyla, Gradle konfigürasyonundaki `newpipeextractor` exclusion (hariç tutma) kuralı kaldırılarak gerekli bağımlılıklar tekrar etkinleştirildi.
 
-### 📥 Akış Seçim Sayfasına İndirme Kısayolu
-- **İndirilenler Kısayolu:** Akış seçim sayfasında (yatay ve dikey görünümlerde) izleme geçmişi butonunun hemen sol yanına doğrudan İndirilenler (`DownloadsActivity`) sayfasına yönlendirme yapan İndirme Kısayol butonu (`Icons.Rounded.Download`) eklendi.
+### 🛡️ R8/ProGuard Kararlılık İyileştirmeleri
+- ProGuard kuralları güncellenerek yeni eklenen `com.lagradost.cloudstream3.R` stub sınıfları ve `org.schabi.newpipe.extractor` paketlerindeki sınıfların R8 optimizasyonları/minify sırasında silinmesi veya şifrelenmesi engellendi. Böylece dinamik eklentilerin çalışma zamanında çökmesi önlendi.

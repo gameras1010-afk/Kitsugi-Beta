@@ -25,7 +25,7 @@ android {
     val simklSecret       = localProperties.getProperty("simkl_client_secret")   ?: "81d3253f90d1f2c0c4ea55af6ca317861e5f40d43c16255eeabd57fc51c73f1c"
     val animeSkipClientId = localProperties.getProperty("anime_skip_client_id")  ?: "5mpKIMeowxmJ4UvAWacdPEzNbfXEjZDv"
 
-    val appVersionName = "2.4.131"
+    val appVersionName = "2.4.132"
 
     compileSdk = 36
 
@@ -280,7 +280,7 @@ dependencies {
     // Cloudstream3 library and dependencies
     implementation("com.lagradost.api:library-android:1.0.2-local") {
         exclude(group = "org.mozilla", module = "rhino")
-        exclude(group = "com.github.AmaryllisVFX", module = "newpipeextractor")
+        // exclude(group = "com.github.AmaryllisVFX", module = "newpipeextractor")
         exclude(group = "info.debatty", module = "java-string-similarity")
         // Exclude old Jackson bundled in cloudstream library â€” we force 2.18.3 below
         exclude(group = "com.fasterxml.jackson.core")
