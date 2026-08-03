@@ -208,7 +208,7 @@ internal fun CloudstreamExtensionsTab(
                             Triple("⚡ Makoto2 (Sertel392)", "Makoto2 geçici Türkçe dizi/film eklenti deposu.", "https://raw.githubusercontent.com/Sertel392/Makotogecici/main/repo.json"),
                             Triple("⚡ Cağatay Repo (caca1403)", "Cağatay Türkçe dizi/film eklenti deposu.", "https://raw.githubusercontent.com/caca1403/cloudstream-cagi-eklenti/main/repo.json"),
                             Triple("🌍 ReCloudStream Eklentileri", "Uluslararası içerikler için resmi CloudStream eklentileri deposu.", "https://raw.githubusercontent.com/recloudstream/extensions/master/repo.json"),
-                            Triple("🔗 CS3 Hexated (Stremio Bridge)", "Stremio köprüsü eklentilerini içeren Hexated deposu.", "https://codeberg.org/cloudstream/cloudstream-extensions-hexated/raw/branch/builds/repo.json")
+                            Triple("🔗 CS3 Hexated (Stremio Bridge)", "Stremio köprüsü eklentilerini içeren Hexated deposu.", "https://raw.githubusercontent.com/hexated/cloudstream-extensions-hexated/builds/repo.json")
                         )
                         predefinedRepos.forEach { (name, desc, url) ->
                             val isAdded = repos.any { it.repoUrl.trim().lowercase() == url.trim().lowercase() }

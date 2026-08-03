@@ -19,8 +19,10 @@ import java.util.zip.ZipFile
 import okhttp3.Request
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 object CsPluginLoader {
 
@@ -124,8 +126,10 @@ object CsPluginLoader {
      * Unloads a loaded extension fully, clearing its APIs, extractors, and actions
      * to prevent memory leaks and duplicate registrations.
      */
-    suspend fun unloadExtension(context: Context, scraperId: String) = loadMutex.withLock {
-        unloadExtensionInternal(context, scraperId)
+    suspend fun unloadExtension(context: Context, scraperId: String) = withContext(Dispatchers.IO) {
+        loadMutex.withLock {
+            unloadExtensionInternal(context, scraperId)
+        }
     }
 
     private fun File.sha256(): String {
@@ -219,8 +223,9 @@ object CsPluginLoader {
      *  2. Read manifest.json via loader.getResourceAsStream() — same as original.
      *  3. Instantiate the plugin class and call load(context) or load().
      */
-    suspend fun loadExtension(context: Context, scraperId: String, forceReload: Boolean = false): List<MainAPI> = loadMutex.withLock {
-        val cs3File = File(context.filesDir, "cs_extensions/$scraperId.cs3")
+    suspend fun loadExtension(context: Context, scraperId: String, forceReload: Boolean = false): List<MainAPI> = withContext(Dispatchers.IO) {
+        loadMutex.withLock {
+            val cs3File = File(context.filesDir, "cs_extensions/$scraperId.cs3")
         val absolutePath = cs3File.absolutePath
 
         if (!cs3File.exists()) {
@@ -526,6 +531,7 @@ object CsPluginLoader {
             emptyList()
         }
     }
+}
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
 

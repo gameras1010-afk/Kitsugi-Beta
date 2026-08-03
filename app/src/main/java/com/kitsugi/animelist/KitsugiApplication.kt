@@ -398,6 +398,7 @@ class KitsugiApplication : Application(), SingletonImageLoader.Factory {
                     } catch (e: Exception) {
                         android.util.Log.w("KitsugiApplication", "Pre-load failed for ${plugin.id}: ${e.message}")
                     }
+                    kotlinx.coroutines.delay(50L)
                 }
                 android.util.Log.d("KitsugiApplication", "Plugin pre-loading complete.")
             } catch (e: Exception) {
