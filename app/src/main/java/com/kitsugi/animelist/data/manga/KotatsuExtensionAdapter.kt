@@ -38,8 +38,11 @@ object KotatsuExtensionAdapter {
 
     // T4-11: Bounded scope — SupervisorJob so one child failure doesn't cancel siblings
     private val adapterScope = CoroutineScope(
-        SupervisorJob() + Dispatchers.IO + CoroutineExceptionHandler { _, t ->
-            Log.e(TAG, "Uncaught coroutine error: ${t.message}", t)
+        SupervisorJob() + Dispatchers.IO + object : CoroutineExceptionHandler {
+            override val key: kotlin.coroutines.CoroutineContext.Key<*> get() = CoroutineExceptionHandler.Key
+            override fun handleException(context: kotlin.coroutines.CoroutineContext, exception: Throwable) {
+                Log.e(TAG, "Uncaught coroutine error: ${exception.message}", exception)
+            }
         }
     )
 

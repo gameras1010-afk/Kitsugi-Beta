@@ -133,6 +133,15 @@ class Media3PlayerEngine(
     private var audioSampleRate: Int? = null
     private var audioLanguage: String? = null
 
+    /** Hazırlık sırasında motorun aldığı SubtitleInput listesi (dahili/harici bayrağını taşır). */
+    private var preparedSubtitles: List<SubtitleInput> = emptyList()
+    /**
+     * İlk otomatik parça seçimi tamamlandı mı?
+     * true = tamamlandı (kullanıcı manuel değişiklik yapabilir, tekrar tetiklenmez)
+     * false = henüz yapılmadı (bir sonraki onTracksChanged'de çalışacak)
+     */
+    private var initialSelectionDone: Boolean = false
+
     override val activeStreamInfo: StreamInfoData
         get() = StreamInfoData(
             addonName = currentAddonName ?: "Dahili",
@@ -274,32 +283,82 @@ class Media3PlayerEngine(
                 }
             }
 
-            // Fallback: If audio tracks exist but DefaultTrackSelector selected none of them, force select the first one.
-            val isAnyAudioSelected = audioOptions.any { it.isSelected }
-            if (!isAnyAudioSelected && audioOptions.isNotEmpty()) {
-                val defaultAudio = audioOptions.first()
-                Log.w(TAG, "No audio track selected by TrackSelector. Auto-selecting first track: ${defaultAudio.label}")
-                selectTrack(defaultAudio)
-            }
+            // ── Otomatik parça seçimi — yalnızca ilk yükleme için (kullanıcı değişikliklerini ezmez) ──
+            if (!initialSelectionDone) {
+                initialSelectionDone = true
+                val preferredLangs = settings.preferredSubtitleLanguages
+                    .split(",").map { it.trim().lowercase() }.filter { it.isNotEmpty() }
 
-            // Fallback: If subtitles are not disabled, but none is selected, auto-select preferred or first one.
-            if (!isSubtitleDisabled && textOptions.isNotEmpty()) {
-                val isAnySubSelected = textOptions.any { it.isSelected }
-                if (!isAnySubSelected) {
-                    val preferredLangs = settings.preferredSubtitleLanguages.split(",").map { it.trim().lowercase() }
-                    var bestSub = textOptions.find { opt ->
-                        val format = opt.group.getTrackFormat(opt.trackIndex)
-                        val lang = format.language ?: ""
-                        preferredLangs.any { pref ->
-                            com.kitsugi.animelist.core.player.PlayerSubtitleUtils.matchesLanguageCode(lang, pref)
+                // ── Ses parçası: Türkçe önce, sonra tercih listesi ─────────────────────
+                val isAnyAudioSelected2 = audioOptions.any { it.isSelected }
+                if (!isAnyAudioSelected2 && audioOptions.isNotEmpty()) {
+                    val preferredAudio = audioOptions.find { opt ->
+                        val lang = opt.group.getTrackFormat(opt.trackIndex).language ?: ""
+                        com.kitsugi.animelist.core.player.PlayerSubtitleUtils.isTurkishLang(lang)
+                    } ?: run {
+                        // Tercih listesine göre ses parçası bul
+                        var found: TrackOption? = null
+                        for (lang in preferredLangs) {
+                            found = audioOptions.find { opt ->
+                                val l = opt.group.getTrackFormat(opt.trackIndex).language ?: ""
+                                com.kitsugi.animelist.core.player.PlayerSubtitleUtils.matchesLanguageCode(l, lang)
+                            }
+                            if (found != null) break
                         }
+                        found ?: audioOptions.firstOrNull()
                     }
-                    if (bestSub == null) {
-                        bestSub = textOptions.firstOrNull()
-                    }
-                    bestSub?.let {
-                        Log.i(TAG, "Auto-selecting best subtitle track: ${it.label}")
+                    preferredAudio?.let {
+                        Log.i(TAG, "Auto-selecting audio track: ${it.label}")
                         selectTrack(it)
+                    }
+                }
+
+                // ── Altyazı: Öncelik hiyerarşisi ─────────────────────────────────────
+                // 1. Dahili (stream içi) Türkçe  — preparedSubtitles listesinde isExternal=false olanlara karşılık gelir
+                // 2. Harici/addon Türkçe          — preparedSubtitles listesinde isExternal=true olanlar
+                // 3. Kullanıcı tercih dilleri
+                // 4. İlk mevcut altyazı
+                if (!isSubtitleDisabled && textOptions.isNotEmpty()) {
+                    val isAnySubSelected = textOptions.any { it.isSelected }
+                    if (!isAnySubSelected) {
+                        // Adım 1: Dahili Türkçe — stream içinde gömülü, ExoPlayer tarafından sunulan
+                        val internalTurkishSub = textOptions.find { opt ->
+                            val format = opt.group.getTrackFormat(opt.trackIndex)
+                            val lang = format.language ?: ""
+                            com.kitsugi.animelist.core.player.PlayerSubtitleUtils.isTurkishLang(lang)
+                                && preparedSubtitles.none { sub ->
+                                    sub.isExternal && sub.lang.isNotBlank() &&
+                                    com.kitsugi.animelist.core.player.PlayerSubtitleUtils.matchesLanguageCode(sub.lang, lang)
+                               }
+                        }
+
+                        // Adım 2: Harici Türkçe (addon'dan yüklenen)
+                        val externalTurkishSub = if (internalTurkishSub == null) {
+                            textOptions.find { opt ->
+                                val format = opt.group.getTrackFormat(opt.trackIndex)
+                                val lang = format.language ?: ""
+                                com.kitsugi.animelist.core.player.PlayerSubtitleUtils.isTurkishLang(lang)
+                            }
+                        } else null
+
+                        // Adım 3: Kullanıcı tercih listesi
+                        val preferredSub = if (internalTurkishSub == null && externalTurkishSub == null) {
+                            var found: TrackOption? = null
+                            for (lang in preferredLangs) {
+                                found = textOptions.find { opt ->
+                                    val l = opt.group.getTrackFormat(opt.trackIndex).language ?: ""
+                                    com.kitsugi.animelist.core.player.PlayerSubtitleUtils.matchesLanguageCode(l, lang)
+                                }
+                                if (found != null) break
+                            }
+                            found
+                        } else null
+
+                        val bestSub = internalTurkishSub ?: externalTurkishSub ?: preferredSub ?: textOptions.firstOrNull()
+                        bestSub?.let {
+                            Log.i(TAG, "Auto-selecting subtitle track: ${it.label}")
+                            selectTrack(it)
+                        }
                     }
                 }
             }
@@ -346,92 +405,94 @@ class Media3PlayerEngine(
     @Volatile private var effectiveDv7Mode: Dv7HandlingMode = Dv7HandlingMode.AUTO
 
     private fun initializePlayer() {
-        if (exoPlayer != null) return
-        val loadControl = BitrateAwareLoadControl(
-            minBufferMs = settings.minBufferMs,
-            maxBufferMs = settings.maxBufferMs,
-            bufferForPlaybackMs = settings.bufferForPlaybackMs,
-            bufferForPlaybackAfterRebufferMs = settings.bufferForPlaybackAfterRebufferMs,
-            prioritizeTimeOverSizeThresholds = true,
-            backBufferDurationMs = settings.backBufferDurationMs,
-            retainBackBufferFromKeyframe = false
-        )
-        val renderersFactory = object : DefaultRenderersFactory(context) {
-            override fun buildAudioSink(
-                context: Context,
-                enableFloatOutput: Boolean,
-                enableAudioTrackPlaybackParams: Boolean
-            ): androidx.media3.exoplayer.audio.AudioSink? {
-                val caps = androidx.media3.exoplayer.audio.AudioCapabilities.getCapabilities(context)
-                return androidx.media3.exoplayer.audio.DefaultAudioSink.Builder(context)
-                    .setAudioCapabilities(caps)
-                    .setAudioProcessors(arrayOf(gainAudioProcessor))
-                    .setEnableFloatOutput(enableFloatOutput)
-                    .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
+        runOnMainThread {
+            if (exoPlayer != null) return@runOnMainThread
+            val loadControl = BitrateAwareLoadControl(
+                minBufferMs = settings.minBufferMs,
+                maxBufferMs = settings.maxBufferMs,
+                bufferForPlaybackMs = settings.bufferForPlaybackMs,
+                bufferForPlaybackAfterRebufferMs = settings.bufferForPlaybackAfterRebufferMs,
+                prioritizeTimeOverSizeThresholds = true,
+                backBufferDurationMs = settings.backBufferDurationMs,
+                retainBackBufferFromKeyframe = false
+            )
+            val renderersFactory = object : DefaultRenderersFactory(context) {
+                override fun buildAudioSink(
+                    context: Context,
+                    enableFloatOutput: Boolean,
+                    enableAudioTrackPlaybackParams: Boolean
+                ): androidx.media3.exoplayer.audio.AudioSink? {
+                    val caps = androidx.media3.exoplayer.audio.AudioCapabilities.getCapabilities(context)
+                    return androidx.media3.exoplayer.audio.DefaultAudioSink.Builder(context)
+                        .setAudioCapabilities(caps)
+                        .setAudioProcessors(arrayOf(gainAudioProcessor))
+                        .setEnableFloatOutput(enableFloatOutput)
+                        .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
+                        .build()
+                }
+            }.apply {
+                val mode = if (settings.decoderPriority == 0) {
+                    androidx.media3.exoplayer.DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON
+                } else {
+                    settings.decoderPriority
+                }
+                setExtensionRendererMode(mode)
+                setEnableDecoderFallback(true)
+            }
+
+            val preferredLangs = settings.preferredSubtitleLanguages.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+            val preferredAudioLangs = listOf("tr", "tur", "en", "eng", "ja", "jpn", "zxx", "und")
+            val localSelector = androidx.media3.exoplayer.trackselection.DefaultTrackSelector(context).apply {
+                parameters = buildUponParameters()
+                    .setPreferredAudioLanguages(*preferredAudioLangs.toTypedArray())
+                    .setPreferredTextLanguages(*preferredLangs.toTypedArray())
+                    .setSelectUndeterminedTextLanguage(true)
                     .build()
             }
-        }.apply {
-            val mode = if (settings.decoderPriority == 0) {
-                androidx.media3.exoplayer.DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON
+            this.trackSelector = localSelector
+
+            val baseBuilder = ExoPlayer.Builder(context)
+                .setTrackSelector(localSelector)
+                .setLoadControl(loadControl)
+
+            exoPlayer = if (settings.enableAssExtractor) {
+                val dsFactoryForAss = mediaSourceFactory.buildDataSourceFactory(
+                    addonName = null,
+                    headers = emptyMap(),
+                    videoUrl = "",
+                    streamTitle = null,
+                    isCS = false,
+                    qualityValue = null
+                )
+                baseBuilder.buildWithAssSupportCompat(
+                    context = context,
+                    renderType = io.github.peerless2012.ass.media.type.AssRenderType.CUES,
+                    playerMediaSourceFactory = mediaSourceFactory,
+                    dataSourceFactory = dsFactoryForAss,
+                    extractorsFactory = DefaultExtractorsFactory()
+                        .setTsExtractorFlags(DefaultTsPayloadReaderFactory.FLAG_ENABLE_HDMV_DTS_AUDIO_STREAMS)
+                        .setTsExtractorTimestampSearchBytes(1500 * TsExtractor.TS_PACKET_SIZE),
+                    renderersFactory = renderersFactory
+                )
             } else {
-                settings.decoderPriority
+                baseBuilder
+                    .setRenderersFactory(renderersFactory)
+                    .build()
+            }.apply {
+                playWhenReady = true
+                addListener(playerListener)
+                // Set proper AudioAttributes so Android audio focus is handled correctly.
+                // Without this, MIUI/Xiaomi may silently duck or mute media audio.
+                setAudioAttributes(
+                    androidx.media3.common.AudioAttributes.Builder()
+                        .setUsage(androidx.media3.common.C.USAGE_MEDIA)
+                        .setContentType(androidx.media3.common.C.AUDIO_CONTENT_TYPE_MOVIE)
+                        .build(),
+                    /* handleAudioFocus = */ true
+                )
             }
-            setExtensionRendererMode(mode)
-            setEnableDecoderFallback(true)
+            playerView?.player = exoPlayer
         }
-
-        val preferredLangs = settings.preferredSubtitleLanguages.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-        val preferredAudioLangs = listOf("tr", "tur", "en", "eng", "ja", "jpn", "zxx", "und")
-        val localSelector = androidx.media3.exoplayer.trackselection.DefaultTrackSelector(context).apply {
-            parameters = buildUponParameters()
-                .setPreferredAudioLanguages(*preferredAudioLangs.toTypedArray())
-                .setPreferredTextLanguages(*preferredLangs.toTypedArray())
-                .setSelectUndeterminedTextLanguage(true)
-                .build()
-        }
-        this.trackSelector = localSelector
-
-        val baseBuilder = ExoPlayer.Builder(context)
-            .setTrackSelector(localSelector)
-            .setLoadControl(loadControl)
-
-        exoPlayer = if (settings.enableAssExtractor) {
-            val dsFactoryForAss = mediaSourceFactory.buildDataSourceFactory(
-                addonName = null,
-                headers = emptyMap(),
-                videoUrl = "",
-                streamTitle = null,
-                isCS = false,
-                qualityValue = null
-            )
-            baseBuilder.buildWithAssSupportCompat(
-                context = context,
-                renderType = io.github.peerless2012.ass.media.type.AssRenderType.CUES,
-                playerMediaSourceFactory = mediaSourceFactory,
-                dataSourceFactory = dsFactoryForAss,
-                extractorsFactory = DefaultExtractorsFactory()
-                    .setTsExtractorFlags(DefaultTsPayloadReaderFactory.FLAG_ENABLE_HDMV_DTS_AUDIO_STREAMS)
-                    .setTsExtractorTimestampSearchBytes(1500 * TsExtractor.TS_PACKET_SIZE),
-                renderersFactory = renderersFactory
-            )
-        } else {
-            baseBuilder
-                .setRenderersFactory(renderersFactory)
-                .build()
-        }.apply {
-            playWhenReady = true
-            addListener(playerListener)
-            // Set proper AudioAttributes so Android audio focus is handled correctly.
-            // Without this, MIUI/Xiaomi may silently duck or mute media audio.
-            setAudioAttributes(
-                androidx.media3.common.AudioAttributes.Builder()
-                    .setUsage(androidx.media3.common.C.USAGE_MEDIA)
-                    .setContentType(androidx.media3.common.C.AUDIO_CONTENT_TYPE_MOVIE)
-                    .build(),
-                /* handleAudioFocus = */ true
-            )
-        }
-        playerView?.player = exoPlayer
     }
 
     init {
@@ -478,6 +539,9 @@ class Media3PlayerEngine(
         this.currentAddonName = addonName
         this.isCsSource = isCS
         this.streamTitle = streamTitle
+        // Yeni ortam için otomatik parça seçimini sıfırla
+        this.preparedSubtitles = subtitles
+        this.initialSelectionDone = false
 
         // ── T1.13: Start diagnostics & analytics session ──────────────────────
         val sessionId = java.util.UUID.randomUUID().toString().take(8)
@@ -723,59 +787,64 @@ class Media3PlayerEngine(
 
     override fun setSubtitleStyle(style: SubtitleStyleSettings) {
         currentSubtitleStyle = style
-        applySubtitleStylesToView()
+        runOnMainThread { applySubtitleStylesToView() }
     }
 
     override fun setResizeMode(resizeMode: Int) {
         currentResizeMode = resizeMode
-        applyAspectMode()
+        runOnMainThread { applyAspectMode() }
     }
 
     override fun setAspectMode(mode: com.kitsugi.animelist.core.player.PlayerAspectMode) {
         currentAspectMode = mode
         currentResizeMode = com.kitsugi.animelist.core.player.PlayerAspectScaleUtils.getMedia3ResizeMode(mode)
-        applyAspectMode()
+        runOnMainThread { applyAspectMode() }
     }
 
     private fun applyAspectMode() {
-        val pv = playerView ?: return
-        val contentFrame = pv.findViewById<androidx.media3.ui.AspectRatioFrameLayout>(androidx.media3.ui.R.id.exo_content_frame) ?: return
-        val overrideRatio = com.kitsugi.animelist.core.player.PlayerAspectScaleUtils.getMedia3AspectRatioOverride(currentAspectMode)
-        if (overrideRatio > 0f) {
-            contentFrame.setAspectRatio(overrideRatio)
-        } else {
-            val w = videoWidth ?: 0
-            val h = videoHeight ?: 0
-            if (w > 0 && h > 0) {
-                contentFrame.setAspectRatio(w.toFloat() / h)
+        runOnMainThread {
+            val pv = playerView ?: return@runOnMainThread
+            val contentFrame = pv.findViewById<androidx.media3.ui.AspectRatioFrameLayout>(androidx.media3.ui.R.id.exo_content_frame) ?: return@runOnMainThread
+            val overrideRatio = com.kitsugi.animelist.core.player.PlayerAspectScaleUtils.getMedia3AspectRatioOverride(currentAspectMode)
+            if (overrideRatio > 0f) {
+                contentFrame.setAspectRatio(overrideRatio)
+            } else {
+                val w = videoWidth ?: 0
+                val h = videoHeight ?: 0
+                if (w > 0 && h > 0) {
+                    contentFrame.setAspectRatio(w.toFloat() / h)
+                }
             }
+            pv.resizeMode = currentResizeMode
         }
-        pv.resizeMode = currentResizeMode
     }
 
     override fun selectTrack(trackOption: TrackOption) {
-        val player = exoPlayer ?: return
-        val isSubtitle = trackOption.group.type == C.TRACK_TYPE_TEXT
-        val type = if (isSubtitle) C.TRACK_TYPE_TEXT else C.TRACK_TYPE_AUDIO
-
-        player.trackSelectionParameters = player.trackSelectionParameters
-            .buildUpon()
-            .setTrackTypeDisabled(type, false)
-            .setOverrideForType(
-                TrackSelectionOverride(
-                    trackOption.group.mediaTrackGroup,
-                    trackOption.trackIndex
+        runOnMainThread {
+            val player = exoPlayer ?: return@runOnMainThread
+            val isSubtitle = trackOption.group.type == C.TRACK_TYPE_TEXT
+            val type = if (isSubtitle) C.TRACK_TYPE_TEXT else C.TRACK_TYPE_AUDIO
+            player.trackSelectionParameters = player.trackSelectionParameters
+                .buildUpon()
+                .setTrackTypeDisabled(type, false)
+                .setOverrideForType(
+                    TrackSelectionOverride(
+                        trackOption.group.mediaTrackGroup,
+                        trackOption.trackIndex
+                    )
                 )
-            )
-            .build()
+                .build()
+        }
     }
 
     override fun disableSubtitles() {
-        val player = exoPlayer ?: return
-        player.trackSelectionParameters = player.trackSelectionParameters
-            .buildUpon()
-            .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
-            .build()
+        runOnMainThread {
+            val player = exoPlayer ?: return@runOnMainThread
+            player.trackSelectionParameters = player.trackSelectionParameters
+                .buildUpon()
+                .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
+                .build()
+        }
     }
 
     override fun createVideoView(context: Context): View {
@@ -806,40 +875,42 @@ class Media3PlayerEngine(
     }
 
     private fun applySubtitleStylesToView() {
-        val pv = playerView ?: return
-        pv.subtitleView?.let { subtitleView ->
-            subtitleView.setApplyEmbeddedStyles(false)
-            subtitleView.setApplyEmbeddedFontSizes(false)
-            
-            val edgeType = if (currentSubtitleStyle.outlineEnabled) {
-                CaptionStyleCompat.EDGE_TYPE_OUTLINE
-            } else {
-                CaptionStyleCompat.EDGE_TYPE_NONE
+        runOnMainThread {
+            val pv = playerView ?: return@runOnMainThread
+            pv.subtitleView?.let { subtitleView ->
+                subtitleView.setApplyEmbeddedStyles(false)
+                subtitleView.setApplyEmbeddedFontSizes(false)
+                
+                val edgeType = if (currentSubtitleStyle.outlineEnabled) {
+                    CaptionStyleCompat.EDGE_TYPE_OUTLINE
+                } else {
+                    CaptionStyleCompat.EDGE_TYPE_NONE
+                }
+                val typeface = if (currentSubtitleStyle.bold) {
+                    android.graphics.Typeface.DEFAULT_BOLD
+                } else {
+                    android.graphics.Typeface.DEFAULT
+                }
+                
+                val captionStyle = CaptionStyleCompat(
+                    currentSubtitleStyle.textColor,
+                    android.graphics.Color.TRANSPARENT,
+                    android.graphics.Color.TRANSPARENT,
+                    edgeType,
+                    android.graphics.Color.BLACK,
+                    typeface
+                )
+                subtitleView.setStyle(captionStyle)
+                subtitleView.setFixedTextSize(
+                    TypedValue.COMPLEX_UNIT_SP,
+                    currentSubtitleStyle.size.toFloat()
+                )
+                
+                val density = context.resources.displayMetrics.density
+                val translation = -currentSubtitleStyle.verticalOffset.toFloat() * density
+                subtitleView.translationY = translation
+                assSubtitleView?.translationY = translation
             }
-            val typeface = if (currentSubtitleStyle.bold) {
-                android.graphics.Typeface.DEFAULT_BOLD
-            } else {
-                android.graphics.Typeface.DEFAULT
-            }
-            
-            val captionStyle = CaptionStyleCompat(
-                currentSubtitleStyle.textColor,
-                android.graphics.Color.TRANSPARENT,
-                android.graphics.Color.TRANSPARENT,
-                edgeType,
-                android.graphics.Color.BLACK,
-                typeface
-            )
-            subtitleView.setStyle(captionStyle)
-            subtitleView.setFixedTextSize(
-                TypedValue.COMPLEX_UNIT_SP,
-                currentSubtitleStyle.size.toFloat()
-            )
-            
-            val density = context.resources.displayMetrics.density
-            val translation = -currentSubtitleStyle.verticalOffset.toFloat() * density
-            subtitleView.translationY = translation
-            assSubtitleView?.translationY = translation
         }
     }
 

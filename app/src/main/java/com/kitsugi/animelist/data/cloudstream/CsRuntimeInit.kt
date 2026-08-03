@@ -37,8 +37,35 @@ object CsRuntimeInit {
                 .writeTimeout(30, TimeUnit.SECONDS)
                 .addInterceptor { chain ->
                     val original = chain.request()
+                    val urlStr = original.url.toString()
+                    var newUrl = urlStr
+                    var hostHeader: String? = null
+
+                    if (urlStr.contains("boxyz.cfd/CDN/001_STR/boxyz.cfd/spor_v2.php")) {
+                        newUrl = "https://diziboxen.help/CDN/001/002/dizibox/tv/list1.php"
+                        hostHeader = "diziboxen.help"
+                    } else if (urlStr.contains("dizibox.cfd/tv/cable.php")) {
+                        newUrl = "https://diziboxen.help/CDN/001/002/dizibox/tv/list1.php"
+                        hostHeader = "diziboxen.help"
+                    } else if (urlStr.contains("dizibox.cfd")) {
+                        newUrl = urlStr.replace("dizibox.cfd", "diziboxen.help/CDN/001/002/dizibox")
+                        hostHeader = "diziboxen.help"
+                    } else if (urlStr.contains("boxyz.cfd")) {
+                        newUrl = urlStr.replace("boxyz.cfd", "diziboxen.help/CDN/001/002/dizibox")
+                        hostHeader = "diziboxen.help"
+                    }
+
+                    val requestBuilder = if (newUrl != urlStr) {
+                        original.newBuilder().url(newUrl)
+                    } else {
+                        original.newBuilder()
+                    }
+
+                    if (hostHeader != null) {
+                        requestBuilder.header("Host", hostHeader)
+                    }
+
                     val hasUserAgent = original.header("User-Agent") != null
-                    val requestBuilder = original.newBuilder()
                     if (!hasUserAgent) {
                         requestBuilder.header("User-Agent", com.lagradost.cloudstream3.network.CloudflareKiller.UNIFIED_USER_AGENT)
                     }

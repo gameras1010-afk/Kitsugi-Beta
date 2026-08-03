@@ -149,4 +149,101 @@ object PlayerSubtitleUtils {
             else -> lang.uppercase()
         }
     }
+
+    /** Verilen dil string'inin Türkçe olup olmadığını döner. */
+    fun isTurkishLang(lang: String?): Boolean {
+        if (lang.isNullOrBlank()) return false
+        return matchesLanguageCode(lang.trim(), "tr")
+    }
+
+    /**
+     * SubtitleInput listesinden en iyi altyazıyı seçer.
+     *
+     * Öncelik sırası:
+     *  1. Dahili (isExternal=false) Türkçe altyazı
+     *  2. Harici/addon (isExternal=true) Türkçe altyazı
+     *  3. Kullanıcı tercih listesindeki ilk eşleşme (sırasıyla)
+     *  4. Listedeki ilk altyazı (fallback)
+     *
+     * @param subtitles      Aranacak SubtitleInput listesi
+     * @param preferredLangs Kullanıcı tercih dil listesi (BCP-47, örn: ["tr", "en"])
+     */
+    fun findBestSubtitleInput(
+        subtitles: List<SubtitleInput>,
+        preferredLangs: List<String>
+    ): SubtitleInput? {
+        if (subtitles.isEmpty()) return null
+
+        // 1. Dahili (gömülü) Türkçe
+        subtitles.firstOrNull { !it.isExternal && isTurkishLang(it.lang) }?.let { return it }
+
+        // 2. Harici/addon Türkçe
+        subtitles.firstOrNull { it.isExternal && isTurkishLang(it.lang) }?.let { return it }
+
+        // 3. Kullanıcı tercih listesi sırasıyla
+        for (lang in preferredLangs) {
+            subtitles.firstOrNull { matchesLanguageCode(it.lang, lang) }?.let { return it }
+        }
+
+        // 4. Fallback: ilk altyazı
+        return subtitles.firstOrNull()
+    }
+
+    /**
+     * MPV track snapshot altyazılarından en iyi parçanın ID'sini seçer.
+     *
+     * Öncelik sırası:
+     *  1. Dahili (isExternal=false) Türkçe altyazı parçası
+     *  2. Harici (isExternal=true) Türkçe altyazı parçası
+     *  3. Kullanıcı tercih listesindeki ilk eşleşme
+     *  4. İlk mevcut parça (fallback)
+     *
+     * @param subtitleTracks MPV track snapshot altyazı listesi (MpvTrack)
+     * @param preferredLangs Kullanıcı tercih dil listesi
+     */
+    fun findBestMpvSubtitleTrack(
+        subtitleTracks: List<com.kitsugi.animelist.core.player.engine.MpvTrack>,
+        preferredLangs: List<String>
+    ): com.kitsugi.animelist.core.player.engine.MpvTrack? {
+        if (subtitleTracks.isEmpty()) return null
+
+        // 1. Dahili Türkçe
+        subtitleTracks.firstOrNull { !it.isExternal && isTurkishLang(it.language) }?.let { return it }
+
+        // 2. Harici Türkçe
+        subtitleTracks.firstOrNull { it.isExternal && isTurkishLang(it.language) }?.let { return it }
+
+        // 3. Kullanıcı tercih listesi
+        for (lang in preferredLangs) {
+            subtitleTracks.firstOrNull { matchesLanguageCode(it.language ?: "", lang) }?.let { return it }
+        }
+
+        // 4. Fallback
+        return subtitleTracks.firstOrNull()
+    }
+
+    /**
+     * MPV track snapshot ses parçalarından en iyi parçanın ID'sini seçer.
+     *
+     * Öncelik sırası:
+     *  1. Türkçe ses parçası
+     *  2. İlk mevcut ses parçası (fallback)
+     */
+    fun findBestMpvAudioTrack(
+        audioTracks: List<com.kitsugi.animelist.core.player.engine.MpvTrack>,
+        preferredLangs: List<String>
+    ): com.kitsugi.animelist.core.player.engine.MpvTrack? {
+        if (audioTracks.isEmpty()) return null
+
+        // 1. Türkçe ses
+        audioTracks.firstOrNull { isTurkishLang(it.language) }?.let { return it }
+
+        // 2. Kullanıcı tercih listesi
+        for (lang in preferredLangs) {
+            audioTracks.firstOrNull { matchesLanguageCode(it.language ?: "", lang) }?.let { return it }
+        }
+
+        // 3. Fallback
+        return audioTracks.firstOrNull()
+    }
 }

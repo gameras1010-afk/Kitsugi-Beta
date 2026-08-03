@@ -33,11 +33,13 @@ import androidx.compose.foundation.layout.FlowRow
 import coil3.compose.AsyncImage
 import com.kitsugi.animelist.data.repository.StreamSource
 import com.kitsugi.animelist.ui.theme.KitsugiColors
+import com.kitsugi.animelist.ui.theme.LocalBlurAdultMedia
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
 import com.kitsugi.animelist.ui.components.KitsugiImageGalleryDialog
+import com.kitsugi.animelist.ui.components.KitsugiNsfwImage
 
 /**
  * A single stream card showing quality/cache/addon badges and triggering playback on tap.
@@ -92,18 +94,20 @@ fun StreamCard(
             ) {
                 // ── Thumbnail (optional, poster style) ───────────────────
                 if (!source.thumbnailUrl.isNullOrBlank()) {
+                    val blurAdultMedia = LocalBlurAdultMedia.current
+                    val isClickable = !(blurAdultMedia && source.isAdultContent)
                     Box(
                         modifier = Modifier
                             .width(imgWidth)
                             .height(imgHeight)
                             .clip(RoundedCornerShape(10.dp))
                             .background(KitsugiColors.Surface)
-                            .clickable { showImageDialog = true }
+                            .clickable(enabled = isClickable) { showImageDialog = true }
                     ) {
-                        AsyncImage(
+                        KitsugiNsfwImage(
                             model = source.thumbnailUrl,
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
+                            contentDescription = source.name,
+                            isAdult = source.isAdultContent,
                             modifier = Modifier.fillMaxSize()
                         )
                         // Subtle bottom gradient

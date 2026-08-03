@@ -394,6 +394,7 @@ class AddonViewModel(application: Application) : AndroidViewModel(application) {
 
             var successCount = 0
             val failedNames = mutableListOf<String>()
+            val installedIds = mutableListOf<String>()
             for ((index, plugin) in toInstall.withIndex()) {
                 bulkInstallCurrentName = plugin.name
                 bulkInstallDone = index
@@ -406,20 +407,29 @@ class AddonViewModel(application: Application) : AndroidViewModel(application) {
                     }
                     if (installed) {
                         successCount++
-                        if (!isStremio) {
-                            try {
-                                com.kitsugi.animelist.data.cloudstream.CsPluginLoader.loadExtension(context, plugin.internalName)
-                            } catch (e: Exception) {
-                                android.util.Log.e("BulkInstall", "Failed to load extension ${plugin.internalName}", e)
-                            }
-                        }
+                        if (!isStremio) installedIds.add(plugin.internalName)
                     } else {
                         failedNames.add(plugin.name)
                     }
                 }
                 bulkInstallDone = index + 1
-                kotlinx.coroutines.delay(150L)
+                kotlinx.coroutines.delay(50L)
             }
+
+            // Eklentileri toplu yükleme — UI bloke etmeden arkaplanda
+            if (installedIds.isNotEmpty()) {
+                viewModelScope.launch {
+                    for (id in installedIds) {
+                        try {
+                            com.kitsugi.animelist.data.cloudstream.CsPluginLoader.loadExtension(context, id)
+                        } catch (e: Exception) {
+                            android.util.Log.e("BulkInstall", "Failed to load extension $id", e)
+                        }
+                        kotlinx.coroutines.delay(30L)
+                    }
+                }
+            }
+
             val failCount = failedNames.size
             bulkInstallResultMessage = when {
                 failCount == 0 -> "✅ $successCount eklenti başarıyla kuruldu!"
@@ -460,6 +470,7 @@ class AddonViewModel(application: Application) : AndroidViewModel(application) {
 
             var successCount = 0
             val failedNames = mutableListOf<String>()
+            val updatedIds = mutableListOf<String>()
             for ((index, plugin) in toUpdate.withIndex()) {
                 bulkInstallCurrentName = plugin.name
                 bulkInstallDone = index
@@ -467,18 +478,29 @@ class AddonViewModel(application: Application) : AndroidViewModel(application) {
                     val installed = csRepoRepository.installCsPlugin(plugin)
                     if (installed) {
                         successCount++
-                        try {
-                            com.kitsugi.animelist.data.cloudstream.CsPluginLoader.loadExtension(context, plugin.internalName, forceReload = true)
-                        } catch (e: Exception) {
-                            android.util.Log.e("BulkUpdate", "Failed to load extension ${plugin.internalName}", e)
-                        }
+                        updatedIds.add(plugin.internalName)
                     } else {
                         failedNames.add(plugin.name)
                     }
                 }
                 bulkInstallDone = index + 1
-                kotlinx.coroutines.delay(150L)
+                kotlinx.coroutines.delay(50L)
             }
+
+            // Güncellenen eklentileri toplu yükleme — UI bloke etmeden
+            if (updatedIds.isNotEmpty()) {
+                viewModelScope.launch {
+                    for (id in updatedIds) {
+                        try {
+                            com.kitsugi.animelist.data.cloudstream.CsPluginLoader.loadExtension(context, id, forceReload = true)
+                        } catch (e: Exception) {
+                            android.util.Log.e("BulkUpdate", "Failed to load extension $id", e)
+                        }
+                        kotlinx.coroutines.delay(30L)
+                    }
+                }
+            }
+
             val failCount = failedNames.size
             bulkInstallResultMessage = when {
                 failCount == 0 -> "✅ $successCount eklenti başarıyla güncellendi!"

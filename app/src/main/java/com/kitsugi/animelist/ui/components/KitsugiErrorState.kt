@@ -28,7 +28,8 @@ import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 fun KitsugiErrorState(
     message: String,
     modifier: Modifier = Modifier,
-    onRetryClick: (() -> Unit)? = null
+    onRetryClick: (() -> Unit)? = null,
+    actionButton: (@Composable () -> Unit)? = null
 ) {
     val accentColor = LocalKitsugiAccent.current
 
@@ -80,6 +81,10 @@ fun KitsugiErrorState(
                     fontWeight = FontWeight.SemiBold
                 )
             }
+        }
+        if (actionButton != null) {
+            Spacer(modifier = Modifier.height(12.dp))
+            actionButton()
         }
     }
 }

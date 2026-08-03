@@ -31,6 +31,15 @@ enum class ExplorePlatform(val label: String) {
     TMDB("TMDB")
 }
 
+/**
+ * Keşfet hatalarının türünü belirler — UI'da platforma özgü aksiyon butonları göstermek için.
+ * - [TmdbError]: TMDB API anahtarı geçersiz veya eksik → Ayarlara yönlendir
+ * - [AniListError]: AniList servis hatası veya token sorunları → Giriş yap
+ * - [MalError]: MAL/Jikan servis hatası → Giriş yap
+ * - [None]: Hata yok
+ */
+enum class ExploreErrorType { None, TmdbError, AniListError, MalError }
+
 class ExploreViewModel(application: Application) : AndroidViewModel(application) {
 
     private val apiClient = JikanApiClient(
@@ -59,6 +68,10 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         private set
 
     var errorMessage by mutableStateOf<String?>(null)
+        private set
+
+    /** Hatanın kaynağını belirtir — UI'da platforma özgü yönlendirme butonu göstermek için */
+    var exploreErrorType by mutableStateOf(ExploreErrorType.None)
         private set
 
     var isShowingCachedData by mutableStateOf(false)
@@ -247,6 +260,7 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         // Simkl kullanıcı şeritlerini temizleme — platform değişiminde de gözüksün
         heroIndex = 0
         errorMessage = null
+        exploreErrorType = ExploreErrorType.None
     }
 
     fun loadData(forceRefresh: Boolean = false) {
@@ -257,6 +271,7 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         loadJob = viewModelScope.launch {
             isLoading = true
             errorMessage = null
+            exploreErrorType = ExploreErrorType.None
 
             val platformSnapshot = selectedPlatform
 
@@ -273,6 +288,7 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
                     applyPayload(payload)
                     isFallbackInProgress = false
                     isShowingCachedData = false
+                    exploreErrorType = ExploreErrorType.None
 
                     // Cache successfully loaded payload in database
                     viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
@@ -324,7 +340,13 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
                         }
                         selectPlatform(nextPlatform, isFallback = true)
                     } else {
+                        // Tüm fallback'ler tükendi — platforma özgü hata tipini belirt
                         isFallbackInProgress = false
+                        exploreErrorType = when (platformSnapshot) {
+                            ExplorePlatform.TMDB    -> ExploreErrorType.TmdbError
+                            ExplorePlatform.AniList -> ExploreErrorType.AniListError
+                            ExplorePlatform.MAL     -> ExploreErrorType.MalError
+                        }
                     }
                 }
             } finally {
@@ -583,6 +605,25 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
 
     private suspend fun loadAniListData(): ExplorePayload = supervisorScope {
         val showAdult = showAdultContentState
+        val context = getApplication<Application>().applicationContext
+        val hasToken = !ExternalAuthManager.getAniListToken(context).isNullOrBlank()
+
+        if (!hasToken) {
+            // Token yok → AniList isteği yapma, Kitsu ile doldur
+            android.util.Log.d("ExploreViewModel", "AniList token yok → Kitsu keşfet")
+            return@supervisorScope loadKitsuData()
+        }
+
+        // Token var → AniList, ama ServiceDown exception alırsak Kitsu'ya düş
+        val serviceError = java.util.concurrent.atomic.AtomicReference<Throwable?>(null)
+        fun <T> Result<T>.orDefaultTracking(d: T): T {
+            exceptionOrNull()?.let { ex ->
+                if (ex is com.kitsugi.animelist.data.remote.AniListServiceDownException)
+                    serviceError.compareAndSet(null, ex)
+            }
+            return getOrDefault(d)!!
+        }
+
         val topAnimeDeferred = async { apiClient.aniListTopAnime(showAdultContent = showAdult) }
         val airingAnimeDeferred = async { apiClient.aniListAiringAnime(showAdultContent = showAdult) }
         val upcomingAnimeDeferred = async { apiClient.aniListUpcomingAnime(showAdultContent = showAdult) }
@@ -593,46 +634,70 @@ class ExploreViewModel(application: Application) : AndroidViewModel(application)
         val newlyAddedMangaDeferred = async { apiClient.aniListNewlyAddedManga(showAdultContent = showAdult) }
 
         val airingSoonDeferred = async {
-            val calendarClient = com.kitsugi.animelist.data.remote.KitsugiAiringCalendarClient()
-            val upcoming = runCatching { calendarClient.fetchUpcomingSchedule(limit = 15) }.getOrNull() ?: emptyList()
-            val nowSeconds = System.currentTimeMillis() / 1000L
-            upcoming
-                .filter { it.airingAt > nowSeconds }
-                .sortedBy { it.airingAt }
-                .take(15)
-                .map { entry ->
+            val cal = com.kitsugi.animelist.data.remote.KitsugiAiringCalendarClient()
+            val upcoming = runCatching { cal.fetchUpcomingSchedule(limit = 15) }.getOrNull() ?: emptyList()
+            val nowSec = System.currentTimeMillis() / 1000L
+            upcoming.filter { it.airingAt > nowSec }.sortedBy { it.airingAt }.take(15)
+                .map { e ->
                     JikanSearchResult(
-                        malId = entry.malId ?: entry.aniListId,
-                        title = entry.title,
-                        subtitle = "${entry.episode}. Bölüm",
-                        type = MediaType.Anime,
-                        total = null,
-                        score = entry.averageScore,
-                        isAdult = false,
-                        imageUrl = entry.coverUrl,
-                        year = null,
-                        source = "anilist",
-                        realMalId = entry.malId,
-                        titleEnglish = entry.titleEnglish,
-                        titleJapanese = entry.titleNative,
-                        nextAiringEpisode = "${entry.episode}|${entry.airingAt}"
+                        malId = e.malId ?: e.aniListId, title = e.title,
+                        subtitle = "${e.episode}. Bölüm", type = MediaType.Anime,
+                        total = null, score = e.averageScore, isAdult = false,
+                        imageUrl = e.coverUrl, year = null, source = "anilist",
+                        realMalId = e.malId, titleEnglish = e.titleEnglish,
+                        titleJapanese = e.titleNative,
+                        nextAiringEpisode = "${e.episode}|${e.airingAt}"
                     )
                 }
         }
 
+        val topAnime        = runCatching { topAnimeDeferred.await() }.orDefaultTracking(emptyList())
+        val airingAnime     = runCatching { airingAnimeDeferred.await() }.orDefaultTracking(emptyList())
+        val upcomingAnime   = runCatching { upcomingAnimeDeferred.await() }.orDefaultTracking(emptyList())
+        val topManga        = runCatching { topMangaDeferred.await() }.orDefaultTracking(emptyList())
+        val publishingManga = runCatching { publishingMangaDeferred.await() }.orDefaultTracking(emptyList())
+        val trendingManga   = runCatching { trendingMangaDeferred.await() }.orDefaultTracking(emptyList())
+        val newlyAddedAnime = runCatching { newlyAddedAnimeDeferred.await() }.orDefaultTracking(emptyList())
+        val newlyAddedManga = runCatching { newlyAddedMangaDeferred.await() }.orDefaultTracking(emptyList())
+        val airingSoon      = runCatching { airingSoonDeferred.await() }.getOrDefault(emptyList())
+
+        // AniList servis kesintisi tespit edildiyse Kitsu fallback
+        serviceError.get()?.let {
+            android.util.Log.w("ExploreViewModel", "AniList kapalı → Kitsu fallback: ${it.message}")
+            return@supervisorScope loadKitsuData()
+        }
+
         ExplorePayload(
-            topAnime = runCatching { topAnimeDeferred.await() }.getOrDefault(emptyList()),
-            airingAnime = runCatching { airingAnimeDeferred.await() }.getOrDefault(emptyList()),
-            upcomingAnime = runCatching { upcomingAnimeDeferred.await() }.getOrDefault(emptyList()),
-            topManga = runCatching { topMangaDeferred.await() }.getOrDefault(emptyList()),
-            publishingManga = runCatching { publishingMangaDeferred.await() }.getOrDefault(emptyList()),
-            trendingManga = runCatching { trendingMangaDeferred.await() }.getOrDefault(emptyList()),
-            newlyAddedAnime = runCatching { newlyAddedAnimeDeferred.await() }.getOrDefault(emptyList()),
-            newlyAddedManga = runCatching { newlyAddedMangaDeferred.await() }.getOrDefault(emptyList()),
-            trendingAnime = emptyList(),
-            movieAnime = emptyList(),
-            seasonalAnime = emptyList(),
-            airingSoonAnime = runCatching { airingSoonDeferred.await() }.getOrDefault(emptyList())
+            topAnime = topAnime, airingAnime = airingAnime, upcomingAnime = upcomingAnime,
+            topManga = topManga, publishingManga = publishingManga, trendingManga = trendingManga,
+            newlyAddedAnime = newlyAddedAnime, newlyAddedManga = newlyAddedManga,
+            trendingAnime = emptyList(), movieAnime = emptyList(), seasonalAnime = emptyList(),
+            airingSoonAnime = airingSoon
+        )
+    }
+
+    /** Kitsu API ile keşfet — token yokken veya AniList kapalıyken çalışır. */
+    private suspend fun loadKitsuData(): ExplorePayload = supervisorScope {
+        val client = com.kitsugi.animelist.data.remote.KitsuExploreClient
+        val topA   = async { runCatching { client.topAnime() }.getOrDefault(emptyList()) }
+        val airA   = async { runCatching { client.airingAnime() }.getOrDefault(emptyList()) }
+        val upA    = async { runCatching { client.upcomingAnime() }.getOrDefault(emptyList()) }
+        val topM   = async { runCatching { client.topManga() }.getOrDefault(emptyList()) }
+        val pubM   = async { runCatching { client.publishingManga() }.getOrDefault(emptyList()) }
+        val trnM   = async { runCatching { client.trendingManga() }.getOrDefault(emptyList()) }
+        val newA   = async { runCatching { client.newlyAddedAnime() }.getOrDefault(emptyList()) }
+        val newM   = async { runCatching { client.newlyAddedManga() }.getOrDefault(emptyList()) }
+
+        val rTopA = topA.await(); val rAirA = airA.await(); val rUpA = upA.await()
+        if (rTopA.isEmpty() && rAirA.isEmpty() && rUpA.isEmpty()) {
+            throw java.io.IOException("AniList ve Kitsu erişilemiyor, MAL yükleniyor...")
+        }
+        ExplorePayload(
+            topAnime = rTopA, airingAnime = rAirA, upcomingAnime = rUpA,
+            topManga = topM.await(), publishingManga = pubM.await(), trendingManga = trnM.await(),
+            newlyAddedAnime = newA.await(), newlyAddedManga = newM.await(),
+            trendingAnime = emptyList(), movieAnime = emptyList(),
+            seasonalAnime = emptyList(), airingSoonAnime = emptyList()
         )
     }
 

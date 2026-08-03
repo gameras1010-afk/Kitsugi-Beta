@@ -740,21 +740,22 @@ fun AppRoot(
 
     BackHandler(enabled = true) {
         when {
-            navState.mangaReaderNavState != null  -> navState.mangaReaderNavState = null
-            navState.mangaDetailNavState != null  -> navState.mangaDetailNavState = null
-            navState.mangaSourceHealthOpen        -> navState.closeMangaSourceHealth()
-            navState.mangaBrowseOpen              -> {
+            navState.mangaReaderNavState != null          -> navState.mangaReaderNavState = null
+            navState.mangaDetailNavState != null          -> navState.mangaDetailNavState = null
+            navState.mangaSourceHealthOpen                -> navState.closeMangaSourceHealth()
+            navState.mangaBrowseOpen                      -> {
                 mangaBrowseViewModel.reset()
                 navState.closeMangaBrowse()
             }
-            navState.detailBackStack.isNotEmpty() -> navState.popDetailStack()
-            navState.fullScreenGridState != null  -> navState.fullScreenGridState = null
-            appViewModel.popTabHistory()          -> { /* Tab history popped */ }
-            else                                  -> showExitConfirmDialog = true
+            navState.detailBackStack.isNotEmpty()         -> navState.popDetailStack()
+            navState.fullScreenGridState != null          -> navState.fullScreenGridState = null
+            navState.addonFullScreenGridState != null     -> navState.addonFullScreenGridState = null
+            appViewModel.popTabHistory()                  -> { /* Tab history popped */ }
+            else                                          -> showExitConfirmDialog = true
         }
     }
 
-    val isInFullScreenMode = navState.fullScreenGridState != null || navState.detailBackStack.isNotEmpty() || navState.mangaBrowseOpen || navState.mangaDetailNavState != null || navState.mangaReaderNavState != null || navState.mangaSourceHealthOpen
+    val isInFullScreenMode = navState.fullScreenGridState != null || navState.addonFullScreenGridState != null || navState.detailBackStack.isNotEmpty() || navState.mangaBrowseOpen || navState.mangaDetailNavState != null || navState.mangaReaderNavState != null || navState.mangaSourceHealthOpen
 
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -836,6 +837,7 @@ fun AppRoot(
                 val activeStudio = selectedStudioIdAndSource
 
                 val currentDepth = (if (activeFullScreenGrid != null) 1 else 0) +
+                                   (if (navState.addonFullScreenGridState != null) 1 else 0) +
                                    (if (navState.mangaBrowseOpen) 1 else 0) +
                                    (if (navState.mangaDetailNavState != null) 1 else 0) +
                                    (if (navState.mangaReaderNavState != null) 1 else 0) +
@@ -850,7 +852,10 @@ fun AppRoot(
                     activeCharacter != null      -> AppStateKey.CharacterDetail(activeCharacter.first, activeCharacter.second, depth = currentDepth, name = (activeScreen as? DetailScreen.CharacterDetail)?.name, imageUrl = (activeScreen as? DetailScreen.CharacterDetail)?.imageUrl)
                     activeApiResult != null      -> AppStateKey.ApiResultDetail(activeApiResult, depth = currentDepth)
                     activeDetailEntry != null    -> AppStateKey.MediaDetail(activeDetailEntry.id, depth = currentDepth)
-                    activeFullScreenGrid != null -> AppStateKey.FullScreenGrid(activeFullScreenGrid, depth = currentDepth)
+                    activeFullScreenGrid != null ->
+                        AppStateKey.FullScreenGrid(activeFullScreenGrid, depth = currentDepth)
+                    navState.addonFullScreenGridState != null ->
+                        AppStateKey.AddonFullScreenGrid(navState.addonFullScreenGridState!!, depth = currentDepth)
                     navState.mangaBrowseOpen              -> AppStateKey.MangaBrowse(depth = currentDepth)
                     activeScreen is DetailScreen.AiringCalendar -> AppStateKey.AiringCalendar(depth = currentDepth, preferredSource = activeScreen.preferredSource)
                     activeScreen is DetailScreen.Stats -> AppStateKey.Stats(depth = currentDepth)
@@ -1132,6 +1137,13 @@ private fun AppNavigationContent(
                     showAdultContent = appSettings.showAdultContent,
                     blurAdultMedia = appSettings.blurAdultMedia,
                     getMediaEntry = getMediaEntry
+                )
+            }
+
+            is AppStateKey.AddonFullScreenGrid -> {
+                com.kitsugi.animelist.ui.screens.fullscreen.AddonFullScreenGridPage(
+                    state = key.state,
+                    onBackClick = { navState.addonFullScreenGridState = null }
                 )
             }
 

@@ -298,11 +298,26 @@ class StreamViewModel(application: Application) : AndroidViewModel(application) 
             aniListId != null && aniListId > 0 -> aniListId
             else -> null
         }
-        val resolvedIds = KitsugiIdResolver.resolveIds(malId, realAniListId, tmdbId)
+
+        // Kitsu stableId offset: 300_000_000 + kitsuId
+        // AniList stableId offset: 100_000_000 + aniListId
+        // MAL ID ise offset'siz doğrudan değer
+        val kitsuNumericId: Int? = when {
+            malId != null && malId >= 300_000_000 -> malId - 300_000_000
+            else -> null
+        }
+        val realMalId: Int? = when {
+            malId != null && malId >= 300_000_000 -> null  // Kitsu kaynaklı — MAL ID değil
+            malId != null && malId >= 100_000_000 -> null  // AniList offset — MAL ID değil
+            malId != null && malId > 0 -> malId
+            else -> null
+        }
+
+        val resolvedIds = KitsugiIdResolver.resolveIds(realMalId, realAniListId, tmdbId, kitsuId = kitsuNumericId)
         _isResolvingId.value = false
 
         val resolvedImdbId = resolvedIds.imdbId
-        val resolvedKitsuId = resolvedIds.kitsuId
+        val resolvedKitsuId = resolvedIds.kitsuId ?: kitsuNumericId
         if (resolvedImdbId == null && resolvedKitsuId == null) {
             // ID çözümlenemedi — yine de CS plugin'leri başlık bazlı aramaya devam edecek.
             // idResolveFailed sadece bilgilendirme amaçlı set ediliyor, bloklamıyor.
@@ -461,9 +476,9 @@ class StreamViewModel(application: Application) : AndroidViewModel(application) 
                                     year             = startYear,
                                     season           = season,
                                     episode          = episode,
-                                    malId            = malId,
-                                    aniListId        = realAniListId,
-                                    tmdbId           = tmdbId
+                                    malId            = realMalId ?: resolvedIds.malId,
+                                    aniListId        = realAniListId ?: resolvedIds.aniListId,
+                                    tmdbId           = tmdbId ?: resolvedIds.tmdbId
                                 )
                                 csStreams.addAll(streams)
                             }

@@ -50,6 +50,7 @@ class AppNavigationState(
     var mangaDetailNavState by mutableStateOf<MangaDetailNavState?>(null)
     var mangaReaderNavState by mutableStateOf<MangaReaderNavState?>(null)
     var fullScreenGridState by mutableStateOf<FullScreenMediaGridState?>(null)
+    var addonFullScreenGridState by mutableStateOf<AddonFullScreenGridState?>(null)
     var previousBackStack by mutableStateOf<List<DetailScreen>>(emptyList())
 
     fun popDetailStack() {

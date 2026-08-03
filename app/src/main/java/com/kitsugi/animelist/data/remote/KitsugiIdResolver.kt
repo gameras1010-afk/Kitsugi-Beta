@@ -31,17 +31,39 @@ object KitsugiIdResolver {
         malId: Int?,
         aniListId: Int?,
         tmdbId: Int? = null,
-        mediaType: MediaType? = null
+        mediaType: MediaType? = null,
+        kitsuId: Int? = null
     ): ResolvedIds = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Starting ID resolution: malParam=$malId, aniListParam=$aniListId, tmdbParam=$tmdbId, mediaType=$mediaType")
+        Log.d(TAG, "Starting ID resolution: malParam=$malId, aniListParam=$aniListId, tmdbParam=$tmdbId, mediaType=$mediaType, kitsuParam=$kitsuId")
         
         var armJson: JSONObject? = null
         val isNonAnime = mediaType == MediaType.Movie || mediaType == MediaType.TvShow
         
-        if (isNonAnime) {
-            armJson = fetchArmJson("themoviedb", tmdbId)
+        if (kitsuId != null && kitsuId > 0) {
+            armJson = fetchArmJson("kitsu", kitsuId)
             if (armJson != null) {
-                Log.d(TAG, "Non-anime mapping prioritized: Successfully fetched ARM JSON for themoviedb: $tmdbId -> $armJson")
+                Log.d(TAG, "Kitsu mapping prioritized: Successfully fetched ARM JSON for kitsu: $kitsuId -> $armJson")
+            }
+        }
+        
+        if (armJson == null) {
+            if (isNonAnime) {
+                armJson = fetchArmJson("themoviedb", tmdbId)
+                if (armJson != null) {
+                    Log.d(TAG, "Non-anime mapping prioritized: Successfully fetched ARM JSON for themoviedb: $tmdbId -> $armJson")
+                } else {
+                    armJson = fetchArmJson("myanimelist", malId)
+                    if (armJson != null) {
+                        Log.d(TAG, "Successfully fetched ARM JSON for myanimelist: $malId -> $armJson")
+                    } else {
+                        armJson = fetchArmJson("anilist", aniListId)
+                        if (armJson != null) {
+                            Log.d(TAG, "Successfully fetched ARM JSON for anilist: $aniListId -> $armJson")
+                        } else {
+                            Log.w(TAG, "ARM lookup failed for all sources (tmdbId=$tmdbId, malId=$malId, aniListId=$aniListId)")
+                        }
+                    }
+                }
             } else {
                 armJson = fetchArmJson("myanimelist", malId)
                 if (armJson != null) {
@@ -51,24 +73,12 @@ object KitsugiIdResolver {
                     if (armJson != null) {
                         Log.d(TAG, "Successfully fetched ARM JSON for anilist: $aniListId -> $armJson")
                     } else {
-                        Log.w(TAG, "ARM lookup failed for all sources (tmdbId=$tmdbId, malId=$malId, aniListId=$aniListId)")
-                    }
-                }
-            }
-        } else {
-            armJson = fetchArmJson("myanimelist", malId)
-            if (armJson != null) {
-                Log.d(TAG, "Successfully fetched ARM JSON for myanimelist: $malId -> $armJson")
-            } else {
-                armJson = fetchArmJson("anilist", aniListId)
-                if (armJson != null) {
-                    Log.d(TAG, "Successfully fetched ARM JSON for anilist: $aniListId -> $armJson")
-                } else {
-                    armJson = fetchArmJson("themoviedb", tmdbId)
-                    if (armJson != null) {
-                        Log.d(TAG, "Successfully fetched ARM JSON for themoviedb: $tmdbId -> $armJson")
-                    } else {
-                        Log.w(TAG, "ARM lookup failed for all sources (malId=$malId, aniListId=$aniListId, tmdbId=$tmdbId)")
+                        armJson = fetchArmJson("themoviedb", tmdbId)
+                        if (armJson != null) {
+                            Log.d(TAG, "Successfully fetched ARM JSON for themoviedb: $tmdbId -> $armJson")
+                        } else {
+                            Log.w(TAG, "ARM lookup failed for all sources (malId=$malId, aniListId=$aniListId, tmdbId=$tmdbId)")
+                        }
                     }
                 }
             }
@@ -98,7 +108,7 @@ object KitsugiIdResolver {
         val wikidataFromArm = armJson?.optNullableString("wikidata")
 
         // Use provided tmdbId directly if ARM didn't find one
-        val finalTmdbId = tmdbFromArm ?: tmdbId ?: resolveTmdbId(malId, aniListId)
+        val finalTmdbId = tmdbFromArm ?: tmdbId ?: resolveTmdbId(malId, aniListId, kitsuId)
 
         // If ARM didn't give us an IMDb ID, fall back through TMDB
         var finalImdb = if (!imdbFromArm.isNullOrBlank()) imdbFromArm else null
@@ -129,7 +139,7 @@ object KitsugiIdResolver {
         Log.d(TAG, "resolveIds complete → imdb=$finalImdb kitsu=$kitsuFromArm tmdb=$finalTmdbId anilist=$finalAniList mal=$finalMal tvdb=$finalTvdb wikidata=$finalWikidata")
         ResolvedIds(
             imdbId = finalImdb,
-            kitsuId = kitsuFromArm,
+            kitsuId = kitsuFromArm ?: kitsuId,
             tmdbId = finalTmdbId,
             aniListId = finalAniList,
             malId = finalMal,
@@ -182,7 +192,13 @@ object KitsugiIdResolver {
         }
     }
 
-    private suspend fun resolveTmdbId(malId: Int?, aniListId: Int?): Int? = withContext(Dispatchers.IO) {
+    private suspend fun resolveTmdbId(malId: Int?, aniListId: Int?, kitsuId: Int? = null): Int? = withContext(Dispatchers.IO) {
+        val kitsuJson = if (kitsuId != null && kitsuId > 0) fetchArmJson("kitsu", kitsuId) else null
+        val kitsuTmdbVal = kitsuJson?.optInt("themoviedb", -1)
+        if (kitsuTmdbVal != null && kitsuTmdbVal > 0) {
+            return@withContext kitsuTmdbVal
+        }
+
         val malJson = if (malId != null && malId > 0) fetchArmJson("myanimelist", malId) else null
         val malTmdbVal = malJson?.optInt("themoviedb", -1)
         if (malTmdbVal != null && malTmdbVal > 0) {

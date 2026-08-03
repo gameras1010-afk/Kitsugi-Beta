@@ -64,7 +64,8 @@ fun SearchScreen(
     viewModel: SearchViewModel = viewModel(),
     titleLanguage: String = "ROMAJI",
     scoreFormat: String = "POINT_10",
-    hideScores: Boolean = false
+    hideScores: Boolean = false,
+    onSeeAllAddonSection: ((apiName: String, title: String, mainPageData: String, horizontalImages: Boolean, initialItems: List<com.lagradost.cloudstream3.SearchResponse>) -> Unit)? = null
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val accentColor = LocalKitsugiAccent.current
@@ -635,7 +636,8 @@ fun SearchScreen(
 
     if (openAddonSearchDialog) {
         com.kitsugi.animelist.ui.screens.search.components.AddonSearchDialog(
-            onDismissRequest = { openAddonSearchDialog = false }
+            onDismissRequest = { openAddonSearchDialog = false },
+            onSeeAllAddonSection = onSeeAllAddonSection
         )
     }
 }

@@ -47,11 +47,70 @@ class CloudflareKiller : Interceptor {
         // Per-host failure cooldown map to prevent continuous WebView solve attempts for broken/dead/blocked sites.
         val hostFailureCooldown: MutableMap<String, Long> = ConcurrentHashMap()
 
+        @Volatile
+        var ignoreCooldowns: Boolean = false
+
         fun parseCookieMap(cookie: String): Map<String, String> {
             return cookie.split(";").associate {
                 val split = it.split("=")
                 (split.getOrNull(0)?.trim() ?: "") to (split.getOrNull(1)?.trim() ?: "")
             }.filter { it.key.isNotBlank() && it.value.isNotBlank() }
+        }
+
+        fun getSavedCookiesForHost(host: String): Map<String, String>? {
+            val exact = savedCookies[host]
+            if (exact != null) return exact
+            return if (host.startsWith("www.")) {
+                savedCookies[host.removePrefix("www.")]
+            } else {
+                savedCookies["www.$host"]
+            }
+        }
+
+        fun saveCookiesForHost(host: String, cookies: Map<String, String>) {
+            savedCookies[host] = cookies
+            if (host.startsWith("www.")) {
+                savedCookies[host.removePrefix("www.")] = cookies
+            } else {
+                savedCookies["www.$host"] = cookies
+            }
+        }
+
+        fun removeCookiesForHost(host: String) {
+            savedCookies.remove(host)
+            if (host.startsWith("www.")) {
+                savedCookies.remove(host.removePrefix("www."))
+            } else {
+                savedCookies.remove("www.$host")
+            }
+        }
+
+        fun getFailureCooldownForHost(host: String): Long {
+            val exact = hostFailureCooldown[host]
+            if (exact != null) return exact
+            return if (host.startsWith("www.")) {
+                hostFailureCooldown.getOrDefault(host.removePrefix("www."), 0L)
+            } else {
+                hostFailureCooldown.getOrDefault("www.$host", 0L)
+            }
+        }
+
+        fun setFailureCooldownForHost(host: String, until: Long) {
+            hostFailureCooldown[host] = until
+            if (host.startsWith("www.")) {
+                hostFailureCooldown[host.removePrefix("www.")] = until
+            } else {
+                hostFailureCooldown["www.$host"] = until
+            }
+        }
+
+        fun removeFailureCooldownForHost(host: String) {
+            hostFailureCooldown.remove(host)
+            if (host.startsWith("www.")) {
+                hostFailureCooldown.remove(host.removePrefix("www."))
+            } else {
+                hostFailureCooldown.remove("www.$host")
+            }
         }
     }
 
@@ -65,7 +124,7 @@ class CloudflareKiller : Interceptor {
      * */
     fun getCookieHeaders(url: String): Headers {
         val userAgentHeaders = mapOf("user-agent" to UNIFIED_USER_AGENT)
-        return getHeaders(userAgentHeaders, savedCookies[URI(url).host] ?: emptyMap())
+        return getHeaders(userAgentHeaders, getSavedCookiesForHost(URI(url).host ?: "") ?: emptyMap())
     }
 
     override fun intercept(chain: Interceptor.Chain): Response {
@@ -80,7 +139,19 @@ class CloudflareKiller : Interceptor {
         }
 
         // 1. If we already have cookies for this host, attach them to the initial request
-        val existingCookies = savedCookies[host]
+        // Fallback to system CookieManager directly on the first request if savedCookies is empty
+        var existingCookies = getSavedCookiesForHost(host)
+        if (existingCookies == null) {
+            val rawCookie = getWebViewCookie(request.url.toString())
+            if (rawCookie != null) {
+                val cookieMap = parseCookieMap(rawCookie)
+                if (cookieMap.isNotEmpty()) {
+                    saveCookiesForHost(host, cookieMap)
+                    existingCookies = cookieMap
+                }
+            }
+        }
+
         val initialRequest = if (existingCookies != null) {
             val userAgentMap = mapOf(
                 "user-agent" to UNIFIED_USER_AGENT,
@@ -107,32 +178,51 @@ class CloudflareKiller : Interceptor {
             isIntercepting.set(false)
         }
 
-        // 3. Detect if it's a Cloudflare challenge (403/503) or a 200 OK custom WAF challenge page
+        // 3. Detect if it's a Cloudflare challenge (403/503) or a custom WAF/DDoS-GUARD challenge page
         var isWafChallenge = false
-        if (response.code == 200) {
-            val contentType = response.body?.contentType()?.toString()?.lowercase()
-            if (contentType != null && (contentType.contains("text/html") || contentType.contains("html"))) {
-                try {
-                    // Peek the response body to avoid consuming the stream (10 KB max)
-                    val peekedBody = response.peekBody(10240L)
-                    val bodyString = peekedBody.string()
-                    if (bodyString.contains("Security Verification") || 
-                        (bodyString.contains("__waf_challenge") && bodyString.contains("challenge"))) {
-                        isWafChallenge = true
-                        Log.d(TAG, "Custom WAF Security Verification challenge detected for host: $host")
-                    }
-                } catch (e: Exception) {
-                    Log.w(TAG, "Failed to peek response body for WAF check: ${e.message}")
+        var isCfChallenge = false
+
+        val contentType = response.body?.contentType()?.toString()?.lowercase()
+        if (contentType != null && (contentType.contains("text/html") || contentType.contains("html"))) {
+            try {
+                // Peek the response body to avoid consuming the stream (10 KB max)
+                val peekedBody = response.peekBody(10240L)
+                val bodyString = peekedBody.string()
+                
+                // Check custom WAF and DDoS protection signs
+                if (bodyString.contains("Security Verification") || 
+                    bodyString.contains("__waf_challenge") || 
+                    bodyString.contains("challenge-platform") ||
+                    bodyString.contains("sucuri") ||
+                    bodyString.contains("ddos-guard") ||
+                    (bodyString.contains("challenge") && (bodyString.contains("waf") || bodyString.contains("firewall")))) {
+                    isWafChallenge = true
+                    Log.d(TAG, "WAF / Challenge verification page detected for host: $host")
                 }
+                
+                // Fallback check for Cloudflare if the header check is not enough
+                if (response.code in ERROR_CODES && !isWafChallenge) {
+                    if (bodyString.contains("cf-challenge") || bodyString.contains("cloudflare") || bodyString.contains("ray id:") || bodyString.contains("cf-cookie-error")) {
+                        isCfChallenge = true
+                        Log.d(TAG, "Cloudflare challenge detected via response body content fallback for host: $host")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to peek response body for WAF check: ${e.message}")
             }
         }
 
-        val isCfChallenge = response.header("Server") in CLOUDFLARE_SERVERS && response.code in ERROR_CODES
+        val serverHeader = response.header("Server")?.lowercase()
+        if (!isCfChallenge && response.code in ERROR_CODES) {
+            if (serverHeader == "cloudflare" || serverHeader == "cloudflare-nginx" || serverHeader?.contains("cloudflare") == true) {
+                isCfChallenge = true
+            }
+        }
 
         if (isCfChallenge || isWafChallenge) {
             if (chain.call().isCanceled()) throw java.io.IOException("Canceled")
-            val cooldownUntil = hostFailureCooldown.getOrDefault(host, 0L)
-            if (cooldownUntil > System.currentTimeMillis()) {
+            val cooldownUntil = getFailureCooldownForHost(host)
+            if (!ignoreCooldowns && cooldownUntil > System.currentTimeMillis()) {
                 Log.d(TAG, "Skipping WAF/Cloudflare WebView solve for $host due to active failure cooldown")
                 return response
             }
@@ -141,7 +231,7 @@ class CloudflareKiller : Interceptor {
 
             // Since the request failed even with existing cookies, those cookies must be invalid.
             // Remove them from saved cache and WebView CookieManager so a fresh solve is triggered.
-            savedCookies.remove(host)
+            removeCookiesForHost(host)
             runBlocking(Dispatchers.Main) {
                 try {
                     val cookieManager = CookieManager.getInstance()
@@ -157,7 +247,7 @@ class CloudflareKiller : Interceptor {
             val solvedCookies = getLockForHost(host).withLock {
                 if (chain.call().isCanceled()) throw java.io.IOException("Canceled")
                 // Double check if another thread resolved it while we were waiting for the host lock
-                val cookiesAfterLock = savedCookies[host]
+                val cookiesAfterLock = getSavedCookiesForHost(host)
                 if (cookiesAfterLock != null) {
                     cookiesAfterLock
                 } else {
@@ -184,7 +274,7 @@ class CloudflareKiller : Interceptor {
                         }
                     }
                     if (chain.call().isCanceled()) throw java.io.IOException("Canceled")
-                    savedCookies[host]
+                    getSavedCookiesForHost(host)
                 }
             }
 
@@ -210,9 +300,9 @@ class CloudflareKiller : Interceptor {
 
                 if (stillFailed || stillWaf) {
                     Log.w(TAG, "Bypass seemed to succeed but request still failed. Putting $host on failure cooldown.")
-                    hostFailureCooldown[host] = System.currentTimeMillis() + 5 * 60 * 1000 // 5 minutes
+                    setFailureCooldownForHost(host, System.currentTimeMillis() + 90 * 1000L) // 90 seconds
                 } else {
-                    hostFailureCooldown.remove(host)
+                    removeFailureCooldownForHost(host)
                 }
 
                 // Peek and log the HTML response body for tranimaci search request to inspect Next.js data
@@ -244,7 +334,7 @@ class CloudflareKiller : Interceptor {
                 return responseWithCookies
             } else {
                 Log.w(TAG, "Failed WAF/Cloudflare bypass at: ${request.url}. Putting $host on failure cooldown.")
-                hostFailureCooldown[host] = System.currentTimeMillis() + 5 * 60 * 1000 // 5 minutes
+                setFailureCooldownForHost(host, System.currentTimeMillis() + 90 * 1000L) // 90 seconds
                 debugWarning({ true }) { "Failed WAF/Cloudflare bypass at: ${request.url}" }
             }
         }
@@ -313,13 +403,13 @@ class CloudflareKiller : Interceptor {
         
         val solvedImmediately = hasCfClearance || hasDdg || hasDdgId || hasWafSession
         if (solvedImmediately) {
-            savedCookies[host] = cookieMap
+            saveCookiesForHost(host, cookieMap)
             Log.d(TAG, "Cookies accepted immediately for $host after ${timeDiff}ms: keys=${cookieMap.keys}")
             return true
         }
         
-        if (timeDiff >= 6000L) { // Increased fallback timeout to 6s to allow slow devices to finish PoW
-            savedCookies[host] = cookieMap
+        if (timeDiff >= 10000L) { // Fallback timeout: 10s to allow slow devices + heavy PoW challenges
+            saveCookiesForHost(host, cookieMap)
             Log.d(TAG, "Cookies accepted via fallback after ${timeDiff}ms for $host: keys=${cookieMap.keys}")
             return true
         }

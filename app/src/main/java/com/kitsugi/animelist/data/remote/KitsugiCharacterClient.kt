@@ -219,6 +219,35 @@ class KitsugiCharacterClient {
                     }
                 }
 
+
+                "kitsu" -> {
+                    // externalId = kitsuStableId = kitsuNumericId + 300_000_000
+                    val kitsuOffset = 300_000_000
+                    val kitsuNumericId = if (externalId >= kitsuOffset) externalId - kitsuOffset else externalId
+                    Log.d(TAG, "Kitsu karakter fetch: stableId=$externalId, kitsuNumericId=$kitsuNumericId")
+                    if (kitsuNumericId <= 0) return@withContext emptyList()
+
+                    val kitsuList = runCatching {
+                        KitsuClient.fetchKitsuCharacters(kitsuNumericId)
+                    }.getOrElse { err ->
+                        Log.e(TAG, "Kitsu karakter fetch hatası: ${err.message}", err)
+                        emptyList()
+                    }
+
+                    if (kitsuList.isNotEmpty()) {
+                        Log.d(TAG, "Kitsu karakter listesi başarılı: ${kitsuList.size} karakter")
+                        kitsuList
+                    } else {
+                        // Kitsu boş döndü — AniList veya Jikan fallback
+                        Log.w(TAG, "Kitsu boş döndü, AniList/Jikan fallback deneniyor (malId=$realMalId)")
+                        if (realMalId != null && realMalId > 0) {
+                            val malList = fetchCharacters("jikan", realMalId, mediaType, null)
+                            if (malList.isNotEmpty()) return@withContext malList
+                        }
+                        emptyList()
+                    }
+                }
+
                 else -> {
                     // Bilinmeyen source — Jikan ile dene (MAL ID varsa)
                     val jikanId = realMalId?.takeIf { it > 0 } ?: externalId.takeIf { it > 0 && it < 100_000_000 }

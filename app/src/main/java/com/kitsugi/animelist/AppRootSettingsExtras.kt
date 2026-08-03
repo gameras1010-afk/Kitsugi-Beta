@@ -472,6 +472,7 @@ internal fun SettingsContext.onSimklAuthClick() {
 internal fun SettingsContext.onAdultContentChanged(show: Boolean) {
     coroutineScope.launch {
         settingsDataStore.setShowAdultContent(show)
+        com.kitsugi.animelist.data.cloudstream.CsStreamRunner.setShowAdultContent(show)
         appViewModel.showSnackbarMessage(if (show) "+18 içerikler gösteriliyor" else "+18 içerikler gizlendi")
     }
 }

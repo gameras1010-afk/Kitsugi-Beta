@@ -375,6 +375,14 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
                         }
                     }
                 }
+                entry.source.equals("kitsu", ignoreCase = true) -> {
+                    val stableId = entry.malId ?: 0
+                    val kitsuId = stableId - 300_000_000
+                    if (kitsuId > 0) {
+                        foundRatings = KitsugiEpisodeRatingsRepository.getEpisodeRatingsByKitsuId(kitsuId)
+                        resolvedId = KitsugiEpisodeRatingsRepository.getResolvedTmdbIdForKitsu(kitsuId)
+                    }
+                }
                 else -> {
                     val malId = entry.malId
                     if (malId != null && malId > 0) {
@@ -408,6 +416,10 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
                         KitsugiEpisodeRatingsRepository.getLogoUrlByMalId(stableId)
                     }
                 }
+                entry.source.equals("kitsu", ignoreCase = true) -> {
+                    val kitsuId = stableId - 300_000_000
+                    KitsugiEpisodeRatingsRepository.getLogoUrlByKitsuId(kitsuId)
+                }
                 stableId > 0 -> KitsugiEpisodeRatingsRepository.getLogoUrlByMalId(stableId)
                 else -> null
             }
@@ -433,6 +445,11 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
                         KitsugiEpisodeRatingsRepository.resolveTmdbIdFromMal(stableId)
                     }
                 }
+                entry.source.equals("kitsu", ignoreCase = true) -> {
+                    val stableId = entry.malId ?: 0
+                    val kitsuId = stableId - 300_000_000
+                    KitsugiEpisodeRatingsRepository.resolveTmdbIdFromKitsu(kitsuId)
+                }
                 else -> entry.malId?.let { KitsugiEpisodeRatingsRepository.resolveTmdbIdFromMal(it) }
             }
         }
@@ -444,6 +461,7 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
                 val m = entry.malId ?: 0
                 if (m > 0 && m < 100_000_000) m else _detailState.value?.realMalId
             }
+            entry.source.equals("kitsu", ignoreCase = true) -> null
             !entry.source.equals("tmdb", ignoreCase = true) -> entry.malId
             else -> null
         }
@@ -451,13 +469,18 @@ class MediaEntryDetailViewModel(application: Application) : AndroidViewModel(app
             val m = entry.malId ?: 0
             if (m >= 100_000_000) m - 100_000_000 else null
         } else null
+        val fallbackKitsuId: Int? = if (entry.source.equals("kitsu", ignoreCase = true)) {
+            val m = entry.malId ?: 0
+            if (m >= 300_000_000) m - 300_000_000 else null
+        } else null
 
         val fanartItems = withContext(Dispatchers.IO) {
             KitsugiEpisodeRatingsRepository.getFanartGalleryItems(
                 tmdbId = tmdbId ?: 0,
                 isMovie = isMovie,
                 fallbackMalId = fallbackMalId,
-                fallbackAniListId = fallbackAniListId
+                fallbackAniListId = fallbackAniListId,
+                fallbackKitsuId = fallbackKitsuId
             )
         }
 

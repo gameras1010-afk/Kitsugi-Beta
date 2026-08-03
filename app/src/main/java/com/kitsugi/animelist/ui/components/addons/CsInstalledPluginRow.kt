@@ -1,6 +1,7 @@
 package com.kitsugi.animelist.ui.components.addons
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import com.kitsugi.animelist.ui.utils.tvClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -212,7 +213,18 @@ internal fun CsInstalledPluginRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(18.dp))
-                .background(KitsugiColors.SurfaceSoft)
+                .background(
+                    if (!plugin.enabled)
+                        KitsugiColors.SurfaceSoft.copy(alpha = 0.55f)
+                    else
+                        KitsugiColors.SurfaceSoft
+                )
+                .then(
+                    if (!plugin.enabled)
+                        Modifier.border(1.dp, KitsugiColors.AccentRed.copy(alpha = 0.30f), RoundedCornerShape(18.dp))
+                    else
+                        Modifier
+                )
                 .padding(12.dp)
         ) {
             Row(
@@ -243,12 +255,32 @@ internal fun CsInstalledPluginRow(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = plugin.name,
-                        color = KitsugiColors.TextPrimary,
+                        color = if (!plugin.enabled) KitsugiColors.TextSecondary else KitsugiColors.TextPrimary,
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
+                    // "Devre Dışı" badge — otomatik pasifleştirilmiş pluginler için
+                    if (!plugin.enabled) {
+                        Spacer(Modifier.height(3.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(KitsugiColors.AccentRed.copy(alpha = 0.15f))
+                                    .border(1.dp, KitsugiColors.AccentRed.copy(alpha = 0.40f), RoundedCornerShape(6.dp))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    "⛔ Devre Dışı",
+                                    color = KitsugiColors.AccentRed,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+                    }
                     Text(
                         text = "v${plugin.version} • ${plugin.id}",
                         color = KitsugiColors.TextSecondary,

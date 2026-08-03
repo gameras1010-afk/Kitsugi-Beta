@@ -5,6 +5,7 @@ import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import com.kitsugi.animelist.data.repository.StreamSource
 import com.kitsugi.animelist.data.settings.FrameRateMatchingMode
+import com.kitsugi.animelist.core.player.engine.PlayerEngineType
 
 /**
  * T1.6 – PlayerRuntimeOrchestrator
@@ -16,6 +17,7 @@ import com.kitsugi.animelist.data.settings.FrameRateMatchingMode
  * - [audio]          → Ses rotası tespiti + route-bazlı gecikme uygulama
  * - [skip]           → AniSkip + AnimeSkip zaman damgası yükleme
  * - [source]         → Kaynak listesi, manuel / otomatik kaynak değiştirme
+ * - [errorRecovery]  → Engine + source fallback, retry zinciri
  *
  * ViewModel bu orchestrator'ı init bloğunda oluşturur ve tüm
  * controller state'lerini doğrudan orchestrator üzerinden okur.
@@ -36,7 +38,13 @@ class PlayerRuntimeOrchestrator(
     onLoop: () -> Unit = {},
     onShowStillWatching: () -> Unit = {},
     onShowEndPrompt: () -> Unit = {},
-    onCountdownTick: (remaining: Int) -> Unit = {}
+    onCountdownTick: (remaining: Int) -> Unit = {},
+    /** Called when a playback error triggers an engine switch (MEDIA3 → MPV). */
+    onSwitchEngine: ((to: PlayerEngineType) -> Unit)? = null,
+    /** Lambda returning the currently active engine type. */
+    getCurrentEngine: (() -> PlayerEngineType)? = null,
+    /** Whether the user has MPV enabled. */
+    isMpvEnabled: (() -> Boolean)? = null
 ) {
     private val TAG = "PlayerOrchestrator"
 
@@ -58,7 +66,16 @@ class PlayerRuntimeOrchestrator(
         PlayerTrackController(scope, getEngine)
 
     val errorRecovery: PlayerErrorRecoveryController =
-        PlayerErrorRecoveryController(scope, onRetry, onFallback, onFatal)
+        PlayerErrorRecoveryController(
+            scope = scope,
+            onRetry = onRetry,
+            onFallback = onFallback,
+            onFatal = onFatal,
+            onSwitchEngine = onSwitchEngine,
+            getCurrentEngine = getCurrentEngine,
+            isMpvEnabled = isMpvEnabled,
+            context = context
+        )
 
     val scrobble: PlayerScrobbleController =
         PlayerScrobbleController(scope, getAniListToken)
@@ -81,9 +98,6 @@ class PlayerRuntimeOrchestrator(
     /**
      * Orchestrator'ı başlatır.
      * VM.init { } bloğunda bir kez çağrılır.
-     *
-     * @param getActiveEngine Aktif PlayerEngine'e erişim lambda'sı (audio delay uygulaması için)
-     * @param liveHelperEnabled Canlı yayın desteğinin aktif olup olmadığı
      */
     fun start(
         getActiveEngine: () -> com.kitsugi.animelist.core.player.engine.PlayerEngine?,
@@ -112,3 +126,5 @@ class PlayerRuntimeOrchestrator(
         live.stop()
     }
 }
+
+

@@ -1005,12 +1005,13 @@ fun String.parseToMediaType(): MediaType {
 fun String.toFriendlySourceLabel(): String {
     return when (this.lowercase().trim()) {
         "jikan", "mal" -> "MyAnimeList"
-        "anilist" -> "AniList"
-        "tmdb" -> "TMDB"
-        "shikimori" -> "Shikimori"
-        "simkl" -> "Simkl"
-        "manual" -> "Manual"
-        else -> this
+        "anilist"      -> "AniList"
+        "tmdb"         -> "TMDB"
+        "kitsu"        -> "Kitsu"
+        "shikimori"    -> "Shikimori"
+        "simkl"        -> "Simkl"
+        "manual"       -> "Manual"
+        else           -> this
     }
 }
 

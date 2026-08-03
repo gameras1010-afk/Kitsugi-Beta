@@ -223,9 +223,24 @@ private fun ExploreTabPage(ctx: TabPagesContext) {
         onOpenNotifications = { ctx.navState.navigateToDetail(DetailScreen.Notifications) },
         isNotificationsVisible = ctx.authViewModel.isAniListConnected || ctx.authViewModel.isMalConnected || ctx.authViewModel.isSimklConnected,
         showAnimeLogos = ctx.appSettings.showAnimeLogos,
-        isSimklConnected = ctx.authViewModel.isSimklConnected
+        isSimklConnected = ctx.authViewModel.isSimklConnected,
+        // TMDB hata yönlendirmesi: Ayarlar → Entegrasyonlar bölümüne git
+        onRedirectToSettings = {
+            ctx.appViewModel.selectTab(MainTab.Settings)
+        },
+        // AniList / MAL hata yönlendirmesi: ilgili platform OAuth akışını başlat
+        onRedirectToAuth = {
+            val platform = ctx.exploreViewModel.selectedPlatform
+            val provider = when (platform) {
+                com.kitsugi.animelist.ui.screens.explore.ExplorePlatform.AniList -> "anilist"
+                com.kitsugi.animelist.ui.screens.explore.ExplorePlatform.MAL     -> "mal"
+                else                                                              -> "anilist"
+            }
+            ctx.authViewModel.startExternalAuth(provider)
+        }
     )
 }
+
 
 @Composable
 private fun SearchTabPage(ctx: TabPagesContext) {
@@ -237,7 +252,16 @@ private fun SearchTabPage(ctx: TabPagesContext) {
         viewModel = ctx.searchViewModel,
         titleLanguage = ctx.appSettings.titleLanguage,
         scoreFormat = ctx.appSettings.scoreFormat,
-        hideScores = ctx.appSettings.hideScores
+        hideScores = ctx.appSettings.hideScores,
+        onSeeAllAddonSection = { apiName, title, mainPageData, horizontalImages, initialItems ->
+            ctx.navState.addonFullScreenGridState = com.kitsugi.animelist.ui.app.AddonFullScreenGridState(
+                title = title,
+                apiName = apiName,
+                initialItems = initialItems,
+                mainPageData = mainPageData,
+                horizontalImages = horizontalImages
+            )
+        }
     )
 }
 

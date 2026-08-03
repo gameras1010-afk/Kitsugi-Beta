@@ -180,7 +180,7 @@ internal object CsTitleMatcher {
 
             var foundSeason: Int? = null
             if (targetSeason != null) {
-                foundSeason = parseSeasonFromTitle(resultName)
+                foundSeason = parseSeasonFromTitle(resultName) ?: parseSeasonFromSlug(result.url)
             }
 
             val resultNameNoSeason = resultName
@@ -268,8 +268,8 @@ internal object CsTitleMatcher {
                     if (!expectsHigherSeason) {
                         score += 0.10
                     } else {
-                        score -= 0.50 // Penalty because we wanted a higher season but this result has no season (implicit season 1)
-                        Log.d(TAG, "  -> İmzasız Sezon Uyuşmazlığı (Sezon 1 varsayıldı): '${result.name}' (Aranan: $targetSeason, querySeasons: $querySeasons) -0.50")
+                        score -= 0.70 // Penalty because we wanted a higher season but this result has no season (implicit season 1)
+                        Log.d(TAG, "  -> İmzasız Sezon Uyuşmazlığı (Sezon 1 varsayıldı): '${result.name}' (Aranan: $targetSeason, querySeasons: $querySeasons) -0.70")
                     }
                 }
             }
@@ -363,4 +363,32 @@ internal object CsTitleMatcher {
 
     private fun parseYearFromTitle(title: String): Int? =
         yearRegex.find(title)?.value?.toIntOrNull()
+
+    /**
+     * Verilen URL slug'ından veya path'inden sezon numarasını çıkarmaya çalışır.
+     * Örneğin: "naruto-shippuden-2-sezon", "sezon-3", "naruto-2"
+     */
+    fun parseSeasonFromSlug(url: String): Int? {
+        val lower = url.lowercase(Locale.ROOT)
+        // Match "-2-sezon", "/sezon-2", "/2-sezon", "-season-2", "/season-2", "s2"
+        val regex = Regex("(?:-|/|\\b)(\\d+)(?:-sezon|-season|sezon|season)\\b|\\b(?:sezon|season|s)(?:-|/|\\b)?(\\d+)\\b", RegexOption.IGNORE_CASE)
+        val match = regex.find(lower)
+        if (match != null) {
+            val found = match.groupValues.firstOrNull { it.toIntOrNull() != null }?.toIntOrNull()
+                ?: match.groupValues.getOrNull(1)?.toIntOrNull()
+                ?: match.groupValues.getOrNull(2)?.toIntOrNull()
+            if (found != null) return found
+        }
+
+        // Check trailing digit in slug: e.g. "naruto-shippuden-2/" or "naruto-shippuden-2"
+        val cleanUrl = lower.trimEnd('/')
+        val trailingNum = Regex("-(\\d+)$").find(cleanUrl)
+        if (trailingNum != null) {
+            val num = trailingNum.groupValues[1].toIntOrNull()
+            if (num != null && num in 2..10) {
+                return num
+            }
+        }
+        return null
+    }
 }

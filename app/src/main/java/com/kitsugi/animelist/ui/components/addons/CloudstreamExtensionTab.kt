@@ -53,6 +53,7 @@ internal fun CloudstreamExtensionsTab(
     onToggleCsPlugin: (CsPluginEntity, Boolean) -> Unit,
     onUninstallCsPlugin: (CsPluginEntity) -> Unit,
     onVerifyPlugin: (pluginId: String, pluginName: String) -> Unit,
+    onOpenDiagnostic: (() -> Unit)? = null,
     listState: LazyListState = rememberLazyListState()
 ) {
     var activeSection by rememberSaveable { mutableStateOf(CsTabSection.REPOS) }
@@ -85,6 +86,50 @@ internal fun CloudstreamExtensionsTab(
         contentPadding = PaddingValues(bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        // ─ Plugin Tanı Modu Bantı ─────────────────────────────────────────────────────
+        if (onOpenDiagnostic != null) {
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(androidx.compose.foundation.shape.RoundedCornerShape(14.dp))
+                        .background(accentColor.copy(alpha = 0.10f))
+                        .border(
+                            1.dp,
+                            accentColor.copy(alpha = 0.30f),
+                            androidx.compose.foundation.shape.RoundedCornerShape(14.dp)
+                        )
+                        .tvClickable(
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp)
+                        ) { onOpenDiagnostic() }
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text("🔬", fontSize = 20.sp)
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "Plugin Tanı Modu",
+                            color = accentColor,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp
+                        )
+                        Text(
+                            "Tüm 201 eklentiyi CF bypass ile test et — uygulama açıkken çalışır",
+                            color = KitsugiColors.TextMuted,
+                            fontSize = 10.sp
+                        )
+                    }
+                    Icon(
+                        Icons.Rounded.ChevronRight,
+                        contentDescription = null,
+                        tint = accentColor,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+
         // Bölüm Başlık Sekmesi
         item {
             Row(
@@ -154,10 +199,14 @@ internal fun CloudstreamExtensionsTab(
                             Triple("⚡ Keyiflerolsun (maarrem)", "DiziPal, RecTV, DDizi, Dizilla vb. eklentiler ve Türkçe eklenti deposu.", "https://raw.githubusercontent.com/maarrem/cs-Kekik/master/repo.json"),
                             Triple("⚡ Kekik (feroxx)", "Aktif Kekik eklenti deposu derlemeleri (builds) ve Türkçe topluluk havuzu.", "https://raw.githubusercontent.com/feroxx/Kekik-cloudstream/refs/heads/builds/repo.json"),
                             Triple("⚡ Kraptor (Kraptor123)", "AnimeciX, Animeler, AnimeElysium eklentilerini içeren dizi/film ve anime deposu.", "https://raw.githubusercontent.com/Kraptor123/cs-kraptor/refs/heads/master/repo.json"),
+                            Triple("⚡ CS-Karma (Kraptor123)", "Kraptor'un alternatif Karma Türkçe eklenti deposu.", "https://raw.githubusercontent.com/Kraptor123/Cs-Karma/refs/heads/master/repo.json"),
                             Triple("⚡ Nikyokki (nik-cloudstream)", "AnimPow, AsyaAnimeleri eklentilerini içeren Türkçe eklenti deposu.", "https://raw.githubusercontent.com/nikyokki/nik-cloudstream/master/repo.json"),
-                            Triple("⚡ ByAyzen (AyzenCS3)", "ByAyzen'in dizi/film sağlayıcı eklentileri (FilmBOL, Koredizi, M3UPlayer vb.).", "https://raw.githubusercontent.com/ByAyzen/AyzenCS3/master/repo.json"),
+                            Triple("⚡ ByAyzen (AyzenCS3)", "ByAyzen'in dizi/film sağlayıcı eklentileri (FilmBOL, Koredizi, M3UPlayer vb.) [Beta/Builds].", "https://raw.githubusercontent.com/ByAyzen/AyzenCS3/refs/heads/builds/repo.json"),
                             Triple("⚡ KerimmKirac (cs-kekikanime)", "TurkAnime eklentisi ve Kraptor ortaklığındaki Türkçe anime/dizi deposu.", "https://raw.githubusercontent.com/Kraptor123/cs-kekikanime/master/repo.json"),
                             Triple("⚡ Pitipitii (sarapcanagii)", "Pitipitii dizi/anime sağlayıcı eklentileri.", "https://raw.githubusercontent.com/sarapcanagii/Pitipitii/master/repo.json"),
+                            Triple("⚡ Gizli-Keyif (Kraptor123)", "Dizi/film ve anime içerikleri barındıran Gizli Keyif Türkçe deposu.", "https://raw.githubusercontent.com/Kraptor123/Cs-GizliKeyif/refs/heads/master/repo.json"),
+                            Triple("⚡ Makoto2 (Sertel392)", "Makoto2 geçici Türkçe dizi/film eklenti deposu.", "https://raw.githubusercontent.com/Sertel392/Makotogecici/main/repo.json"),
+                            Triple("⚡ Cağatay Repo (caca1403)", "Cağatay Türkçe dizi/film eklenti deposu.", "https://raw.githubusercontent.com/caca1403/cloudstream-cagi-eklenti/main/repo.json"),
                             Triple("🌍 ReCloudStream Eklentileri", "Uluslararası içerikler için resmi CloudStream eklentileri deposu.", "https://raw.githubusercontent.com/recloudstream/extensions/master/repo.json"),
                             Triple("🔗 CS3 Hexated (Stremio Bridge)", "Stremio köprüsü eklentilerini içeren Hexated deposu.", "https://codeberg.org/cloudstream/cloudstream-extensions-hexated/raw/branch/builds/repo.json")
                         )

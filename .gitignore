@@ -14,3 +14,9 @@ local.properties
 *.log
 logcat*.txt
 build_*.txt
+
+# API Keyleri — ASLA public repoya gitmesin!
+scripts/openrouter_keys.txt
+api_keys.txt
+*.key
+*.secret

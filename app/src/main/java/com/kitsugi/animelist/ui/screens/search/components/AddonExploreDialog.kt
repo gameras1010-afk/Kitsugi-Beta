@@ -39,6 +39,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.kitsugi.animelist.data.cloudstream.CsStreamRunner
+import com.kitsugi.animelist.data.cloudstream.CsPluginStatusTracker
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.lagradost.cloudstream3.HomePageList
@@ -70,7 +71,8 @@ object AddonExploreCache {
 @Composable
 fun AddonExploreDialog(
     api: MainAPI,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
+    onSeeAllClick: ((title: String, mainPageData: String, horizontalImages: Boolean, initialItems: List<SearchResponse>) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val accentColor = LocalKitsugiAccent.current
@@ -104,12 +106,14 @@ fun AddonExploreDialog(
                                 if (response != null) {
                                     list.addAll(response.items)
                                 }
-                            } catch (e: Exception) {
-                                Log.e("AddonExploreDialog", "Failed to load page ${pageData.name}: ${e.message}")
+                            } catch (t: Throwable) {
+                                // Catch Throwable to also handle NoClassDefFoundError from
+                                // plugins that depend on libraries not bundled in the host APK.
+                                Log.e("AddonExploreDialog", "Failed to load page ${pageData.name}: ${t.javaClass.simpleName}: ${t.message}")
                             }
                         }
-                    } catch (e: Exception) {
-                        Log.e("AddonExploreDialog", "Failed to fetch mainPage list: ${e.message}")
+                    } catch (t: Throwable) {
+                        Log.e("AddonExploreDialog", "Failed to fetch mainPage list: ${t.javaClass.simpleName}: ${t.message}")
                     }
                     list
                 }
@@ -133,8 +137,8 @@ fun AddonExploreDialog(
                 val results = withContext(Dispatchers.IO) {
                     try {
                         CsStreamRunner.safeSearch(api, searchQuery)
-                    } catch (e: Exception) {
-                        Log.e("AddonExploreDialog", "Search failed: ${e.message}")
+                    } catch (t: Throwable) {
+                        Log.e("AddonExploreDialog", "Search failed: ${t.javaClass.simpleName}: ${t.message}")
                         emptyList()
                     }
                 }
@@ -190,6 +194,47 @@ fun AddonExploreDialog(
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
+
+                // Proactive Warnings for Blocked/Cloudflare Providers
+                val isBlocked = remember(api.name) { CsPluginStatusTracker.isBlocked(api.name) }
+                val isCfProtected = remember(api.name) { CsStreamRunner.CF_PROTECTED_PLUGINS.contains(api.name) || api.usesWebView }
+
+                if (isBlocked) {
+                    val blockReason = remember(api.name) { CsPluginStatusTracker.getErrorMessage(api.name) ?: "Bilinmeyen ağ veya ayrıştırma hatası" }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(KitsugiColors.AccentRed.copy(alpha = 0.15f))
+                            .border(1.dp, KitsugiColors.AccentRed, RoundedCornerShape(12.dp))
+                            .padding(12.dp)
+                    ) {
+                        Text(
+                            text = "⚠️ Bu eklenti geçici olarak engellendi: $blockReason. Eklenti sunucusu veya yapısı bozulmuş olabilir.",
+                            color = KitsugiColors.AccentRed,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                } else if (isCfProtected) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(KitsugiColors.AccentOrange.copy(alpha = 0.15f))
+                            .border(1.dp, KitsugiColors.AccentOrange, RoundedCornerShape(12.dp))
+                            .padding(12.dp)
+                    ) {
+                        Text(
+                            text = "🔐 Bu eklenti Cloudflare korumalıdır. Video oynatılamazsa veya arama başarısız olursa WebView üzerinden captcha/doğrulamayı tamamladığınızdan emin olun.",
+                            color = KitsugiColors.AccentOrange,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
 
                 // Search Bar within the Addon
                 var isFocused by remember { mutableStateOf(false) }
@@ -375,13 +420,46 @@ fun AddonExploreDialog(
                             items(homeLists) { homeList ->
                                 if (homeList.list.isNotEmpty()) {
                                     Column(modifier = Modifier.fillMaxWidth()) {
-                                        Text(
-                                            text = homeList.name,
-                                            color = KitsugiColors.TextPrimary,
-                                            fontSize = 16.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
-                                        )
+                                        // ── Category header + See All button ──────────────
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 8.dp, vertical = 6.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                text = homeList.name,
+                                                color = KitsugiColors.TextPrimary,
+                                                fontSize = 16.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                            if (onSeeAllClick != null) {
+                                                val matchingPage = api.mainPage
+                                                    .firstOrNull { it.name == homeList.name }
+                                                if (matchingPage != null) {
+                                                    TextButton(
+                                                        onClick = {
+                                                            onSeeAllClick(
+                                                                homeList.name,
+                                                                matchingPage.data,
+                                                                matchingPage.horizontalImages,
+                                                                homeList.list
+                                                            )
+                                                        },
+                                                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                                                    ) {
+                                                        Text(
+                                                            text = "Tümünü Gör",
+                                                            color = accentColor,
+                                                            fontSize = 12.sp,
+                                                            fontWeight = FontWeight.Bold
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
 
                                         LazyRow(
                                             modifier = Modifier.fillMaxWidth(),

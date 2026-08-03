@@ -93,6 +93,15 @@ class MpvPlayerEngine(
     private var pendingSubtitles: List<SubtitleInput> = emptyList()
     private var pendingStartPositionMs: Long = 0L
 
+    /** Hazırlık sırasında motorun aldığı SubtitleInput listesi (dahili/harici bayrağını taşır). */
+    private var preparedSubtitles: List<SubtitleInput> = emptyList()
+    /**
+     * İlk otomatik parça seçimi tamamlandı mı?
+     * true  = tamamlandı (kullanıcı manuel değişiklik yapabilir, tekrar tetiklenmez)
+     * false = henüz yapılmadı (bir sonraki updateTracks'de çalışacak)
+     */
+    private var initialSelectionDone: Boolean = false
+
     // ──── Observed properties (Aniyomi modeli) ───────────────────────────────
     // Bu liste, MPV başlatılırken tek seferlik kayıt yapılır.
     private val observedProps = mapOf(
@@ -159,6 +168,9 @@ class MpvPlayerEngine(
         this.videoUrl = videoUrl
         this.currentAddonName = addonName
         this.streamTitle = streamTitle
+        // Yeni ortam için otomatik parça seçimini sıfırla
+        this.preparedSubtitles = subtitles
+        this.initialSelectionDone = false
 
         updateState(PlayerEngine.State.BUFFERING)
 
@@ -622,6 +634,41 @@ class MpvPlayerEngine(
                 label = track.name,
                 isSelected = track.isSelected
             )
+        }
+
+        // ── İlk otomatik parça seçimi — yalnızca yeni medya yüklendiğinde tetiklenir ────────────────
+        if (!initialSelectionDone && snapshot.audioTracks.isNotEmpty()) {
+            initialSelectionDone = true
+            val preferredLangs = settings.preferredSubtitleLanguages
+                .split(",").map { it.trim().lowercase() }.filter { it.isNotEmpty() }
+
+            // ── Ses: Türkçe önce, sonra tercih listesi ───────────────────────────────
+            val isAnyAudioSelected = snapshot.audioTracks.any { it.isSelected }
+            if (!isAnyAudioSelected) {
+                val bestAudio = com.kitsugi.animelist.core.player.PlayerSubtitleUtils
+                    .findBestMpvAudioTrack(snapshot.audioTracks, preferredLangs)
+                if (bestAudio != null) {
+                    Log.i(TAG, "Auto-selecting audio track: ${bestAudio.name} (id=${bestAudio.id})")
+                    view.selectAudioTrackById(bestAudio.id)
+                }
+            }
+
+            // ── Altyazı: Öncelik hiyerarşisi ─────────────────────────────────────────
+            // 1. Dahili (stream içi) Türkçe altyazı parçası
+            // 2. Harici (addon'dan yüklenen) Türkçe altyazı
+            // 3. Kullanıcı tercih dilleri
+            // 4. İlk mevcut altyazı (fallback)
+            if (!_isSubtitleDisabled && snapshot.subtitleTracks.isNotEmpty()) {
+                val isAnySubSelected = snapshot.subtitleTracks.any { it.isSelected }
+                if (!isAnySubSelected) {
+                    val bestSub = com.kitsugi.animelist.core.player.PlayerSubtitleUtils
+                        .findBestMpvSubtitleTrack(snapshot.subtitleTracks, preferredLangs)
+                    if (bestSub != null) {
+                        Log.i(TAG, "Auto-selecting subtitle track: ${bestSub.name} (id=${bestSub.id})")
+                        view.selectSubtitleTrackById(bestSub.id)
+                    }
+                }
+            }
         }
 
         listeners.forEach { it.onTracksChanged(audioOptions, subtitleOptions) }

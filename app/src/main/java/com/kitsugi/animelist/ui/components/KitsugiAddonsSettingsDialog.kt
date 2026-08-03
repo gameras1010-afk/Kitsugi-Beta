@@ -110,6 +110,7 @@ fun KitsugiAddonsSettingsDialog(
     onConfirmUntrustedSignature: (com.kitsugi.animelist.data.remote.MangaExtensionInfo, String) -> Unit = { _, _ -> },
     onDismissUntrustedSignature: () -> Unit = {},
     initialTab: Int = 0,
+    onOpenDiagnostic: (() -> Unit)? = null,
     onDismiss: () -> Unit
 ) {
     val accentColor = LocalKitsugiAccent.current
@@ -307,6 +308,7 @@ fun KitsugiAddonsSettingsDialog(
                                     }
                                 }
                             },
+                            onOpenDiagnostic = onOpenDiagnostic,
                             listState = cloudstreamListState
                         )
                         2 -> MangaExtensionsTab(

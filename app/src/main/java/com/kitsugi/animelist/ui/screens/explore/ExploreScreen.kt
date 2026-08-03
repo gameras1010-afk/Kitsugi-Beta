@@ -13,6 +13,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.Key
+import androidx.compose.material.icons.rounded.Login
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
@@ -63,7 +65,11 @@ fun ExploreScreen(
     isSimklConnected: Boolean = false,
     blurAdultMedia: Boolean = false,
     onOpenNotifications: () -> Unit = {},
-    isNotificationsVisible: Boolean = false
+    isNotificationsVisible: Boolean = false,
+    /** TMDB hatası — Ayarlar/Entegrasyonlar sayfasına yönlendir */
+    onRedirectToSettings: (() -> Unit)? = null,
+    /** AniList/MAL hatası — Giriş yap sayfasına yönlendir */
+    onRedirectToAuth: (() -> Unit)? = null
 ) {
     val accentColor = LocalKitsugiAccent.current
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -372,13 +378,58 @@ fun ExploreScreen(
                                             .fillMaxWidth()
                                             .padding(horizontal = 20.dp, vertical = 8.dp)
                                     ) {
+                                        val errorType = viewModel.exploreErrorType
                                         KitsugiErrorState(
                                             message = viewModel.errorMessage.orEmpty(),
-                                            onRetryClick = { viewModel.loadData(forceRefresh = true) }
+                                            onRetryClick = { viewModel.loadData(forceRefresh = true) },
+                                            actionButton = when {
+                                                errorType == ExploreErrorType.TmdbError && onRedirectToSettings != null -> ({
+                                                    OutlinedButton(
+                                                        onClick = { onRedirectToSettings.invoke() },
+                                                        colors = ButtonDefaults.outlinedButtonColors(
+                                                            contentColor = LocalKitsugiAccent.current
+                                                        ),
+                                                        border = ButtonDefaults.outlinedButtonBorder
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Rounded.Key,
+                                                            contentDescription = null,
+                                                            modifier = Modifier.size(16.dp)
+                                                        )
+                                                        Spacer(Modifier.width(6.dp))
+                                                        Text(
+                                                            text = "TMDB API Anahtarı Ayarla",
+                                                            fontWeight = FontWeight.SemiBold
+                                                        )
+                                                    }
+                                                })
+                                                (errorType == ExploreErrorType.AniListError || errorType == ExploreErrorType.MalError) && onRedirectToAuth != null -> ({
+                                                    OutlinedButton(
+                                                        onClick = { onRedirectToAuth.invoke() },
+                                                        colors = ButtonDefaults.outlinedButtonColors(
+                                                            contentColor = LocalKitsugiAccent.current
+                                                        ),
+                                                        border = ButtonDefaults.outlinedButtonBorder
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Rounded.Login,
+                                                            contentDescription = null,
+                                                            modifier = Modifier.size(16.dp)
+                                                        )
+                                                        Spacer(Modifier.width(6.dp))
+                                                        Text(
+                                                            text = "Giriş Yap",
+                                                            fontWeight = FontWeight.SemiBold
+                                                        )
+                                                    }
+                                                })
+                                                else -> null
+                                            }
                                         )
                                     }
                                 }
                             }
+
 
                             if (isCatalogEmpty) {
                                 item {

@@ -17,6 +17,13 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 class RateLimitException(message: String) : java.io.IOException(message)
 class ResourceNotFoundException(message: String) : java.io.IOException(message)
 
+/**
+ * AniList API sunucu tarafında geçici olarak devre dışı bırakıldığında fırlatılır.
+ * (HTTP 403 + "temporarily disabled due to severe stability issues" mesajı)
+ * Bu exception ExploreViewModel fallback mekanizmasını tetikler.
+ */
+class AniListServiceDownException(message: String) : Exception(message)
+
 object KitsugiApiBase {
     private const val MIN_REQUEST_INTERVAL_MS = 450L
     private val requestMutex = Mutex()
@@ -146,6 +153,13 @@ object KitsugiApiBase {
             }
 
             when (result) {
+                is AniListResult.ServiceDown -> {
+                    // AniList sunucu tarafında tamamen kapalı; retry veya token dönüşümü anlamsız.
+                    android.util.Log.e("KitsugiApiBase", "AniList servis kesintisi: ${result.message}")
+                    throw AniListServiceDownException(
+                        "AniList API geçici olarak devre dışı: ${result.message}"
+                    )
+                }
                 is AniListResult.Success -> {
                     // JSON içindeki authorization veya invalid token hatalarını kontrol et
                     val hasAuthError = try {
@@ -190,6 +204,8 @@ object KitsugiApiBase {
         data class Success(val body: String) : AniListResult()
         data object Failure : AniListResult()
         data class Retryable(val retryAfterMs: Long?) : AniListResult()
+        /** AniList sunucu tarafında tamamen kapalı — retry anlamsız, fallback gerekli */
+        data class ServiceDown(val message: String) : AniListResult()
     }
 
     private fun performAniListRequest(requestBody: String, token: String?): AniListResult {
@@ -224,8 +240,26 @@ object KitsugiApiBase {
                     }
                     AniListResult.Retryable(retryAfterMs)
                 } else {
-                    android.util.Log.e("KitsugiApiBase", "AniList query permanent failure with code: ${response.code} ${response.message}")
-                    AniListResult.Failure
+                    // 403 için özel kontrol: AniList servis kesintisi mi?
+                    val errBody = runCatching { response.body?.string() ?: "" }.getOrDefault("")
+                    val serviceDownMsg = runCatching {
+                        val root = JSONObject(errBody)
+                        val errors = root.optJSONArray("errors")
+                        if (errors != null && errors.length() > 0) {
+                            errors.optJSONObject(0)?.optString("message")
+                        } else null
+                    }.getOrNull()
+                    if (serviceDownMsg != null && (
+                            serviceDownMsg.contains("temporarily disabled", ignoreCase = true) ||
+                            serviceDownMsg.contains("stability issues", ignoreCase = true)
+                        )
+                    ) {
+                        android.util.Log.w("KitsugiApiBase", "AniList servis kesintisi tespit edildi: $serviceDownMsg")
+                        AniListResult.ServiceDown(serviceDownMsg)
+                    } else {
+                        android.util.Log.e("KitsugiApiBase", "AniList query permanent failure with code: ${response.code} ${response.message}")
+                        AniListResult.Failure
+                    }
                 }
             }
         } catch (e: Exception) {

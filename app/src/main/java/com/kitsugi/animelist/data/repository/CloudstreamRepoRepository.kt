@@ -10,7 +10,9 @@ import com.kitsugi.animelist.data.local.KitsugiDatabase
 import com.kitsugi.animelist.data.remote.CloudstreamRepoClient
 import com.kitsugi.animelist.data.remote.CsPlugin
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
@@ -312,8 +314,14 @@ class CloudstreamRepoRepository(private val context: Context) {
                         csPluginDao.upsert(updatedEntity)
                         
                         if (installedPlugin.enabled) {
-                            Log.d(TAG, "Reloading updated plugin in memory: ${installedPlugin.name}")
-                            com.kitsugi.animelist.data.cloudstream.CsPluginLoader.loadExtension(context, installedPlugin.id)
+                            Log.d(TAG, "Reloading updated plugin in memory (async): ${installedPlugin.name}")
+                            kotlinx.coroutines.GlobalScope.launch(Dispatchers.IO) {
+                                try {
+                                    com.kitsugi.animelist.data.cloudstream.CsPluginLoader.loadExtension(context, installedPlugin.id)
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Failed to reload updated plugin: ${installedPlugin.name}", e)
+                                }
+                            }
                         }
                         Log.d(TAG, "Successfully auto-updated plugin: ${installedPlugin.name}")
                     } else {

@@ -48,6 +48,8 @@ import com.kitsugi.animelist.data.local.toDomain
 import com.kitsugi.animelist.data.local.CustomButton
 import kotlinx.coroutines.flow.update
 import com.kitsugi.animelist.core.player.PostPlayMode
+import com.kitsugi.animelist.core.player.engine.PlayerEngineType
+import com.kitsugi.animelist.core.player.engine.PlayerEngineSelector
 import kotlinx.coroutines.async as asyncSkip
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.awaitAll
@@ -144,6 +146,19 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         set(value) { _userCancelledBinge.value = value }
     val userCancelledBingeFlow = _userCancelledBinge.asStateFlow()
 
+    /**
+     * DEEP-015 fix: Binge sayacını iptal eder, kartı gizler ve userCancelledBinge'i true yapar.
+     * PlayerControls'dan hem X butonunda hem de "İptal" TextButton'ında çağrılmalı.
+     * Doğrudan `userCancelledBinge = true` yerine bu fonksiyon kullanılmalı;
+     * aksi hâlde countdown coroutine çalışmaya devam eder ve bölüm otomatik geçer.
+     */
+    fun cancelBingeCard() {
+        _userCancelledBinge.value = true
+        _showBingeCardState.value = false
+        orchestrator.autoplay.cancelCountdown()
+        Log.d("KitsugiPlayerViewModel", "Binge card cancelled by user — countdown stopped")
+    }
+
     private val _isResolvingStream = MutableStateFlow(false)
     var isResolvingStream: Boolean
         get() = _isResolvingStream.value
@@ -167,6 +182,15 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
 
     private val _isAutoSwitching = MutableStateFlow(false)
     val isAutoSwitching: StateFlow<Boolean> = _isAutoSwitching.asStateFlow()
+
+    // Active engine type — updated when engine is first selected and when fallback switches occur
+    private val _activeEngineType = MutableStateFlow(PlayerEngineType.MEDIA3)
+    val activeEngineType: StateFlow<PlayerEngineType> = _activeEngineType.asStateFlow()
+
+    /** Called by the error recovery controller when a fallback engine switch is triggered. */
+    fun onEngineSwitched(to: PlayerEngineType) {
+        _activeEngineType.value = to
+    }
 
     // ── Controls visibility (Aniyomi-style OSD) ──────────────────────────────
     private val _controlsShown = MutableStateFlow(false)
@@ -602,6 +626,12 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         }
         // Update hasFallback: true if there are multiple sources to switch between
         orchestrator.errorRecovery.hasFallback = streamSources.size > 1
+        // Reset engine fallback state and derive initial engine from settings
+        orchestrator.errorRecovery.reset()
+        _activeEngineType.value = PlayerEngineSelector.selectEngine(
+            settings = appSettings.value,
+            videoUrl = videoUrl ?: ""
+        )
 
         viewModelScope.launch {
             loadEpisodes()
@@ -872,6 +902,8 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
     fun playEpisode(targetEp: Int, activity: android.app.Activity?, onAlternativeRequired: () -> Unit, onResolutionFailed: () -> Unit) {
         userCancelledBinge = false
         _showBingeCardState.value = false
+        // DEEP-015 fix: Önceki bölümden kalan countdown coroutine'ini öldür ve session sayacını temizle
+        orchestrator.autoplay.resetSession()
         _nextEpisodeLoading.value = true
         _isLoading.value = true
         viewModelScope.launch {
@@ -1190,7 +1222,12 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         },
         onCountdownTick = { remaining ->
             _bingeCountdownSec.value = remaining
-        }
+        },
+        onSwitchEngine = { to ->
+            onEngineSwitched(to)
+        },
+        getCurrentEngine = { _activeEngineType.value },
+        isMpvEnabled = { appSettings.value.playerPreference.equals("MPV", ignoreCase = true) }
     )
 
     // --- Player Skip Settings (Intro/Outro Atlama) ---
@@ -1405,15 +1442,20 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
                                     SubtitleInput(
                                         url = localFile.absolutePath,
                                         name = "$friendlyLangName (${sub.addonName})",
-                                        lang = sub.lang
+                                        lang = sub.lang,
+                                        // Addon'dan gelen altyazılar harici olarak işaretlenir.
+                                        // Oynatıcı motorları dahili (stream'e gömülü) altyazıları
+                                        // bu harici altyazılara göre önceliklendirir.
+                                        isExternal = true
                                     )
                                 } else {
-                                    Log.w("KitsugiPlayerViewModel", "Altyaz\u0131 indirilemedi: ${sub.url}")
+                                    Log.w("KitsugiPlayerViewModel", "Altyazı indirilemedi: ${sub.url}")
                                     null
                                 }
                             }
                         }.awaitAll().filterNotNull()
                     }
+
 
                     if (processedSubs.isNotEmpty()) {
                         val merged = (_currentSubtitles.value + processedSubs).distinctBy { it.url }

@@ -15,7 +15,13 @@ import androidx.activity.result.contract.ActivityResultContract
 data class SubtitleInput(
     val url: String,
     val name: String,
-    val lang: String
+    val lang: String,
+    /**
+     * Whether this subtitle was provided by an external addon/plugin (true) or
+     * embedded directly in the media stream / source (false, default).
+     * Used by player engines to prioritize internal subtitles over addon-supplied ones.
+     */
+    val isExternal: Boolean = false
 ) : java.io.Serializable
 
 /** Input data for launching an external video player via Intent or ActivityResultContract. */

@@ -371,18 +371,75 @@ object CsPluginLoader {
 
             // Fallback Recovery for Anti-Leech / Version Lock compromised mainUrl
             val DEFAULT_PLUGIN_DOMAINS = mapOf(
-                "TurkAnime" to "https://www.turkanime.tv",
-                "Dizilla" to "https://dizilla.com",
-                "DDizi" to "https://www.ddizi.org",
-                "DiziPal" to "https://dizipal.co",
-                "DiziPalOriginal" to "https://dizipal.co",
-                "SezonlukDizi" to "https://sezonlukdizi.org",
-                "RecTV" to "https://rectv.co",
-                "AnimeciX" to "https://animecix.net",
-                "Animeler" to "https://animeler.pw",
-                "SinemaCX" to "https://sinemacx.com",
-                "SineWix" to "https://sinewix.com",
-                "Sinewix" to "https://sinewix.com"
+                // ── Anime siteleri ────────────────────────────────────────────
+                // Kaynak: keyiflerolsun/Kekik-cloudstream/TurkAnime/TurkAnime.kt L18
+                "TurkAnime"          to "https://www.turkanime.tv",
+                // Kaynak: keyiflerolsun/Kekik-cloudstream/AnimeciX/AnimeciX.kt L16
+                // tanı 2026-08: animecix.tv üç repoda çalışıyor (✅ 3 stream confirmed)
+                "AnimeciX"           to "https://animecix.tv",
+                "Animeler"           to "https://animeler.pw",
+                "AsyaWatch"          to "https://asyawatch.com",
+                "CizgiMax"           to "https://cizgimax.online",
+                "AnimeElysium"       to "https://animeelysium.com",
+                "TrAnimeci"          to "https://tranimaci.com",
+                "TrAnimeIzle"        to "https://www.tranimeizle.io",
+                "AnimPow"            to "https://animpow.com",
+                "AsyaAnimeleri"      to "https://asyaanimeleri.top",
+                "AsyaAnimeleri2"     to "https://asyaanimeleri.top",
+                "YoTurkAnime"        to "https://www.yoturkanime.com",
+                "AnimeIzle"          to "https://www.animeizle.biz",
+                // ── Dizi siteleri ─────────────────────────────────────────────
+                // Kaynak: keyiflerolsun/Kekik-cloudstream/Dizilla/Dizilla.kt L16
+                "Dizilla"            to "https://dizillahd.com",
+                // Kaynak: keyiflerolsun/Kekik-cloudstream/DiziBox/DiziBox.kt L23
+                "DiziBox"            to "https://www.dizibox.live",
+                // Kaynak: keyiflerolsun/Kekik-cloudstream/DiziPal/DiziPal.kt L17
+                "DiziPal"            to "https://dizipal.bid",
+                "DiziPalOriginal"    to "https://dizipal.bid",
+                "DiziPalOrijinal"    to "https://dizipal1572.com",
+                "DDizi"              to "https://www.ddizi.im",
+                "Ddizi"              to "https://www.ddizi.im",
+                // tanı 2026-08: dizikorea3.com feroxx versiyonunda çalışıyor
+                "DiziKorea"          to "https://dizikorea3.com",
+                "DizifilmORG"        to "https://dizifilm.life",
+                "SezonlukDizi"       to "https://sezonlukdizi.cc",
+                // tanı 2026-08: ydfvfdizipanel.ru çalışıyor (sinewix.com mirror değil)
+                "SineWix"            to "https://ydfvfdizipanel.ru",
+                "Sinewix"            to "https://ydfvfdizipanel.ru",
+                // Kaynak: keyiflerolsun/Kekik-cloudstream/DiziMom/DiziMom.kt
+                "DiziMom"            to "https://www.dizimom.rest",
+                // Kaynak: keyiflerolsun/Kekik-cloudstream/DiziYou/DiziYou.kt
+                "DiziYou"            to "https://www.diziyou.one",
+                // ── Film siteleri ─────────────────────────────────────────────
+                // Kaynak: keyiflerolsun/Kekik-cloudstream/HDFilmCehennemi/HDFilmCehennemi.kt L19
+                "HDFilmCehennemi"    to "https://www.hdfilmcehennemi.nl",
+                // Kaynak: keyiflerolsun/Kekik-cloudstream/SinemaCX/SinemaCX.kt L17
+                "SinemaCX"           to "https://www.sinema.gg",
+                // Kaynak: keyiflerolsun/Kekik-cloudstream/FilmMakinesi/FilmMakinesi.kt
+                "FilmMakinesi"       to "https://filmmakinesi.to",
+                // Kaynak: keyiflerolsun/Kekik-cloudstream/FilmModu/FilmModu.kt
+                "FilmModu"           to "https://www.filmmodu.one",
+                // Kaynak: keyiflerolsun/Kekik-cloudstream/FullHDFilm/FullHDFilm.kt
+                "FullHDFilm"         to "https://fullhdfilm.pro",
+                "FullHDFilmizlesene" to "https://www.fullhdfilmizlesene.mx",
+                // Kaynak: keyiflerolsun/Kekik-cloudstream/JetFilmizle/JetFilmizle.kt
+                "JetFilmizle"        to "https://jetfilmizle.now",
+                // Kaynak: keyiflerolsun/Kekik-cloudstream/WebteIzle/WebteIzle.kt
+                "WebteIzle"          to "https://webteizle3.xyz",
+                // Kaynak: keyiflerolsun/Kekik-cloudstream/IzleAI/IzleAI.kt
+                "IzleAI"             to "https://720pizle.ai",
+                // Kaynak: keyiflerolsun/Kekik-cloudstream/SetFilmIzle/SetFilmIzle.kt
+                "SetFilmIzle"        to "https://www.setfilmizle.uk",
+                // ── Diğer ─────────────────────────────────────────────────────
+                // Kaynak: keyiflerolsun/Kekik-cloudstream/RecTV/RecTV.kt L17
+                // tanı 2026-08: Kraptor sürümü a.prectv70.lol/api ile 101 sonuç döndürdü
+                "RecTV"              to "https://a.prectv70.lol/api",
+                // Kaynak: keyiflerolsun/Kekik-cloudstream/KoreanTurk/KoreanTurk.kt
+                "KoreanTurk"         to "https://www.koreanturk.net",
+                "KultFilmler"        to "https://kultfilmler.net",
+                "BelgeselX"          to "https://belgeselx.com",
+                // tanı 2026-08: Watch2Movies çalışıyor (✅ 5 stream, feroxx)
+                "Watch2Movies"       to "https://movies2watch.watch",
             )
             allRegisteredApis.forEach { api ->
                 if (api.mainUrl.isBlank() || api.mainUrl == "/") {
@@ -393,6 +450,46 @@ object CsPluginLoader {
                     }
                 }
             }
+
+            allRegisteredApis.forEach { api ->
+                try {
+                    CsStreamRunner.applyDomainFix(api)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to apply domain fix for ${api.name}: ${e.message}")
+                }
+            }
+
+            // Name Fix: some plugins register with broken/empty names (e.g. "NONE").
+            // We map the scraperId (plugin file ID) to the expected display name.
+            val KNOWN_NAME_FIXES = mapOf(
+                "AsyaWatch"       to "AsyaWatch",
+                "CizgiMax"        to "CizgiMax",
+                "AnimeElysium"    to "AnimeElysium",
+                "AnimPow"         to "AnimPow",
+                "AsyaAnimeleri"   to "AsyaAnimeleri",
+                "AsyaAnimeleri2"  to "AsyaAnimeleri",
+                "YoTurkAnime"     to "YoTurkAnime",
+                "AnimeIzle"       to "AnimeIzle",
+                "DiziMom"         to "DiziMom",
+                "DiziYou"         to "DiziYou",
+                "FilmModu"        to "FilmModu",
+                "FullHDFilm"      to "FullHDFilm",
+                "JetFilmizle"     to "JetFilmizle",
+                "WebteIzle"       to "WebteIzle",
+                "IzleAI"          to "IzleAI",
+                "SetFilmIzle"     to "SetFilmIzle",
+                "KoreanTurk"      to "KoreanTurk",
+                "KultFilmler"     to "KultFilmler",
+                "BelgeselX"       to "BelgeselX",
+            )
+            allRegisteredApis.forEach { api ->
+                val fixedName = KNOWN_NAME_FIXES[scraperId]
+                if (fixedName != null && (api.name.isBlank() || api.name == "NONE")) {
+                    api.name = fixedName
+                    Log.w(TAG, "[$scraperId] Name fix applied: '${api.name}' → '$fixedName'")
+                }
+            }
+
 
             Log.d(TAG, "Plugin $scraperId registered ${allRegisteredApis.size} API provider(s): ${allRegisteredApis.map { it.name }}")
 
@@ -421,9 +518,11 @@ object CsPluginLoader {
 
             loadedPluginIds.value = loadedPluginIds.value + scraperId
             allRegisteredApis
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to load extension $scraperId: ${e.javaClass.simpleName}: ${e.message}", e)
-            Log.e(PLUGIN_DIAG, "❌ CS3 YÜKLEME HATASI: $scraperId — ${e.javaClass.simpleName}: ${e.message}\n${android.util.Log.getStackTraceString(e)}")
+        } catch (t: Throwable) {
+            // Catch Throwable (not just Exception) to also handle Error subclasses like
+            // NoClassDefFoundError that plugins may throw if they depend on missing libs.
+            Log.e(TAG, "Failed to load extension $scraperId: ${t.javaClass.simpleName}: ${t.message}", t)
+            Log.e(PLUGIN_DIAG, "❌ CS3 YÜKLEME HATASI: $scraperId — ${t.javaClass.simpleName}: ${t.message}\n${android.util.Log.getStackTraceString(t)}")
             emptyList()
         }
     }
@@ -567,8 +666,8 @@ object CsPluginLoader {
                 val counterField = blockerClass.getDeclaredField("counter")
                 counterField.isAccessible = true
                 val counterObj = counterField.get(null) as? java.util.concurrent.atomic.AtomicInteger
-                counterObj?.set(100)
-                Log.d(TAG, "[$scraperId] Patched $blockerClassName.counter = 100")
+                counterObj?.set(0)
+                Log.d(TAG, "[$scraperId] Patched $blockerClassName.counter = 0")
             } catch (e: ClassNotFoundException) {
                 // Not this package — ignore
             } catch (e: Exception) {

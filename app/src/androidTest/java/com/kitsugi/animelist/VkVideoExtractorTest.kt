@@ -53,29 +53,7 @@ class VkVideoExtractorTest {
         // let's just make sure it does not crash, and log the outcome.
     }
 
-    @Test
-    fun testVkVideoExtractionWithHrefLi() = runBlocking {
-        val hrefLiUrl = "https://href.li/?https://vk.com/video_ext.php?oid=282319464&id=171189649&hash=f591e22157c12448&hd=1"
-        Log.d(TAG, "Testing href.li wrapped VK URL: $hrefLiUrl")
-
-        // 1. Verify URL detection works
-        val isVk = CsStreamRunner.isVkEmbedUrl(hrefLiUrl)
-        assertTrue("isVkEmbedUrl should recognize the URL", isVk)
-
-        // 2. Resolve URL
-        val resolvedStreams = CsStreamRunner.resolveVkEmbedUrl(
-            providerName = "TestProvider",
-            rawUrl = hrefLiUrl,
-            referer = "https://vk.com",
-            subtitleCallback = { sub ->
-                Log.d(TAG, "Sub: ${sub.name} -> ${sub.url}")
-            }
-        )
-
-        Log.d(TAG, "Resolved stream count: ${resolvedStreams.size}")
-        for (stream in resolvedStreams) {
-            Log.d(TAG, "Stream: ${stream.name} -> ${stream.url}")
-            assertTrue("Url should not be empty", stream.url.isNotEmpty())
-        }
-    }
+    // testVkVideoExtractionWithHrefLi — isVkEmbedUrl/resolveVkEmbedUrl CsStreamRunner'dan kaldırıldı
+    // @Test
+    // fun testVkVideoExtractionWithHrefLi() { /* disabled */ }
 }

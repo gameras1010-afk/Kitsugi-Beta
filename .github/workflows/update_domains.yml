@@ -1,0 +1,100 @@
+name: 🤖 AI Domain Güncelleme
+
+on:
+  schedule:
+    # Her gün saat 03:00 UTC (Türkiye 06:00) çalışır
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Zorla tara (önbelleği sıfırla)'
+        required: false
+        default: 'false'
+
+jobs:
+  update-domains:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: 📥 Repo klonla
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐍 Python 3.12 kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: 📦 Bağımlılıkları yükle
+        run: pip install requests
+
+      - name: 🔑 API Keylerini hazırla
+        run: |
+          mkdir -p scripts
+          # GitHub Secret'tan key dosyasını oluştur
+          echo "${{ secrets.OPENROUTER_API_KEYS }}" > scripts/openrouter_keys.txt
+          KEY_COUNT=$(grep -c "sk-or-" scripts/openrouter_keys.txt || true)
+          echo "✅ $KEY_COUNT OpenRouter API key yüklendi."
+
+      - name: 🔍 AI destekli domain taraması yap
+        run: python scripts/check_domains.py
+        env:
+          OPENROUTER_API_KEYS: ${{ secrets.OPENROUTER_API_KEYS }}
+
+      - name: 🧹 Key dosyasını temizle
+        if: always()
+        run: rm -f scripts/openrouter_keys.txt
+
+      - name: 📋 Değişiklikleri kontrol et
+        id: diff
+        run: |
+          if git diff --quiet domain_fixes.json; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "✅ Hiçbir domain değişmedi."
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "📝 Domain değişiklikleri var:"
+            git diff --stat domain_fixes.json
+          fi
+
+      - name: 🚀 Değişiklikleri push et
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name  "Kitsugi Domain Bot 🤖"
+          git config user.email "bot@kitsugi.app"
+          git add domain_fixes.json
+          TARIH=$(date '+%Y-%m-%d %H:%M UTC')
+          STATS=$(python -c "
+          import json
+          d = json.load(open('domain_fixes.json'))
+          s = d.get('_stats', {})
+          print(f\"+{s.get('added',0)} -{s.get('removed',0)} ~{s.get('changed',0)}\")
+          " 2>/dev/null || echo "")
+          git commit -m "🤖 Otomatik domain güncelleme [$TARIH] $STATS"
+          git push
+          echo ""
+          echo "✅ domain_fixes.json push edildi!"
+          echo "   Kullanıcılar uygulamayı bir sonraki açışta güncel domainleri otomatik alacak."
+
+      - name: 📊 Özet rapor
+        if: always()
+        run: |
+          echo "## 🤖 Domain Güncelleme Raporu" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f domain_fixes.json ]; then
+            python -c "
+          import json
+          d = json.load(open('domain_fixes.json'))
+          s = d.get('_stats', {})
+          print(f\"| Toplam | {s.get('total', 0)} |\")
+          print(f\"| ➕ Eklenen | {s.get('added', 0)} |\")
+          print(f\"| ➖ Kaldırılan | {s.get('removed', 0)} |\")
+          print(f\"| 🔄 Değişen | {s.get('changed', 0)} |\")
+          print(f\"| 🤖 AI Destekli | {s.get('ai_assisted', 0)} |\")
+          print(f\"| 🕐 Güncellendi | {d.get('_updated', 'N/A')} |\")
+            " >> $GITHUB_STEP_SUMMARY 2>/dev/null || true
+          fi

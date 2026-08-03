@@ -20,11 +20,13 @@ import androidx.compose.ui.unit.sp
  * Poster görselinin sol-alt köşesine yerleştirilmek üzere tasarlanmıştır.
  *
  * Desteklenen kaynaklar:
- *  - "anilist"        → yeşil arka plan, "AL" etiketi
- *  - "mal" / "jikan"  → mavi arka plan, "MAL" etiketi
- *  - "tmdb"           → koyu yeşil arka plan, "TMDB" etiketi
- *  - "simkl"          → sarı arka plan, "SK" etiketi
- *  - diğerleri        → şeffaf / gösterilmez
+ *  - "anilist"           → mavi arka plan, "AL" etiketi
+ *  - "mal" / "jikan"     → lacivert arka plan, "MAL" etiketi
+ *  - "tmdb"              → koyu lacivert arka plan, "TMDB" etiketi
+ *  - "simkl"             → koyu arka plan, "SK" etiketi
+ *  - "kitsu"             → turuncu arka plan, "KT" etiketi
+ *  - "shikimori"         → mavi arka plan, "SHI" etiketi
+ *  - diğerleri           → şeffaf / gösterilmez
  */
 @Composable
 fun KitsugiSourceBadge(
@@ -35,11 +37,13 @@ fun KitsugiSourceBadge(
 
     // Platform renklerini ve etiketlerini tanımla
     val (label, bgColor) = when (normalized) {
-        "anilist" -> "AL" to Color(0xFF02A9FF)       // AniList mavi
-        "mal", "jikan" -> "MAL" to Color(0xFF2E51A2) // MyAnimeList lacivert
-        "tmdb" -> "TMDB" to Color(0xFF0D253F)         // TMDB koyu lacivert
-        "simkl" -> "SK" to Color(0xFF1F1F1F)          // Simkl koyu
-        else -> return                                  // Bilinmeyen kaynak → gösterme
+        "anilist"          -> "AL"   to Color(0xFF02A9FF) // AniList mavi
+        "mal", "jikan"     -> "MAL"  to Color(0xFF2E51A2) // MyAnimeList lacivert
+        "tmdb"             -> "TMDB" to Color(0xFF0D253F) // TMDB koyu lacivert
+        "simkl"            -> "SK"   to Color(0xFF1F1F1F) // Simkl koyu
+        "kitsu"            -> "KT"   to Color(0xFFE35A02) // Kitsu turuncu
+        "shikimori"        -> "SHI"  to Color(0xFF4C86C8) // Shikimori mavi
+        else -> return                                      // Bilinmeyen kaynak → gösterme
     }
 
     // Ön plan metin rengi — her zaman beyaz, yeterli kontrast sağlar

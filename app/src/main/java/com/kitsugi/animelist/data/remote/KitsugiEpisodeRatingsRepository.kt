@@ -457,7 +457,8 @@ object KitsugiEpisodeRatingsRepository {
     private suspend fun resolveTvdbIdFromTmdb(
         tmdbId: Int,
         fallbackMalId: Int? = null,
-        fallbackAniListId: Int? = null
+        fallbackAniListId: Int? = null,
+        fallbackKitsuId: Int? = null
     ): Int? = withContext(Dispatchers.IO) {
         // 1. Bellek önbelleği kontrolü
         if (tmdbToTvdbCache.containsKey(tmdbId)) {
@@ -504,8 +505,16 @@ object KitsugiEpisodeRatingsRepository {
             }
         }
 
+        // 6. kitsuId üzerinden dene (Room'dan veya caller fallback)
+        if (tvdbId == null) {
+            val kitsuId = cachedEntity?.kitsuId?.toIntOrNull() ?: fallbackKitsuId
+            if (kitsuId != null && kitsuId > 0) {
+                tvdbId = resolveTvdbIdFromKitsu(kitsuId)
+            }
+        }
+
         mutex.withLock { tmdbToTvdbCache[tmdbId] = tvdbId }
-        Log.d(TAG, "TVDB resolve (via MAL/AniList): tmdbId=$tmdbId → tvdbId=$tvdbId")
+        Log.d(TAG, "TVDB resolve (via MAL/AniList/Kitsu): tmdbId=$tmdbId → tvdbId=$tvdbId")
         tvdbId
     }
 
@@ -565,7 +574,8 @@ object KitsugiEpisodeRatingsRepository {
         tmdbId: Int,
         isMovie: Boolean = false,
         fallbackMalId: Int? = null,
-        fallbackAniListId: Int? = null
+        fallbackAniListId: Int? = null,
+        fallbackKitsuId: Int? = null
     ): List<GalleryItem> = withContext(Dispatchers.IO) {
         val (fanartEnabled, fanartApiKey) = getFanartSettings()
         if (!fanartEnabled || fanartApiKey.isBlank()) return@withContext emptyList()
@@ -589,7 +599,7 @@ object KitsugiEpisodeRatingsRepository {
             }
         } else {
             // TV/Anime: TVDB ID çözümleme zinciri (fallback ID'leri ileterek)
-            var tvdbId = if (tmdbId > 0) resolveTvdbIdFromTmdb(tmdbId, fallbackMalId, fallbackAniListId) else null
+            var tvdbId = if (tmdbId > 0) resolveTvdbIdFromTmdb(tmdbId, fallbackMalId, fallbackAniListId, fallbackKitsuId) else null
 
             // Hâlâ bulunamazsa caller'dan gelen fallback id'leri doğrudan dene
             if (tvdbId == null || tvdbId <= 0) {
@@ -600,6 +610,11 @@ object KitsugiEpisodeRatingsRepository {
             if (tvdbId == null || tvdbId <= 0) {
                 if (fallbackAniListId != null && fallbackAniListId > 0) {
                     tvdbId = resolveTvdbIdFromAniList(fallbackAniListId)
+                }
+            }
+            if (tvdbId == null || tvdbId <= 0) {
+                if (fallbackKitsuId != null && fallbackKitsuId > 0) {
+                    tvdbId = resolveTvdbIdFromKitsu(fallbackKitsuId)
                 }
             }
 
@@ -934,5 +949,110 @@ object KitsugiEpisodeRatingsRepository {
             Log.w(TAG, "TMDB episodes parse failed: ${it.message}")
             emptyList()
         }
+    }
+
+    suspend fun resolveTmdbIdFromKitsu(kitsuId: Int): Int? = withContext(Dispatchers.IO) {
+        if (!isTmdbEnabled()) return@withContext null
+        if (kitsuId <= 0) return@withContext null
+        val cacheKey = kitsuId + 300_000_000
+
+        // Önbellek kontrolü — tamamen mutex içinde
+        val isCached = mutex.withLock { malToTmdbCache.containsKey(cacheKey) }
+        if (isCached) return@withContext mutex.withLock { malToTmdbCache[cacheKey] }
+
+        // Room önbellek kontrolü
+        val cachedEntity = runCatching { dao?.getByKitsuId(kitsuId.toString()) }.getOrNull()
+        if (cachedEntity != null) {
+            val id = cachedEntity.tmdbId
+            mutex.withLock { malToTmdbCache[cacheKey] = id }
+            if (cachedEntity.tvdbId != null && cachedEntity.tvdbId > 0) {
+                mutex.withLock { tmdbToTvdbCache[id] = cachedEntity.tvdbId }
+            }
+            Log.d(TAG, "Room hit: kitsuId=$kitsuId → tmdbId=$id")
+            return@withContext id
+        }
+
+        val tmdbId = runCatching {
+            val url = URL("https://arm.haglund.dev/api/v2/ids?source=kitsu&id=$kitsuId")
+            val response = KitsugiApiBase.executeGetRequest(url) ?: return@runCatching null
+            val json = JSONObject(response)
+            val tvdbVal = json.optInt("thetvdb", -1).takeIf { it > 0 }
+            if (tvdbVal != null) {
+                val tmdbVal = json.optInt("themoviedb", -1)
+                if (tmdbVal > 0) {
+                    mutex.withLock { tmdbToTvdbCache[tmdbVal] = tvdbVal }
+                }
+            }
+            if (json.isNull("themoviedb")) null
+            else {
+                val value = json.optInt("themoviedb", -1)
+                if (value > 0) {
+                    val malId = if (!json.isNull("myanimelist")) json.optInt("myanimelist", -1) else null
+                    val cleanMalId = if (malId != null && malId > 0) malId else null
+                    val aniListId = if (!json.isNull("anilist")) json.optInt("anilist", -1) else null
+                    val cleanAniListId = if (aniListId != null && aniListId > 0) aniListId else null
+                    val existing = dao?.getByTmdbId(value)
+                    val updated = existing?.copy(
+                        kitsuId = kitsuId.toString(),
+                        malId = cleanMalId ?: existing.malId,
+                        aniListId = cleanAniListId ?: existing.aniListId,
+                        tvdbId = tvdbVal ?: existing.tvdbId
+                    ) ?: MediaMetaCacheEntity(
+                        tmdbId = value,
+                        malId = cleanMalId,
+                        aniListId = cleanAniListId,
+                        logoUrl = null,
+                        logoNotFound = false,
+                        kitsuId = kitsuId.toString(),
+                        tvdbId = tvdbVal
+                    )
+                    dao?.insert(updated)
+                    Log.d(TAG, "Room write (Kitsu): kitsuId=$kitsuId → tmdbId=$value")
+                    value
+                } else null
+            }
+        }.getOrElse {
+            Log.w(TAG, "ARM API lookup failed for kitsuId=$kitsuId: ${it.message}")
+            null
+        }
+
+        mutex.withLock { malToTmdbCache[cacheKey] = tmdbId }
+        Log.d(TAG, "ARM lookup kitsu: kitsuId=$kitsuId → tmdbId=$tmdbId")
+        tmdbId
+    }
+
+    private suspend fun resolveTvdbIdFromKitsu(kitsuId: Int): Int? = withContext(Dispatchers.IO) {
+        if (kitsuId <= 0) return@withContext null
+        runCatching {
+            val url = URL("https://arm.haglund.dev/api/v2/ids?source=kitsu&id=$kitsuId")
+            val response = KitsugiApiBase.executeGetRequest(url) ?: return@runCatching null
+            val json = JSONObject(response)
+            val value = json.optInt("thetvdb", -1)
+            if (value > 0) {
+                Log.d(TAG, "TVDB via ARM (Kitsu): kitsuId=$kitsuId → tvdbId=$value")
+                value
+            } else null
+        }.getOrElse {
+            Log.w(TAG, "resolveTvdbIdFromKitsu failed for kitsuId=$kitsuId: ${it.message}")
+            null
+        }
+    }
+
+    suspend fun getEpisodeRatingsByKitsuId(kitsuId: Int): Map<Pair<Int, Int>, Double> = withContext(Dispatchers.IO) {
+        if (!isTmdbEnabled()) return@withContext emptyMap()
+        if (kitsuId <= 0) return@withContext emptyMap()
+        val tmdbId = resolveTmdbIdFromKitsu(kitsuId) ?: return@withContext emptyMap()
+        fetchWithCache(tmdbId)
+    }
+
+    suspend fun getLogoUrlByKitsuId(kitsuId: Int): String? = withContext(Dispatchers.IO) {
+        if (!isTmdbEnabled()) return@withContext null
+        if (kitsuId <= 0) return@withContext null
+        val tmdbId = resolveTmdbIdFromKitsu(kitsuId) ?: return@withContext null
+        getLogoUrl(tmdbId)
+    }
+
+    suspend fun getResolvedTmdbIdForKitsu(kitsuId: Int): Int? = mutex.withLock {
+        malToTmdbCache[kitsuId + 300_000_000]
     }
 }

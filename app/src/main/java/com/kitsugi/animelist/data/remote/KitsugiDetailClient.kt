@@ -30,7 +30,17 @@ class KitsugiDetailClient {
                 // 100_000_000+ offset'li stableId → gerçek AniList ID'yi çıkar
                 externalId - 100_000_000
             } else null
-            KitsugiIdResolver.resolveIds(malId = malIdForResolve, aniListId = aniListIdForResolve, tmdbId = providedTmdbId, mediaType = mediaType).tmdbId
+            val kitsuIdForResolve: Int? = if (source.lowercase() == "kitsu") {
+                externalId - 300_000_000
+            } else null
+            
+            KitsugiIdResolver.resolveIds(
+                malId = malIdForResolve,
+                aniListId = aniListIdForResolve,
+                tmdbId = providedTmdbId,
+                mediaType = mediaType,
+                kitsuId = kitsuIdForResolve
+            ).tmdbId
         }
 
         if (tmdbId != null && tmdbId > 0) {
@@ -121,6 +131,27 @@ class KitsugiDetailClient {
             val detail = when (source.lowercase()) {
                 "jikan", "mal" -> KitsugiMalDetailClient.fetchDetail(externalId, mediaType)
                 "anilist" -> KitsugiAniListDetailClient.fetchDetail(externalId, mediaType)
+                // Kitsu keşfet fallback öğeleri: stableId = kitsuId + 300_000_000
+                "kitsu" -> {
+                    android.util.Log.d("KitsugiDetailClient", "Fetching Kitsu detail for stableId=$externalId")
+                    val kitsuDetail = KitsuExploreClient.fetchDetailByStableId(externalId, mediaType)
+                    // AnimeThemes entegrasyonu: Kitsu ID'si ile tema müziklerini çek
+                    if (kitsuDetail != null && mediaType != MediaType.Manga) {
+                        val kitsuNumericId = externalId - KitsuExploreClient.ID_OFFSET
+                        if (kitsuNumericId > 0) {
+                            try {
+                                val themes = KitsugiAnimeThemesClient.fetchAnimeThemes(kitsuNumericId, "Kitsu")
+                                if (themes.first.isNotEmpty() || themes.second.isNotEmpty()) {
+                                    android.util.Log.d("KitsugiDetailClient", "AnimeThemes Kitsu: ${themes.first.size} OP, ${themes.second.size} ED")
+                                    kitsuDetail.copy(openings = themes.first, endings = themes.second)
+                                } else kitsuDetail
+                            } catch (e: Exception) {
+                                android.util.Log.w("KitsugiDetailClient", "AnimeThemes Kitsu fetch failed: ${e.message}")
+                                kitsuDetail
+                            }
+                        } else kitsuDetail
+                    } else kitsuDetail
+                }
                 // TMDB discovery öğeleri: malId aslında tmdbId, doğrudan TMDB'den çek
                 "tmdb" -> {
                     val effectiveTmdbId = tmdbId ?: externalId

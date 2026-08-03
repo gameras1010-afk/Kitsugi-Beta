@@ -195,7 +195,7 @@ fun KitsugiFullscreenPlayerScreen(
         }
     }
     
-    LaunchedEffect(videoId, videoUrl, audioUrl, title, initialIndex, episode, tmdbId) {
+    LaunchedEffect(videoId, videoUrl, audioUrl, title, initialIndex, episode, tmdbId, isMovie) {
         viewModel.initialize(
             videoId = videoId,
             videoUrl = videoUrl,
@@ -215,6 +215,7 @@ fun KitsugiFullscreenPlayerScreen(
             titleRomaji = titleRomaji,
             titleNative = titleNative,
             startYear = startYear,
+            isMovie = isMovie,
             activity = activity
         )
     }
@@ -466,53 +467,38 @@ fun KitsugiFullscreenPlayerScreen(
 
                 // Determine which engine type to use based on the CURRENT source URL.
                 // This is computed once per source URL — engine only rebuilds if the type changes
-                // (e.g. user switches MPV setting), NOT on every playbackSource reference change.
-                // Previously, remember(context, source) caused rebuild whenever loadPlaybackSource()
-                // set a new TrailerPlaybackSource() object (even with identical URLs), which triggered
-                // DisposableEffect onDispose and prematurely released ExoPlayer mid-playback.
-                var activeEngineType by remember(source?.videoUrl) {
-                    mutableStateOf(
-                        PlayerEngineSelector.selectEngine(
-                            settings = safeSettings,
-                            videoUrl = source!!.videoUrl,
-                            isCS = currentStreamSources.getOrNull(currentSourceIndex)?.isCS == true
-                        )
-                    )
-                }
+                // Collect active engine type from ViewModel (set by settings + updated on fallback).
+                // This drives which engine is instantiated below without local ad-hoc state.
+                val activeEngineType by viewModel.activeEngineType.collectAsState()
 
-                val fallbackCoordinator = remember(source?.videoUrl) {
-                    com.kitsugi.animelist.core.player.engine.PlayerFallbackCoordinator(
-                        maxAttempts = 3,
-                        listener = object : com.kitsugi.animelist.core.player.PlayerManagerListener {
-                            override fun onPlayerSwitched(
-                                from: com.kitsugi.animelist.core.player.engine.PlayerEngineType,
-                                to: com.kitsugi.animelist.core.player.engine.PlayerEngineType
-                            ) {
-                                Log.d("KitsugiPlayerDebug", "FallbackCoordinator: Switched engine from $from to $to")
-                                activeEngineType = to
-                                Toast.makeText(
-                                    context,
-                                    "⚠️ Oynatma hatası — Oynatıcı motoru değiştiriliyor...",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-
-                            override fun onFatalError(errorCode: Int, errorMsg: String) {
-                                Log.e("KitsugiPlayerDebug", "FallbackCoordinator: Fatal fallback error: $errorMsg")
-                                viewModel.orchestrator.errorRecovery.onPlaybackError(errorCode, errorMsg)
-                            }
+                LaunchedEffect(activeEngineType, currentVideoUrl) {
+                    if (activeEngineType == PlayerEngineType.EXTERNAL) {
+                        val urlVal = currentVideoUrl
+                        if (!urlVal.isNullOrBlank()) {
+                            PlayerLogger.logExternalPlayerLaunch(
+                                context   = context,
+                                url       = urlVal,
+                                addonName = currentAddonName,
+                                title     = currentTitle,
+                                manual    = false
+                            )
+                            KitsugiFullscreenPlayerActivity.launchExternalPlayer(
+                                context = context,
+                                videoUrl = urlVal,
+                                title = currentTitle,
+                                positionMs = savedPos ?: 0L,
+                                headers = currentHeaders,
+                                subtitles = currentSubtitles
+                            )
+                            onBack()
                         }
-                    )
+                    }
                 }
 
                 val playerEngine = remember(context, activeEngineType) {
                     when (activeEngineType) {
-                        PlayerEngineType.MPV -> {
-                            MpvPlayerEngine(context, safeSettings)
-                        }
-                        else -> {
-                            Media3PlayerEngine(context, safeSettings)
-                        }
+                        PlayerEngineType.MPV -> MpvPlayerEngine(context, safeSettings)
+                        else -> Media3PlayerEngine(context, safeSettings)
                     }
                 }
 
@@ -617,17 +603,8 @@ fun KitsugiFullscreenPlayerScreen(
                         bufferingWatchdogJob = scope.launch {
                             delay(12_000L)
                             if (isBufferingState) {
-                                Log.w("KitsugiPlayerDebug", "Buffering watchdog: Stream stuck buffering for 12s. Forcing fallback!")
-                                Toast.makeText(context, "⚠️ Yayın sunucusu yanıt vermiyor — Alternatif kaynağa geçiliyor...", Toast.LENGTH_SHORT).show()
-                                val mpvEnabled = safeSettings.playerPreference.equals("MPV", ignoreCase = true)
-                                val nextEngine = fallbackCoordinator.getFallbackEngine(
-                                    currentEngine = activeEngineType,
-                                    errorCode = 5004,
-                                    mpvEnabled = mpvEnabled
-                                )
-                                if (nextEngine == null) {
-                                    viewModel.orchestrator.errorRecovery.onPlaybackError(5004, "Arabelleğe alma zaman aşımına uğradı (12sn)")
-                                }
+                                Log.w("KitsugiPlayerDebug", "Buffering watchdog: Stream stuck buffering for 12s. Delegating to errorRecovery.")
+                                viewModel.orchestrator.errorRecovery.onPlaybackError(5004, "Arabelleğe alma zaman aşımına uğradı (12sn)")
                             }
                         }
                     } else {
@@ -676,7 +653,6 @@ fun KitsugiFullscreenPlayerScreen(
 
                         override fun onPlaybackError(errorCode: Int, errorMsg: String, cause: Throwable?) {
                             Log.e("KitsugiPlayerDebug", "onPlaybackError: code=$errorCode, message=$errorMsg", cause)
-                            // TASK_042 — PlayerState.Error'a geç
                             viewModel.setPlayerError(errorCode, errorMsg)
                             PlayerLogger.logPlaybackError(
                                 context   = context,
@@ -687,19 +663,8 @@ fun KitsugiFullscreenPlayerScreen(
                                 errorMsg  = errorMsg,
                                 cause     = cause
                              )
-
-                            // Try falling back engine (MEDIA3 -> MPV -> EXTERNAL)
-                            val mpvEnabled = safeSettings.playerPreference.equals("MPV", ignoreCase = true)
-                            val nextEngine = fallbackCoordinator.getFallbackEngine(
-                                currentEngine = activeEngineType,
-                                errorCode = errorCode,
-                                mpvEnabled = mpvEnabled
-                            )
-
-                            if (nextEngine == null) {
-                                // Engine fallback exhausted for this source link — trigger source fallback to next link
-                                viewModel.orchestrator.errorRecovery.onPlaybackError(errorCode, errorMsg)
-                            }
+                            // Delegate entirely to the orchestrator's unified error recovery pipeline
+                            viewModel.orchestrator.errorRecovery.onPlaybackError(errorCode, errorMsg)
                         }
 
                         override fun onTracksChanged(

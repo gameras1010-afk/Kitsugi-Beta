@@ -1,0 +1,527 @@
+﻿--------- beginning of main
+08-02 22:57:25.227 15091 15091 I DockFeature: isSupportDock: isSupportFreeform=true	isPhone=true	isAboveMiui125=true	isSupportDock=true	isDevBuild=false
+08-02 22:57:25.230  2067  3252 D MI-SF   : mIsSupportAutomodeForMaxFpsSetting is 1(0), getCurrentBrightness() = 986(528), mIsKeepAutoMode 0
+08-02 22:57:25.231  2067  2482 D MI-SF   : mIsSupportAutomodeForMaxFpsSetting is 1(0), getCurrentBrightness() = 986(528), mIsKeepAutoMode 0
+08-02 22:57:25.231  2067  2482 D RefreshRateConfigs: TouchBoost - choose Fps: 120.00 Hz
+08-02 22:57:25.231  2067  2482 D MI-SF   : mIsSupportAutomodeForMaxFpsSetting is 1(0), getCurrentBrightness() = 986(528), mIsKeepAutoMode 0
+08-02 22:57:25.234 15091 15091 D SidebarTouchListener: onTouch: 	action = 4	isLeftShow = true
+08-02 22:57:25.242  1949  2371 I SDM     : HWCDisplay::SetActiveConfigWithConstraints: config: 2, WxH 1440x3200, fps 120
+08-02 22:57:25.243  1949  2371 W SDM     : HWDeviceDRM::GetSupportedBitClkRate: Requested rate not supported: 1360000000
+08-02 22:57:25.243  1949  2371 I SDM     : HWDeviceDRM::UpdateMixerAttributes: Mixer WxH 1440x3200-1 for Peripheral
+08-02 22:57:25.244  1949  2371 I SDM     : HWCDisplay::SubmitDisplayConfig: Active configuration changed from config 5 to 2
+08-02 22:57:25.244  1949  2371 I SDM     : HWCDisplay::SubmitDisplayConfig: Active WxH 1440x3200, timing_fps: 120, sf_fps: 120,ddic_mode:0
+08-02 22:57:25.245  1949  3244 I vendor.qti.hardware.display.composer-service: FrameNotifyProcess Sensor: notify citsensorservice to trigger cwb
+08-02 22:57:25.246  2967  4170 I libsensor-parseRGB: request dump start
+08-02 22:57:25.246  2967  4170 D vendor.xiaomi.sensor.citsensorservice@2.0-service: handle id:10 wxh:1536x3200 uwxuh:1440x3200 size: 14745600 fd:17 fd_meta:18 flags:0x228 usage:0x33  format:0x3 layer_count: 1 reserved_size = 0
+08-02 22:57:25.252  1994  2107 D FPSMonitor: threadFuncFpsMonitor display 0, fps 120
+08-02 22:57:25.259  2067  2067 D MI-SF   : mIsSupportAutomodeForMaxFpsSetting is 1(0), getCurrentBrightness() = 986(528), mIsKeepAutoMode 0
+08-02 22:57:25.259  2067  2067 D RefreshRateConfigs: TouchBoost - choose Fps: 120.00 Hz
+08-02 22:57:25.259  2067  2067 D MI-SF   : mIsSupportAutomodeForMaxFpsSetting is 1(0), getCurrentBrightness() = 986(528), mIsKeepAutoMode 0
+08-02 22:57:25.266  2772  4214 I MiuiNetworkPolicy: bandwidth: 182 KB/s, Max bandwidth: 2816 KB/s
+08-02 22:57:25.292  2067  2067 D MI-SF   : mIsSupportAutomodeForMaxFpsSetting is 1(0), getCurrentBrightness() = 986(528), mIsKeepAutoMode 0
+08-02 22:57:25.292  2067  2067 D RefreshRateConfigs: TouchBoost - choose Fps: 120.00 Hz
+08-02 22:57:25.292  2067  2067 D MI-SF   : mIsSupportAutomodeForMaxFpsSetting is 1(0), getCurrentBrightness() = 986(528), mIsKeepAutoMode 0
+08-02 22:57:25.295  2967  4171 D libsensor-parseRGB: the value of RGB [423.066620 298.793270 325.042420]
+08-02 22:57:25.303  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.466473,R:0.027596,G:0.001994,B:0.088850,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:25.303  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:423.066620,G:298.793270,B:325.042420,EVENT C:85.000000,R:49.500000,G:27.500000,B:9.500000, lux: 1.595033,cct:2856.978760, irPara: 0
+08-02 22:57:25.304 18632 20157 D CsStreamRunner: [PerverZija] load('https://tube.perverzija.com/shesnew-annie-archerbrand-new-blonde/') ├ğa─şr─▒l─▒yor...
+08-02 22:57:25.321 18632 20157 D CsStreamRunner: [WatchHentai] api.search('Spider Man Brand New Day', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:57:25.327 18632 20287 D TrafficStats: tagSocket(654) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:25.330 18632 20157 D CsStreamRunner: [Canl─▒ Tv K] api.search('Spider Man Brand New Day') ├ğa─şr─▒l─▒yor...
+08-02 22:57:25.338 18632 20867 D TrafficStats: tagSocket(295) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:25.348 18632 20025 D TrafficStats: tagSocket(766) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:25.395  2772  3972 D MIUIInput: [MotionEvent] publisher action=0x1, 469371551, channel '9d85c60 com.kitsugi.animelist/com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity (server)'
+08-02 22:57:25.395  2772  3972 D MIUIInput: [MotionEvent] publisher action=0x1, 469371551, channel '[Gesture Monitor] miui-gesture (server)'
+08-02 22:57:25.403  2049  2049 I [THP-HAL]: release_all:force:0
+08-02 22:57:25.421 18632 18898 D CsStreamRunner: [├çizgi ve Dizi] api.search('Spider Man Brand New Day') ├ğa─şr─▒l─▒yor...
+08-02 22:57:25.425 18632 20157 D CsStreamRunner: [XMoviesForYou] load tamamland─▒: MovieLoadResponse
+08-02 22:57:25.426 18632 20157 D CsStreamRunner: [ID-Mapping] Candidate syncData: {}
+08-02 22:57:25.426 18632 20157 D CsStreamRunner: [ID-Mapping] Checking candidate 'Chloe Foxxe, Millie Morgan (Chloe and Millie Make Your Day / 07.14.2026)' (similarity: 0.22388059701492538)...
+08-02 22:57:25.437 18632 20287 D TrafficStats: tagSocket(598) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:25.449 18632 18899 D CsPluginStatusTracker: [Canl─▒ Tv K] Yap─▒sal/Ayr─▒┼şt─▒rma hatas─▒ tespit edildi (MissingKotlinParameterException) ÔÇö #2/3 (Bloklanm─▒yor, Sorguya ├Âzel olabilir).
+08-02 22:57:25.449 18632 18899 W CsStreamRunner: [Canl─▒ Tv K] search(query) hata verdi: Instantiation of [simple type, class com.canlitv.TurksatKabloTvResponse] value failed for JSON property Data due to missing (therefore NULL) value for creator parameter data which is a non-nullable type
+08-02 22:57:25.449 18632 18899 W CsStreamRunner:  at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 119] (through reference chain: com.canlitv.TurksatKabloTvResponse["Data"])
+08-02 22:57:25.449 18632 18899 E CS_SEARCH_ERR: ÔØî SEARCH(q) HATA [Canl─▒ Tv K] ÔÇö MissingKotlinParameterException: Instantiation of [simple type, class com.canlitv.TurksatKabloTvResponse] value failed for JSON property Data due to missing (therefore NULL) value for creator parameter data which is a non-nullable type
+08-02 22:57:25.449 18632 18899 E CS_SEARCH_ERR:  at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 119] (through reference chain: com.canlitv.TurksatKabloTvResponse["Data"])
+08-02 22:57:25.449 18632 18899 W CsStreamRunner: [Canl─▒ Tv K] Search failed: Instantiation of [simple type, class com.canlitv.TurksatKabloTvResponse] value failed for JSON property Data due to missing (therefore NULL) value for creator parameter data which is a non-nullable type
+08-02 22:57:25.449 18632 18899 W CsStreamRunner:  at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 119] (through reference chain: com.canlitv.TurksatKabloTvResponse["Data"])
+08-02 22:57:25.449 18632 18899 D CsStreamRunner: [Canl─▒ Tv K] search('Spider Man Brand New Day') ÔåÆ 0 sonu├ğ
+08-02 22:57:25.451  1949  3244 I vendor.qti.hardware.display.composer-service: FrameNotifyProcess Sensor: notify citsensorservice to trigger cwb
+08-02 22:57:25.453  2967  4170 I libsensor-parseRGB: request dump start
+08-02 22:57:25.453  2967  4170 D vendor.xiaomi.sensor.citsensorservice@2.0-service: handle id:10 wxh:1536x3200 uwxuh:1440x3200 size: 14745600 fd:17 fd_meta:18 flags:0x228 usage:0x33  format:0x3 layer_count: 1 reserved_size = 0
+08-02 22:57:25.480  2967  4171 D libsensor-parseRGB: the value of RGB [239.178614 194.659421 448.436583]
+08-02 22:57:25.500  2772  5205 I NetworkAccelerateSwitchService: EVENT_RSSI_POLL. mRssiPoll=true
+08-02 22:57:25.500  2772  5205 I NetworkAccelerateSwitchService: getAverageWifiRssi:54
+08-02 22:57:25.505  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.322025,R:0.015924,G:0.001580,B:0.052259,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:25.505  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:239.178614,G:194.659421,B:448.436583,EVENT C:102.000000,R:61.500000,G:32.000000,B:12.000000, lux: 1.849437,cct:2871.003174, irPara: 0
+08-02 22:57:25.505  2967  4234 I libsensor-displayalgo: ##### the value of lux: 1.464312, cct: 5646.000000
+08-02 22:57:25.505  2967  4234 I libsensor-ssccalapi: value of set_lux: 1.464312, set r: 5646.000000
+08-02 22:57:25.505  2967  4234 I sensors : send_request:320, send_request start this=0xb400007ad007f000x 
+08-02 22:57:25.505  2967  4234 I sensors : send_request:405, send_request completed, this=0xb400007ad007f000x
+08-02 22:57:25.507  2967  4039 I sensors : handle_resp_cb:507, handle_resp_cb Ended this=0xb400007ad007f000x
+08-02 22:57:25.570  2049  2049 I [THP-ALG]: alg_input_report:Touch Down: id: 0
+08-02 22:57:25.571  2772  3972 D MIUIInput: [MotionEvent] publisher action=0x4, 469371726, channel '36d8bde DockAssistantView (server)'
+08-02 22:57:25.571  2772  3972 D MIUIInput: [MotionEvent] publisher action=0x4, 469371726, channel '733477e NavigationBar0 (server)'
+08-02 22:57:25.572 15091 15091 I DockFeature: isSupportDock: isSupportFreeform=true	isPhone=true	isAboveMiui125=true	isSupportDock=true	isDevBuild=false
+08-02 22:57:25.572  2772  3972 D MIUIInput: [MotionEvent] publisher action=0x0, 469371726, channel '9d85c60 com.kitsugi.animelist/com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity (server)'
+08-02 22:57:25.572  2772  3972 D MIUIInput: [MotionEvent] publisher action=0x0, 469371726, channel '[Gesture Monitor] miui-gesture (server)'
+08-02 22:57:25.573 15091 15091 D SidebarTouchListener: onTouch: 	action = 4	isLeftShow = true
+08-02 22:57:25.574 18632 20158 D CsStreamRunner: [Porntrex] load tamamland─▒: MovieLoadResponse
+08-02 22:57:25.575 18632 20158 D CsStreamRunner: [ID-Mapping] Candidate syncData: {}
+08-02 22:57:25.575 18632 20158 D CsStreamRunner: [ID-Mapping] Checking candidate 'Linda Moretti - A Brand New Task' (similarity: 0.4666666666666667)...
+08-02 22:57:25.594 18632 18899 D CsStreamRunner: [├çizgi ve Dizi] search('Spider Man Brand New Day') ÔåÆ 0 sonu├ğ
+08-02 22:57:25.661  1949  3244 I vendor.qti.hardware.display.composer-service: FrameNotifyProcess Sensor: notify citsensorservice to trigger cwb
+08-02 22:57:25.662  2967  4170 I libsensor-parseRGB: request dump start
+08-02 22:57:25.662  2967  4170 D vendor.xiaomi.sensor.citsensorservice@2.0-service: handle id:10 wxh:1536x3200 uwxuh:1440x3200 size: 14745600 fd:17 fd_meta:18 flags:0x228 usage:0x33  format:0x3 layer_count: 1 reserved_size = 0
+--------- beginning of system
+08-02 22:57:25.674  2772  4607 I SmartPower.com.android.remoteprovisioner/10193(12305): background->idle(3002ms) R(service create com.android.remoteprovisioner/.service.GenerateRkpKeyService) adj=905.
+08-02 22:57:25.674  2772  4607 I SmartPower: com.android.remoteprovisioner/10193 state=inactive adj=905 proc size=1 move to idle service create com.android.remoteprovisioner/.service.GenerateRkpKeyService
+08-02 22:57:25.688  2967  4171 D libsensor-parseRGB: the value of RGB [374.393479 416.784135 609.974526]
+08-02 22:57:25.704  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.801812,R:0.032030,G:0.002448,B:0.171413,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:25.704  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:374.393479,G:416.784135,B:609.974526,EVENT C:82.000000,R:48.000000,G:27.500000,B:9.000000, lux: 1.615552,cct:2791.978760, irPara: 0
+08-02 22:57:25.726 18632 20158 D CsStreamRunner: [Torrent Filmler] load('https://turkcealtyazi.org/mov/0948470/the-amazing-spider-man.html') ├ğa─şr─▒l─▒yor...
+08-02 22:57:25.745 18632 20025 D TrafficStats: tagSocket(610) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:25.750 18632 20158 D CsStreamRunner: [XNalgas] api.search('Spider Man Brand New Day', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:57:25.755 18632 20858 D CloudflareKiller: WAF / Challenge verification page detected for host: www.defendonlineprivacy.com
+08-02 22:57:25.758 18632 18899 D CsStreamRunner: [PerverZija] load tamamland─▒: MovieLoadResponse
+08-02 22:57:25.759 18632 18899 D CsStreamRunner: [ID-Mapping] Candidate syncData: {}
+08-02 22:57:25.759 18632 18899 D CsStreamRunner: [ID-Mapping] Checking candidate 'ShesNew ÔÇô Cecelia Taylor Brand New Cutie' (similarity: 0.39473684210526316)...
+08-02 22:57:25.798 18632 20819 D TrafficStats: tagSocket(780) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:25.836 18632 20158 D CsStreamRunner: [WatchHentai] search('Spider Man Brand New Day') ÔåÆ 0 sonu├ğ
+08-02 22:57:25.841  2772  3972 D MIUIInput: [MotionEvent] publisher action=0x1, 469371996, channel '9d85c60 com.kitsugi.animelist/com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity (server)'
+08-02 22:57:25.841  2772  3972 D MIUIInput: [MotionEvent] publisher action=0x1, 469371996, channel '[Gesture Monitor] miui-gesture (server)'
+08-02 22:57:25.848  2049  2049 I [THP-HAL]: release_all:force:0
+08-02 22:57:25.868  1949  3244 I vendor.qti.hardware.display.composer-service: FrameNotifyProcess Sensor: notify citsensorservice to trigger cwb
+08-02 22:57:25.869  2967  4170 I libsensor-parseRGB: request dump start
+08-02 22:57:25.869  2967  4170 D vendor.xiaomi.sensor.citsensorservice@2.0-service: handle id:10 wxh:1536x3200 uwxuh:1440x3200 size: 14745600 fd:17 fd_meta:18 flags:0x228 usage:0x33  format:0x3 layer_count: 1 reserved_size = 0
+08-02 22:57:25.875 18632 20158 D CsStreamRunner: [EPorner] load('https://www.eporner.com/video-Dmqw2HJ1KuW/desi-man-forcely-fuck-maid/') ├ğa─şr─▒l─▒yor...
+08-02 22:57:25.892 18632 20024 D TrafficStats: tagSocket(642) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:25.895 18632 18899 D CsStreamRunner: [Youperv] api.search('Spider Man Brand New Day', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:57:25.897  2967  4171 D libsensor-parseRGB: the value of RGB [428.758094 471.950768 715.235953]
+08-02 22:57:25.903  2967  4234 I libsensor-displayalgo: the value of channelCali C:1.100161,R:0.037238,G:0.002732,B:0.254788,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:25.903  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:428.758094,G:471.950768,B:715.235953,EVENT C:82.500000,R:48.000000,G:27.000000,B:9.500000, lux: 1.565670,cct:2873.789795, irPara: 0
+08-02 22:57:25.903  2967  4234 I libsensor-displayalgo: ##### the value of lux: 1.554442, cct: 5646.000000
+08-02 22:57:25.903  2967  4234 I libsensor-ssccalapi: value of set_lux: 1.554442, set r: 5646.000000
+08-02 22:57:25.903  2967  4234 I sensors : send_request:320, send_request start this=0xb400007ad007f000x 
+08-02 22:57:25.904  2967  4234 I sensors : send_request:405, send_request completed, this=0xb400007ad007f000x
+08-02 22:57:25.905  2967  4039 I sensors : handle_resp_cb:507, handle_resp_cb Ended this=0xb400007ad007f000x
+08-02 22:57:25.909 18632 20025 D TrafficStats: tagSocket(769) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:26.001  2067  3252 D MI-SF   : setIdleFps choose FPS:60, mode:20711936
+08-02 22:57:26.011  1949  2371 I SDM     : HWCDisplay::SetActiveConfigWithConstraints: config: 5, WxH 1440x3200, fps 60
+08-02 22:57:26.012  1949  2371 W SDM     : HWDeviceDRM::GetSupportedBitClkRate: Requested rate not supported: 1360000000
+08-02 22:57:26.012  1949  2371 I SDM     : HWDeviceDRM::UpdateMixerAttributes: Mixer WxH 1440x3200-1 for Peripheral
+08-02 22:57:26.012  1949  2371 I SDM     : HWCDisplay::SubmitDisplayConfig: Active configuration changed from config 2 to 5
+08-02 22:57:26.012  1949  2371 I SDM     : HWCDisplay::SubmitDisplayConfig: Active WxH 1440x3200, timing_fps: 60, sf_fps: 60,ddic_mode:1
+08-02 22:57:26.022  1994  2107 D FPSMonitor: threadFuncFpsMonitor display 0, fps 106010
+08-02 22:57:26.060 18632 18899 D CsStreamRunner: [VizyonHub] load('{"title":"├ûr├╝mcek-Adam: Yepyeni Bir G├╝n | Spider-Man: Brand New Day","urls":{"DiziSol":"https://dizisol.com/film/969681","FullHDFilmizlesene":"https://www.fullhdfilmizlesene.mx/film/spider-man-brand-new-day-fh1/","DiziFilm":"https://dizifilmizle.to/film/orumcek-adam-yepyeni-bir-gun-hd","FilmMakinesi":"https://selcukflix.co/film/spider-man-brand-new-day/izle","FilmizleNow":"https://filmizle.now/film/orumcek-adam-yepyeni-bir-gun-izle"}}') ├ğa─şr─▒l─▒yor...
+08-02 22:57:26.061 18632 18899 D TopluDiziler: === LOAD START === Url: {"title":"├ûr├╝mcek-Adam: Yepyeni Bir G├╝n | Spider-Man: Brand New Day","urls":{"DiziSol":"https://dizisol.com/film/969681","FullHDFilmizlesene":"https://www.fullhdfilmizlesene.mx/film/spider-man-brand-new-day-fh1/","DiziFilm":"https://dizifilmizle.to/film/orumcek-adam-yepyeni-bir-gun-hd","FilmMakinesi":"https://selcukflix.co/film/spider-man-brand-new-day/izle","FilmizleNow":"https://filmizle.now/film/orumcek-adam-yepyeni-bir-gun-izle"}}
+08-02 22:57:26.083 18632 20024 D TrafficStats: tagSocket(773) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:26.093 18632 20702 D TrafficStats: tagSocket(783) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:26.093 18632 20819 D TrafficStats: tagSocket(919) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:26.094 18632 20869 D TrafficStats: tagSocket(922) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:26.095 18632 20868 D TrafficStats: tagSocket(924) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:26.098 18632 18750 D TrafficStats: tagSocket(920) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:26.113  2049  2049 I [THP-ALG]: alg_input_report:Touch Down: id: 0
+08-02 22:57:26.115  2772  3972 D MIUIInput: [MotionEvent] publisher action=0x4, 469372270, channel '36d8bde DockAssistantView (server)'
+08-02 22:57:26.115  2772  3972 D MIUIInput: [MotionEvent] publisher action=0x4, 469372270, channel '733477e NavigationBar0 (server)'
+08-02 22:57:26.115  2772  3972 D MIUIInput: [MotionEvent] publisher action=0x0, 469372270, channel '9d85c60 com.kitsugi.animelist/com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity (server)'
+08-02 22:57:26.116  2772  3972 D MIUIInput: [MotionEvent] publisher action=0x0, 469372270, channel '[Gesture Monitor] miui-gesture (server)'
+08-02 22:57:26.116  2067  3252 D MI-SF   : mIsSupportAutomodeForMaxFpsSetting is 1(0), getCurrentBrightness() = 986(528), mIsKeepAutoMode 0
+08-02 22:57:26.116  2067  3252 D RefreshRateConfigs: TouchBoost - choose Fps: 120.00 Hz
+08-02 22:57:26.116  2067  3252 D MI-SF   : mIsSupportAutomodeForMaxFpsSetting is 1(0), getCurrentBrightness() = 986(528), mIsKeepAutoMode 0
+08-02 22:57:26.118  1949  2371 I SDM     : HWCDisplay::SetActiveConfigWithConstraints: config: 2, WxH 1440x3200, fps 120
+08-02 22:57:26.118 15091 15091 I DockFeature: isSupportDock: isSupportFreeform=true	isPhone=true	isAboveMiui125=true	isSupportDock=true	isDevBuild=false
+08-02 22:57:26.119  1949  2371 W SDM     : HWDeviceDRM::GetSupportedBitClkRate: Requested rate not supported: 1360000000
+08-02 22:57:26.120  1949  2371 I SDM     : HWDeviceDRM::UpdateMixerAttributes: Mixer WxH 1440x3200-1 for Peripheral
+08-02 22:57:26.120  1949  2371 I SDM     : HWCDisplay::SubmitDisplayConfig: Active configuration changed from config 5 to 2
+08-02 22:57:26.120  1949  2371 I SDM     : HWCDisplay::SubmitDisplayConfig: Active WxH 1440x3200, timing_fps: 120, sf_fps: 120,ddic_mode:0
+08-02 22:57:26.122  1949  3244 I vendor.qti.hardware.display.composer-service: FrameNotifyProcess Sensor: notify citsensorservice to trigger cwb
+08-02 22:57:26.123  2967  4170 I libsensor-parseRGB: request dump start
+08-02 22:57:26.123  2967  4170 D vendor.xiaomi.sensor.citsensorservice@2.0-service: handle id:10 wxh:1536x3200 uwxuh:1440x3200 size: 14745600 fd:17 fd_meta:18 flags:0x228 usage:0x33  format:0x3 layer_count: 1 reserved_size = 0
+08-02 22:57:26.125 15091 15091 D SidebarTouchListener: onTouch: 	action = 4	isLeftShow = true
+08-02 22:57:26.126  2067  2198 W HWComposer: Ignoring duplicate VSYNC event from HWC for display 4630946545580055171 (t=469372281638000)
+08-02 22:57:26.130  1994  2107 D FPSMonitor: threadFuncFpsMonitor display 0, fps 120
+08-02 22:57:26.137 18632 18898 D CsStreamRunner: [Yerel Diziler] api.search('Spider Man Brand New Day') ├ğa─şr─▒l─▒yor...
+08-02 22:57:26.143  2067  2067 D MI-SF   : mIsSupportAutomodeForMaxFpsSetting is 1(0), getCurrentBrightness() = 986(528), mIsKeepAutoMode 0
+08-02 22:57:26.143  2067  2067 D RefreshRateConfigs: TouchBoost - choose Fps: 120.00 Hz
+08-02 22:57:26.143  2067  2067 D MI-SF   : mIsSupportAutomodeForMaxFpsSetting is 1(0), getCurrentBrightness() = 986(528), mIsKeepAutoMode 0
+08-02 22:57:26.143  2067  2198 W HWComposer: Ignoring duplicate VSYNC event from HWC for display 4630946545580055171 (t=469372298285000)
+08-02 22:57:26.151  2067  2198 W HWComposer: Ignoring duplicate VSYNC event from HWC for display 4630946545580055171 (t=469372306608000)
+08-02 22:57:26.155 18632 20820 D TrafficStats: tagSocket(938) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:26.159  2067  2198 W HWComposer: Ignoring duplicate VSYNC event from HWC for display 4630946545580055171 (t=469372314931000)
+08-02 22:57:26.164  2967  4171 D libsensor-parseRGB: the value of RGB [432.493577 475.354927 720.081923]
+08-02 22:57:26.167  2067  2198 W HWComposer: Ignoring duplicate VSYNC event from HWC for display 4630946545580055171 (t=469372323255000)
+08-02 22:57:26.176  2067  2198 W HWComposer: Ignoring duplicate VSYNC event from HWC for display 4630946545580055171 (t=469372331580000)
+08-02 22:57:26.184  2067  2198 W HWComposer: Ignoring duplicate VSYNC event from HWC for display 4630946545580055171 (t=469372339905000)
+08-02 22:57:26.202 18632 20158 D DDizi:  : Searching for ├ûr├╝mcek-Adam Yepyeni Bir G├╝n
+08-02 22:57:26.213 18632 18898 D CsStreamRunner: [EPorner] load tamamland─▒: MovieLoadResponse
+08-02 22:57:26.214 18632 18898 D CsEpisodeMatcher: MovieLoadResponse: dataUrl=https://www.eporner.com/video-Dmqw2HJ1KuW/desi-man-forcely-fuck-maid/
+08-02 22:57:26.214 18632 18898 D CsStreamRunner: [EPorner] S1E1 i├ğin episodeData bulundu
+08-02 22:57:26.214 18632 18898 D CsStreamRunner: [EPorner] posterUrl=https://static-eu-cdn.eporner.com/thumbs/static4/6/66/668/6688794/5_240.jpg
+08-02 22:57:26.223 18632 18898 D CsStreamRunner: [Youperv] search('Spider Man Brand New Day') ÔåÆ 0 sonu├ğ
+08-02 22:57:26.294 18632 20205 D TrafficStats: tagSocket(335) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:26.305  2967  4234 I libsensor-displayalgo: the value of channelCali C:1.119417,R:0.037583,G:0.002749,B:0.260547,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:26.305  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:432.493577,G:475.354927,B:720.081923,EVENT C:81.500000,R:46.500000,G:27.000000,B:9.500000, lux: 1.551736,cct:2945.596191, irPara: 0
+08-02 22:57:26.307  2067  2067 D MI-SF   : mIsSupportAutomodeForMaxFpsSetting is 1(0), getCurrentBrightness() = 986(528), mIsKeepAutoMode 0
+08-02 22:57:26.307  2067  2067 D RefreshRateConfigs: TouchBoost - choose Fps: 120.00 Hz
+08-02 22:57:26.307  2067  2067 D MI-SF   : mIsSupportAutomodeForMaxFpsSetting is 1(0), getCurrentBrightness() = 986(528), mIsKeepAutoMode 0
+08-02 22:57:26.326  1949  3244 I vendor.qti.hardware.display.composer-service: FrameNotifyProcess Sensor: notify citsensorservice to trigger cwb
+08-02 22:57:26.327  2967  4170 I libsensor-parseRGB: request dump start
+08-02 22:57:26.327  2967  4170 D vendor.xiaomi.sensor.citsensorservice@2.0-service: handle id:10 wxh:1536x3200 uwxuh:1440x3200 size: 14745600 fd:17 fd_meta:18 flags:0x228 usage:0x33  format:0x3 layer_count: 1 reserved_size = 0
+08-02 22:57:26.352  2772  3972 D MIUIInput: [MotionEvent] publisher action=0x1, 469372508, channel '9d85c60 com.kitsugi.animelist/com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity (server)'
+08-02 22:57:26.352  2772  3972 D MIUIInput: [MotionEvent] publisher action=0x1, 469372508, channel '[Gesture Monitor] miui-gesture (server)'
+08-02 22:57:26.354  2967  4171 D libsensor-parseRGB: the value of RGB [377.319317 417.768794 649.266776]
+08-02 22:57:26.359  2049  2049 I [THP-HAL]: release_all:force:0
+08-02 22:57:26.406 18632 20867 D TrafficStats: tagSocket(295) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:26.478 18632 20166 D CsStreamRunner: [Torrent Filmler] load tamamland─▒: MovieLoadResponse
+08-02 22:57:26.478 18632 20166 D CsStreamRunner: [ID-Mapping] Candidate syncData: {}
+08-02 22:57:26.478 18632 20166 D CsStreamRunner: [ID-Mapping] Checking candidate '├ûr├╝mcek-Adam: ├ûr├╝mcek Evreninde' (similarity: 0.23333333333333334)...
+08-02 22:57:26.503  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.852512,R:0.032191,G:0.002478,B:0.183194,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:26.503  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.319317,G:417.768794,B:649.266776,EVENT C:79.000000,R:46.000000,G:25.500000,B:9.000000, lux: 1.477653,cct:2867.381836, irPara: 0
+08-02 22:57:26.512  2067  3252 D MI-SF   : setIdleFps choose FPS:60, mode:20711936
+08-02 22:57:26.513 18632 18667 D DDizi:  : Searching for Spider-Man Brand New Day
+08-02 22:57:26.514 18632 18667 D CsStreamRunner: [NoodleMagazine] load('https://noodlemagazine.com/watch/-202231775_456243703') ├ğa─şr─▒l─▒yor...
+08-02 22:57:26.518  1949  2371 I SDM     : HWCDisplay::SetActiveConfigWithConstraints: config: 5, WxH 1440x3200, fps 60
+08-02 22:57:26.519  1949  2371 W SDM     : HWDeviceDRM::GetSupportedBitClkRate: Requested rate not supported: 1360000000
+08-02 22:57:26.519  1949  2371 I SDM     : HWDeviceDRM::UpdateMixerAttributes: Mixer WxH 1440x3200-1 for Peripheral
+08-02 22:57:26.519  1949  2371 I SDM     : HWCDisplay::SubmitDisplayConfig: Active configuration changed from config 2 to 5
+08-02 22:57:26.519  1949  2371 I SDM     : HWCDisplay::SubmitDisplayConfig: Active WxH 1440x3200, timing_fps: 60, sf_fps: 60,ddic_mode:1
+08-02 22:57:26.524 18632 18667 D CsStreamRunner: [PerfectGirls] api.search('Spider Man Brand New Day', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:57:26.528  1994  2107 D FPSMonitor: threadFuncFpsMonitor display 0, fps 106010
+08-02 22:57:26.530 18632 20287 D TrafficStats: tagSocket(642) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:26.534  1949  3244 I vendor.qti.hardware.display.composer-service: FrameNotifyProcess Sensor: notify citsensorservice to trigger cwb
+08-02 22:57:26.535  2967  4170 I libsensor-parseRGB: request dump start
+08-02 22:57:26.535  2967  4170 D vendor.xiaomi.sensor.citsensorservice@2.0-service: handle id:10 wxh:1536x3200 uwxuh:1440x3200 size: 14745600 fd:17 fd_meta:18 flags:0x228 usage:0x33  format:0x3 layer_count: 1 reserved_size = 0
+08-02 22:57:26.539 18632 20025 D TrafficStats: tagSocket(861) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:26.543  1979  4930 I QC2Comp : [avcD_8490] Stats: Pending(7) i/p-done(5) Works: Q: 1876/Done 1870|Work-Rate: Q(0.0/s Avg=0.2/s) Done(0.000/s Avg=0.167/s)| Stream: 30.00fps 2.3Mbps
+08-02 22:57:26.543  1979  4930 I QC2Comp : [avcD_8490] Mem-usage:  [In-1D: 65 bufs 438.750 MB] [1D-16499: 14 bufs 0.219 MB] [2D-16501: 21 bufs 30.023 MB] | Total: 468.992 MB
+08-02 22:57:26.543  1979  4929 I QC2Comp : [avcD_8491] Stats: Pending(8) i/p-done(6) Works: Q: 7028/Done 7021|Work-Rate: Q(0.0/s Avg=0.6/s) Done(0.000/s Avg=0.629/s)| Stream: 30.00fps 922.8Kbps
+08-02 22:57:26.543  1979  4929 I QC2Comp : [avcD_8491] Mem-usage:  [In-1D: 65 bufs 438.750 MB] [1D-16500: 14 bufs 0.219 MB] [2D-16502: 21 bufs 30.023 MB] | Total: 468.992 MB
+08-02 22:57:26.551 18632 18730 D TrafficStats: tagSocket(871) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:26.580  2967  4171 D libsensor-parseRGB: the value of RGB [377.566507 418.116675 649.719598]
+08-02 22:57:26.599  2772  4231 E WifiScoreReportInjector: current network is in roaming environment
+08-02 22:57:26.704  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:26.705  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:80.000000,R:47.500000,G:26.000000,B:9.000000, lux: 1.523826,cct:2793.721680, irPara: 0
+08-02 22:57:26.705  1949  3244 I vendor.qti.hardware.display.composer-service: FrameNotifyProcess Sensor: notify citsensorservice to trigger cwb
+08-02 22:57:26.705  2967  4170 I libsensor-parseRGB: request dump start
+08-02 22:57:26.706  2967  4170 D vendor.xiaomi.sensor.citsensorservice@2.0-service: handle id:10 wxh:1536x3200 uwxuh:1440x3200 size: 14745600 fd:17 fd_meta:18 flags:0x228 usage:0x33  format:0x3 layer_count: 1 reserved_size = 0
+08-02 22:57:26.719 15229 15274 D vui_dmgr_client: start: before read
+08-02 22:57:26.720 15229 15274 E vui_dmgr_client: start: Going to connect.
+08-02 22:57:26.720 15229 15274 E vui_dmgr_client: start: failed to connect to server -1:Connection refused, retry
+08-02 22:57:26.750  2967  4171 D libsensor-parseRGB: the value of RGB [377.566507 418.116675 649.719598]
+08-02 22:57:26.779 18632 20158 D CsStreamRunner: [PornWatch] load('https://pornwatch.ws/slim-curvy-japanese-teen-satisfied-and-filled-with-cumload/') ├ğa─şr─▒l─▒yor...
+08-02 22:57:26.795 18632 20924 D TrafficStats: tagSocket(674) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:26.844 18632 18667 D CsStreamRunner: [NoodleMagazine] load tamamland─▒: MovieLoadResponse
+08-02 22:57:26.845 18632 18667 D CsStreamRunner: [ID-Mapping] Candidate syncData: {}
+08-02 22:57:26.845 18632 18667 D CsStreamRunner: [NoodleMagazine] Ô£ô E┼şle┼şme: 'ºşº░º┐º░, ªÅ º¢ºÁ ªàº¥ªçªâ ªüºÁº│º¥º┤º¢ªÅ º¢º░ ªâªçºÁº▒ªâ (º┐º¥ªÇº¢º¥,º©º¢ªåºÁªüªé,º░º¢º░º╗,º╝º©º¢ºÁªé,ºÂº¥º┐ªâ,ªéªÇº░ªàº¢ªâº╗,º▓ªïºÁº▒º░º╗,º┐º¥ (new) [º┐º¥ºÂº©º╗º░ªÅ,ªüªéªâº┤ºÁº¢ªéªï,º┤ªÇº¥ªçº©ªé,º▒ªÇº░ªé,º║º¥º¢ªçº░ºÁªé,ªüªïº¢' ÔåÆ https://noodlemagazine.com/watch/-156458783_456240544
+08-02 22:57:26.899  2827  2827 I cnss-daemon: nl80211 response handler invoked
+08-02 22:57:26.900  2827  2827 I cnss-daemon: nl80211_response_handler: cmd 103, vendorID 4980, subcmd 13  received
+08-02 22:57:26.900  1863 16542 I WifiHAL : event received NL80211_CMD_VENDOR, vendor_id = 0x1374, subcmd = 0xd
+08-02 22:57:26.903  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:26.904  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:81.000000,R:46.500000,G:26.000000,B:10.000000, lux: 1.465697,cct:3077.496826, irPara: 0
+08-02 22:57:26.943 18632 20166 D KultFilmler: Searching for ├ûr├╝mcek-Adam Yepyeni Bir G├╝n
+08-02 22:57:27.146 18632 20166 D CsStreamRunner: [Puhu Tv] load('{"id":"1585","name":"├çin ├£zerindeki K─▒z─▒l Y─▒ld─▒z: Yeni Bir Yolculuk","short_description":"Bu, ├çin'in ├ğa─şda┼ş geli┼şimini ve de─şi┼şimlerini sergilemek i├ğin \"ba┼şkalar─▒\" taraf─▒ndan anlat─▒lan ve kaydedilen, ger├ğek├ği bir belgesel.","is_movie":false,"search_images":{"wide":{"main":"img-puhutv.mncdn.com/media/26-07/09/cin_uzerindeki_kizil_yildiz_title_16x9.jpg"},"vertical_thumbnail":{"main":"img-puhutv.mncdn.com/media/26-07/09/cin_uzerindeki_kizil_yildiz_title_7x10.jpg"},"horizontal_thumbnail":{"main":"img-puhutv.mncdn.com/media/26-07/09/cin_uzerindeki_kizil_yildiz_title_10x7.jpg"}}}') ├ğa─şr─▒l─▒yor...
+08-02 22:57:27.162 18632 20856 D TrafficStats: tagSocket(230) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:27.187 18632 20157 D CsStreamRunner: [PornWatch] load tamamland─▒: MovieLoadResponse
+08-02 22:57:27.187 18632 20157 D CsStreamRunner: [ID-Mapping] Candidate syncData: {}
+08-02 22:57:27.187 18632 20157 D CsStreamRunner: [ID-Mapping] Checking candidate 'Milfs a enculer' (similarity: 0.25)...
+08-02 22:57:27.353  2049  2663 I [THP-DAE]: thp_set_doze_mode_func:enable doze mode
+08-02 22:57:27.402 18632 20702 D TrafficStats: tagSocket(671) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:27.414 18632 18642 I tsugi.animelist: This is sticky GC, maxfree is 33554432 minfree is 8388608
+08-02 22:57:27.419 18632 18644 W System  : A resource failed to call end. 
+08-02 22:57:27.420 18632 18644 W System  : A resource failed to call end. 
+08-02 22:57:27.420 18632 18644 W System  : A resource failed to call end. 
+08-02 22:57:27.437 18632 20819 W System  : A resource failed to call response.body().close(). 
+08-02 22:57:27.438 18632 20819 W System  : A resource failed to call response.body().close(). 
+08-02 22:57:27.488 18632 20166 D CsStreamRunner: [EPawg] load('https://epawg.com/videos/1554835/comatozze-spiderman-brand-new-day-venom/') ├ğa─şr─▒l─▒yor...
+08-02 22:57:27.503  2772  5205 I NetworkAccelerateSwitchService: EVENT_RSSI_POLL. mRssiPoll=true
+08-02 22:57:27.503 18632 18750 D TrafficStats: tagSocket(642) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:27.504  2772  5205 I NetworkAccelerateSwitchService: getAverageWifiRssi:54
+08-02 22:57:27.633 18632 20157 D CsStreamRunner: [XNalgas] search('Spider Man Brand New Day') ÔåÆ 0 sonu├ğ
+08-02 22:57:27.640 18632 20166 D CsStreamRunner: [Puhu Tv] load tamamland─▒: TvSeriesLoadResponse
+08-02 22:57:27.640 18632 20166 D CsStreamRunner: [ID-Mapping] Candidate syncData: {}
+08-02 22:57:27.640 18632 20166 D CsStreamRunner: [ID-Mapping] Checking candidate '├çilek Kokusu' (similarity: 0.125)...
+08-02 22:57:27.675  2772  4607 I SmartPower: com.android.remoteprovisioner/10193 state=idle adj=905 proc size=1 move to hibernation service create com.android.remoteprovisioner/.service.GenerateRkpKeyService
+08-02 22:57:27.720  1962  6743 E ANDR-PERF-MPCTL: ANDR-PERF-MPCTL: chk_core_online_poll() 944: poll() has timed out for /sys/kernel/msm_performance/events/cpu_hotplug
+08-02 22:57:27.720  1962  6743 E ANDR-PERF-MPCTL: ANDR-PERF-MPCTL: chk_core_online_poll() 939: Block on poll()
+08-02 22:57:27.761 18632 20166 D CsStreamRunner: [EPawg] load tamamland─▒: MovieLoadResponse
+08-02 22:57:27.761 18632 20166 D CsEpisodeMatcher: MovieLoadResponse: dataUrl=https://epawg.com/videos/1554835/comatozze-spiderman-brand-new-day-venom/
+08-02 22:57:27.761 18632 20166 D CsStreamRunner: [EPawg] S1E1 i├ğin episodeData bulundu
+08-02 22:57:27.761 18632 20166 D CsStreamRunner: [EPawg] posterUrl=https://epawg.com/contents/videos_screenshots/1554000/1554835/preview.jpg
+08-02 22:57:27.906  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:27.906  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:75.000000,R:44.000000,G:24.000000,B:9.000000, lux: 1.375742,cct:2947.705078, irPara: 0
+08-02 22:57:27.906  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:27.907  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:76.500000,R:44.500000,G:25.000000,B:8.000000, lux: 1.479351,cct:2724.305664, irPara: 0
+08-02 22:57:27.935 18632 20166 D CsStreamRunner: [Belgesel & Ya┼şam (AIO)] api.search('Spider Man Brand New Day') ├ğa─şr─▒l─▒yor...
+08-02 22:57:27.941 18632 18895 D CsStreamRunner: [WCoflix] load('https://www.wcoflix.tv/anime/spider-man-1967') ├ğa─şr─▒l─▒yor...
+08-02 22:57:27.950 18632 20024 D TrafficStats: tagSocket(610) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:27.960 18632 18750 D TrafficStats: tagSocket(690) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:27.961 18632 20924 D TrafficStats: tagSocket(718) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:27.961 18632 20702 D TrafficStats: tagSocket(867) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:28.062 18632 18895 D CsStreamRunner: [MilfNut] load('https://milfnut.com/xev-bellringer-xevmas-countdown-day-1-2-3-4-5-6-7/') ├ğa─şr─▒l─▒yor...
+08-02 22:57:28.075 18632 20024 D TrafficStats: tagSocket(919) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:28.105  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:28.105  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:78.000000,R:44.500000,G:25.500000,B:9.000000, lux: 1.463420,cct:2944.551025, irPara: 0
+08-02 22:57:28.106  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:28.106  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:77.000000,R:45.000000,G:25.500000,B:9.500000, lux: 1.454230,cct:3012.631348, irPara: 0
+08-02 22:57:28.107  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:28.107  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:77.000000,R:44.500000,G:25.000000,B:9.000000, lux: 1.436310,cct:2935.221191, irPara: 0
+08-02 22:57:28.215 18632 18895 D CsStreamRunner: [Yerel Diziler] search('Spider Man Brand New Day') ÔåÆ 0 sonu├ğ
+08-02 22:57:28.271  2772  4214 I MiuiNetworkPolicy: bandwidth: 486 KB/s, Max bandwidth: 2816 KB/s
+08-02 22:57:28.304  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:28.304  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:76.500000,R:45.000000,G:24.500000,B:9.000000, lux: 1.413153,cct:2900.605469, irPara: 0
+08-02 22:57:28.305  2967  4234 I libsensor-displayalgo: ##### the value of lux: 1.467488, cct: 5646.000000
+08-02 22:57:28.305  2967  4234 I libsensor-ssccalapi: value of set_lux: 1.467488, set r: 5646.000000
+08-02 22:57:28.305  2967  4234 I sensors : send_request:320, send_request start this=0xb400007ad007f000x 
+08-02 22:57:28.305  2967  4234 I sensors : send_request:405, send_request completed, this=0xb400007ad007f000x
+08-02 22:57:28.307  2967  4039 I sensors : handle_resp_cb:507, handle_resp_cb Ended this=0xb400007ad007f000x
+08-02 22:57:28.308  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:28.308  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:77.500000,R:44.000000,G:25.000000,B:9.000000, lux: 1.427569,cct:2972.697998, irPara: 0
+08-02 22:57:28.308  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:28.308  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:77.000000,R:44.000000,G:25.000000,B:10.000000, lux: 1.389314,cct:3209.960449, irPara: 0
+08-02 22:57:28.310  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:28.310  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:77.000000,R:44.500000,G:24.500000,B:8.000000, lux: 1.445060,cct:2728.395020, irPara: 0
+08-02 22:57:28.311 18632 18895 D KultFilmler: Searching for Spider-Man Brand New Day
+08-02 22:57:28.318 18632 20157 D CsStreamRunner: [WCoflix] load tamamland─▒: AnimeLoadResponse
+08-02 22:57:28.318 18632 20157 D CsStreamRunner: [ID-Mapping] Candidate syncData: {}
+08-02 22:57:28.318 18632 20157 D CsStreamRunner: [WCoflix] Ô£ô E┼şle┼şme: 'Spider-Man Unlimited' ÔåÆ https://www.wcoflix.tv/anime/spider-man-unlimited
+08-02 22:57:28.420 18632 20157 D CsStreamRunner: [MilfNut] load tamamland─▒: MovieLoadResponse
+08-02 22:57:28.420 18632 20157 D CsStreamRunner: [ID-Mapping] Candidate syncData: {}
+08-02 22:57:28.420 18632 20157 D CsStreamRunner: [MilfNut] Ô£ô E┼şle┼şme: 'Satinfuntaboo ÔÇô Day dreaming with step-mother' ÔåÆ https://milfnut.com/satinfuntaboo-day-dreaming-with-step-mother/
+08-02 22:57:28.460 18632 18667 D CsStreamRunner: [Belgesel & Ya┼şam (AIO)] search('Spider Man Brand New Day') ÔåÆ 0 sonu├ğ
+08-02 22:57:28.505  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:28.505  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:75.000000,R:43.500000,G:24.500000,B:9.000000, lux: 1.401292,cct:2976.577148, irPara: 0
+08-02 22:57:28.506  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:28.506  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:76.000000,R:44.500000,G:25.500000,B:9.000000, lux: 1.472994,cct:2920.323730, irPara: 0
+08-02 22:57:28.507  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:28.508  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:76.500000,R:43.500000,G:25.000000,B:9.000000, lux: 1.426008,cct:2991.788574, irPara: 0
+08-02 22:57:28.508  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:28.508  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:77.000000,R:44.500000,G:25.000000,B:9.000000, lux: 1.436310,cct:2935.221191, irPara: 0
+08-02 22:57:28.516 18632 18667 D CsStreamRunner: [Yerel Programlar] api.search('Spider Man Brand New Day') ├ğa─şr─▒l─▒yor...
+08-02 22:57:28.547 18632 20637 D TrafficStats: tagSocket(230) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:28.704  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:28.704  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:74.500000,R:44.000000,G:24.500000,B:8.000000, lux: 1.450681,cct:2727.801270, irPara: 0
+08-02 22:57:28.705  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:28.705  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:76.000000,R:43.500000,G:25.000000,B:9.000000, lux: 1.428402,cct:2985.437500, irPara: 0
+08-02 22:57:28.705  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:28.705  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:76.000000,R:44.500000,G:25.000000,B:10.000000, lux: 1.400449,cct:3160.195312, irPara: 0
+08-02 22:57:28.706  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:28.706  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:76.000000,R:44.000000,G:24.000000,B:8.500000, lux: 1.391279,cct:2847.933105, irPara: 0
+08-02 22:57:28.720 15229 15274 D vui_dmgr_client: start: before read
+08-02 22:57:28.720 15229 15274 E vui_dmgr_client: start: Going to connect.
+08-02 22:57:28.720 15229 15274 E vui_dmgr_client: start: failed to connect to server -1:Connection refused, retry
+08-02 22:57:28.721 18632 18895 D CsStreamRunner: [Fapix] load('https://fapix.porn/video/-she-saw-her-stepson-s-dick-and-got-aroused-485007') ├ğa─şr─▒l─▒yor...
+08-02 22:57:28.735 18632 18888 D TrafficStats: tagSocket(310) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:28.762 18632 18667 D CsStreamRunner: [Canl─▒ TV (Canlitv)] api.search('Spider Man Brand New Day') ├ğa─şr─▒l─▒yor...
+08-02 22:57:28.774 18632 20702 D TrafficStats: tagSocket(674) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:28.781 18632 20637 D TrafficStats: tagSocket(780) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:28.782 18632 20856 D TrafficStats: tagSocket(791) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:28.821 18632 20177 D CsStreamRunner: [FullPorner] loadLinks ├ğa─şr─▒l─▒yor...
+08-02 22:57:28.837 18632 20856 D TrafficStats: tagSocket(718) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:28.857  2772  3501 W ProcessStats: Tracking association SourceState{1502edb system/1000 BTopFgs #1967278} whose proc state 2 is better than process ProcessState{9a58684 com.miui.powerkeeper/1000 pkg=com.miui.powerkeeper} proc state 3 (288 skipped)
+08-02 22:57:28.893 18632 20820 D TrafficStats: tagSocket(882) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:28.904  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:28.904  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:77.000000,R:44.000000,G:25.000000,B:9.500000, lux: 1.409638,cct:3083.562988, irPara: 0
+08-02 22:57:28.904  2827  2827 I cnss-daemon: nl80211 response handler invoked
+08-02 22:57:28.904  2827  2827 I cnss-daemon: nl80211_response_handler: cmd 103, vendorID 4980, subcmd 13  received
+08-02 22:57:28.904  1863 16542 I WifiHAL : event received NL80211_CMD_VENDOR, vendor_id = 0x1374, subcmd = 0xd
+08-02 22:57:28.905  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:28.905  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:76.500000,R:44.000000,G:24.000000,B:8.500000, lux: 1.388886,cct:2854.089600, irPara: 0
+08-02 22:57:28.946 18632 20177 D TopluDiziler: Final urlMap resolved: {DiziSol=https://dizisol.com/film/969681, FullHDFilmizlesene=https://www.fullhdfilmizlesene.mx/film/spider-man-brand-new-day-fh1/, DiziFilm=https://dizifilmizle.to/film/orumcek-adam-yepyeni-bir-gun-hd, FilmMakinesi=https://selcukflix.co/film/spider-man-brand-new-day/izle, FilmizleNow=https://filmizle.now/film/orumcek-adam-yepyeni-bir-gun-izle}
+08-02 22:57:28.948 18632 18667 D TopluDiziler: Loading details from DiziSol using URL: https://dizisol.com/film/969681
+08-02 22:57:28.948 18632 20166 D TopluDiziler: Loading details from DiziFilm using URL: https://dizifilmizle.to/film/orumcek-adam-yepyeni-bir-gun-hd
+08-02 22:57:28.948 18632 20177 D TopluDiziler: Loading details from FilmizleNow using URL: https://filmizle.now/film/orumcek-adam-yepyeni-bir-gun-izle
+08-02 22:57:28.948 18632 18687 D TopluDiziler: Loading details from FilmMakinesi using URL: https://selcukflix.co/film/spider-man-brand-new-day/izle
+08-02 22:57:28.949 18632 20157 D TopluDiziler: Loading details from FullHDFilmizlesene using URL: https://www.fullhdfilmizlesene.mx/film/spider-man-brand-new-day-fh1/
+08-02 22:57:28.960 18632 20820 D TrafficStats: tagSocket(915) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:28.969 18632 20024 D TrafficStats: tagSocket(919) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:28.969 18632 20702 D TrafficStats: tagSocket(921) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:29.015 18632 18687 D TopluDiziler: Successfully loaded FilmMakinesi details
+08-02 22:57:29.023 18632 20157 D TopluDiziler: Successfully loaded FullHDFilmizlesene details
+08-02 22:57:29.038 18632 20157 D kraptor_FullPorner: iframeurl = https://xiaoshenke.net/video/7369172/14
+08-02 22:57:29.040 18632 20157 D CsStreamRunner: [Canl─▒ TV (Canlitv)] search('Spider Man Brand New Day') ÔåÆ 0 sonu├ğ
+08-02 22:57:29.050  2067  2067 D MI-SF   : setIdleFps choose FPS:60, mode:20711936
+08-02 22:57:29.051 18632 20702 D TrafficStats: tagSocket(230) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:29.051  1949  3244 I vendor.qti.hardware.display.composer-service: FrameNotifyProcess Sensor: notify citsensorservice to trigger cwb
+08-02 22:57:29.054  2967  4170 I libsensor-parseRGB: request dump start
+08-02 22:57:29.054  2967  4170 D vendor.xiaomi.sensor.citsensorservice@2.0-service: handle id:10 wxh:1536x3200 uwxuh:1440x3200 size: 14745600 fd:17 fd_meta:18 flags:0x228 usage:0x33  format:0x3 layer_count: 1 reserved_size = 0
+08-02 22:57:29.096  2967  4171 D libsensor-parseRGB: the value of RGB [377.566507 418.116675 649.719598]
+08-02 22:57:29.104  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:29.105  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:76.500000,R:44.000000,G:24.500000,B:8.500000, lux: 1.420783,cct:2852.949707, irPara: 0
+08-02 22:57:29.154 18632 18895 D CsStreamRunner: [Fapix] load tamamland─▒: MovieLoadResponse
+08-02 22:57:29.155 18632 18895 D CsEpisodeMatcher: MovieLoadResponse: dataUrl=https://fapix.porn/video/-she-saw-her-stepson-s-dick-and-got-aroused-485007
+08-02 22:57:29.155 18632 18895 D CsStreamRunner: [Fapix] S1E1 i├ğin episodeData bulundu
+08-02 22:57:29.155 18632 18895 D CsStreamRunner: [Fapix] posterUrl=https://fapix.porn/images/26591_screen.jpg?0
+08-02 22:57:29.236 18632 20702 D TrafficStats: tagSocket(690) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:29.244 18632 18896 D TopluDiziler: Successfully loaded DiziSol details
+08-02 22:57:29.266 10499 10499 W ThreadPoolForeg: type=1400 audit(0.0:1097179): avc: denied { write } for name="traced_producer" dev="tmpfs" ino=1526 scontext=u:r:gmscore_app:s0:c512,c768 tcontext=u:object_r:traced_producer_socket:s0 tclass=sock_file permissive=0 app=com.google.android.gms
+08-02 22:57:29.309 18632 20840 D CloudflareKiller: WAF / Challenge verification page detected for host: xiaoshenke.net
+08-02 22:57:29.311 18632 20840 D CloudflareKiller: Entering serialized WAF/Cloudflare bypass for host: xiaoshenke.net
+08-02 22:57:29.313 18632 18632 D CloudflareKiller: Loading webview to solve WAF/Cloudflare for https://xiaoshenke.net/video/7369172/14
+08-02 22:57:29.313 18632 18632 I WebViewResolver: Initial web-view request: https://xiaoshenke.net/video/7369172/14
+08-02 22:57:29.327  2067  2482 D MI-SF   : setIdleFps choose FPS:60, mode:20711936
+08-02 22:57:29.333 18632 18754 I WebViewResolver: Loading WebView URL: https://xiaoshenke.net/video/7369172/14
+08-02 22:57:29.341 18632 18687 D CsStreamRunner: [SetFilmIzle] api.search('Spider-Man: Brand New', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:57:29.355 18632 18896 D TopluDiziler: Successfully loaded DiziFilm details
+08-02 22:57:29.484 18632 18896 D CsStreamRunner: [Yerel Programlar] search('Spider Man Brand New Day') ÔåÆ 0 sonu├ğ
+08-02 22:57:29.505 18632 18687 D TopluDiziler: Successfully loaded FilmizleNow details
+08-02 22:57:29.506 18632 18687 D TopluDiziler: Successfully gathered responses from: [FilmMakinesi, FullHDFilmizlesene, DiziSol, DiziFilm, FilmizleNow]
+08-02 22:57:29.506  2772  5205 I NetworkAccelerateSwitchService: EVENT_RSSI_POLL. mRssiPoll=true
+08-02 22:57:29.507  2772  5205 I NetworkAccelerateSwitchService: getAverageWifiRssi:54
+08-02 22:57:29.626  2772  4231 E WifiScoreReportInjector: current network is in roaming environment
+08-02 22:57:29.632 18632 18765 I WebViewResolver: Loading WebView URL: https://static.xiaoshenke.net/css/frame.css
+08-02 22:57:29.632 18632 18767 I WebViewResolver: Loading WebView URL: https://xiaoshenke.net/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js
+08-02 22:57:29.641 18632 18754 I WebViewResolver: Loading WebView URL: https://static.xiaoshenke.net/js/player.min.js?v=3
+08-02 22:57:29.642 18632 18756 I WebViewResolver: Loading WebView URL: https://www.googletagmanager.com/gtag/js?id=UA-159440314-2
+08-02 22:57:29.642 18632 18755 I WebViewResolver: Loading WebView URL: https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js
+08-02 22:57:29.644 18632 18773 I WebViewResolver: Loading WebView URL: https://xiaoshenke.net/favicon.ico
+08-02 22:57:29.656 18632 18687 D CsStreamRunner: [Kalite18] loadLinks ├ğa─şr─▒l─▒yor...
+08-02 22:57:29.656 18632 18687 D Kalite18: data: https://www.kalite18.net/sevgilimi-sikerken-babama-yakalandim-bolum-1/
+08-02 22:57:29.667 18632 20637 D TrafficStats: tagSocket(605) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:29.685 18632 18755 I WebViewResolver: Loading WebView URL: https://xiaoshenke.net/vid/2719637/720/i
+08-02 22:57:29.686 18632 18754 I WebViewResolver: Loading WebView URL: https://static.xiaoshenke.net/js/sprites.svg
+08-02 22:57:29.688  1846  1846 I sensors-hal: batch:152, android.sensor.game_rotation_vector/151, period=16666000, max_latency=0
+08-02 22:57:29.688  1846  1846 I sensors-hal: set_config:57, sample_period_ns is adjusted to 16666000 based on min/max delay_ns
+08-02 22:57:29.688  1846  1846 I sensors-hal: batch:161, android.sensor.game_rotation_vector/151, period=16666000, max_latency=0 request completed
+08-02 22:57:29.689  1846  1846 I sensors-hal: activate:119, android.sensor.game_rotation_vector/151 en=1
+08-02 22:57:29.689  1846  1846 I sensors-hal: acquire_ssc_interface:94, acquire_ssc_interface with sensor_id 97 , conn_type 2 
+08-02 22:57:29.691  1806  1884 E minksocket: MinkIPC_QRTR_Service: client with node 1 port 42cc went down
+08-02 22:57:29.691  1806  1886 E minksocket: MinkIPC_QRTR_Service: client with node 1 port 42cc went down
+08-02 22:57:29.692  1806  1886 E minksocket: MinkIPC_QRTR_Service: client with node 1 port 42cd went down
+08-02 22:57:29.692  1806  1884 E minksocket: MinkIPC_QRTR_Service: client with node 1 port 42cd went down
+08-02 22:57:29.692  1806  1886 E minksocket: MinkIPC_QRTR_Service: client with node 1 port 42ce went down
+08-02 22:57:29.693  1846  1846 I sensors-hal: ssc_qmi:26, ssc_qmi
+08-02 22:57:29.693  1846  1846 I sensors-hal: register_cb:295, register_cb start this=0xb400007114c7f400x
+08-02 22:57:29.693  1846  1846 I sensors-hal: register_cb:311, register_cb End with succes
+08-02 22:57:29.693  1846  1846 I sensors-hal: send_sync_sensor_request:406, send sync request
+08-02 22:57:29.693  1846  1846 I sensors-hal: send_sync_sensor_request:416, send_sync_sensor_request before send_request for game_rv with SUID low=9921513099128050929 high=10978744344367743962
+08-02 22:57:29.693  1846  1846 I sensors-hal: send_request:320, send_request start this=0xb400007114c7f400x 
+08-02 22:57:29.693  1846  1846 I sensors-hal: send_request:405, send_request completed, this=0xb400007114c7f400x
+08-02 22:57:29.693  1846  1846 I sensors-hal: send_sync_sensor_request:435, wait for notification of response
+08-02 22:57:29.693  1806  1884 E minksocket: MinkIPC_QRTR_Service: client with node 1 port 42ce went down
+08-02 22:57:29.693  1806  1884 E minksocket: MinkIPC_QRTR_Service: client with node 1 port 42cf went down
+08-02 22:57:29.693  1806  1886 E minksocket: MinkIPC_QRTR_Service: client with node 1 port 42cf went down
+08-02 22:57:29.695  1846 21160 I sensors-hal: ssc_conn_resp_cb:730, resp_value = 0 for game_rv 
+08-02 22:57:29.695  1846 21160 I sensors-hal: handle_resp_cb:507, handle_resp_cb Ended this=0xb400007114c7f400x
+08-02 22:57:29.695  1846  1846 I sensors-hal: send_sync_sensor_request:441, takes 1 ms to receive the response with 0
+08-02 22:57:29.695  1846  1846 I sensors-hal: activate:130, android.sensor.game_rotation_vector/151 en=1 completed
+08-02 22:57:29.708  1994  1994 D SRE     : sensorCallback mDisplayId = 0 dataCallback value=<   3.2500,   3.2365,   1.0000>,time=878627453381669, sensor=5, temperature(K)=   3.2365
+08-02 22:57:29.708  1994  1994 D SRE     : setSREStrength mDisplayId = 0, mLastLux = 3, lux = 3, mSREEnabled = 1, mLastFreezeStatus = 0, freeze = 0
+08-02 22:57:29.737 18632 18687 D CsStreamRunner: [VizyonHub] load tamamland─▒: MovieLoadResponse
+08-02 22:57:29.737 18632 18687 D CsStreamRunner: [ID-Mapping] Candidate syncData: {}
+08-02 22:57:29.737 18632 18687 W CsStreamRunner: [ID-Mapping] Ô£ù Best match '├ûr├╝mcek-Adam: Yepyeni Bir G├╝n | Spider-Man: Brand New Day' failed ID validation.
+08-02 22:57:29.744 18632 18687 D CsStreamRunner: [ID-Mapping] Checking candidate 'Lego Marvel Spider-Man: Vexed by Venom' (similarity: 0.35135135135135137)...
+08-02 22:57:29.783  1846 21160 I sensors-hal: ssc_conn_event_cb:663, SCHED_FIFO(10) for qmi_cbk
+08-02 22:57:29.785 18632 18687 D CsStreamRunner: [Hqporner] api.search('Spider-Man: Brand New') ├ğa─şr─▒l─▒yor...
+08-02 22:57:29.792  1846  1846 I sensors-hal: activate:119, android.sensor.game_rotation_vector/151 en=0
+08-02 22:57:29.794  1806  1884 E minksocket: MinkIPC_QRTR_Service: client with node 1 port 42d0 went down
+08-02 22:57:29.794  1806  1886 E minksocket: MinkIPC_QRTR_Service: client with node 1 port 42d0 went down
+08-02 22:57:29.795  1846  1846 I sensors-hal: ~ssc_qmi:53, ~ssc_qmi
+08-02 22:57:29.795  1846  1846 I sensors-hal: activate:130, android.sensor.game_rotation_vector/151 en=0 completed
+08-02 22:57:29.804  2772  4214 D MiuiNetworkPolicy: updateLimit mLimitEnabled=false,enabled=true,mNetworkPriorityMode=1
+08-02 22:57:29.811 18632 18888 D TrafficStats: tagSocket(780) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:29.871 18632 18755 I WebViewResolver: Loading WebView URL: https://www.googletagmanager.com/gtag/js?id=G-V04MGCSR7B&cx=c&gtm=4e67t1
+08-02 22:57:29.876 18632 18756 I WebViewResolver: Loading WebView URL: https://www.google-analytics.com/analytics.js
+08-02 22:57:29.942 18632 18888 D TrafficStats: tagSocket(674) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:29.987 18632 18632 E CsStreamRunner: [TrAnimeci] WebView resolve hatas─▒: Timed out waiting for 15000 ms
+08-02 22:57:29.989 18632 18896 E CsStreamRunner: [TrAnimeci] WebView JS search HATA: Timed out waiting for 15000 ms
+08-02 22:57:29.989 18632 18896 E CsStreamRunner: kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 15000 ms
+08-02 22:57:29.989 18632 18896 E CsStreamRunner: 	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:281)
+08-02 22:57:29.989 18632 18896 E CsStreamRunner: 	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:243)
+08-02 22:57:29.989 18632 18896 E CsStreamRunner: 	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:498)
+08-02 22:57:29.989 18632 18896 E CsStreamRunner: 	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:256)
+08-02 22:57:29.989 18632 18896 E CsStreamRunner: 	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+08-02 22:57:29.989 18632 18896 E CsStreamRunner: 	at java.lang.Thread.run(Thread.java:1012)
+08-02 22:57:29.998 10506 10506 W ThreadPoolForeg: type=1400 audit(0.0:1097180): avc: denied { write } for name="traced_producer" dev="tmpfs" ino=1526 scontext=u:r:gmscore_app:s0:c512,c768 tcontext=u:object_r:traced_producer_socket:s0 tclass=sock_file permissive=0 app=com.google.android.gms
+08-02 22:57:30.007 18632 20224 I System.out: Exception in NiceHttp: java.io.IOException Canceled
+08-02 22:57:30.007 18632 20224 W System.err: java.io.IOException: Canceled
+08-02 22:57:30.007 18632 20224 W System.err: 	at okhttp3.internal.http.RetryAndFollowUpInterceptor.intercept(RetryAndFollowUpInterceptor.kt:70)
+08-02 22:57:30.007 18632 20224 W System.err: 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:126)
+08-02 22:57:30.007 18632 20224 W System.err: 	at okhttp3.internal.connection.RealCall.getResponseWithInterceptorChain$okhttp(RealCall.kt:226)
+08-02 22:57:30.007 18632 20224 W System.err: 	at okhttp3.internal.connection.RealCall$AsyncCall.run(RealCall.kt:574)
+08-02 22:57:30.007 18632 20224 W System.err: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1137)
+08-02 22:57:30.007 18632 20224 W System.err: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:637)
+08-02 22:57:30.008 18632 20224 W System.err: 	at java.lang.Thread.run(Thread.java:1012)
+08-02 22:57:30.038 18632 18896 D CsStreamRunner: [XXXParodyHD] load('https://xxxparodyhd.net/stepsis-and-friends-offer-a-hand-to-stepbro/') ├ğa─şr─▒l─▒yor...
+08-02 22:57:30.053 18632 18888 D TrafficStats: tagSocket(875) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:30.064 18632 18687 D CsStreamRunner: [SetFilmIzle] search('Spider-Man: Brand New') ÔåÆ 0 sonu├ğ
+08-02 22:57:30.103  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:30.104  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:77.500000,R:44.500000,G:24.500000,B:9.000000, lux: 1.402019,cct:2944.489258, irPara: 0
+08-02 22:57:30.139 18632 18754 I WebViewResolver: Loading WebView URL: https://www.google-analytics.com/g/collect?v=2&tid=G-V04MGCSR7B&gtm=45je67t1v9112523989za20g&_p=1785700649684&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=EAAIAAQ&are=1&cid=352170059.1785678035&frm=0&ir=1&ngs=1&pscdl=noapi&rcb=7&sr=412x915&uaa=&uab=&uafvl=&uam=&uamb=1&uap=Android&uapv=&uaw=0&ul=tr-tr&_s=1&tag_exp=115616985~115938465~115938468~118012007~118897920~118897930~119381664~119896803~120222308&sid=1785700650&sct=2&seg=0&dl=https%3A%2F%2Fxiaoshenke.net%2Fvideo%2F7369172%2F14&dt=Video%20Player&en=page_view&_ss=1&tfd=811
+08-02 22:57:30.148 18632 18687 D CsStreamRunner: [Hqporner] search('Spider-Man: Brand New') ÔåÆ 0 sonu├ğ
+08-02 22:57:30.151 18632 18687 D CsStreamRunner: [Kalite18] Link bulundu: Kalite18 ÔåÆ https://s1.vimoz1.site/hls/Sevgilimi sikerken babama yakaland─▒m ÔÇô B├Âl├╝m 1/playlist.m3u8
+08-02 22:57:30.152 18632 18687 D CsStreamRunner: [Kalite18] Ham sonu├ğ: 1 stream, 0 altyaz─▒
+08-02 22:57:30.233 18632 18888 D TrafficStats: tagSocket(610) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:30.291 18632 20177 D CsStreamRunner: [Sinewix] api.search('Spider-Man: Brand New') ├ğa─şr─▒l─▒yor...
+08-02 22:57:30.304  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:30.305  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:77.000000,R:43.500000,G:24.500000,B:8.500000, lux: 1.412042,cct:2889.255371, irPara: 0
+08-02 22:57:30.308 18632 18896 D CsStreamRunner: [Porn00] api.search('Spider Man Brand New Day', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:57:30.366 18632 18896 D CsStreamRunner: [PornoAnne] api.search('Spider-Man: Brand New') ├ğa─şr─▒l─▒yor...
+08-02 22:57:30.391 18632 18888 D TrafficStats: tagSocket(920) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:30.401 18632 18632 W CsCfWarmup: [www.sinema.gg] Warmup timeout (12000ms)
+08-02 22:57:30.402 18632 18632 D CsCfWarmup: [www.sinema.gg] Timeout'ta cookie kurtar─▒ld─▒: [PHPSESSID, mtg, kklsr, _gid, _ga_69MFL25G09, _ga, _gat_gtag_UA_167420048_1]
+08-02 22:57:30.403 18632 18671 D CsCfWarmup: [www.sinema.gg] Warmup BA┼ŞARILI Ô£à
+08-02 22:57:30.403 18632 18671 D CsCfWarmup: [kultfilmler.net] Warmup ba┼şl─▒yor: https://kultfilmler.net
+08-02 22:57:30.407 18632 18632 W cr_AwContents: Application attempted to call on a destroyed WebView
+08-02 22:57:30.407 18632 18632 W cr_AwContents: java.lang.Throwable
+08-02 22:57:30.407 18632 18632 W cr_AwContents: 	at org.chromium.android_webview.AwContents.p(chromium-SystemWebViewGoogle6432.aab-stable-787118103:10)
+08-02 22:57:30.407 18632 18632 W cr_AwContents: 	at com.android.webview.chromium.WebViewChromium.stopLoading(chromium-SystemWebViewGoogle6432.aab-stable-787118103:43)
+08-02 22:57:30.407 18632 18632 W cr_AwContents: 	at android.webkit.WebView.stopLoading(Unknown Source:5)
+08-02 22:57:30.407 18632 18632 W cr_AwContents: 	at com.kitsugi.animelist.data.cloudstream.CsCfWarmupManager$warmupSite$2.invokeSuspend$lambda$3(CsCfWarmupManager.kt:235)
+08-02 22:57:30.407 18632 18632 W cr_AwContents: 	at com.kitsugi.animelist.data.cloudstream.CsCfWarmupManager$warmupSite$2.$r8$lambda$1uN_pKlwFe8zvqjTE63bPiSgYRw(Unknown Source:0)
+08-02 22:57:30.407 18632 18632 W cr_AwContents: 	at com.kitsugi.animelist.data.cloudstream.CsCfWarmupManager$warmupSite$2$$ExternalSyntheticLambda2.run(D8$$SyntheticClass:0)
+08-02 22:57:30.407 18632 18632 W cr_AwContents: 	at android.os.Handler.handleCallback(Unknown Source:2)
+08-02 22:57:30.407 18632 18632 W cr_AwContents: 	at android.os.Handler.dispatchMessage(Unknown Source:4)
+08-02 22:57:30.407 18632 18632 W cr_AwContents: 	at android.os.Looper.loopOnce(Unknown Source:182)
+08-02 22:57:30.407 18632 18632 W cr_AwContents: 	at android.os.Looper.loop(Unknown Source:82)
+08-02 22:57:30.407 18632 18632 W cr_AwContents: 	at android.app.ActivityThread.main(Unknown Source:123)
+08-02 22:57:30.407 18632 18632 W cr_AwContents: 	at java.lang.reflect.Method.invoke(Native Method)
+08-02 22:57:30.407 18632 18632 W cr_AwContents: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(Unknown Source:11)
+08-02 22:57:30.407 18632 18632 W cr_AwContents: 	at com.android.internal.os.ZygoteInit.main(Unknown Source:312)
+08-02 22:57:30.437 18632 18687 D CsStreamRunner: [Kalite18] HEAD Ô£à HTTP 200: https://s1.vimoz1.site/hls/Sevgilimi sikerken babama yakaland─▒m ÔÇô B├Âl├╝m 1/playli
+08-02 22:57:30.438 18632 18687 D CsStreamRunner: [Kalite18] Ô£à Sonu├ğ: 1 do─şrulanm─▒┼ş stream, 0 altyaz─▒
+08-02 22:57:30.438 18632 18632 D StreamViewModel: [ÔÜí Kalite18] Toplam 1 stream bulundu
+08-02 22:57:30.449 18632 18687 D CsStreamRunner: [PornHat] api.search('Spider Man Brand New Day', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:57:30.452 18632 18687 D CsStreamRunner: [Free Porn Videos] load('https://www.freepornvideos.xxx/videos/93581208/brand-new-lacey/') ├ğa─şr─▒l─▒yor...
+08-02 22:57:30.459 18632 18687 D CsStreamRunner: [Sinewix] search('Spider-Man: Brand New') ÔåÆ 0 sonu├ğ
+08-02 22:57:30.482  2067  3252 D MI-SF   : mIsSupportAutomodeForMaxFpsSetting is 1(0), getCurrentBrightness() = 986(528), mIsKeepAutoMode 0
+08-02 22:57:30.485  2067  2067 D MI-SF   : mIsSupportAutomodeForMaxFpsSetting is 1(0), getCurrentBrightness() = 986(528), mIsKeepAutoMode 0
+08-02 22:57:30.486  1949  2371 I SDM     : HWCDisplay::SetActiveConfigWithConstraints: config: 2, WxH 1440x3200, fps 120
+08-02 22:57:30.487  1949  2371 W SDM     : HWDeviceDRM::GetSupportedBitClkRate: Requested rate not supported: 1360000000
+08-02 22:57:30.487  1949  2371 I SDM     : HWDeviceDRM::UpdateMixerAttributes: Mixer WxH 1440x3200-1 for Peripheral
+08-02 22:57:30.487  1949  2371 I SDM     : HWCDisplay::SubmitDisplayConfig: Active configuration changed from config 5 to 2
+08-02 22:57:30.487  1949  2371 I SDM     : HWCDisplay::SubmitDisplayConfig: Active WxH 1440x3200, timing_fps: 120, sf_fps: 120,ddic_mode:0
+08-02 22:57:30.488 18632 20856 D TrafficStats: tagSocket(760) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:30.488  1949  3244 I vendor.qti.hardware.display.composer-service: FrameNotifyProcess Sensor: notify citsensorservice to trigger cwb
+08-02 22:57:30.489  2967  4170 I libsensor-parseRGB: request dump start
+08-02 22:57:30.489  2967  4170 D vendor.xiaomi.sensor.citsensorservice@2.0-service: handle id:10 wxh:1536x3200 uwxuh:1440x3200 size: 14745600 fd:17 fd_meta:18 flags:0x228 usage:0x33  format:0x3 layer_count: 1 reserved_size = 0
+08-02 22:57:30.496  1994  2107 D FPSMonitor: threadFuncFpsMonitor display 0, fps 120
+08-02 22:57:30.502  2067  2067 D MI-SF   : mIsSupportAutomodeForMaxFpsSetting is 1(0), getCurrentBrightness() = 986(528), mIsKeepAutoMode 0
+08-02 22:57:30.504  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:30.504  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:77.000000,R:44.500000,G:24.500000,B:8.500000, lux: 1.424736,cct:2829.266357, irPara: 0
+08-02 22:57:30.504  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:30.504  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:77.000000,R:44.500000,G:25.000000,B:8.500000, lux: 1.456633,cct:2828.664307, irPara: 0
+08-02 22:57:30.541  2967  4171 D libsensor-parseRGB: the value of RGB [377.566507 418.116675 649.719598]
+08-02 22:57:30.593  2067  3252 D MI-SF   : setIdleFps choose FPS:60, mode:20711936
+08-02 22:57:30.595  1949  2371 I SDM     : HWCDisplay::SetActiveConfigWithConstraints: config: 5, WxH 1440x3200, fps 60
+08-02 22:57:30.597  1949  2371 W SDM     : HWDeviceDRM::GetSupportedBitClkRate: Requested rate not supported: 1360000000
+08-02 22:57:30.597  1949  2371 I SDM     : HWDeviceDRM::UpdateMixerAttributes: Mixer WxH 1440x3200-1 for Peripheral
+08-02 22:57:30.597  1949  2371 I SDM     : HWCDisplay::SubmitDisplayConfig: Active configuration changed from config 2 to 5
+08-02 22:57:30.597  1949  2371 I SDM     : HWCDisplay::SubmitDisplayConfig: Active WxH 1440x3200, timing_fps: 60, sf_fps: 60,ddic_mode:1
+08-02 22:57:30.609  1994  2107 D FPSMonitor: threadFuncFpsMonitor display 0, fps 106010
+08-02 22:57:30.704  2967  4234 I libsensor-displayalgo: the value of channelCali C:0.853861,R:0.032219,G:0.002479,B:0.183567,scales C:1.175795,R:1.146549,G:1.254446,B:1.036779
+08-02 22:57:30.704  2967  4234 D libsensor-displayalgo: brightness:246.000000,R:377.566507,G:418.116675,B:649.719598,EVENT C:78.500000,R:45.500000,G:25.000000,B:9.000000, lux: 1.441824,cct:2892.562500, irPara: 0
+08-02 22:57:30.721 15229 15274 D vui_dmgr_client: start: before read
+08-02 22:57:30.721  1962  6743 E ANDR-PERF-MPCTL: ANDR-PERF-MPCTL: chk_core_online_poll() 944: poll() has timed out for /sys/kernel/msm_performance/events/cpu_hotplug
+08-02 22:57:30.721  1962  6743 E ANDR-PERF-MPCTL: ANDR-PERF-MPCTL: chk_core_online_poll() 939: Block on poll()
+08-02 22:57:30.721 15229 15274 E vui_dmgr_client: start: Going to connect.
+08-02 22:57:30.721 15229 15274 E vui_dmgr_client: start: failed to connect to server -1:Connection refused, retry
+08-02 22:57:30.761 18632 18687 D CsStreamRunner: [RareFilmm] api.search('Spider-Man: Brand New') ├ğa─şr─▒l─▒yor...
+08-02 22:57:30.789 18632 18750 D TrafficStats: tagSocket(919) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:30.818 18632 20177 D CsStreamRunner: [PornoAnne] search('Spider-Man: Brand New') ÔåÆ 0 sonu├ğ
+08-02 22:57:30.868 18632 18687 D CsStreamRunner: [Free Porn Videos] load tamamland─▒: MovieLoadResponse
+08-02 22:57:30.868 18632 18687 D CsEpisodeMatcher: MovieLoadResponse: dataUrl=https://www.freepornvideos.xxx/videos/93581208/brand-new-lacey/
+08-02 22:57:30.868 18632 18687 D CsStreamRunner: [Free Porn Videos] S1E1 i├ğin episodeData bulundu
+08-02 22:57:30.868 18632 18687 D CsStreamRunner: [Free Porn Videos] posterUrl=https://img.freepornvideos.xxx/93581000/93581208/medium@2x/1.jpg
+08-02 22:57:30.908  1863 16542 I WifiHAL : event received NL80211_CMD_VENDOR, vendor_id = 0x1374, subcmd = 0xd
+08-02 22:57:30.908  2827  2827 I cnss-daemon: nl80211 response handler invoked

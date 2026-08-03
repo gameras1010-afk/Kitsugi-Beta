@@ -255,7 +255,14 @@ fun SettingsScreen(
             SettingsAddonsDialogWrapper(
                 addon = params.addon,
                 manga = params.manga,
+                onOpenDiagnostic = { activeDialog = SettingsDialog.PluginDiagnostic },
                 onDismiss = { activeDialog = null }
+            )
+        }
+
+        SettingsDialog.PluginDiagnostic -> {
+            CsPluginDiagnosticScreen(
+                onDismiss = { activeDialog = SettingsDialog.Addons }
             )
         }
 
@@ -362,7 +369,8 @@ private enum class SettingsDialog {
     PlayerSettings,
     SystemSettings,
     Integrations,
-    Feedback
+    Feedback,
+    PluginDiagnostic
 }
 
 private val themeOptions = listOf(
@@ -676,6 +684,7 @@ private fun SettingsIntegrationsDialogWrapper(
 private fun SettingsAddonsDialogWrapper(
     addon: AddonSettings,
     manga: MangaSettings,
+    onOpenDiagnostic: () -> Unit,
     onDismiss: () -> Unit
 ) {
     KitsugiAddonsSettingsDialog(
@@ -746,6 +755,7 @@ private fun SettingsAddonsDialogWrapper(
         onDismissUntrustedRepo = manga.onDismissUntrustedRepo,
         onConfirmUntrustedSignature = manga.onConfirmUntrustedSignature,
         onDismissUntrustedSignature = manga.onDismissUntrustedSignature,
+        onOpenDiagnostic = onOpenDiagnostic,
         onDismiss = onDismiss
     )
 }

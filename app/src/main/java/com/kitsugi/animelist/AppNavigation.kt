@@ -4,6 +4,7 @@ import com.kitsugi.animelist.data.manga.MangaChapter
 import com.kitsugi.animelist.data.manga.MangaDetails
 import com.kitsugi.animelist.data.manga.MangaSource
 import com.kitsugi.animelist.data.remote.JikanSearchResult
+import com.kitsugi.animelist.ui.app.AddonFullScreenGridState
 import com.kitsugi.animelist.ui.app.FullScreenMediaGridState
 import com.kitsugi.animelist.ui.navigation.MainTab
 
@@ -36,6 +37,7 @@ sealed interface AppStateKey {
     data class ApiResultDetail(val result: JikanSearchResult, override val depth: Int) : AppStateKey
     data class MediaDetail(val entryId: Int, override val depth: Int) : AppStateKey
     data class FullScreenGrid(val state: FullScreenMediaGridState, override val depth: Int) : AppStateKey
+    data class AddonFullScreenGrid(val state: AddonFullScreenGridState, override val depth: Int) : AppStateKey
     data class MangaBrowse(override val depth: Int) : AppStateKey
     data class MangaDetail(override val depth: Int) : AppStateKey
     data class MangaReader(override val depth: Int) : AppStateKey

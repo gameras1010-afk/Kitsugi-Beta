@@ -543,7 +543,7 @@ fun PlayerControls(
                             style      = MaterialTheme.typography.titleMedium
                         )
                         IconButton(
-                            onClick  = { viewModel.userCancelledBinge = true },
+                            onClick  = { viewModel.cancelBingeCard() },
                             modifier = Modifier.size(24.dp)
                         ) {
                             Icon(
@@ -565,7 +565,7 @@ fun PlayerControls(
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment     = Alignment.CenterVertically
                     ) {
-                        TextButton(onClick = { viewModel.userCancelledBinge = true }) {
+                        TextButton(onClick = { viewModel.cancelBingeCard() }) {
                             Text("İptal")
                         }
                         Spacer(modifier = Modifier.width(8.dp))

@@ -158,6 +158,13 @@ class KitsugiApplication : Application(), SingletonImageLoader.Factory {
                 val dataStore = com.kitsugi.animelist.data.settings.SettingsDataStore(this@KitsugiApplication)
                 val settings = dataStore.settingsFlow.first()
 
+                // CsStreamRunner adult content filter init
+                com.kitsugi.animelist.data.cloudstream.CsStreamRunner.setShowAdultContent(settings.showAdultContent)
+
+                // Uzak domain listesini uygulama açılışında önceden çek —
+                // domain_fixes.json GitHub'dan okunur, eklentiler arama başlamadan doğru domaine sahip olur
+                com.kitsugi.animelist.data.cloudstream.CsStreamRunner.triggerRemoteDomainsFetch()
+
                 // DNS init
                 if (settings.dnsChoice != 0) {
                     com.kitsugi.animelist.core.network.DnsManager.init(this@KitsugiApplication, settings.dnsChoice)
@@ -304,6 +311,16 @@ class KitsugiApplication : Application(), SingletonImageLoader.Factory {
 
         // Initialize Cloudstream runtime singleton context and client
         com.kitsugi.animelist.data.cloudstream.CsRuntimeInit.init(this)
+
+        // Trigger proactive cookie warmup asynchronously on startup for Turkish hosts
+        applicationScope.launch {
+            try {
+                android.util.Log.i("KitsugiApplication", "Triggering proactive cookie warmup on startup...")
+                com.kitsugi.animelist.data.cloudstream.CsCfWarmupManager.runWarmup(this@KitsugiApplication)
+            } catch (e: Exception) {
+                android.util.Log.e("KitsugiApplication", "Proactive cookie warmup failed: ${e.message}", e)
+            }
+        }
 
         try {
             uy.kohesive.injekt.Injekt.addSingleton(eu.kanade.tachiyomi.network.NetworkHelper::class.java, eu.kanade.tachiyomi.network.NetworkHelper(this))

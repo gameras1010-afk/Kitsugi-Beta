@@ -1,0 +1,1146 @@
+﻿--------- beginning of system
+08-02 22:55:53.940 D/FramePredict(18632): FramePredict init: false
+08-02 22:55:53.940 D/FramePredict(18632): start to set mThreadedRenderer.
+08-02 22:55:53.941 I/ForceDarkHelperStubImpl(18632): setViewRootImplForceDark: false for com.kitsugi.animelist.MainActivity@76cfc55, reason: AppDarkModeEnable
+08-02 22:55:54.232 E/ActivityThread(18632): Failed to find provider info for com.android.camera.miviInfoProvider
+08-02 22:56:27.099 D/FramePredict(18632): start to set mThreadedRenderer.
+08-02 22:56:27.099 I/ForceDarkHelperStubImpl(18632): setViewRootImplForceDark: false for com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity@deee592, reason: AppDarkModeEnable
+--------- beginning of main
+08-02 22:57:58.125 D/CsStreamRunner(18632): [AsyaWatch] api.search('Spider-Man%3A%20Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:57:58.137 D/TrafficStats(18632): tagSocket(965) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:58.197 D/SeiWatch(18632): []
+08-02 22:57:58.197 D/CsStreamRunner(18632): [Seiwatch] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:57:58.224 D/Ayzen   (18632): Title: Mujeres desesperadas por sexo | Href: https://www.xpaja.net/videos/mujeres-desesperadas-por-sexo/ | Poster: https://www.xpaja.net/views/videos/2021/08/mujeres-desesperadas-por-sexo/cuadro_7.jpg
+08-02 22:57:58.224 D/Ayzen   (18632): Title: Hermosa rubia ense├▒ando su enorme creta | Href: https://www.xpaja.net/videos/hermosa-rubia-ensenando-su-enorme-creta/ | Poster: https://www.xpaja.net/views/videos/2021/08/hermosa-rubia-ensenando-su-enorme-creta/cuadro_1.jpg
+08-02 22:57:58.224 D/Ayzen   (18632): Title: Asi├ítica jovencita se saca su leche con un vegetal | Href: https://www.xpaja.net/videos/asiatica-jovencita-se-saca-su-leche-con-un-vegetal/ | Poster: https://www.xpaja.net/views/videos/2021/08/asiatica-jovencita-se-saca-su-leche-con-un-vegetal/cuadro_7.jpg
+08-02 22:57:58.224 D/Ayzen   (18632): Title: Morenita hermosa bien rica | Href: https://www.xpaja.net/videos/morenita-hermosa-bien-rica/ | Poster: https://www.xpaja.net/views/videos/2021/08/morenita-hermosa-bien-rica/cuadro_8.jpg
+08-02 22:57:58.224 D/Ayzen   (18632): Title: Que bien se mueve la flaca 2 | Href: https://www.xpaja.net/videos/que-bien-se-mueve-la-flaca-2/ | Poster: https://www.xpaja.net/views/videos/2021/08/que-bien-se-mueve-la-flaca-61735/cuadro_8.jpg
+08-02 22:57:58.225 D/Ayzen   (18632): Title: MODELO CARAQUE├æA SOLANGEL 2 | Href: https://www.xpaja.net/videos/modelo-caraquena-solangel-2/ | Poster: https://www.xpaja.net/views/videos/2021/08/modelo-caraquena-solangel--whatsapp--584142115331/cuadro_3.jpg
+08-02 22:57:58.225 D/Ayzen   (18632): Title: Ella grita diciendo que no, pero el sigue cogi├®ndola duro | Href: https://www.xpaja.net/videos/ella-grita-diciendo-que-no--pero-el-sigue-cogiendola-duro/ | Poster: https://www.xpaja.net/views/videos/2021/08/ella-grita-diciendo-que-no--pero-el-sigue-cogiendola-duro/cuadro_1.jpg
+08-02 22:57:58.225 D/Ayzen   (18632): Title: Aaliyah Hadid soporta una BBC gigante por el culo | Href: https://www.xpaja.net/videos/aaliyah-hadid-soporta-una-bbc-gigante-por-el-culo/ | Poster: https://www.xpaja.net/views/videos/2021/08/aaliyah-hadid-soporta-una-bbc-gigante-por-el-culo/cuadro_1.jpg
+08-02 22:57:58.225 D/Ayzen   (18632): Title: Negro singando duro a blanca culona | Href: https://www.xpaja.net/videos/negro-singando-duro-a-blanca-culona/ | Poster: https://www.xpaja.net/views/videos/2021/08/negro-singando-duro-a-blanca-culona/cuadro_10.jpg
+08-02 22:57:58.225 D/Ayzen   (18632): Title: Por esto era que la neverita ol├¡a a toto | Href: https://www.xpaja.net/videos/por-esto-era-que-la-neverita-olia-a-toto/ | Poster: https://www.xpaja.net/views/videos/2021/08/por-esto-era-que-la-neverita-olia-a-toto/cuadro_3.jpg
+08-02 22:57:58.225 D/CsStreamRunner(18632): [Xpaja] load tamamland─▒: MovieLoadResponse
+08-02 22:57:58.226 D/CsStreamRunner(18632): [ID-Mapping] Candidate syncData: {}
+08-02 22:57:58.226 D/CsStreamRunner(18632): [Xpaja] Ô£ô E┼şle┼şme: 'Spider gwen porn' ÔåÆ https://www.xpaja.net/videos/spider-gwen-porn/
+08-02 22:57:58.322 D/CsStreamRunner(18632): [XMoviesForYou] load tamamland─▒: MovieLoadResponse
+08-02 22:57:58.322 D/CsStreamRunner(18632): [ID-Mapping] Candidate syncData: {}
+08-02 22:57:58.322 D/CsStreamRunner(18632): [XMoviesForYou] Ô£ô E┼şle┼şme: 'CC Wilde (Our New Roommate Agreement / 07.28.2026)' ÔåÆ https://xmoviesforyou.com/bbcpie-cc-wilde-our-new-roommate-agreement
+08-02 22:57:58.470 D/CsStreamRunner(18632): [AsyaWatch] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:57:58.484 I/WebViewResolver(18632): Loading WebView URL: https://analytics.google.com/g/collect?v=2&tid=G-PY59BFGWV8&gtm=45je67t1v9191679925za200zd9191679925&_p=1785700673447&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAGQ&are=1&cid=416724874.1785669906&frm=0&pscdl=noapi&rcb=8&sr=412x915&uaa=&uab=&uafvl=&uam=&uamb=1&uap=Android&uapv=&uaw=0&ul=tr-tr&gaf=2&_s=2&tag_exp=115938466~115938469~118395333~118897920~118897930~119896802&dp=%2Fara&sid=1785698632&sct=3&seg=1&dl=https%3A%2F%2Ftranimaci.com%2Fara%3Fq%3DSpider-Man%253A%2520Brand%2520New&dt=404%3A%20This%20page%20could%20not%20be%20found.&en=page_view&_ee=1&tfd=5294
+08-02 22:57:58.485 D/TR_WV   (18632): [TrAnimeci] WebView JS sonucu al─▒nd─▒ (1828 karakter): "NOT_FOUND:TRAnimeci - Anime ─░zle | T├╝rk├ğe Altyaz─▒l─▒ HD Anime ─░zleme Sitesi:HTML_LEN:21313:HAS_QUERY:true:TAGS:[\"SCRIPT:self.__next_f.push([1,\\\"0:{\\\\\\\"P\\\\\\\":null,\\\\\\\"b\\\\\\\":\\\\\\\"oz1jw9fX9DPFF_NoWt5BC\\\\\\\",\\\\\\\"c\\\\\\\":[\\\\\\\"\\\\\\\",\\\\\\\"ara?q=Spider-Man%\"]:LINKS:[\"\u003Ca href=\\\"https://www.buyuk.net/kategori/vds-sunucu\\\" title=\\\"VDS Sat─▒n Al\\\" target=\\\"_blank\\\">VDS Sat─▒n Al\u003C/a>\",\"\u003Ca href=\\\"https://clubsporium.com.tr/\\\" title=\\\"fitness spor salonu\\\" target=\\\"_blank\\\">fitness spor salonu\u003C/a>\",\"\u003Ca href=\\\"https://afroditscans.com/\\\" title=\\\"Manga Oku\\\" target=\\\"_blank\\\">Manga Oku\u003C/a>\",\"\u003Ca href=\\\"https://uzaymanga.com/\\\" title=\\\"Manga Oku\\\" target=\\\"_blank\\\">Manga Oku\u003C/a>\",\"\u003Ca href=\\\"https://eldermanga.com/\\\" title=\\\"manga oku\\\" target=\\\"_blank\\\">manga oku\u003C/a>\",\"\u003Ca href=\\\"https://aebett.com/\\\" title=\\\"melbet\\\" target=\\\"_blank\\\">melbet\u003C/a>\",\"\u003Ca href=\\\"https://melgiris.com/\\\" title=\\\"melbet\\\" target=\\\"_blank\\\">melbet giri┼ş\u003C/a>\",\"\u003Ca href=\\\"https://betsmegas.com/\\\" title=\\\"melbet\\\" target=\\\"_blank\\\">melbet\u003C/a>\",\"\u003Ca href=\\\"https://epsobet.com/\\\" title=\\\"betwinner giri┼ş\\\" target=\\\"_blank\\\">betwinner giri┼ş\u003C/a>\",\"\u003Ca href=\\\"https://crcstexam.com/\\\" title=\\\"Deneme bonusu veren siteler\\\" target=\\\"_blank\\\">Deneme bonusu veren siteler\u003C/a>\",\"\u003Ca href=\\\"https://txrivercompany.com/\\\" title=\\\"Deneme bonusu veren siteler\\\" target=\\\"_blank\\\">Deneme bonusu veren siteler\u003C/a>\",\"\u003Ca href=\\\"https://mightymetalroofing.com/\\\" title=\\\"Deneme bonusu veren siteler\\\" target=\\\"_blank\\\">Deneme bonusu veren siteler\u003C/a>\"]"
+08-02 22:57:58.499 D/CsStreamRunner(18632): [AsyaAnimeleri] api.search('Spider-Man%3A%20Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:57:58.511 D/TrafficStats(18632): tagSocket(695) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:58.527 D/CsStreamRunner(18632): [PerverZija] load('https://tube.perverzija.com/sexmex-citah-brand-new-tits/') ├ğa─şr─▒l─▒yor...
+08-02 22:57:58.541 D/TrafficStats(18632): tagSocket(729) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:58.640 D/CsStreamRunner(18632): [DramaDizilerim] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:57:58.642 D/CsStreamRunner(18632): [AsyaWatch] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:57:58.660 D/CsStreamRunner(18632): [Porntrex] load tamamland─▒: MovieLoadResponse
+08-02 22:57:58.660 D/CsEpisodeMatcher(18632): MovieLoadResponse: dataUrl=https://www.porntrex.com/video/2520957/lola-myluv-brand-new-toy
+08-02 22:57:58.660 D/CsStreamRunner(18632): [Porntrex] S1E1 i├ğin episodeData bulundu
+08-02 22:57:58.660 D/CsStreamRunner(18632): [Porntrex] posterUrl=https://ptx.cdntrex.com/contents/videos_screenshots/2520000/2520957/300x168/1.jpg
+08-02 22:57:58.786 D/CsStreamRunner(18632): [PerverZija] load tamamland─▒: MovieLoadResponse
+08-02 22:57:58.786 D/CsEpisodeMatcher(18632): MovieLoadResponse: dataUrl=https://tube.perverzija.com/sexmex-citah-brand-new-tits/
+08-02 22:57:58.786 D/CsStreamRunner(18632): [PerverZija] S1E1 i├ğin episodeData bulundu
+08-02 22:57:58.786 D/CsStreamRunner(18632): [PerverZija] posterUrl=https://tube.perverzija.com/wp-content/uploads/2022/01/SexMex-Citah-Brand-New-Tits.jpg
+08-02 22:57:58.823 D/CsStreamRunner(18632): [NoodleMagazine] loadLinks ├ğa─şr─▒l─▒yor...
+08-02 22:57:58.836 D/TrafficStats(18632): tagSocket(148) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:58.941 D/CsStreamRunner(18632): [FilmHane] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:57:58.943 D/CsStreamRunner(18632): [DiziPalOrijinal] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:57:58.957 I/WebViewResolver(18632): Loading WebView URL: https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/fo/520498724:1785697215:NJC8NmE8gq300gA6ulhXxYjKPdAIiSh9pjm8fD-8Hg8/a24fa7868be4d612/wKISYsOz5mgNVT9dZO6hdYWqbg8sxAHxoiRvluq7KA8-1785700675-1.2.1.1-V83T_pGyHb1u9uh49OZ1.n20_ZRX5Sid2ZVPet8SCZNyahQb2ntJNUPIT2pxHo.c
+08-02 22:57:58.958 D/TrafficStats(18632): tagSocket(688) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:58.961 D/CsStreamRunner(18632): [Torrent Filmler] load('https://turkcealtyazi.org/mov/9362722/spider-man-across-the-spider-verse-part-one.html') ├ğa─şr─▒l─▒yor...
+08-02 22:57:58.979 D/TrafficStats(18632): tagSocket(691) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:59.087 D/CsStreamRunner(18632): [PornWatch] load('https://pornwatch.ws/pizza-girl-spanked/') ├ğa─şr─▒l─▒yor...
+08-02 22:57:59.094 D/CsStreamRunner(18632): [NoodleMagazine] Link bulundu: NoodleMagazine ÔåÆ https://cdn.pvvstream.pro/videos/-156458783/456240544/vid_480p.mp4?rs=480000&rb=2796202&secure=FNWj9I08O44IbKS-vQKw2A%3D%3D%2C1785702676
+08-02 22:57:59.094 D/CsStreamRunner(18632): [NoodleMagazine] Link bulundu: NoodleMagazine ÔåÆ https://cdn.pvvstream.pro/videos/-156458783/456240544/vid_360p.mp4?rs=360000&rb=2097152&secure=CRMXBDsmaeW-EYw9PhsXpQ%3D%3D%2C1785702676
+08-02 22:57:59.095 D/CsStreamRunner(18632): [NoodleMagazine] Link bulundu: NoodleMagazine ÔåÆ https://cdn.pvvstream.pro/videos/-156458783/456240544/vid_240p.mp4?rs=240000&rb=1398101&secure=upbWYMQ1hdolbAb-KHx-8g%3D%3D%2C1785702676
+08-02 22:57:59.095 D/CsStreamRunner(18632): [NoodleMagazine] Ham sonu├ğ: 3 stream, 0 altyaz─▒
+08-02 22:57:59.102 D/TrafficStats(18632): tagSocket(769) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:59.148 D/TrafficStats(18632): tagSocket(332) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:59.364 D/CsStreamRunner(18632): [NoodleMagazine] HEAD Ô£à HTTP 200: https://cdn.pvvstream.pro/videos/-156458783/456240544/vid_480p.mp4?rs=480000&rb=
+08-02 22:57:59.373 D/CsPluginStatusTracker(18632): [DiziPalOrijinal] Ger├ğek hata #2/3: JSONException
+08-02 22:57:59.373 W/CsStreamRunner(18632): [DiziPalOrijinal] search(query) hata verdi: Value <!doctype of type java.lang.String cannot be converted to JSONObject
+08-02 22:57:59.373 E/CS_SEARCH_ERR(18632): ÔØî SEARCH(q) HATA [DiziPalOrijinal] ÔÇö JSONException: Value <!doctype of type java.lang.String cannot be converted to JSONObject
+08-02 22:57:59.373 W/CsStreamRunner(18632): [DiziPalOrijinal] Search failed: Value <!doctype of type java.lang.String cannot be converted to JSONObject
+08-02 22:57:59.373 D/CsStreamRunner(18632): [DiziPalOrijinal] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:57:59.373 W/CsStreamRunner(18632): [DiziPalOrijinal] Domain dinamik olarak g├╝ncellendi: https://dizipal.bid -> https://dizipal1571.com
+08-02 22:57:59.386 D/CsStreamRunner(18632): [PornWatch] load tamamland─▒: MovieLoadResponse
+08-02 22:57:59.386 D/CsEpisodeMatcher(18632): MovieLoadResponse: dataUrl=https://pornwatch.ws/pizza-girl-spanked/
+08-02 22:57:59.386 D/CsStreamRunner(18632): [PornWatch] S1E1 i├ğin episodeData bulundu
+08-02 22:57:59.386 D/CsStreamRunner(18632): [PornWatch] posterUrl=https://i1.wp.com/pandanetwork.club/adult/wp-content/uploads/2024/04/4730880h.jpg
+08-02 22:57:59.396 D/CsStreamRunner(18632): [Puhu Tv] load('{"id":"1541","name":"├çarp─▒nt─▒","short_description":"Hayata tutunma m├╝cadelesi, kesi┼şen hayatlar ve s─▒rlarla dolu bir aileyle izleyiciyi derin bir yolculu─şa ├ğ─▒karacak ├çarp─▒nt─▒; bir kalbin, iki annenin ve tek bir s─▒rr─▒n g├Âlgesinde hi├ğ umulmad─▒k ba─şlar─▒ ve buradan filizlenen a┼şklar─▒ ekrana ta┼ş─▒yacak.","is_movie":false,"search_images":{"wide":{"main":"img-puhutv.mncdn.com/media/25-08/09/title_16x9-1754725480.jpg"},"vertical_thumbnail":{"main":"img-puhutv.mncdn.com/media/25-08/08/puhutitle_7x10.jpg"},"horizontal_thumbnail":{"main":"img-puhutv.mncdn.com/media/25-08/08/puhutitle_10x7.jpg"}}}') ├ğa─şr─▒l─▒yor...
+08-02 22:57:59.410 D/TrafficStats(18632): tagSocket(737) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:59.436 D/CsStreamRunner(18632): [Torrent Filmler] load tamamland─▒: MovieLoadResponse
+08-02 22:57:59.436 D/CsStreamRunner(18632): [ID-Mapping] Candidate syncData: {}
+08-02 22:57:59.436 D/CsStreamRunner(18632): [Torrent Filmler] Ô£ô E┼şle┼şme: '├ûr├╝mcek-Adam: Eve D├Ân├╝┼ş Yok' ÔåÆ https://turkcealtyazi.org/mov/10872600/untitled-spider-man-sequel.html
+08-02 22:57:59.437 D/CsStreamRunner(18632): [AsyaAnimeleri] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:57:59.438 D/CsStreamRunner(18632): [FilmHane] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:57:59.490 D/CsStreamRunner(18632): [NoodleMagazine] HEAD Ô£à HTTP 200: https://cdn.pvvstream.pro/videos/-156458783/456240544/vid_360p.mp4?rs=360000&rb=
+08-02 22:57:59.539 D/CsStreamRunner(18632): [NoodleMagazine] HEAD Ô£à HTTP 200: https://cdn.pvvstream.pro/videos/-156458783/456240544/vid_240p.mp4?rs=240000&rb=
+08-02 22:57:59.540 D/CsStreamRunner(18632): [NoodleMagazine] Ô£à Sonu├ğ: 3 do─şrulanm─▒┼ş stream, 0 altyaz─▒
+08-02 22:57:59.540 D/StreamViewModel(18632): [ÔÜí NoodleMagazine] Toplam 3 stream bulundu
+08-02 22:57:59.674 D/CsStreamRunner(18632): [HentaiCity] api.search('Spider-Man: Brand New', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:57:59.674 D/gizlikeyif_HentaiCity(18632): search Spider-Man: Brand New page=1
+08-02 22:57:59.687 D/TrafficStats(18632): tagSocket(605) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:59.739 D/CsStreamRunner(18632): [YeniKaynak] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:57:59.753 D/TrafficStats(18632): tagSocket(928) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:59.835 D/CsStreamRunner(18632): [Puhu Tv] load tamamland─▒: TvSeriesLoadResponse
+08-02 22:57:59.836 D/CsStreamRunner(18632): [ID-Mapping] Candidate syncData: {}
+08-02 22:57:59.836 D/CsStreamRunner(18632): [Puhu Tv] Ô£ô E┼şle┼şme: 'Sevdi─şim Sensin' ÔåÆ {"id":"1552","name":"Sevdi─şim Sensin","short_description":"Bir da─ş kul├╝besinde do─şup b├╝y├╝yen Dicle, ac─▒mas─▒z abilerinin bask─▒s─▒ y├╝z├╝nden adeta tutsak bir hayat s├╝rmektedir. Annesiyle ya┼şad─▒─ş─▒ kul├╝benin bah├ğesinden ├Âteye hi├ğ ├ğ─▒kmam─▒┼ş, d├╝nyaya ├ğok yabanc─▒ kalm─▒┼şt─▒r. Bir g├╝n b├Âlgede ya┼şanan deprem nedeniyle yolu, ─░stanbulÔÇÖdaki konforlu hayat─▒n─▒ geride b─▒rak─▒p vicdan borcuyla askerli─şini yapan ErkanÔÇÖla kesi┼şir.","is_movie":false,"search_images":{"wide":{"main":"img-puhutv.mncdn.com/media/25-12/10/title_16x9.jpg"},"vertical_thumbnail":{"main":"img-puhutv.mncdn.com/media/25-12/10/puhu-3title_7x10.jpg"},"horizontal_thumbnail":{"main":"img-puhutv.mncdn.com/media/25-12/10/puhu-3title_10x7.jpg"}}}
+08-02 22:57:59.887 D/CsStreamRunner(18632): [WCoflix] loadLinks ├ğa─şr─▒l─▒yor...
+08-02 22:57:59.887 D/kraptor_WcoFLix(18632): https://www.wcoforever.net/spider-man-unlimited-episode-1-worlds-apart-part-one
+08-02 22:57:59.904 D/TrafficStats(18632): tagSocket(907) with statsTag=0xffffffff, statsUid=-1
+08-02 22:57:59.919 D/CsStreamRunner(18632): [YeniKaynak] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:57:59.937 D/CsStreamRunner(18632): [MilfNut] loadLinks ├ğa─şr─▒l─▒yor...
+08-02 22:57:59.937 D/kraptor_MilfNut(18632): data = https://milfnut.com/satinfuntaboo-day-dreaming-with-step-mother/
+08-02 22:57:59.952 D/TrafficStats(18632): tagSocket(936) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:00.102 D/CloudflareKiller(18632): WAF / Challenge verification page detected for host: www.defendonlineprivacy.com
+08-02 22:58:00.105 D/CloudflareKiller(18632): Entering serialized WAF/Cloudflare bypass for host: www.defendonlineprivacy.com
+08-02 22:58:00.107 D/CloudflareKiller(18632): Loading webview to solve WAF/Cloudflare for https://www.defendonlineprivacy.com/search/video/Spider-Man:%20Brand%20New/1/
+08-02 22:58:00.107 I/WebViewResolver(18632): Initial web-view request: https://www.defendonlineprivacy.com/search/video/Spider-Man:%20Brand%20New/1/
+08-02 22:58:00.125 I/WebViewResolver(18632): Loading WebView URL: https://www.defendonlineprivacy.com/search/video/Spider-Man:%20Brand%20New/1/
+08-02 22:58:00.137 D/CsStreamRunner(18632): [VizyonHub] load('{"title":"Tan─▒┼şma ve New York","urls":{"FullHDFilmizlesene":"https://www.fullhdfilmizlesene.mx/film/tanisma-ve-new-york/"}}') ├ğa─şr─▒l─▒yor...
+08-02 22:58:00.137 D/TopluDiziler(18632): === LOAD START === Url: {"title":"Tan─▒┼şma ve New York","urls":{"FullHDFilmizlesene":"https://www.fullhdfilmizlesene.mx/film/tanisma-ve-new-york/"}}
+08-02 22:58:00.150 D/TrafficStats(18632): tagSocket(957) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:00.160 D/TrafficStats(18632): tagSocket(959) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:00.161 D/TrafficStats(18632): tagSocket(963) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:00.161 D/TrafficStats(18632): tagSocket(965) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:00.162 D/TrafficStats(18632): tagSocket(967) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:00.162 D/TrafficStats(18632): tagSocket(969) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:00.162 D/TrafficStats(18632): tagSocket(960) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:00.162 D/TrafficStats(18632): tagSocket(968) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:00.184 D/CsStreamRunner(18632): [MilfNut] Link bulundu: MilfNut ÔåÆ null
+08-02 22:58:00.185 D/CsStreamRunner(18632): [MilfNut] Ham sonu├ğ: 1 stream, 0 altyaz─▒
+08-02 22:58:00.185 D/CsStreamRunner(18632): [MilfNut] Ô£à Sonu├ğ: 1 do─şrulanm─▒┼ş stream, 0 altyaz─▒
+08-02 22:58:00.186 D/StreamViewModel(18632): [ÔÜí MilfNut] Toplam 1 stream bulundu
+08-02 22:58:00.220 D/CsStreamRunner(18632): [Animeler] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:00.257 D/DDizi:  (18632): Searching for Tan─▒┼şma ve New York
+08-02 22:58:00.270 D/TrafficStats(18632): tagSocket(765) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:00.303 D/CsStreamRunner(18632): [AsyaAnimeleri] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:00.334 D/kraptor_WcoFLix(18632): https://www.wcoforever.net/spider-man-unlimited-episode-1-worlds-apart-part-one
+08-02 22:58:00.334 D/kraptor_WcoFLix(18632): 200
+08-02 22:58:00.339 D/kraptor_WcoFLix(18632): https://embed.wcostream.com/inc/embed/index.php?file=Spider-Man%20Unlimited%2FWatch%20Spider-Man%20Unlimited%20Episode%20001%20Worlds%20Apart%20%281%29%20Online%20Free%20-%20Cartoon%20Online%20-%20KissCartoon.flv&pid=397963&h=0ef7a1f5e56d22b4c5beada0a38175b8&t=1785711479&embed=www
+08-02 22:58:00.342 D/kraptor_Wco(18632): https://embed.wcostream.com/inc/embed/index.php?file=Spider-Man%20Unlimited%2FWatch%20Spider-Man%20Unlimited%20Episode%20001%20Worlds%20Apart%20%281%29%20Online%20Free%20-%20Cartoon%20Online%20-%20KissCartoon.flv&pid=397963&h=0ef7a1f5e56d22b4c5beada0a38175b8&t=1785711479&embed=www
+08-02 22:58:00.343 D/kraptor_Wco(18632): Spider-Man%20Unlimited/Watch%20Spider-Man%20Unlimited%20Episode%20001%20Worlds%20Apart%20%281%29%20Online%20Free%20-%20Cartoon%20Online%20-%20KissCartoon.mp4
+08-02 22:58:00.355 D/TrafficStats(18632): tagSocket(688) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:00.367 I/WebViewResolver(18632): Loading WebView URL: https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496
+08-02 22:58:00.376 I/WebViewResolver(18632): Loading WebView URL: https://www.defendonlineprivacy.com/cdn-cgi/rum?
+08-02 22:58:00.376 I/WebViewResolver(18632): Loading WebView URL: https://www.defendonlineprivacy.com/favicon.ico
+08-02 22:58:00.486 D/CsStreamRunner(18632): [XXXParodyHD] load('https://xxxparodyhd.net/paiges-plump-debut/') ├ğa─şr─▒l─▒yor...
+08-02 22:58:00.504 D/TrafficStats(18632): tagSocket(729) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:00.604 D/CsStreamRunner(18632): [SineWix] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:00.609 D/kraptor_Wco(18632): {"enc":"9QTYP6xKVbrY9Daec6ACTSNWGLKDZfijLf6Q5u8BPY350gymD9tz_xqDmyzxbWUwkD_LJKzSxwQGybW0XcSi_j2siKgYlgvUbTU1x9ulSd3qMNOvz2R6yH0c1S-8eXp6XzjKRMaSh3jMGAz4V08YjF7XGciXxcVmlVrfwTWhSv7Z23F0dIwyUQOIgMwrY8fS4MvMBXVWrdMRczmaAmkv5JUSmR6c3afpSjph3EiXFVs2npZHCRtkh3yJB4qmIGddZzwcC83CGV6EKMwG5ilPsmTFU8oeoKMtC_ChtSrpwiuNoCdTT9VFvX6QMtByL15K3S4csp0-QlFxiWHA2CPAcx8v2UGP8bZjbq09tLR1WsVbEMda2dFi69-OD9trc-2FF3qf--USmgcSkfd_GY0gYCgGLb28UxPL1MCa_id7tzAKmRy6Bf5GdLxAK4BzoHVcJdTAOIf5nIdUASXVkCtz-J5tu1KS-4LOcoAajJXh1Aw","server":"https:\/\/cdn.wcostream.com","cdn":"https:\/\/cdn.wcostream.com","hd":"9QTYP6xKVbrY9Daec6ACTSNWGLKDZfijLf6Q5u8BPY350gymD9tz_xqDmyzxbWUwkD_LJKzSxwQGybW0XcSi_j2siKgYlgvUbTU1x9ulSd3qMNOvz2R6yH0c1S-8eXp6XzjKRMaSh3jMGAz4V08YjF7XGciXxcVmlVrfwTWhSv6bNn_4sdeFQBzIw2N9liH3lMEqRFXLRENdjwI8k0xrUkMbyOdyhjcsdGz0CqaJRQpLDszwWCkhJ-7M6DCugpSHTHAz0qmMaHqGs-ZjLvsYdX5DrLabS_LyR64uolaV6iFhG2i5BaygynEZE8dPJga7bbfQfM7vlpqf0Kfy1HpFn42Hjim084SQxCMkIFZTSgGTQmyuW3U6j4fNawYDsjtjFfES1UYKyKY2K3TkC7G6hXB9YiA9h3V7Fa6TiO1jjWwhyTzwW1EWpImvqPB_itq9-wqvkG1NbC101MBYK7jt4RrKeghPc7SUypOZ8wVl1Zckzx4bBpJ-cOO7b8IwvtMv","fhd":"","sub":""}
+08-02 22:58:00.630 D/kraptor_Wco(18632): https://cdn.wcostream.com/
+08-02 22:58:00.630 D/kraptor_Wco(18632): HD: 9QTYP6xKVbrY9Daec6ACTSNWGLKDZfijLf6Q5u8BPY350gymD9tz_xqDmyzxbWUwkD_LJKzSxwQGybW0XcSi_j2siKgYlgvUbTU1x9ulSd3qMNOvz2R6yH0c1S-8eXp6XzjKRMaSh3jMGAz4V08YjF7XGciXxcVmlVrfwTWhSv6bNn_4sdeFQBzIw2N9liH3lMEqRFXLRENdjwI8k0xrUkMbyOdyhjcsdGz0CqaJRQpLDszwWCkhJ-7M6DCugpSHTHAz0qmMaHqGs-ZjLvsYdX5DrLabS_LyR64uolaV6iFhG2i5BaygynEZE8dPJga7bbfQfM7vlpqf0Kfy1HpFn42Hjim084SQxCMkIFZTSgGTQmyuW3U6j4fNawYDsjtjFfES1UYKyKY2K3TkC7G6hXB9YiA9h3V7Fa6TiO1jjWwhyTzwW1EWpImvqPB_itq9-wqvkG1NbC101MBYK7jt4RrKeghPc7SUypOZ8wVl1Zckzx4bBpJ-cOO7b8IwvtMv
+08-02 22:58:00.642 D/TrafficStats(18632): tagSocket(458) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:00.746 D/kraptor_Wco(18632): https://udisk3.wcostream.com//getvid?evid=9QTYP6xKVbrY9Daec6ACTSNWGLKDZfijLf6Q5u8BPY350gymD9tz_xqDmyzxbWUwkD_LJKzSxwQGybW0XcSi_j2siKgYlgvUbTU1x9ulSd3qMNOvz2R6yH0c1S-8eXp6XzjKRMaSh3jMGAz4V08YjF7XGciXxcVmlVrfwTWhSv6bNn_4sdeFQBzIw2N9liH3lMEqRFXLRENdjwI8k0xrUkMbyOdyhjcsdGz0CqaJRQpLDszwWCkhJ-7M6DCugpSHTHAz0qmMaHqGs-ZjLvsYdX5DrLabS_LyR64uolaV6iFhG2i5BaygynEZE8dPJga7bbfQfM7vlpqf0Kfy1HpFn42Hjim084SQxCMkIFZTSgGTQmyuW3U6j4fNawYDsjtjFfES1UYKyKY2K3TkC7G6hXB9YiA9h3V7Fa6TiO1jjWwhyTzwW1EWpImvqPB_itq9-wqvkG1NbC101MBYK7jt4RrKeghPc7SUypOZ8wVl1Zckzx4bBpJ-cOO7b8IwvtMv&json
+08-02 22:58:00.755 D/CsStreamRunner(18632): [SineWix] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:00.760 D/TrafficStats(18632): tagSocket(654) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:00.990 D/KultFilmler(18632): Searching for Tan─▒┼şma ve New York
+08-02 22:58:01.056 D/CsStreamRunner(18632): [BelgeselX] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:01.056 D/BelgeselX(18632): Arama ba┼şlat─▒ld─▒: Spider-Man: Brand
+08-02 22:58:01.071 D/TrafficStats(18632): tagSocket(708) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:01.359 D/CsStreamRunner(18632): [WCoflix] Link bulundu: Wcoflix HD ÔåÆ https://udisk3.wcostream.com//getvid?evid=9QTYP6xKVbrY9Daec6ACTSNWGLKDZfijLf6Q5u8BPY350gymD9tz_xqDmyzxbWUwkD_LJKzSxwQGybW0XcSi_j2siKgYlgvUbTU1x9ulSd3qMNOvz2R6yH0c1S-8eXp6XzjKRMaSh3jMGAz4V08YjF7XGciXxcVmlVrfwTWhSv6bNn_4sdeFQBzIw2N9liH3lMEqRFXLRENdjwI8k0xrUkMbyOdyhjcsdGz0CqaJRQpLDszwWCkhJ-7M6DCugpSHTHAz0qmMaHqGs-ZjLvsYdX5DrLabS_LyR64uolaV6iFhG2i5BaygynEZE8dPJga7bbfQfM7vlpqf0Kfy1HpFn42Hjim084SQxCMkIFZTSgGTQmyuW3U6j4fNawYDsjtjFfES1UYKyKY2K3TkC7G6hXB9YiA9h3V7Fa6TiO1jjWwhyTzwW1EWpImvqPB_itq9-wqvkG1NbC101MBYK7jt4RrKeghPc7SUypOZ8wVl1Zckzx4bBpJ-cOO7b8IwvtMv&json
+08-02 22:58:01.360 D/kraptor_Wco(18632): SD: 9QTYP6xKVbrY9Daec6ACTSNWGLKDZfijLf6Q5u8BPY350gymD9tz_xqDmyzxbWUwkD_LJKzSxwQGybW0XcSi_j2siKgYlgvUbTU1x9ulSd3qMNOvz2R6yH0c1S-8eXp6XzjKRMaSh3jMGAz4V08YjF7XGciXxcVmlVrfwTWhSv7Z23F0dIwyUQOIgMwrY8fS4MvMBXVWrdMRczmaAmkv5JUSmR6c3afpSjph3EiXFVs2npZHCRtkh3yJB4qmIGddZzwcC83CGV6EKMwG5ilPsmTFU8oeoKMtC_ChtSrpwiuNoCdTT9VFvX6QMtByL15K3S4csp0-QlFxiWHA2CPAcx8v2UGP8bZjbq09tLR1WsVbEMda2dFi69-OD9trc-2FF3qf--USmgcSkfd_GY0gYCgGLb28UxPL1MCa_id7tzAKmRy6Bf5GdLxAK4BzoHVcJdTAOIf5nIdUASXVkCtz-J5tu1KS-4LOcoAajJXh1Aw
+08-02 22:58:01.378 D/kraptor_Wco(18632): https://udisk3.wcostream.com//getvid?evid=9QTYP6xKVbrY9Daec6ACTSNWGLKDZfijLf6Q5u8BPY350gymD9tz_xqDmyzxbWUwkD_LJKzSxwQGybW0XcSi_j2siKgYlgvUbTU1x9ulSd3qMNOvz2R6yH0c1S-8eXp6XzjKRMaSh3jMGAz4V08YjF7XGciXxcVmlVrfwTWhSv7Z23F0dIwyUQOIgMwrY8fS4MvMBXVWrdMRczmaAmkv5JUSmR6c3afpSjph3EiXFVs2npZHCRtkh3yJB4qmIGddZzwcC83CGV6EKMwG5ilPsmTFU8oeoKMtC_ChtSrpwiuNoCdTT9VFvX6QMtByL15K3S4csp0-QlFxiWHA2CPAcx8v2UGP8bZjbq09tLR1WsVbEMda2dFi69-OD9trc-2FF3qf--USmgcSkfd_GY0gYCgGLb28UxPL1MCa_id7tzAKmRy6Bf5GdLxAK4BzoHVcJdTAOIf5nIdUASXVkCtz-J5tu1KS-4LOcoAajJXh1Aw&json
+08-02 22:58:01.391 D/TrafficStats(18632): tagSocket(654) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:01.434 D/TopluDiziler(18632): Final urlMap resolved: {FullHDFilmizlesene=https://www.fullhdfilmizlesene.mx/film/tanisma-ve-new-york/, DiziFilm=https://dizifilmizle.to/film/tanisma-ve-new-york, FilmMakinesi=https://filmmakinesi.to/film/tanisma-ve-new-york-2021/}
+08-02 22:58:01.434 D/TopluDiziler(18632): Loading details from FullHDFilmizlesene using URL: https://www.fullhdfilmizlesene.mx/film/tanisma-ve-new-york/
+08-02 22:58:01.435 D/TopluDiziler(18632): Loading details from DiziFilm using URL: https://dizifilmizle.to/film/tanisma-ve-new-york
+08-02 22:58:01.435 D/TopluDiziler(18632): Loading details from FilmMakinesi using URL: https://filmmakinesi.to/film/tanisma-ve-new-york-2021/
+08-02 22:58:01.448 D/TrafficStats(18632): tagSocket(695) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:01.493 D/CsStreamRunner(18632): [XXXParodyHD] load tamamland─▒: MovieLoadResponse
+08-02 22:58:01.493 D/CsStreamRunner(18632): [ID-Mapping] Candidate syncData: {}
+08-02 22:58:01.493 D/CsStreamRunner(18632): [XXXParodyHD] Ô£ô E┼şle┼şme: 'Spicy & Easy Dutch Women' ÔåÆ https://xxxparodyhd.net/spicy-easy-dutch-women/
+08-02 22:58:01.508 D/TopluDiziler(18632): Successfully loaded FullHDFilmizlesene details
+08-02 22:58:01.559 I/chromium(18632): [INFO:CONSOLE:0] "The resource https://tranimaci.com/_next/static/media/e4af272ccee01ff0-s.p.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.", source: https://tranimaci.com/ara?q=Spider-Man%3A%20Brand%20New (0)
+08-02 22:58:01.661 D/TopluDiziler(18632): Successfully loaded DiziFilm details
+08-02 22:58:01.720 D/CsStreamRunner(18632): [Animeler] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:01.723 D/TopluDiziler(18632): Successfully loaded FilmMakinesi details
+08-02 22:58:01.723 D/TopluDiziler(18632): Successfully gathered responses from: [FullHDFilmizlesene, DiziFilm, FilmMakinesi]
+08-02 22:58:01.794 D/CsStreamRunner(18632): [Tubepornclassic] load('https://tubepornclassic.com/videos/1045871/the-spider-man-of-the-opera/') ├ğa─şr─▒l─▒yor...
+08-02 22:58:01.808 D/TrafficStats(18632): tagSocket(760) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:01.910 D/TrafficStats(18632): tagSocket(148) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:01.927 I/tsugi.animelist(18632): This is non sticky GC, maxfree is 33554432 minfree is 8388608
+08-02 22:58:01.927 I/tsugi.animelist(18632): Background concurrent copying GC freed 1177797(45MB) AllocSpace objects, 796(40MB) LOS objects, 38% free, 153MB/249MB, paused 150us,57us total 266.790ms
+08-02 22:58:01.927 D/CsStreamRunner(18632): [WCoflix] Link bulundu: Wcoflix SD ÔåÆ https://udisk3.wcostream.com//getvid?evid=9QTYP6xKVbrY9Daec6ACTSNWGLKDZfijLf6Q5u8BPY350gymD9tz_xqDmyzxbWUwkD_LJKzSxwQGybW0XcSi_j2siKgYlgvUbTU1x9ulSd3qMNOvz2R6yH0c1S-8eXp6XzjKRMaSh3jMGAz4V08YjF7XGciXxcVmlVrfwTWhSv7Z23F0dIwyUQOIgMwrY8fS4MvMBXVWrdMRczmaAmkv5JUSmR6c3afpSjph3EiXFVs2npZHCRtkh3yJB4qmIGddZzwcC83CGV6EKMwG5ilPsmTFU8oeoKMtC_ChtSrpwiuNoCdTT9VFvX6QMtByL15K3S4csp0-QlFxiWHA2CPAcx8v2UGP8bZjbq09tLR1WsVbEMda2dFi69-OD9trc-2FF3qf--USmgcSkfd_GY0gYCgGLb28UxPL1MCa_id7tzAKmRy6Bf5GdLxAK4BzoHVcJdTAOIf5nIdUASXVkCtz-J5tu1KS-4LOcoAajJXh1Aw&json
+08-02 22:58:01.928 D/CsStreamRunner(18632): [WCoflix] Ham sonu├ğ: 2 stream, 0 altyaz─▒
+08-02 22:58:01.928 D/CsStreamRunner(18632): [WCoflix] Ô£à Sonu├ğ: 2 do─şrulanm─▒┼ş stream, 0 altyaz─▒
+08-02 22:58:01.928 D/StreamViewModel(18632): [ÔÜí Wcoflix] Toplam 2 stream bulundu
+08-02 22:58:01.937 W/System  (18632): A resource failed to call end. 
+08-02 22:58:01.937 W/System  (18632): A resource failed to call end. 
+08-02 22:58:01.938 W/System  (18632): A resource failed to call end. 
+08-02 22:58:01.938 W/System  (18632): A resource failed to call end. 
+08-02 22:58:01.941 W/System  (18632): A resource failed to call close. 
+08-02 22:58:01.942 W/System  (18632): A resource failed to call close. 
+08-02 22:58:02.021 D/CsStreamRunner(18632): [Sinezy] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:02.033 D/TrafficStats(18632): tagSocket(683) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:02.068 D/CsStreamRunner(18632): [VizyonHub] load tamamland─▒: MovieLoadResponse
+08-02 22:58:02.068 D/CsStreamRunner(18632): [ID-Mapping] Candidate syncData: {}
+08-02 22:58:02.068 D/CsStreamRunner(18632): [ID-Mapping] Checking candidate 'Avengers: Doomsday' (similarity: 0.2916666666666667)...
+08-02 22:58:02.338 D/CsStreamRunner(18632): [Tubepornclassic] load tamamland─▒: MovieLoadResponse
+08-02 22:58:02.338 D/CsEpisodeMatcher(18632): MovieLoadResponse: dataUrl=https://tubepornclassic.com/videos/1045871/the-spider-man-of-the-opera/
+08-02 22:58:02.338 D/CsStreamRunner(18632): [Tubepornclassic] S1E1 i├ğin episodeData bulundu
+08-02 22:58:02.338 D/CsStreamRunner(18632): [Tubepornclassic] posterUrl=https://tn.tubepornclassic.com/contents/videos_screenshots/1045000/1045871/240x180/1.jpg
+08-02 22:58:02.345 D/CsStreamRunner(18632): [BelgeselX] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:02.369 D/CsStreamRunner(18632): [WatchPorn] load('https://watchporn.to/video/135831/jewel-diamant-brand-new-throat-throated/|https://watchporn.to/contents/videos_screenshots/135000/135831/336x189/1.jpg') ├ğa─şr─▒l─▒yor...
+08-02 22:58:02.382 D/TrafficStats(18632): tagSocket(729) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:02.424 D/CsStreamRunner(18632): [Sinezy] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:02.428 D/CsStreamRunner(18632): [Pornocarioca] loadLinks ├ğa─şr─▒l─▒yor...
+08-02 22:58:02.442 D/TrafficStats(18632): tagSocket(765) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:02.640 D/CsStreamRunner(18632): [xVideos] load('https://www.xvideos.com/video.okmplpb98f8/THUMBNUM/spider_man_brand_new_day_edit') ├ğa─şr─▒l─▒yor...
+08-02 22:58:02.646 D/CsStreamRunner(18632): [WebDramaTurkey] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:02.646 D/WDT_CF  (18632): search calisiyor: Spider-Man: Brand
+08-02 22:58:02.646 D/WDT_CF  (18632): quickGet: https://webdramaturkey2.com/arama/Spider-Man: Brand
+08-02 22:58:02.666 D/TrafficStats(18632): tagSocket(688) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:02.698 D/TrafficStats(18632): tagSocket(695) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:02.726 D/CsStreamRunner(18632): [M3U Player] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:02.726 D/CsStreamRunner(18632): [M3U Player] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:02.740 D/Cloudstream(18632): Loaded Video: Jewel Diamant - Brand New Throat - Throated
+08-02 22:58:02.740 D/CsStreamRunner(18632): [WatchPorn] load tamamland─▒: MovieLoadResponse
+08-02 22:58:02.740 D/CsEpisodeMatcher(18632): MovieLoadResponse: dataUrl=https://watchporn.to/video/135831/jewel-diamant-brand-new-throat-throated/
+08-02 22:58:02.740 D/CsStreamRunner(18632): [WatchPorn] S1E1 i├ğin episodeData bulundu
+08-02 22:58:02.740 D/CsStreamRunner(18632): [WatchPorn] posterUrl=https://watchporn.to/contents/videos_screenshots/135000/135831/336x189/1.jpg
+08-02 22:58:02.775 D/CsStreamRunner(18632): [WebDramaTurkey] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:02.926 D/CsStreamRunner(18632): [Pornocarioca] Link bulundu: Pornocarioca ÔåÆ https://videos.pornocarioca.com/get_file/13/b8a26d4374add2273c6bdd429e8ad3af/11000/11817/11817_480p.mp4/
+08-02 22:58:02.927 D/CsStreamRunner(18632): [Pornocarioca] Ham sonu├ğ: 1 stream, 0 altyaz─▒
+08-02 22:58:02.951 W/RetryInterceptor(18632): IOException (attempt 0): Unable to resolve host "videos.pornocarioca.com": No address associated with hostname. Retry after 400ms ÔÇö https://videos.pornocarioca.com/get_file/13/b8a26d4374add2273c6bdd429e8ad3af/11000/11817/11817_480p.mp4/
+08-02 22:58:03.028 D/CsStreamRunner(18632): [Animely] api.search('Spider-Man%3A%20Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:03.041 D/CsStreamRunner(18632): [TurkPorno] load('https://turkporno30.lat/sahibe-asu-otelde-adamin-uzerinde-zipladi/') ├ğa─şr─▒l─▒yor...
+08-02 22:58:03.041 D/TrafficStats(18632): tagSocket(723) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:03.053 D/TrafficStats(18632): tagSocket(760) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:03.076 D/CsStreamRunner(18632): [DiziAsya] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:03.091 D/TrafficStats(18632): tagSocket(811) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:03.155 D/CsStreamRunner(18632): [xVideos] load tamamland─▒: MovieLoadResponse
+08-02 22:58:03.155 D/CsEpisodeMatcher(18632): MovieLoadResponse: dataUrl=https://www.xvideos.com/video.okmplpb98f8/THUMBNUM/spider_man_brand_new_day_edit
+08-02 22:58:03.155 D/CsStreamRunner(18632): [xVideos] S1E1 i├ğin episodeData bulundu
+08-02 22:58:03.155 D/CsStreamRunner(18632): [xVideos] posterUrl=https://thumb-cdn77.xvideos-cdn.com/65392df7-be7a-4d09-bea5-9e4618025f07/0/xv_1_t.jpg
+08-02 22:58:03.228 D/CsStreamRunner(18632): [XChina] load('https://en.xchina.co/video/id-6a6f885ea4525.html') ├ğa─şr─▒l─▒yor...
+08-02 22:58:03.240 D/TrafficStats(18632): tagSocket(148) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:03.351 D/RetryInterceptor(18632): Retry 1/2 for https://videos.pornocarioca.com/get_file/13/b8a26d4374add2273c6bdd429e8ad3af/11000/11817/11817_480p.mp4/
+08-02 22:58:03.352 W/RetryInterceptor(18632): IOException (attempt 1): Unable to resolve host "videos.pornocarioca.com": No address associated with hostname. Retry after 800ms ÔÇö https://videos.pornocarioca.com/get_file/13/b8a26d4374add2273c6bdd429e8ad3af/11000/11817/11817_480p.mp4/
+08-02 22:58:03.361 D/CsStreamRunner(18632): [DiziAsya] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:03.438 I/System.out(18632): Exception in NiceHttp: java.net.SocketException Socket closed
+08-02 22:58:03.438 W/System.err(18632): java.net.SocketException: Socket closed
+08-02 22:58:03.439 W/System.err(18632): 	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:394)
+08-02 22:58:03.439 W/System.err(18632): 	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:230)
+08-02 22:58:03.439 W/System.err(18632): 	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:212)
+08-02 22:58:03.440 W/System.err(18632): 	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:436)
+08-02 22:58:03.440 W/System.err(18632): 	at java.net.Socket.connect(Socket.java:646)
+08-02 22:58:03.440 W/System.err(18632): 	at okhttp3.internal.platform.Platform.connectSocket(Platform.kt:148)
+08-02 22:58:03.440 W/System.err(18632): 	at okhttp3.internal.connection.ConnectPlan.connectSocket(ConnectPlan.kt:276)
+08-02 22:58:03.441 W/System.err(18632): 	at okhttp3.internal.connection.ConnectPlan.connectTcp(ConnectPlan.kt:135)
+08-02 22:58:03.441 W/System.err(18632): 	at okhttp3.internal.connection.FastFallbackExchangeFinder$launchTcpConnect$1.runOnce(FastFallbackExchangeFinder.kt:141)
+08-02 22:58:03.441 W/System.err(18632): 	at okhttp3.internal.concurrent.TaskRunner$runnable$1.run(TaskRunner.kt:81)
+08-02 22:58:03.441 W/System.err(18632): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1137)
+08-02 22:58:03.441 W/System.err(18632): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:637)
+08-02 22:58:03.441 W/System.err(18632): 	at java.lang.Thread.run(Thread.java:1012)
+08-02 22:58:03.456 D/CsStreamRunner(18632): [FullHDFilmizlesene] load('https://www.fullhdfilmizlesene.mx/film/lego-marvel-spider-man-vexed-by-venom/') ├ğa─şr─▒l─▒yor...
+08-02 22:58:03.495 D/CsStreamRunner(18632): [Animely] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:03.533 D/CsStreamRunner(18632): [XChina] load tamamland─▒: MovieLoadResponse
+08-02 22:58:03.533 D/CsEpisodeMatcher(18632): MovieLoadResponse: dataUrl=https://en.xchina.co/video/id-6a6f885ea4525.html
+08-02 22:58:03.533 D/CsStreamRunner(18632): [XChina] S1E1 i├ğin episodeData bulundu
+08-02 22:58:03.533 D/CsStreamRunner(18632): [XChina] posterUrl=https://img.xchina.download/cover/6a6f885ea4525.webp
+08-02 22:58:03.548 D/CsStreamRunner(18632): [FullHDFilmizlesene] load tamamland─▒: MovieLoadResponse
+08-02 22:58:03.549 D/CsStreamRunner(18632): [ID-Mapping] Candidate syncData: {}
+08-02 22:58:03.549 W/CsStreamRunner(18632): [ID-Mapping] Ô£ù Best match 'Lego Marvel Spider-Man: Vexed by Venom' failed ID validation.
+08-02 22:58:03.551 D/CsStreamRunner(18632): [ID-Mapping] Checking candidate 'Tan─▒┼şma ve New York' (similarity: 0.2916666666666667)...
+08-02 22:58:03.645 D/CsStreamRunner(18632): [Animely] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:03.662 D/CsStreamRunner(18632): [DDizi] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:03.662 D/DDizi:  (18632): Searching for Spider-Man: Brand
+08-02 22:58:03.699 D/CsStreamRunner(18632): [TurkPorno] load tamamland─▒: MovieLoadResponse
+08-02 22:58:03.700 D/CsEpisodeMatcher(18632): MovieLoadResponse: dataUrl=https://turkporno30.lat/sahibe-asu-otelde-adamin-uzerinde-zipladi/
+08-02 22:58:03.700 D/CsStreamRunner(18632): [TurkPorno] S1E1 i├ğin episodeData bulundu
+08-02 22:58:03.700 D/CsStreamRunner(18632): [TurkPorno] posterUrl=https://vid.ifsatube29.lat/xloveimg/2025/01/Sahibe-Asu-otelde-adamin-uzerinde-zipladi.jpg
+08-02 22:58:03.739 D/CsStreamRunner(18632): [CizgiveDizi] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:03.739 D/CZG_CACHE(18632): Arama yap─▒l─▒yor: Spider-Man: Brand
+08-02 22:58:03.739 D/CZG_CACHE(18632): Veriler RAM ├Ânbelle─şinden ├ğekiliyor. Kalan s├╝re: 71 saat
+08-02 22:58:03.763 D/CZG_CACHE(18632): Arama tamamland─▒. Sonu├ğ say─▒s─▒: 0
+08-02 22:58:03.763 D/CsStreamRunner(18632): [CizgiveDizi] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:03.801 D/DDizi:  (18632): Returning total 0 search results
+08-02 22:58:03.801 D/CsStreamRunner(18632): [DDizi] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:03.834 D/CsStreamRunner(18632): [Rusporn] load('https://en.rusporn.center/movie/russkaya-studentka-v-korotkoy-yubke-trahaetsya-s-parnem') ├ğa─şr─▒l─▒yor...
+08-02 22:58:03.849 D/CsStreamRunner(18632): [PornHub] load('https://www.pornhub.com/view_video.php?viewkey=6a21545ef35e1') ├ğa─şr─▒l─▒yor...
+08-02 22:58:03.850 D/TrafficStats(18632): tagSocket(458) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:03.866 D/TrafficStats(18632): tagSocket(460) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:03.945 D/CsStreamRunner(18632): [HDFilmDelisi] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:03.961 D/TrafficStats(18632): tagSocket(708) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:04.064 D/CsStreamRunner(18632): [PerfectGirls] api.search('Spider-Man: Brand New', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:04.094 D/CsStreamRunner(18632): [Rusporn] load tamamland─▒: MovieLoadResponse
+08-02 22:58:04.094 D/CsStreamRunner(18632): [ID-Mapping] Candidate syncData: {}
+08-02 22:58:04.094 D/CsStreamRunner(18632): [ID-Mapping] Checking candidate 'Russian stewardess sat astride the first pilots penis' (similarity: 0.20754716981132076)...
+08-02 22:58:04.102 D/CsStreamRunner(18632): [TrAnimeIzle] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:04.116 D/TrafficStats(18632): tagSocket(688) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:04.152 D/RetryInterceptor(18632): Retry 2/2 for https://videos.pornocarioca.com/get_file/13/b8a26d4374add2273c6bdd429e8ad3af/11000/11817/11817_480p.mp4/
+08-02 22:58:04.153 W/CsStreamRunner(18632): [Pornocarioca] HEAD kontrol hatas─▒ (UnknownHostException): https://videos.pornocarioca.com/get_file/13/b8a26d4374add227
+08-02 22:58:04.153 D/CsStreamRunner(18632): [Pornocarioca] Ô£à Sonu├ğ: 1 do─şrulanm─▒┼ş stream, 0 altyaz─▒
+08-02 22:58:04.153 D/StreamViewModel(18632): [ÔÜí Pornocarioca] Toplam 1 stream bulundu
+08-02 22:58:04.200 D/CsStreamRunner(18632): [Sxyprn] loadLinks ├ğa─şr─▒l─▒yor...
+08-02 22:58:04.223 D/TrafficStats(18632): tagSocket(325) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:04.335 D/CsStreamRunner(18632): [HDFilmDelisi] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:04.438 I/System.out(18632): Exception in NiceHttp: java.net.SocketTimeoutException failed to connect to rule34video.com/195.175.254.2 (port 443) from /192.168.1.117 (port 42664) after 10000ms
+08-02 22:58:04.439 I/System.out(18632): Exception in NiceHttp: java.io.IOException Canceled
+08-02 22:58:04.439 W/System.err(18632): java.io.IOException: Canceled
+08-02 22:58:04.439 W/System.err(18632): 	at okhttp3.internal.http.RetryAndFollowUpInterceptor.intercept(RetryAndFollowUpInterceptor.kt:70)
+08-02 22:58:04.439 W/System.err(18632): 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:126)
+08-02 22:58:04.439 W/System.err(18632): 	at com.lagradost.cloudstream3.network.DdosGuardKiller.proceedWithCookies(DdosGuardKiller.kt:88)
+08-02 22:58:04.439 W/System.err(18632): 	at com.lagradost.cloudstream3.network.DdosGuardKiller.intercept(DdosGuardKiller.kt:51)
+08-02 22:58:04.439 W/System.err(18632): 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:126)
+08-02 22:58:04.439 W/System.err(18632): 	at com.lagradost.cloudstream3.network.CloudflareKiller.intercept(CloudflareKiller.kt:176)
+08-02 22:58:04.439 W/System.err(18632): 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:126)
+08-02 22:58:04.439 W/System.err(18632): 	at com.kitsugi.animelist.data.cloudstream.CsRuntimeInit$init$$inlined$-addInterceptor$1.intercept(OkHttpClient.kt:1395)
+08-02 22:58:04.439 W/System.err(18632): 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:126)
+08-02 22:58:04.440 W/System.err(18632): 	at okhttp3.internal.connection.RealCall.getResponseWithInterceptorChain$okhttp(RealCall.kt:226)
+08-02 22:58:04.440 W/System.err(18632): 	at okhttp3.internal.connection.RealCall$AsyncCall.run(RealCall.kt:574)
+08-02 22:58:04.440 W/System.err(18632): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1137)
+08-02 22:58:04.440 W/System.err(18632): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:637)
+08-02 22:58:04.440 W/System.err(18632): 	at java.lang.Thread.run(Thread.java:1012)
+08-02 22:58:04.455 D/TrafficStats(18632): tagSocket(595) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:04.469 D/CsStreamRunner(18632): [TrAnimeIzle] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:04.583 D/CsStreamRunner(18632): [Sxyprn] Link bulundu: SxyPrn ÔåÆ https://c8.trafficdeposit.com/widi/01b5a9fzc1e4w6rzo402fzm1p927o/DOLqKSqi5SjxeB211x4fCQ/1785704284/618afb5ec39a8/6a6f9aaac088a.vid
+08-02 22:58:04.584 D/CsStreamRunner(18632): [Sxyprn] Ham sonu├ğ: 1 stream, 0 altyaz─▒
+08-02 22:58:04.584 D/CsStreamRunner(18632): [Sxyprn] Ô£à Sonu├ğ: 1 do─şrulanm─▒┼ş stream, 0 altyaz─▒
+08-02 22:58:04.585 D/StreamViewModel(18632): [ÔÜí Sxyprn] Toplam 1 stream bulundu
+08-02 22:58:04.595 D/CsStreamRunner(18632): [SexTB] loadLinks ├ğa─şr─▒l─▒yor...
+08-02 22:58:04.595 D/sextb   (18632): https://sextb.net/agav-064
+08-02 22:58:04.636 D/CsStreamRunner(18632): [Filmbol] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:04.652 D/TrafficStats(18632): tagSocket(336) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:04.658 D/TrafficStats(18632): tagSocket(609) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:04.770 D/CsStreamRunner(18632): [Filmzal] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:04.785 D/TrafficStats(18632): tagSocket(840) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:04.885 D/CsStreamRunner(18632): [Xpaja] load('https://www.xpaja.net/videos/spider-gwen-porn/') ├ğa─şr─▒l─▒yor...
+08-02 22:58:04.897 D/TrafficStats(18632): tagSocket(928) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:04.911 D/CsStreamRunner(18632): [Filmbol] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:05.004 D/CsStreamRunner(18632): [PornHub] load tamamland─▒: MovieLoadResponse
+08-02 22:58:05.004 D/CsStreamRunner(18632): [ID-Mapping] Candidate syncData: {}
+08-02 22:58:05.004 D/CsStreamRunner(18632): [ID-Mapping] Checking candidate 'Spider-man: Brand New Threesome - Hentai Anime Parody - Anal, Blowjob, MFF' (similarity: 0.34328358208955223)...
+08-02 22:58:05.027 D/sextb   (18632): 20988
+08-02 22:58:05.027 D/sextb   (18632): 957968b76c12f354c9748b97c4b9e926
+08-02 22:58:05.036 D/sextb   (18632): 4
+08-02 22:58:05.037 D/sextb   (18632): 1243744
+08-02 22:58:05.213 D/CsStreamRunner(18632): [DiziPod] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:05.213 D/kraptor_Dizigom(18632): Arama baslatiliyor. Query: Spider-Man: Brand, WpOnce: 0d581836da
+08-02 22:58:05.214 D/sextb   (18632): {"player_enc":"DQpQSlZfXRNPDwVACwxAB1YBRBcWDAFbU1BNXBNUBQkUQRZLRVEFEVASFUQQC00ZEkQTV1kUCFNNSxcCXQxWUh4XGV4HVAwAUx4QWVFVBgkWXhJBUxZZWkBMSRILShpaVQ0GCAYcUV5fAQ1RTV8HQklSDkNTFklCWFlABENLX0lWQRZeRVNVVloJE1AGQ18UVhNBRlUWC15YUVcGDEdbVhNDV1RbXU9HSgcPRxNQEFMIUhgVVwgIXUNeTA1dFlZLVAZYBgsdUVVKBwxRXQ==","next_pt":"e87b8462d710dee2293d74dcb68c2193","next_pk":"a94ce340b600d60d118803f173e37376"}
+08-02 22:58:05.229 D/TrafficStats(18632): tagSocket(683) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:05.237 D/sextb   (18632): <iframe width="100%" height="100%" src="https://turboplays.click/t/f0f43kxqm2dd?poster=https://cdn001.imggle.net/cover-player.jpg" frameborder="0" scrolling="no" allowtransparency allowfullscreen></iframe>
+08-02 22:58:05.241 D/sextb   (18632): true
+08-02 22:58:05.241 D/sextb   (18632): 1238691
+08-02 22:58:05.258 D/CsStreamRunner(18632): [Filmzal] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:05.305 D/CsStreamRunner(18632): [XMoviesForYou] load('https://xmoviesforyou.com/bbcpie-cc-wilde-our-new-roommate-agreement') ├ğa─şr─▒l─▒yor...
+08-02 22:58:05.319 D/TrafficStats(18632): tagSocket(709) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:05.418 D/sextb   (18632): {"player_enc":"XVBSEQReURAVX1REDAsSVQEBHRoQWwNYUFsRDhUCBwZEGxQQF1AJEgpCREAXDB9LWVZUUV5YSEVYHAAcWFxVVwVAWQ0TV1xFXUZfQxBTQllZRUxIQwlJHlRXCwMHAhlfDF5TDwAdWlUWGVNfElNCSUFdWUFVQUhbR1RHE1FBVlsEW1sRAVZGDUAGEhAXVUILXV1RVlcORF9YEUVSW19YQRVLVQ0WQ1VCB1hTSURXXAheRl5NXF8VUkVWAF0JDxhfB0tVDgAN","next_pt":"d69044a778c99cb5dc525cea387729e6","next_pk":"6c728ef744079d79403b852789fb3877"}
+08-02 22:58:05.420 D/sextb   (18632): <iframe width="100%" height="100%" src="https://hglink.to/e/oobadymnvdhu?poster=https://cdn001.imggle.net/cover-player.jpg" frameborder="0" scrolling="no" allowtransparency allowfullscreen></iframe>
+08-02 22:58:05.434 D/TrafficStats(18632): tagSocket(688) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:05.559 D/CsStreamRunner(18632): [Filmirasim] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:05.574 D/TrafficStats(18632): tagSocket(325) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:05.659 D/CsStreamRunner(18632): [XMoviesForYou] load tamamland─▒: MovieLoadResponse
+08-02 22:58:05.659 D/CsEpisodeMatcher(18632): MovieLoadResponse: dataUrl=https://xmoviesforyou.com/bbcpie-cc-wilde-our-new-roommate-agreement
+08-02 22:58:05.659 D/CsStreamRunner(18632): [XMoviesForYou] S1E1 i├ğin episodeData bulundu
+08-02 22:58:05.659 D/CsStreamRunner(18632): [XMoviesForYou] posterUrl=https://xmoviescdn.online/2026/07/bbcpie-cc-wilde-our-new-roommate-agreement-xmoviesforyou-6a6952d1d281c.webp
+08-02 22:58:05.662 D/Ayzen   (18632): Title: Video porno de Noelia | Href: https://www.xpaja.net/videos/video-porno-de-noelia/ | Poster: https://www.xpaja.net/views/videos/2023/05/video-porno-de-noelia/cuadro_3.jpg
+08-02 22:58:05.662 D/Ayzen   (18632): Title: Jovencita le gusta la verga mayor en valledupar | Href: https://www.xpaja.net/videos/jovencita-le-gusta-la-verga-mayor-en-valledupar/ | Poster: https://www.xpaja.net/views/videos/2023/05/jovencita-le-gusta-la-verga-mayor-en-valledupar/cuadro_1.jpg
+08-02 22:58:05.662 D/Ayzen   (18632): Title: Sexo p├║blico en Nigeria | Href: https://www.xpaja.net/videos/sexo-publico-en-nigeria/ | Poster: https://www.xpaja.net/views/videos/2023/05/sexo-publico-en-nigeria/cuadro_8.jpg
+08-02 22:58:05.662 D/Ayzen   (18632): Title: Rubia tetona se la mama a su amigas transexual | Href: https://www.xpaja.net/videos/rubia-tetona-se-la-mama-a-su-amigas-transexual/ | Poster: https://www.xpaja.net/views/videos/2023/05/rubia-tetona-se-la-mama-a-su-amigas-transexual/cuadro_5.jpg
+08-02 22:58:05.662 D/Ayzen   (18632): Title: Video porno de Borja Klein xxx | Href: https://www.xpaja.net/videos/video-porno-de-borja-klein-xxx/ | Poster: https://www.xpaja.net/views/videos/2023/05/video-porno-de-borja-klein-xxx/cuadro_9.jpg
+08-02 22:58:05.662 D/Ayzen   (18632): Title: Le abre las nalgas para mostrar su ano casero | Href: https://www.xpaja.net/videos/le-abre-las-nalgas-para-mostrar-su-ano-casero/ | Poster: https://www.xpaja.net/views/videos/2023/05/le-abre-las-nalgas-para-mostrar-su-ano-casero/cuadro_7.jpg
+08-02 22:58:05.663 D/Ayzen   (18632): Title: No puede hacer ruido, pero igual esta doctora caliente se saca su leche masturbandose | Href: https://www.xpaja.net/videos/no-puede-hacer-ruido--pero-igual-esta-doctora-caliente-se-saca-su-leche-masturbandose/ | Poster: https://www.xpaja.net/views/videos/2023/05/no-puede-hacer-ruido--pero-igual-esta-doctora-caliente-se-saca-su-leche-masturbandose/cuadro_2.jpg
+08-02 22:58:05.663 D/Ayzen   (18632): Title: No le importo estar embarazada para follar con su amante | Href: https://www.xpaja.net/videos/no-le-importo-estar-embarazada-para-follar-con-su-amante/ | Poster: https://www.xpaja.net/views/videos/2023/05/no-le-importo-estar-embarazada-para-follar-con-su-amante/cuadro_7.jpg
+08-02 22:58:05.663 D/Ayzen   (18632): Title: Oops agujero equivocado nena ! Pero sigue adelante (Anal Accidental) | Href: https://www.xpaja.net/videos/oops-agujero-equivocado-nena---pero-sigue-adelante--anal-accidental-/ | Poster: https://www.xpaja.net/views/videos/2023/05/oops-agujero-equivocado-nena---pero-sigue-adelante--anal-accidental-/cuadro_3.jpg
+08-02 22:58:05.663 D/Ayzen   (18632): Title: Jugar Con Mis Pezones me Pone H├║meda | Href: https://www.xpaja.net/videos/jugar-con-mis-pezones-me-pone-humeda/ | Poster: https://www.xpaja.net/views/videos/2023/05/jugar-con-mis-pezones-me-pone-humeda/cuadro_8.jpg
+08-02 22:58:05.663 D/CsStreamRunner(18632): [Xpaja] load tamamland─▒: MovieLoadResponse
+08-02 22:58:05.663 D/CsEpisodeMatcher(18632): MovieLoadResponse: dataUrl=https://www.xpaja.net/videos/spider-gwen-porn/
+08-02 22:58:05.663 D/CsStreamRunner(18632): [Xpaja] S1E1 i├ğin episodeData bulundu
+08-02 22:58:05.663 D/CsStreamRunner(18632): [Xpaja] posterUrl=https://www.xpaja.net/views/videos/2023/05/spider-gwen-porn/cuadro_10.jpg
+08-02 22:58:05.663 D/sextb   (18632): true
+08-02 22:58:05.663 D/sextb   (18632): 148197
+08-02 22:58:05.835 D/sextb   (18632): {"player_enc":"CgpRQFkIAxdDXVRDUVkVCAQAFkAYXVdeX1ESXxEJBwcTQRdBSgZbFVxAREdKXhgWUENFElRUSxlbVgtNVhdbBUMRA1VeHARfA0YPVGYUWEpAVUFfUEFGR0sDSU1QXFkHBlIZW1UCAVtRGl5STUtUVkJVQU9IWVNOXUtICENfFRdQEVZfXQcJRVBRQgobVBUZR1NBDVRZW1lfBEQMXBoXVloPWEVMFwdZR0RRRVwKVEAUUV8OV0JUQlRVFQFBXVJZCF8YW14XB1pRCg==","next_pt":"97efbe284db77c66c6edb4980553f9be","next_pk":"935d1cf5fd071a6fff4c293116134039"}
+08-02 22:58:05.836 D/sextb   (18632): <iframe width="100%" height="100%" src="https://dsvplay.com/e/l2ur4gfybh7r?c_poster=https://cdn001.imggle.net/cover-player.jpg" frameborder="0" scrolling="no" allowtransparency allowfullscreen></iframe>
+08-02 22:58:05.840 D/sextb   (18632): true
+08-02 22:58:05.841 D/sextb   (18632): 1509359
+08-02 22:58:05.958 D/CsStreamRunner(18632): [Filmirasim] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:06.019 D/sextb   (18632): {"player_enc":"BVdcEhEAClQVFw0VRBFSBxIDGRBEFEVYQRQPD1BZRRlaX1QXQl5ERRMGXF5CCVMCSxJRG0YbDQ1CRlBdCgxASVhdFRdFGgpQW0ZWWF8VGxUPHFFZAAlDSRMIZVtdQxNQShNUREIGFEMDFhBRXhMWMC82FC5XVFFUQ0UNHEdAUlcHD1cWD18ER1hYQ0dQDxYVEh9YBg8bVV5fQhxAXUpWAwgLRRwTXVpURgxCUldcFEkTFVERHUxDVkNXVVYWEEdQTV9QWRM2FlIUBVRSETd\/NkRYYRNVS1JVVBZnHX0eYxl3XEJYHgJYCUkXQFZfXwoEFFgIAUAHD0JBV18TR0RKVVwOFwJeDRIYFQ1KUgtQDhYeRAozXlhKEVlfVlsUQUZYVVpBHR1DCFpGBVREHUFGCRYTWgdXSx0NHkVBUloODxZdWkNa","next_pt":"17e9f9998fdc49c48dc413b54a88b6bf","next_pk":"ce5410e0db6275c870175780e8b96a62"}
+08-02 22:58:06.021 D/sextb   (18632): <div class="update-sv-vip"><div class="published-text"><span><span style="font-size:20px">This is a server for VIP Members</span><br><br><span style="font-size:18px"><a href="/user/upgrade" title="Upgrade VIP">Upgrade V.I.P Now</a></span><br><br><span style="font-size:18px">Play high quality, no ads, popunder.</span></div>
+08-02 22:58:06.021 D/sextb   (18632): true
+08-02 22:58:06.021 D/CsStreamRunner(18632): [SexTB] Ham sonu├ğ: 0 stream, 0 altyaz─▒
+08-02 22:58:06.022 D/CsStreamRunner(18632): [SexTB] Ô£à Sonu├ğ: 0 do─şrulanm─▒┼ş stream, 0 altyaz─▒
+08-02 22:58:06.022 D/StreamViewModel(18632): [ÔÜí SexTB] Toplam 0 stream bulundu
+08-02 22:58:06.159 D/CsStreamRunner(18632): [Porntrex] loadLinks ├ğa─şr─▒l─▒yor...
+08-02 22:58:06.160 D/gizlikeyif_Porntrex(18632): data = https://www.porntrex.com/video/2520957/lola-myluv-brand-new-toy
+08-02 22:58:06.164 D/CsStreamRunner(18632): [PerverZija] loadLinks ├ğa─şr─▒l─▒yor...
+08-02 22:58:06.164 D/kraptor_PerverZija(18632): data = https://tube.perverzija.com/sexmex-citah-brand-new-tits/
+08-02 22:58:06.178 D/kraptor_Dizigom(18632): Arama response kodu: 200
+08-02 22:58:06.178 D/kraptor_Dizigom(18632): Arama ham body: {"success":true,"data":{"query":"Spider-Man: Brand","films":[],"series":[]}}
+08-02 22:58:06.179 D/kraptor_Dizigom(18632): Bulunan toplam sonuc sayisi: 0
+08-02 22:58:06.179 D/CsStreamRunner(18632): [DiziPod] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:06.184 D/TrafficStats(18632): tagSocket(148) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:06.191 D/TrafficStats(18632): tagSocket(315) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:06.259 D/CsStreamRunner(18632): [Prime Video] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:06.278 D/TrafficStats(18632): tagSocket(830) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:06.438 D/kraptor_PerverZija(18632): iframe = https://pervl2.xtremestream.xyz/player/index.php?data=0609154fa35b3194026346c9cac2a248
+08-02 22:58:06.441 D/kraptor_PerverZijaExtract(18632): url = https://pervl2.xtremestream.xyz/player/index.php?data=0609154fa35b3194026346c9cac2a248
+08-02 22:58:06.441 D/kraptor_PerverZijaExtract(18632): changeUrl = https://pervl2.xtremestream.xyz/player/xs1.php?data=0609154fa35b3194026346c9cac2a248&q=480
+08-02 22:58:06.441 D/CsStreamRunner(18632): [PerverZija] Link bulundu: PerverZija ÔåÆ https://pervl2.xtremestream.xyz/player/xs1.php?data=0609154fa35b3194026346c9cac2a248&q=480
+08-02 22:58:06.441 D/kraptor_PerverZijaExtract(18632): changeUrl = https://pervl2.xtremestream.xyz/player/xs1.php?data=0609154fa35b3194026346c9cac2a248&q=720
+08-02 22:58:06.441 D/CsStreamRunner(18632): [PerverZija] Link bulundu: PerverZija ÔåÆ https://pervl2.xtremestream.xyz/player/xs1.php?data=0609154fa35b3194026346c9cac2a248&q=720
+08-02 22:58:06.442 D/kraptor_PerverZijaExtract(18632): changeUrl = https://pervl2.xtremestream.xyz/player/xs1.php?data=0609154fa35b3194026346c9cac2a248&q=1080
+08-02 22:58:06.442 D/CsStreamRunner(18632): [PerverZija] Link bulundu: PerverZija ÔåÆ https://pervl2.xtremestream.xyz/player/xs1.php?data=0609154fa35b3194026346c9cac2a248&q=1080
+08-02 22:58:06.442 D/kraptor_PerverZijaExtract(18632): changeUrl = https://pervl2.xtremestream.xyz/player/xs1.php?data=0609154fa35b3194026346c9cac2a248&q=2160
+08-02 22:58:06.442 D/CsStreamRunner(18632): [PerverZija] Link bulundu: PerverZija ÔåÆ https://pervl2.xtremestream.xyz/player/xs1.php?data=0609154fa35b3194026346c9cac2a248&q=2160
+08-02 22:58:06.442 D/CsStreamRunner(18632): [PerverZija] Ham sonu├ğ: 4 stream, 0 altyaz─▒
+08-02 22:58:06.442 D/CsStreamRunner(18632): [PerverZija] Ô£à Sonu├ğ: 4 do─şrulanm─▒┼ş stream, 0 altyaz─▒
+08-02 22:58:06.443 D/StreamViewModel(18632): [ÔÜí PerverZija] Toplam 4 stream bulundu
+08-02 22:58:06.455 W/CsCfWarmup(18632): [cizgimax.online] Warmup timeout (12000ms)
+08-02 22:58:06.457 D/CsCfWarmup(18632): [cizgimax.online] Timeout'ta cookie kurtar─▒ld─▒: [cz-dark, cz_sess]
+08-02 22:58:06.458 D/CsCfWarmup(18632): [cizgimax.online] Warmup BA┼ŞARILI Ô£à
+08-02 22:58:06.458 D/CsCfWarmup(18632): [animecix.tv] Warmup ba┼şl─▒yor: https://animecix.tv
+08-02 22:58:06.467 W/cr_AwContents(18632): Application attempted to call on a destroyed WebView
+08-02 22:58:06.467 W/cr_AwContents(18632): java.lang.Throwable
+08-02 22:58:06.467 W/cr_AwContents(18632): 	at org.chromium.android_webview.AwContents.p(chromium-SystemWebViewGoogle6432.aab-stable-787118103:10)
+08-02 22:58:06.467 W/cr_AwContents(18632): 	at com.android.webview.chromium.WebViewChromium.stopLoading(chromium-SystemWebViewGoogle6432.aab-stable-787118103:43)
+08-02 22:58:06.467 W/cr_AwContents(18632): 	at android.webkit.WebView.stopLoading(Unknown Source:5)
+08-02 22:58:06.467 W/cr_AwContents(18632): 	at com.kitsugi.animelist.data.cloudstream.CsCfWarmupManager$warmupSite$2.invokeSuspend$lambda$3(CsCfWarmupManager.kt:235)
+08-02 22:58:06.467 W/cr_AwContents(18632): 	at com.kitsugi.animelist.data.cloudstream.CsCfWarmupManager$warmupSite$2.$r8$lambda$1uN_pKlwFe8zvqjTE63bPiSgYRw(Unknown Source:0)
+08-02 22:58:06.467 W/cr_AwContents(18632): 	at com.kitsugi.animelist.data.cloudstream.CsCfWarmupManager$warmupSite$2$$ExternalSyntheticLambda2.run(D8$$SyntheticClass:0)
+08-02 22:58:06.467 W/cr_AwContents(18632): 	at android.os.Handler.handleCallback(Unknown Source:2)
+08-02 22:58:06.467 W/cr_AwContents(18632): 	at android.os.Handler.dispatchMessage(Unknown Source:4)
+08-02 22:58:06.467 W/cr_AwContents(18632): 	at android.os.Looper.loopOnce(Unknown Source:182)
+08-02 22:58:06.467 W/cr_AwContents(18632): 	at android.os.Looper.loop(Unknown Source:82)
+08-02 22:58:06.467 W/cr_AwContents(18632): 	at android.app.ActivityThread.main(Unknown Source:123)
+08-02 22:58:06.467 W/cr_AwContents(18632): 	at java.lang.reflect.Method.invoke(Native Method)
+08-02 22:58:06.467 W/cr_AwContents(18632): 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(Unknown Source:11)
+08-02 22:58:06.467 W/cr_AwContents(18632): 	at com.android.internal.os.ZygoteInit.main(Unknown Source:312)
+08-02 22:58:06.480 D/CsStreamRunner(18632): [Footballia] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:06.509 D/TrafficStats(18632): tagSocket(268) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:06.522 D/CsStreamRunner(18632): [PornWatch] loadLinks ├ğa─şr─▒l─▒yor...
+08-02 22:58:06.522 D/kraptor_PornWatch(18632): data = https://pornwatch.ws/pizza-girl-spanked/
+08-02 22:58:06.529 D/TrafficStats(18632): tagSocket(142) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:06.538 D/TrafficStats(18632): tagSocket(709) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:06.732 D/CsStreamRunner(18632): [Porntrex] Link bulundu: Porntrex ÔåÆ https://www.porntrex.com/get_file/5/bfac7b14688e42508a6759108d70c7e048a59a7fb9/2520000/2520957/2520957.mp4/
+08-02 22:58:06.732 D/CsStreamRunner(18632): [Porntrex] Ham sonu├ğ: 1 stream, 0 altyaz─▒
+08-02 22:58:06.743 D/CsStreamRunner(18632): [Torrent Filmler] load('https://turkcealtyazi.org/mov/10872600/untitled-spider-man-sequel.html') ├ğa─şr─▒l─▒yor...
+08-02 22:58:06.746 D/TrafficStats(18632): tagSocket(325) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:06.758 D/TrafficStats(18632): tagSocket(460) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:06.974 D/TrafficStats(18632): tagSocket(336) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:07.034 D/CsStreamRunner(18632): [Puhu Tv] load('{"id":"1552","name":"Sevdi─şim Sensin","short_description":"Bir da─ş kul├╝besinde do─şup b├╝y├╝yen Dicle, ac─▒mas─▒z abilerinin bask─▒s─▒ y├╝z├╝nden adeta tutsak bir hayat s├╝rmektedir. Annesiyle ya┼şad─▒─ş─▒ kul├╝benin bah├ğesinden ├Âteye hi├ğ ├ğ─▒kmam─▒┼ş, d├╝nyaya ├ğok yabanc─▒ kalm─▒┼şt─▒r. Bir g├╝n b├Âlgede ya┼şanan deprem nedeniyle yolu, ─░stanbulÔÇÖdaki konforlu hayat─▒n─▒ geride b─▒rak─▒p vicdan borcuyla askerli─şini yapan ErkanÔÇÖla kesi┼şir.","is_movie":false,"search_images":{"wide":{"main":"img-puhutv.mncdn.com/media/25-12/10/title_16x9.jpg"},"vertical_thumbnail":{"main":"img-puhutv.mncdn.com/media/25-12/10/puhu-3title_7x10.jpg"},"horizontal_thumbnail":{"main":"img-puhutv.mncdn.com/media/25-12/10/puhu-3title_10x7.jpg"}}}') ├ğa─şr─▒l─▒yor...
+08-02 22:58:07.053 D/TrafficStats(18632): tagSocket(698) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:07.132 D/CsStreamRunner(18632): [Footballia] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:07.218 D/TrafficStats(18632): tagSocket(728) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:07.317 I/chromium(18632): [INFO:CONSOLE:56] "url /", source: https://animecix.tv/main-FNLTWZQI.js (56)
+08-02 22:58:07.433 D/CsStreamRunner(18632): [IWatchOffice] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:07.442 D/kraptor_Netflix(18632): bypass: ad-wall yok, cookie =  dataTime = 
+08-02 22:58:07.443 D/CsStreamRunner(18632): [Prime Video] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:07.452 D/TrafficStats(18632): tagSocket(723) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:07.469 D/CsStreamRunner(18632): [Puhu Tv] load tamamland─▒: TvSeriesLoadResponse
+08-02 22:58:07.469 D/CsEpisodeMatcher(18632): TvSeriesLoadResponse: 15 b├Âl├╝m
+08-02 22:58:07.470 D/CsStreamRunner(18632): [Puhu Tv] S1E1 i├ğin episodeData bulundu
+08-02 22:58:07.470 D/CsStreamRunner(18632): [Puhu Tv] posterUrl=https://img-puhutv.mncdn.com/media/25-12/10/puhu-3title_7x10.jpg
+08-02 22:58:07.522 D/CsStreamRunner(18632): [Torrent Filmler] load tamamland─▒: MovieLoadResponse
+08-02 22:58:07.522 D/CsEpisodeMatcher(18632): MovieLoadResponse: dataUrl=https://turkcealtyazi.org/mov/10872600/untitled-spider-man-sequel.html
+08-02 22:58:07.522 D/CsStreamRunner(18632): [Torrent Filmler] S1E1 i├ğin episodeData bulundu
+08-02 22:58:07.522 D/CsStreamRunner(18632): [Torrent Filmler] posterUrl=https://turkcealtyazi.org/film/200/10872600.jpg
+08-02 22:58:07.540 D/CsStreamRunner(18632): [IWatchOffice] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:07.593 D/TrafficStats(18632): tagSocket(142) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:07.687 I/chromium(18632): [INFO:CONSOLE:56] "url /", source: https://animecix.tv/main-FNLTWZQI.js (56)
+08-02 22:58:07.687 I/chromium(18632): [INFO:CONSOLE:56] "url /", source: https://animecix.tv/main-FNLTWZQI.js (56)
+08-02 22:58:07.743 D/CsStreamRunner(18632): [AnimeWorld] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:07.756 D/TrafficStats(18632): tagSocket(737) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:07.770 D/CsStreamRunner(18632): [XXXParodyHD] load('https://xxxparodyhd.net/spicy-easy-dutch-women/') ├ğa─şr─▒l─▒yor...
+08-02 22:58:07.823 D/CsStreamRunner(18632): [VizyonHub] load('{"title":"Avengers: Doomsday","urls":{"FilmizleNow":"https://filmizle.now/film/avengers-doomsday"}}') ├ğa─şr─▒l─▒yor...
+08-02 22:58:07.823 D/TopluDiziler(18632): === LOAD START === Url: {"title":"Avengers: Doomsday","urls":{"FilmizleNow":"https://filmizle.now/film/avengers-doomsday"}}
+08-02 22:58:07.834 D/TrafficStats(18632): tagSocket(146) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:07.840 D/TrafficStats(18632): tagSocket(815) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:07.841 D/CsStreamRunner(18632): [Esheaq] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:07.849 D/TrafficStats(18632): tagSocket(830) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:07.849 D/TrafficStats(18632): tagSocket(835) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:07.849 D/TrafficStats(18632): tagSocket(855) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:07.850 D/TrafficStats(18632): tagSocket(840) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:07.851 D/TrafficStats(18632): tagSocket(952) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:07.851 D/TrafficStats(18632): tagSocket(839) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:07.856 D/TrafficStats(18632): tagSocket(953) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:07.878 E/CsStreamRunner(18632): [TrAnimeci] WebView resolve hatas─▒: Timed out waiting for 15000 ms
+08-02 22:58:07.878 E/CsStreamRunner(18632): [TrAnimeci] WebView JS search HATA: Timed out waiting for 15000 ms
+08-02 22:58:07.878 E/CsStreamRunner(18632): kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 15000 ms
+08-02 22:58:07.878 E/CsStreamRunner(18632): 	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:281)
+08-02 22:58:07.878 E/CsStreamRunner(18632): 	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:243)
+08-02 22:58:07.878 E/CsStreamRunner(18632): 	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:498)
+08-02 22:58:07.878 E/CsStreamRunner(18632): 	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:256)
+08-02 22:58:07.878 E/CsStreamRunner(18632): 	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+08-02 22:58:07.878 E/CsStreamRunner(18632): 	at java.lang.Thread.run(Thread.java:1012)
+08-02 22:58:07.951 D/CsStreamRunner(18632): [PornWatch] Link bulundu: DoodStream ÔåÆ https://dod775v.cloudatacdn.com/u5kjyxfvk3d3sdgge7lrslqslgkug5lutvwnq3vvufylhzplfbgqnzgqumna/2q7xtya35d~?token=hm0fxb95mmyqbftdvjlayfqp&expiry=157211425-159-146-1785700687-6dd0b6f7988243c79a88924db3c99597000
+08-02 22:58:07.951 D/CsStreamRunner(18632): [PornWatch] Ham sonu├ğ: 1 stream, 0 altyaz─▒
+08-02 22:58:07.951 D/CsStreamRunner(18632): [PornWatch] Ô£à Sonu├ğ: 1 do─şrulanm─▒┼ş stream, 0 altyaz─▒
+08-02 22:58:07.952 D/StreamViewModel(18632): [ÔÜí PornWatch] Toplam 1 stream bulundu
+08-02 22:58:07.957 D/TrafficStats(18632): tagSocket(268) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:07.959 D/DDizi:  (18632): Searching for Avengers Doomsday
+08-02 22:58:08.108 D/CsStreamRunner(18632): [XXXParodyHD] load tamamland─▒: MovieLoadResponse
+08-02 22:58:08.109 D/CsEpisodeMatcher(18632): MovieLoadResponse: dataUrl=https://xxxparodyhd.net/spicy-easy-dutch-women/
+08-02 22:58:08.109 D/CsStreamRunner(18632): [XXXParodyHD] S1E1 i├ğin episodeData bulundu
+08-02 22:58:08.109 D/CsStreamRunner(18632): [XXXParodyHD] posterUrl=https://i3.wp.com/pandanetwork.club/adult/wp-content/uploads/2025/11/4826361h.jpg
+08-02 22:58:08.169 I/System.out(18632): Exception in NiceHttp: java.io.IOException Canceled
+08-02 22:58:08.170 W/System.err(18632): java.io.IOException: Canceled
+08-02 22:58:08.170 W/System.err(18632): 	at okhttp3.internal.http.RetryAndFollowUpInterceptor.intercept(RetryAndFollowUpInterceptor.kt:70)
+08-02 22:58:08.170 W/System.err(18632): 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:126)
+08-02 22:58:08.170 W/System.err(18632): 	at okhttp3.internal.connection.RealCall.getResponseWithInterceptorChain$okhttp(RealCall.kt:226)
+08-02 22:58:08.170 W/System.err(18632): 	at okhttp3.internal.connection.RealCall$AsyncCall.run(RealCall.kt:574)
+08-02 22:58:08.170 W/System.err(18632): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1137)
+08-02 22:58:08.170 W/System.err(18632): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:637)
+08-02 22:58:08.170 W/System.err(18632): 	at java.lang.Thread.run(Thread.java:1012)
+08-02 22:58:08.179 D/CsStreamRunner(18632): [BasketballReplays] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:08.194 D/TrafficStats(18632): tagSocket(142) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:08.405 D/CsStreamRunner(18632): [AnimeWorld] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:08.453 D/CsStreamRunner(18632): [Tubepornclassic] loadLinks ├ğa─şr─▒l─▒yor...
+08-02 22:58:08.471 D/CsStreamRunner(18632): [DramaFlix] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:08.472 D/TrafficStats(18632): tagSocket(146) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:08.486 D/TrafficStats(18632): tagSocket(346) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:08.609 D/CsStreamRunner(18632): [Esheaq] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:08.610 D/CsStreamRunner(18632): [WatchPorn] loadLinks ├ğa─şr─▒l─▒yor...
+08-02 22:58:08.610 D/kraptor_WatchPorn(18632): data = https://watchporn.to/video/135831/jewel-diamant-brand-new-throat-throated/
+08-02 22:58:08.622 D/TrafficStats(18632): tagSocket(460) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:08.646 D/KultFilmler(18632): Searching for Avengers Doomsday
+08-02 22:58:08.669 I/tsugi.animelist(18632): This is sticky GC, maxfree is 33554432 minfree is 8388608
+08-02 22:58:08.706 D/CsStreamRunner(18632): [powerDizi] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:08.722 D/TrafficStats(18632): tagSocket(737) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:08.749 D/CsStreamRunner(18632): [BasketballReplays] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:08.885 D/CsStreamRunner(18632): [Tubepornclassic] Link bulundu: Tubepornclassic ÔåÆ https://tpcah1.nv7s.com/key=i8sopgYBvpFclDhgwuw6hA,end=1785787088,limit=3/data=lNNTj9/speed=3.0/buffer=575K/referer=none,.tubepornclassic.com,.gstatic.com/c1/videos/1045000/1045871/1045871.mp4
+08-02 22:58:08.886 D/CsStreamRunner(18632): [Tubepornclassic] Ham sonu├ğ: 1 stream, 0 altyaz─▒
+08-02 22:58:08.911 D/CsStreamRunner(18632): [DocumentaryArea] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:08.923 D/CsStreamRunner(18632): [DramaFlix] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:08.925 D/TrafficStats(18632): tagSocket(698) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:08.936 D/TrafficStats(18632): tagSocket(268) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:09.050 D/CsStreamRunner(18632): [Henaojara] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:09.062 D/TrafficStats(18632): tagSocket(965) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:09.063 D/CsStreamRunner(18632): [DocumentaryArea] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:09.219 W/RetryInterceptor(18632): IOException (attempt 0): Unable to resolve host "ip408893623.ahcdn.com": No address associated with hostname. Retry after 400ms ÔÇö https://tpcah1.nv7s.com/key=i8sopgYBvpFclDhgwuw6hA,end=1785787088,limit=3/data=lNNTj9/speed=3.0/buffer=575K/referer=none,.tubepornclassic.com,.gstatic.com/c1/videos/1045000/1045871/1045871.mp4
+08-02 22:58:09.224 D/CsStreamRunner(18632): [Subsplease] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:09.238 D/TrafficStats(18632): tagSocket(335) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:09.261 D/TopluDiziler(18632): Final urlMap resolved: {FilmizleNow=https://filmizle.now/film/avengers-doomsday, FullHDFilmizlesene=https://www.fullhdfilmizlesene.mx/film/avengers-doomsday/, DiziSol=https://dizisol.com/film/1003596, FilmMakinesi=https://filmmakinesi.to/film/avengers-doomsday-2026/}
+08-02 22:58:09.262 D/TopluDiziler(18632): Loading details from FullHDFilmizlesene using URL: https://www.fullhdfilmizlesene.mx/film/avengers-doomsday/
+08-02 22:58:09.262 D/TopluDiziler(18632): Loading details from DiziSol using URL: https://dizisol.com/film/1003596
+08-02 22:58:09.262 D/TopluDiziler(18632): Loading details from FilmizleNow using URL: https://filmizle.now/film/avengers-doomsday
+08-02 22:58:09.262 D/TopluDiziler(18632): Loading details from FilmMakinesi using URL: https://filmmakinesi.to/film/avengers-doomsday-2026/
+08-02 22:58:09.273 D/TrafficStats(18632): tagSocket(778) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:09.281 D/TrafficStats(18632): tagSocket(830) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:09.281 D/TrafficStats(18632): tagSocket(966) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:09.338 D/TopluDiziler(18632): Successfully loaded FullHDFilmizlesene details
+08-02 22:58:09.364 D/CsStreamRunner(18632): [Krmzy] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:09.375 D/TrafficStats(18632): tagSocket(975) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:09.387 D/CsStreamRunner(18632): [xVideos] loadLinks ├ğa─şr─▒l─▒yor...
+08-02 22:58:09.402 D/CsStreamRunner(18632): [Henaojara] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:09.404 D/TrafficStats(18632): tagSocket(737) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:09.490 D/TopluDiziler(18632): Successfully loaded FilmMakinesi details
+08-02 22:58:09.506 D/CsStreamRunner(18632): [Subsplease] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:09.534 D/CsStreamRunner(18632): [Atv] api.search('Spider-Man: Brand New') ├ğa─şr─▒l─▒yor...
+08-02 22:58:09.551 D/TrafficStats(18632): tagSocket(146) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:09.577 D/CsStreamRunner(18632): [powerDizi] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:09.620 D/TopluDiziler(18632): Successfully loaded DiziSol details
+08-02 22:58:09.620 D/RetryInterceptor(18632): Retry 1/2 for https://tpcah1.nv7s.com/key=i8sopgYBvpFclDhgwuw6hA,end=1785787088,limit=3/data=lNNTj9/speed=3.0/buffer=575K/referer=none,.tubepornclassic.com,.gstatic.com/c1/videos/1045000/1045871/1045871.mp4
+08-02 22:58:09.669 W/RetryInterceptor(18632): IOException (attempt 1): Unable to resolve host "ip408893623.ahcdn.com": No address associated with hostname. Retry after 800ms ÔÇö https://tpcah1.nv7s.com/key=i8sopgYBvpFclDhgwuw6hA,end=1785787088,limit=3/data=lNNTj9/speed=3.0/buffer=575K/referer=none,.tubepornclassic.com,.gstatic.com/c1/videos/1045000/1045871/1045871.mp4
+08-02 22:58:09.672 D/CsStreamRunner(18632): [Krmzy] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:09.703 D/CsStreamRunner(18632): [FullRaces] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:09.721 D/TrafficStats(18632): tagSocket(691) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:09.786 D/TopluDiziler(18632): Successfully loaded FilmizleNow details
+08-02 22:58:09.787 D/TopluDiziler(18632): Successfully gathered responses from: [FullHDFilmizlesene, FilmMakinesi, DiziSol, FilmizleNow]
+08-02 22:58:09.808 D/CsStreamRunner(18632): [Sokuja] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:09.809 I/tsugi.animelist(18632): This is non sticky GC, maxfree is 33554432 minfree is 8388608
+08-02 22:58:09.809 I/tsugi.animelist(18632): Background concurrent copying GC freed 1335265(67MB) AllocSpace objects, 508(18MB) LOS objects, 33% free, 191MB/287MB, paused 103us,161us total 392.360ms
+08-02 22:58:09.821 D/TrafficStats(18632): tagSocket(698) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:09.879 D/CsStreamRunner(18632): [Streamed] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:09.892 D/TrafficStats(18632): tagSocket(315) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:09.915 W/System  (18632): A resource failed to call end. 
+08-02 22:58:09.916 W/System  (18632): A resource failed to call end. 
+08-02 22:58:09.916 W/System  (18632): A resource failed to call end. 
+08-02 22:58:09.916 W/System  (18632): A resource failed to call end. 
+08-02 22:58:09.921 D/CsStreamRunner(18632): [xVideos] Link bulundu: XVideos ÔåÆ https://hls-cdn77.xvideos-cdn.com/IAEt7dK9FBlO6YjYVu-TDQ==,1785711489/65392df7-be7a-4d09-bea5-9e4618025f07/0/hls.m3u8
+08-02 22:58:09.922 D/CsStreamRunner(18632): [xVideos] Ham sonu├ğ: 1 stream, 0 altyaz─▒
+08-02 22:58:09.943 D/CsStreamRunner(18632): [Atv] search('Spider-Man: Brand New') ÔåÆ 0 sonu├ğ
+08-02 22:58:09.950 W/RetryInterceptor(18632): IOException (attempt 0): Unable to resolve host "hls-cdn77.xvideos-cdn.com": No address associated with hostname. Retry after 400ms ÔÇö https://hls-cdn77.xvideos-cdn.com/IAEt7dK9FBlO6YjYVu-TDQ==,1785711489/65392df7-be7a-4d09-bea5-9e4618025f07/0/hls.m3u8
+08-02 22:58:09.973 D/CsStreamRunner(18632): [Latanime] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:09.988 D/TrafficStats(18632): tagSocket(694) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:10.101 D/CsStreamRunner(18632): [FootReplays] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:10.120 D/CsStreamRunner(18632): [VizyonHub] load tamamland─▒: MovieLoadResponse
+08-02 22:58:10.120 D/CsStreamRunner(18632): [ID-Mapping] Candidate syncData: {}
+08-02 22:58:10.120 D/CsStreamRunner(18632): [VizyonHub] Ô£ô E┼şle┼şme: '├ûr├╝mcek-Adam: Yepyeni Bir G├╝n | Spider-Man: Brand New Day' ÔåÆ {"title":"├ûr├╝mcek-Adam: Yepyeni Bir G├╝n | Spider-Man: Brand New Day","urls":{"DiziSol":"https://dizisol.com/film/969681","FullHDFilmizlesene":"https://www.fullhdfilmizlesene.mx/film/spider-man-brand-new-day-fh1/","DiziFilm":"https://dizifilmizle.to/film/orumcek-adam-yepyeni-bir-gun-hd","FilmMakinesi":"https://selcukflix.co/film/spider-man-brand-new-day/izle","FilmizleNow":"https://filmizle.now/film/orumcek-adam-yepyeni-bir-gun-izle"}}
+08-02 22:58:10.126 D/TrafficStats(18632): tagSocket(742) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:10.133 D/CsStreamRunner(18632): [Streamed] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:10.152 D/CsStreamRunner(18632): [Sokuja] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:10.245 D/CsStreamRunner(18632): [Porn00] api.search('Spider-Man: Brand New', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:10.252 D/CsStreamRunner(18632): [FullRaces] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:10.337 D/CsStreamRunner(18632): [Latanime] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:10.351 D/RetryInterceptor(18632): Retry 1/2 for https://hls-cdn77.xvideos-cdn.com/IAEt7dK9FBlO6YjYVu-TDQ==,1785711489/65392df7-be7a-4d09-bea5-9e4618025f07/0/hls.m3u8
+08-02 22:58:10.353 W/RetryInterceptor(18632): IOException (attempt 1): Unable to resolve host "hls-cdn77.xvideos-cdn.com": No address associated with hostname. Retry after 800ms ÔÇö https://hls-cdn77.xvideos-cdn.com/IAEt7dK9FBlO6YjYVu-TDQ==,1785711489/65392df7-be7a-4d09-bea5-9e4618025f07/0/hls.m3u8
+08-02 22:58:10.422 D/CsStreamRunner(18632): [FullHDFilmizlesene] load('https://www.fullhdfilmizlesene.mx/film/tanisma-ve-new-york/') ├ğa─şr─▒l─▒yor...
+08-02 22:58:10.423 D/CsStreamRunner(18632): [XChina] loadLinks ├ğa─şr─▒l─▒yor...
+08-02 22:58:10.434 D/CsStreamRunner(18632): [Invidious] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:10.442 D/TrafficStats(18632): tagSocket(737) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:10.450 D/TrafficStats(18632): tagSocket(778) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:10.453 D/CsStreamRunner(18632): [WatchWrestling] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:10.469 D/RetryInterceptor(18632): Retry 2/2 for https://tpcah1.nv7s.com/key=i8sopgYBvpFclDhgwuw6hA,end=1785787088,limit=3/data=lNNTj9/speed=3.0/buffer=575K/referer=none,.tubepornclassic.com,.gstatic.com/c1/videos/1045000/1045871/1045871.mp4
+08-02 22:58:10.472 D/TrafficStats(18632): tagSocket(799) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:10.512 D/CsStreamRunner(18632): [FullHDFilmizlesene] load tamamland─▒: MovieLoadResponse
+08-02 22:58:10.512 D/CsStreamRunner(18632): [ID-Mapping] Candidate syncData: {}
+08-02 22:58:10.512 D/CsStreamRunner(18632): [ID-Mapping] Checking candidate '├ûr├╝mcek-Adam: Eve D├Ân├╝┼ş Yok' (similarity: 0.2692307692307692)...
+08-02 22:58:10.515 W/CsStreamRunner(18632): [Tubepornclassic] HEAD kontrol hatas─▒ (UnknownHostException): https://tpcah1.nv7s.com/key=i8sopgYBvpFclDhgwuw6hA,end=17857
+08-02 22:58:10.516 D/CsStreamRunner(18632): [Tubepornclassic] Ô£à Sonu├ğ: 1 do─şrulanm─▒┼ş stream, 0 altyaz─▒
+08-02 22:58:10.516 D/StreamViewModel(18632): [ÔÜí Tubepornclassic] Toplam 1 stream bulundu
+08-02 22:58:10.553 D/CsStreamRunner(18632): [PornHat] api.search('Spider-Man: Brand New', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:10.639 D/CsStreamRunner(18632): [TVGarden] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:10.659 D/TrafficStats(18632): tagSocket(936) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:10.670 D/TrafficStats(18632): tagSocket(953) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:10.670 D/TrafficStats(18632): tagSocket(966) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:10.670 D/TrafficStats(18632): tagSocket(968) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:10.670 D/TrafficStats(18632): tagSocket(970) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:10.718 D/CsStreamRunner(18632): [XChina] Link bulundu: XChina ÔåÆ https://video.xchina.download/m3u8/6a6f885ea4525/720.m3u8?expires=1785704774&md5=1FNeMBHtLICAtHhqqIctfg
+08-02 22:58:10.718 D/CsStreamRunner(18632): [XChina] Ham sonu├ğ: 1 stream, 0 altyaz─▒
+08-02 22:58:10.832 D/TrafficStats(18632): tagSocket(458) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:10.949 D/CsStreamRunner(18632): [TVGarden] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:11.013 D/CsStreamRunner(18632): [TurkPorno] loadLinks ├ğa─şr─▒l─▒yor...
+08-02 22:58:11.014 D/kraptor_TurkPorno(18632): data = https://turkporno30.lat/sahibe-asu-otelde-adamin-uzerinde-zipladi/
+08-02 22:58:11.019 D/CsStreamRunner(18632): [Rusporn] load('https://en.rusporn.center/movie/russkaya-styuardessa-uselas-verhom-na-chlen-pervogo-pilota') ├ğa─şr─▒l─▒yor...
+08-02 22:58:11.024 D/CsStreamRunner(18632): [WatchWrestling] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:11.029 D/TrafficStats(18632): tagSocket(146) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:11.038 D/TrafficStats(18632): tagSocket(315) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:11.153 D/RetryInterceptor(18632): Retry 2/2 for https://hls-cdn77.xvideos-cdn.com/IAEt7dK9FBlO6YjYVu-TDQ==,1785711489/65392df7-be7a-4d09-bea5-9e4618025f07/0/hls.m3u8
+08-02 22:58:11.155 W/CsStreamRunner(18632): [xVideos] HEAD kontrol hatas─▒ (UnknownHostException): https://hls-cdn77.xvideos-cdn.com/IAEt7dK9FBlO6YjYVu-TDQ==,1
+08-02 22:58:11.156 D/CsStreamRunner(18632): [xVideos] Ô£à Sonu├ğ: 1 do─şrulanm─▒┼ş stream, 0 altyaz─▒
+08-02 22:58:11.156 D/StreamViewModel(18632): [ÔÜí xVideos] Toplam 1 stream bulundu
+08-02 22:58:11.199 D/CsStreamRunner(18632): [FootReplays] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:11.250 D/MiuiMultiWindowAdapter(18632): MiuiMultiWindowAdapter::getFreeformVideoWhiteListInSystem::LIST_ABOUT_SUPPORT_LANDSCAPE_VIDEO = [com.hunantv.imgo.activity, com.tencent.qqlive, com.qiyi.video, com.hunantv.imgo.activity.inter, com.tencent.qqlivei18n, com.iqiyi.i18n, tv.danmaku.bili]
+08-02 22:58:11.251 D/CsStreamRunner(18632): [SuperCartoons] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:11.252 D/Drawable(18632): setShouldDeclineWhiteColor false
+08-02 22:58:11.256 D/IS_CTS_MODE(18632): false
+08-02 22:58:11.256 D/MULTI_WINDOW_ENABLED(18632): false
+08-02 22:58:11.257 D/DecorView[](18632): getWindowModeFromSystem  windowmode is 1
+08-02 22:58:11.277 W/MediaSessionCompat(18632): Couldn't find a unique registered media button receiver in the given context.
+08-02 22:58:11.284 D/PlayerMediaSessionHelper(18632): Metadata updated: title=Spider-Man: Brand New Day duration=0ms
+08-02 22:58:11.289 D/FramePredict(18632): start to set mThreadedRenderer.
+08-02 22:58:11.289 I/ForceDarkHelperStubImpl(18632): setViewRootImplForceDark: false for com.kitsugi.animelist.ui.screens.fullscreen.KitsugiFullscreenPlayerActivity@37aaeae, reason: AppDarkModeEnable
+08-02 22:58:11.290 D/DecorView[](18632): getWindowModeFromSystem  windowmode is 1
+08-02 22:58:11.290 D/DecorView[](18632): updateDecorCaptionStatus windowMode is 1
+08-02 22:58:11.294 D/KeepAliveService(18632): KeepAliveService olu┼şturuldu
+08-02 22:58:11.295 D/KeepAliveService(18632): KeepAliveService ba┼şlat─▒ld─▒
+08-02 22:58:11.305 D/TrafficStats(18632): tagSocket(148) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:11.322 D/VRI[KitsugiFullscreenPlayerActivity](18632): vri.reportNextDraw android.view.ViewRootImpl.performTraversals:2957 android.view.ViewRootImpl.doTraversal:36 android.view.ViewRootImpl$TraversalRunnable.run:7 android.view.Choreographer$CallbackRecord.run:20 android.view.Choreographer$CallbackRecord.run:20 
+08-02 22:58:11.322 D/VRI[KitsugiFullscreenPlayerActivity](18632): vri.Setup new sync id=0 syncSeqId=0
+08-02 22:58:11.325 E/perf_hint(18632): Session creation failed, mPreferredRateNanos: -1
+08-02 22:58:11.326 D/CsStreamRunner(18632): [YoTurkish] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:11.327 D/VRI[KitsugiFullscreenPlayerActivity](18632): vri.reportDrawFinished syncSeqId=0 android.view.ViewRootImpl.lambda$createSyncIfNeeded$4$android-view-ViewRootImpl:5 android.view.ViewRootImpl$$ExternalSyntheticLambda1.run:6 android.os.Handler.handleCallback:2 android.os.Handler.dispatchMessage:4 android.os.Looper.loopOnce:182 
+08-02 22:58:11.328 D/DecorView[](18632): onWindowFocusChanged hasWindowFocus false
+08-02 22:58:11.328 I/System.out(18632): FocusRelatedWarning: 
+08-02 22:58:11.328 I/System.out(18632):    FocusRequester is not initialized. Here are some possible fixes:
+08-02 22:58:11.328 I/System.out(18632): 
+08-02 22:58:11.328 I/System.out(18632):    1. Remember the FocusRequester: val focusRequester = remember { FocusRequester() }
+08-02 22:58:11.328 I/System.out(18632):    2. Did you forget to add a Modifier.focusRequester() ?
+08-02 22:58:11.328 I/System.out(18632):    3. Are you attempting to request focus during composition? Focus requests should be made in
+08-02 22:58:11.328 I/System.out(18632):    response to some event. Eg Modifier.clickable { focusRequester.requestFocus() }
+08-02 22:58:11.330 D/KitsugiIdResolver(18632): Starting ID resolution: malParam=969681, aniListParam=null, tmdbParam=969681, mediaType=null
+08-02 22:58:11.330 I/System.out(18632): FocusRelatedWarning: 
+08-02 22:58:11.330 I/System.out(18632):    FocusRequester is not initialized. Here are some possible fixes:
+08-02 22:58:11.330 I/System.out(18632): 
+08-02 22:58:11.330 I/System.out(18632):    1. Remember the FocusRequester: val focusRequester = remember { FocusRequester() }
+08-02 22:58:11.330 I/System.out(18632):    2. Did you forget to add a Modifier.focusRequester() ?
+08-02 22:58:11.330 I/System.out(18632):    3. Are you attempting to request focus during composition? Focus requests should be made in
+08-02 22:58:11.330 I/System.out(18632):    response to some event. Eg Modifier.clickable { focusRequester.requestFocus() }
+08-02 22:58:11.336 D/PlayerOrchestrator(18632): Starting all runtime controllers
+08-02 22:58:11.339 E/KitsugiPlayerViewModel(18632): Error getting saved position from DB
+08-02 22:58:11.339 E/KitsugiPlayerViewModel(18632): androidx.compose.runtime.LeftCompositionCancellationException: The coroutine scope left the composition
+08-02 22:58:11.340 I/System.out(18632): FocusRelatedWarning: 
+08-02 22:58:11.340 I/System.out(18632):    FocusRequester is not initialized. Here are some possible fixes:
+08-02 22:58:11.340 I/System.out(18632): 
+08-02 22:58:11.340 I/System.out(18632):    1. Remember the FocusRequester: val focusRequester = remember { FocusRequester() }
+08-02 22:58:11.340 I/System.out(18632):    2. Did you forget to add a Modifier.focusRequester() ?
+08-02 22:58:11.340 I/System.out(18632):    3. Are you attempting to request focus during composition? Focus requests should be made in
+08-02 22:58:11.340 I/System.out(18632):    response to some event. Eg Modifier.clickable { focusRequester.requestFocus() }
+08-02 22:58:11.340 I/System.out(18632): FocusRelatedWarning: 
+08-02 22:58:11.340 I/System.out(18632):    FocusRequester is not initialized. Here are some possible fixes:
+08-02 22:58:11.340 I/System.out(18632): 
+08-02 22:58:11.340 I/System.out(18632):    1. Remember the FocusRequester: val focusRequester = remember { FocusRequester() }
+08-02 22:58:11.340 I/System.out(18632):    2. Did you forget to add a Modifier.focusRequester() ?
+08-02 22:58:11.340 I/System.out(18632):    3. Are you attempting to request focus during composition? Focus requests should be made in
+08-02 22:58:11.340 I/System.out(18632):    response to some event. Eg Modifier.clickable { focusRequester.requestFocus() }
+08-02 22:58:11.341 D/PlayerAudioCtrl(18632): Route: SPEAKER ÔåÆ delay=0ms (route=0, manual=0)
+08-02 22:58:11.359 D/TrafficStats(18632): tagSocket(662) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:11.374 D/CsStreamRunner(18632): [Rusporn] load tamamland─▒: MovieLoadResponse
+08-02 22:58:11.375 D/CsStreamRunner(18632): [ID-Mapping] Candidate syncData: {}
+08-02 22:58:11.375 D/CsStreamRunner(18632): [Rusporn] Ô£ô E┼şle┼şme: 'Blonde lured neighbor into home and cheated on her husband' ÔåÆ https://en.rusporn.center/movie/blondinka-soseda-zamanila-v-doma-i-izmenila-svoemu-suprugu
+08-02 22:58:11.376 V/mpv     (18632): Skipping copy of asset file (exists same size): subfont.ttf
+08-02 22:58:11.377 V/mpv     (18632): Skipping copy of asset file (exists same size): cacert.pem
+08-02 22:58:11.380 D/TrafficStats(18632): tagSocket(607) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:11.383 D/KitsugiIdResolver(18632): fetchArmJson: Valid empty response (media not mapped/obscure) for URL: https://arm.haglund.dev/api/v2/ids?source=myanimelist&id=969681
+08-02 22:58:11.390 E/mpv     (18632): mpv_set_property(video-aspect-override, 0x7fdd05ddc0) format 1 returned error unsupported format for accessing property
+08-02 22:58:11.390 V/mpv     (18632): mpv_get_property(video-out-params/aspect) format 5 was unavailable
+08-02 22:58:11.390 V/mpv     (18632): mpv_get_property(video-params/aspect) format 5 was unavailable
+08-02 22:58:11.391 V/mpv     (18632): mpv_get_property(video-out-params/dw) format 4 was unavailable
+08-02 22:58:11.391 V/mpv     (18632): mpv_get_property(video-params/w) format 4 was unavailable
+08-02 22:58:11.391 V/mpv     (18632): [cplayer:v] mpv v0.41.0-174-g76a5eba99 Copyright ┬® 2000-2026 mpv/MPlayer/mplayer2 projects
+08-02 22:58:11.391 V/mpv     (18632): [cplayer:v]  built on Feb 13 2026 22:17:56
+08-02 22:58:11.391 V/mpv     (18632): [cplayer:v] libplacebo version: v7.360.0 (v7.360.0)
+08-02 22:58:11.391 V/mpv     (18632): [cplayer:v] FFmpeg version: N-122742-ga7522f3fef
+08-02 22:58:11.391 V/mpv     (18632): [cplayer:v] FFmpeg library versions:
+08-02 22:58:11.391 V/mpv     (18632): [cplayer:v]    libavcodec      62.23.103
+08-02 22:58:11.391 V/mpv     (18632): [cplayer:v]    libavdevice     62.2.100
+08-02 22:58:11.392 V/mpv     (18632): [cplayer:v]    libavfilter     11.12.100
+08-02 22:58:11.392 V/mpv     (18632): [cplayer:v]    libavformat     62.9.101
+08-02 22:58:11.392 V/mpv     (18632): [cplayer:v]    libavutil       60.25.100
+08-02 22:58:11.392 V/mpv     (18632): [cplayer:v]    libswresample   6.2.100
+08-02 22:58:11.392 V/mpv     (18632): [cplayer:v]    libswscale      9.3.100
+08-02 22:58:11.392 V/mpv     (18632): [cplayer:v] Configuration: -Diconv=disabled -Dlua=enabled -Dlibmpv=true -Dcplayer=false -Dmanpage-build=disabled -Ddefault_library=shared --cross-file=/home/runner/work/mpv-android/mpv-android/buildscripts/prefix/arm64/crossfile.txt
+08-02 22:58:11.392 V/mpv     (18632): [cplayer:v] List of enabled features: aaudio android android-media-ndk audiotrack build-date cplugins dvbin egl-android ffmpeg gl glibc-thread-name gpl libass libavdevice libdl libplacebo linux-fstatfs lua memrchr opensles posix ppoll pthread-condattr-setclock vector vt.h zlib
+08-02 22:58:11.392 V/mpv     (18632): [clipboard:v] Initialized vo clipboard backend.
+08-02 22:58:11.392 V/mpv     (18632): [cplayer:v] Set property: gpu-api="opengl" -> 1
+08-02 22:58:11.392 V/mpv     (18632): [cplayer:v] Set property: vo="gpu" -> 1
+08-02 22:58:11.392 V/mpv     (18632): [cplayer:v] Set property: speed=1.000000 -> 1
+08-02 22:58:11.392 D/KitsugiPlayerDebug(18632): playerEngine DisposableEffect initialized
+08-02 22:58:11.394 D/KitsugiPlayerDebug(18632): onTracksChanged: audioTracks=0, subTracks=0
+08-02 22:58:11.394 V/mpv     (18632): mpv_get_property(video-codec) format 1 was unavailable
+08-02 22:58:11.394 V/mpv     (18632): mpv_get_property(audio-codec) format 1 was unavailable
+08-02 22:58:11.394 V/mpv     (18632): mpv_get_property(video-params/w) format 4 was unavailable
+08-02 22:58:11.394 V/mpv     (18632): mpv_get_property(video-params/h) format 4 was unavailable
+08-02 22:58:11.394 V/mpv     (18632): mpv_get_property(estimated-vf-fps) format 5 was unavailable
+08-02 22:58:11.394 V/mpv     (18632): mpv_get_property(file-size) format 4 was unavailable
+08-02 22:58:11.394 D/KitsugiPlayerDebug(18632): onTracksChanged: audioTracks=0, subTracks=0
+08-02 22:58:11.394 V/mpv     (18632): mpv_get_property(video-codec) format 1 was unavailable
+08-02 22:58:11.394 V/mpv     (18632): mpv_get_property(audio-codec) format 1 was unavailable
+08-02 22:58:11.395 V/mpv     (18632): mpv_get_property(video-params/w) format 4 was unavailable
+08-02 22:58:11.395 V/mpv     (18632): mpv_get_property(video-params/h) format 4 was unavailable
+08-02 22:58:11.395 V/mpv     (18632): mpv_get_property(estimated-vf-fps) format 5 was unavailable
+08-02 22:58:11.395 V/mpv     (18632): mpv_get_property(file-size) format 4 was unavailable
+08-02 22:58:11.395 V/mpv     (18632): [cplayer:v] Set property: hwdec="auto-safe" -> 1
+08-02 22:58:11.395 V/mpv     (18632): [cplayer:v] Set property: deband="no" -> 1
+08-02 22:58:11.395 V/mpv     (18632): [cplayer:v] Set property: demuxer-max-bytes="64MiB" -> 1
+08-02 22:58:11.396 V/mpv     (18632): [cplayer:v] Set property: demuxer-max-back-bytes="16MiB" -> 1
+08-02 22:58:11.396 V/mpv     (18632): [cplayer:v] Set property: volume-max=200 -> 1
+08-02 22:58:11.396 V/mpv     (18632): [cplayer:v] Set property: cache="yes" -> 1
+08-02 22:58:11.397 V/mpv     (18632): [cplayer:v] Set property: network-timeout="30" -> 1
+08-02 22:58:11.397 V/mpv     (18632): [cplayer:error] The video-aspect-override option must be a floating point number or a ratio (numerator[:/]denominator): yes
+08-02 22:58:11.397 V/mpv     (18632): [cplayer:v] Set property: video-aspect-override="yes" -> -4
+08-02 22:58:11.397 V/mpv     (18632): [cplayer:v] Set property: sub-scale=0.800000 -> 1
+08-02 22:58:11.397 V/mpv     (18632): [cplayer:v] Set property: sub-bold=false -> 1
+08-02 22:58:11.397 V/mpv     (18632): [cplayer:v] Set property: sub-outline-size=2.000000 -> 1
+08-02 22:58:11.397 V/mpv     (18632): [cplayer:v] Set property: sub-color="#FFFFFFFF" -> 1
+08-02 22:58:11.397 V/mpv     (18632): [cplayer:v] Set property: sub-pos=100.000000 -> 1
+08-02 22:58:11.397 V/mpv     (18632): [cplayer:v] Set property: sub-align-x="center" -> 1
+08-02 22:58:11.397 V/mpv     (18632): [cplayer:v] Set property: sub-shadow-offset=1.500000 -> 1
+08-02 22:58:11.397 V/mpv     (18632): [cplayer:v] Set property: sub-outline-size=1.500000 -> 1
+08-02 22:58:11.397 V/mpv     (18632): [cplayer:v] Set property: sub-border-size=1.500000 -> 1
+08-02 22:58:11.397 V/mpv     (18632): [cplayer:v] Waiting for scripts...
+08-02 22:58:11.398 D/SurfaceView(18632): UPDATE null, mIsCastMode = false
+08-02 22:58:11.399 V/mpv     (18632): [cplayer:v] Done loading scripts.
+08-02 22:58:11.399 V/mpv     (18632): event: idle
+08-02 22:58:11.400 D/KitsugiPlayerDebug(18632): onTracksChanged: audioTracks=0, subTracks=0
+08-02 22:58:11.400 V/mpv     (18632): mpv_get_property(video-codec) format 1 was unavailable
+08-02 22:58:11.400 V/mpv     (18632): mpv_get_property(audio-codec) format 1 was unavailable
+08-02 22:58:11.400 V/mpv     (18632): mpv_get_property(video-params/w) format 4 was unavailable
+08-02 22:58:11.400 V/mpv     (18632): mpv_get_property(video-params/h) format 4 was unavailable
+08-02 22:58:11.400 V/mpv     (18632): mpv_get_property(estimated-vf-fps) format 5 was unavailable
+08-02 22:58:11.400 V/mpv     (18632): mpv_get_property(file-size) format 4 was unavailable
+08-02 22:58:11.401 W/mpv     (18632): attaching surface
+08-02 22:58:11.401 D/KitsugiPlayerDebug(18632): onTracksChanged: audioTracks=0, subTracks=0
+08-02 22:58:11.401 V/mpv     (18632): mpv_get_property(video-codec) format 1 was unavailable
+08-02 22:58:11.401 V/mpv     (18632): mpv_get_property(audio-codec) format 1 was unavailable
+08-02 22:58:11.401 V/mpv     (18632): mpv_get_property(video-params/w) format 4 was unavailable
+08-02 22:58:11.401 V/mpv     (18632): mpv_get_property(video-params/h) format 4 was unavailable
+08-02 22:58:11.401 V/mpv     (18632): mpv_get_property(estimated-vf-fps) format 5 was unavailable
+08-02 22:58:11.401 V/mpv     (18632): mpv_get_property(file-size) format 4 was unavailable
+08-02 22:58:11.401 V/mpv     (18632): [cplayer:v] Set property: vo="gpu" -> 1
+08-02 22:58:11.401 V/mpv     (18632): [main:error] Command 'video-reconfig' not found.
+08-02 22:58:11.402 V/mpv     (18632): [vo/gpu/opengl:v] Initializing GPU context 'android'
+08-02 22:58:11.402 V/mpv     (18632): [vo/gpu/opengl:v] EGL_VERSION=1.5 Android META-EGL
+08-02 22:58:11.402 V/mpv     (18632): [vo/gpu/opengl:v] EGL_VENDOR=Android
+08-02 22:58:11.402 V/mpv     (18632): [vo/gpu/opengl:v] EGL_CLIENT_APIS=OpenGL_ES
+08-02 22:58:11.402 V/mpv     (18632): [vo/gpu/opengl:v] Trying to create GLES 2.x + context.
+08-02 22:58:11.402 D/TrafficStats(18632): tagSocket(683) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:11.403 V/mpv     (18632): [vo/gpu/opengl:v] GL_VERSION='OpenGL ES 3.2 V@0676.32 (GIT@1a285a84ae, I2991b7e11e, 1685945391) (Date:06/04/23)'
+08-02 22:58:11.403 V/mpv     (18632): [vo/gpu/opengl:v] Detected GLES 3.2.
+08-02 22:58:11.403 V/mpv     (18632): [vo/gpu/opengl:v] GL_VENDOR='Qualcomm'
+08-02 22:58:11.403 V/mpv     (18632): [vo/gpu/opengl:v] GL_RENDERER='Adreno (TM) 740'
+08-02 22:58:11.403 V/mpv     (18632): [vo/gpu/opengl:v] GL_SHADING_LANGUAGE_VERSION='OpenGL ES GLSL ES 3.20'
+08-02 22:58:11.404 V/mpv     (18632): [vo/gpu/opengl:v] Loaded extension GL_EXT_texture_norm16.
+08-02 22:58:11.404 V/mpv     (18632): [vo/gpu/opengl:v] Loaded extension GL_EXT_disjoint_timer_query.
+08-02 22:58:11.404 V/mpv     (18632): [vo/gpu/opengl:v] Loaded extension GL_EXT_buffer_storage.
+08-02 22:58:11.405 V/mpv     (18632): [vo/gpu:v] Testing FBO format rgba16f
+08-02 22:58:11.405 V/mpv     (18632): [vo/gpu:v] Using FBO format rgba16f.
+08-02 22:58:11.405 V/mpv     (18632): [vo/gpu:v] No advanced processing required. Enabling dumb mode.
+08-02 22:58:11.405 V/mpv     (18632): [vo/gpu:v] reconfig to 960x540 rgba rgb/bt.709/srgb/full/display CL=mpeg1/jpeg
+08-02 22:58:11.405 V/mpv     (18632): [vo/gpu:v] Resize: 1080x2308
+08-02 22:58:11.405 V/mpv     (18632): [vo/gpu:v] Window size: 1080x2308 (Borders: l=0 t=0 r=0 b=0)
+08-02 22:58:11.405 V/mpv     (18632): [vo/gpu:v] Video source: 960x540 (1:1)
+08-02 22:58:11.405 V/mpv     (18632): [vo/gpu:v] Video display: (0, 0) 960x540 -> (0, 850) 1080x607
+08-02 22:58:11.405 V/mpv     (18632): [vo/gpu:v] Video scale: 1.125000/1.124074
+08-02 22:58:11.405 V/mpv     (18632): [vo/gpu:v] OSD borders: l=0 t=850 r=0 b=851
+08-02 22:58:11.405 V/mpv     (18632): [vo/gpu:v] Video borders: l=0 t=850 r=0 b=851
+08-02 22:58:11.406 V/mpv     (18632): [vo/gpu:v] Reported display depth: 8
+08-02 22:58:11.406 V/mpv     (18632): [vo/gpu:v] Texture for plane 0: 960x540
+08-02 22:58:11.406 V/mpv     (18632): [vo/gpu:v] Testing FBO format rgba16f
+08-02 22:58:11.406 V/mpv     (18632): [vo/gpu:v] Using FBO format rgba16f.
+08-02 22:58:11.406 V/mpv     (18632): [vo/gpu:v] No advanced processing required. Enabling dumb mode.
+08-02 22:58:11.407 V/mpv     (18632): event: video-reconfig
+08-02 22:58:11.410 D/KitsugiPlayerDebug(18632): onTracksChanged: audioTracks=0, subTracks=0
+08-02 22:58:11.411 V/mpv     (18632): mpv_get_property(video-codec) format 1 was unavailable
+08-02 22:58:11.411 V/mpv     (18632): mpv_get_property(audio-codec) format 1 was unavailable
+08-02 22:58:11.411 V/mpv     (18632): mpv_get_property(video-params/w) format 4 was unavailable
+08-02 22:58:11.418 V/mpv     (18632): mpv_get_property(video-params/h) format 4 was unavailable
+08-02 22:58:11.418 D/KitsugiPlayer(18632): Audio delay updated: manual=0, route=SPEAKER, routeDelay=0
+08-02 22:58:11.418 E/mpv     (18632): mpv_set_property(video-aspect-override, 0x7fdd060160) format 1 returned error unsupported format for accessing property
+08-02 22:58:11.418 V/mpv     (18632): mpv_get_property(estimated-vf-fps) format 5 was unavailable
+08-02 22:58:11.418 V/mpv     (18632): mpv_get_property(file-size) format 4 was unavailable
+08-02 22:58:11.418 V/mpv     (18632): [vo/gpu:v] Resize: 1080x2308
+08-02 22:58:11.418 V/mpv     (18632): [vo/gpu:v] Window size: 1080x2308 (Borders: l=0 t=0 r=0 b=0)
+08-02 22:58:11.418 V/mpv     (18632): [vo/gpu:v] Video source: 960x540 (1:1)
+08-02 22:58:11.418 V/mpv     (18632): [vo/gpu:v] Video display: (0, 0) 960x540 -> (0, 850) 1080x607
+08-02 22:58:11.418 V/mpv     (18632): [vo/gpu:v] Video scale: 1.125000/1.124074
+08-02 22:58:11.418 V/mpv     (18632): [vo/gpu:v] OSD borders: l=0 t=850 r=0 b=851
+08-02 22:58:11.418 V/mpv     (18632): [vo/gpu:v] Video borders: l=0 t=850 r=0 b=851
+08-02 22:58:11.418 V/mpv     (18632): [vo/gpu:v] Reported display depth: 8
+08-02 22:58:11.418 V/mpv     (18632): [vo/gpu:v] Resize: 1080x2308
+08-02 22:58:11.418 V/mpv     (18632): [vo/gpu:v] Window size: 1080x2308 (Borders: l=0 t=0 r=0 b=0)
+08-02 22:58:11.418 D/KitsugiPlayerDebug(18632): UI State: playbackSource=true, isLoading=false, hasError=false, isAutoSwitching=false
+08-02 22:58:11.418 V/mpv     (18632): [vo/gpu:v] Video source: 960x540 (1:1)
+08-02 22:58:11.418 D/KitsugiPlayerDebug(18632): LaunchedEffect(source) prepare() starting. url=https://vkvd550.okcdn.ru/video.m3u8?cmd=videoPlayerCdn&expires=1785959798968&srcIp=159.146.42.197&pr=40&srcAg=CHROME&ch=-536166974&ms=185.226.55.188&mid=11301491452147&type=2&sig=fXVxpNJ-iEA&ct=8&urls=178.237.23.203&clientType=13&id=10427610106611
+08-02 22:58:11.418 V/mpv     (18632): [vo/gpu:v] Video display: (0, 0) 960x540 -> (0, 850) 1080x607
+08-02 22:58:11.418 V/mpv     (18632): [vo/gpu:v] Video scale: 1.125000/1.124074
+08-02 22:58:11.418 V/mpv     (18632): [vo/gpu:v] OSD borders: l=0 t=850 r=0 b=851
+08-02 22:58:11.418 V/mpv     (18632): [vo/gpu:v] Video borders: l=0 t=850 r=0 b=851
+08-02 22:58:11.418 V/mpv     (18632): [vo/gpu:v] Reported display depth: 8
+08-02 22:58:11.418 V/mpv     (18632): [cplayer:v] Set property: android-surface-size="1080x2308" -> 1
+08-02 22:58:11.418 V/mpv     (18632): [osd/libass:v] libass API version: 0x1704000
+08-02 22:58:11.418 V/mpv     (18632): [osd/libass:v] libass source: commit: 0.17.4-21-gfadc390583f24eb5cf98f16925fd3adee50bca88
+08-02 22:58:11.418 V/mpv     (18632): [osd/libass:v] Shaper: FriBidi 1.0.16 (SIMPLE) HarfBuzz-ng 12.2.0 (COMPLEX)
+08-02 22:58:11.418 V/mpv     (18632): [osd/libass:v] Setting up fonts...
+08-02 22:58:11.418 V/mpv     (18632): [osd/libass:info] can't find selected font provider
+08-02 22:58:11.418 V/mpv     (18632): [osd/libass:v] Done.
+08-02 22:58:11.418 V/mpv     (18632): [cplayer:v] Set property: audio-delay=0.000000 -> 1
+08-02 22:58:11.418 V/mpv     (18632): [cplayer:error] The video-aspect-override option must be a floating point number or a ratio (numerator[:/]denominator): yes
+08-02 22:58:11.418 V/mpv     (18632): [cplayer:v] Set property: video-aspect-override="yes" -> -4
+08-02 22:58:11.418 V/mpv     (18632): [cplayer:v] Set property: speed=1.000000 -> 1
+08-02 22:58:11.418 V/mpv     (18632): [cplayer:v] Set property: volume=100.000000 -> 1
+08-02 22:58:11.418 V/mpv     (18632): [cplayer:v] Set property: volume=100.000000 -> 1
+08-02 22:58:11.419 D/KitsugiPlayerLog(18632): [INFO] [OYNAT] Ba┼şlad─▒ | Kaynak=[CS3] JetFilmizle | Ba┼şl─▒k=Spider-Man: Brand New Day - B├Âl├╝m 1 | URL=https://vkvd550.okcdn.ru/video.m3u8?cmd=videoPlayerCdn&expires=1785959798968&srcIp=159.146.42.197&pr=40&srcAg=CHROME&ch=
+08-02 22:58:11.419 I/OYNAT   (18632): Ba┼şlad─▒ | Kaynak=[CS3] JetFilmizle | Ba┼şl─▒k=Spider-Man: Brand New Day - B├Âl├╝m 1 | URL=https://vkvd550.okcdn.ru/video.m3u8?cmd=videoPlayerCdn&expires=1785959798968&srcIp=159.146.42.197&pr=40&srcAg=CHROME&ch=
+08-02 22:58:11.419 V/mpv     (18632): [cplayer:v] Set property: speed=1.000000 -> 1
+08-02 22:58:11.419 V/mpv     (18632): [cplayer:v] Set property: gpu-api="opengl" -> 1
+08-02 22:58:11.419 V/mpv     (18632): [cplayer:v] Set property: vo="gpu" -> 1
+08-02 22:58:11.419 V/mpv     (18632): [cplayer:v] Set property: speed=1.000000 -> 1
+08-02 22:58:11.419 V/mpv     (18632): [cplayer:v] Set property: hwdec="auto-safe" -> 1
+08-02 22:58:11.419 V/mpv     (18632): [cplayer:v] Set property: deband="no" -> 1
+08-02 22:58:11.419 V/mpv     (18632): [cplayer:v] Set property: demuxer-max-bytes="64MiB" -> 1
+08-02 22:58:11.419 V/mpv     (18632): [cplayer:v] Set property: demuxer-max-back-bytes="16MiB" -> 1
+08-02 22:58:11.419 V/mpv     (18632): [cplayer:v] Set property: volume-max=200 -> 1
+08-02 22:58:11.419 V/mpv     (18632): [cplayer:v] Set property: cache="yes" -> 1
+08-02 22:58:11.419 V/mpv     (18632): [cplayer:v] Set property: network-timeout="30" -> 1
+08-02 22:58:11.420 V/mpv     (18632): [cplayer:v] Set property: http-header-fields="Referer: https://vk.com,User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML\\, like Gecko) Chrome/133.0.0.0 Safari/537.36" -> 1
+08-02 22:58:11.420 W/mpv     (18632): attaching surface
+08-02 22:58:11.420 V/mpv     (18632): [vo/gpu:v] Resize: 1080x2308
+08-02 22:58:11.420 V/mpv     (18632): [vo/gpu:v] Window size: 1080x2308 (Borders: l=0 t=0 r=0 b=0)
+08-02 22:58:11.420 V/mpv     (18632): [vo/gpu:v] Video source: 960x540 (1:1)
+08-02 22:58:11.420 V/mpv     (18632): [vo/gpu:v] Video display: (0, 0) 960x540 -> (0, 850) 1080x607
+08-02 22:58:11.420 V/mpv     (18632): [vo/gpu:v] Video scale: 1.125000/1.124074
+08-02 22:58:11.420 V/mpv     (18632): [vo/gpu:v] OSD borders: l=0 t=850 r=0 b=851
+08-02 22:58:11.420 V/mpv     (18632): [vo/gpu:v] Video borders: l=0 t=850 r=0 b=851
+08-02 22:58:11.425 V/mpv     (18632): [vo/gpu:v] Reported display depth: 8
+08-02 22:58:11.426 V/mpv     (18632): event: video-reconfig
+08-02 22:58:11.427 V/mpv     (18632): [vo/gpu/opengl:v] Initializing GPU context 'android'
+08-02 22:58:11.427 V/mpv     (18632): [vo/gpu/opengl:v] EGL_VERSION=1.5 Android META-EGL
+08-02 22:58:11.427 V/mpv     (18632): [vo/gpu/opengl:v] EGL_VENDOR=Android
+08-02 22:58:11.427 V/mpv     (18632): [vo/gpu/opengl:v] EGL_CLIENT_APIS=OpenGL_ES
+08-02 22:58:11.427 V/mpv     (18632): [vo/gpu/opengl:v] Trying to create GLES 2.x + context.
+08-02 22:58:11.428 V/mpv     (18632): [vo/gpu/opengl:v] GL_VERSION='OpenGL ES 3.2 V@0676.32 (GIT@1a285a84ae, I2991b7e11e, 1685945391) (Date:06/04/23)'
+08-02 22:58:11.428 V/mpv     (18632): [vo/gpu/opengl:v] Detected GLES 3.2.
+08-02 22:58:11.428 V/mpv     (18632): [vo/gpu/opengl:v] GL_VENDOR='Qualcomm'
+08-02 22:58:11.428 V/mpv     (18632): [vo/gpu/opengl:v] GL_RENDERER='Adreno (TM) 740'
+08-02 22:58:11.428 V/mpv     (18632): [vo/gpu/opengl:v] GL_SHADING_LANGUAGE_VERSION='OpenGL ES GLSL ES 3.20'
+08-02 22:58:11.430 V/mpv     (18632): [vo/gpu/opengl:v] Loaded extension GL_EXT_texture_norm16.
+08-02 22:58:11.430 V/mpv     (18632): [vo/gpu/opengl:v] Loaded extension GL_EXT_disjoint_timer_query.
+08-02 22:58:11.430 V/mpv     (18632): [vo/gpu/opengl:v] Loaded extension GL_EXT_buffer_storage.
+08-02 22:58:11.430 V/mpv     (18632): [vo/gpu:v] Testing FBO format rgba16f
+08-02 22:58:11.430 V/mpv     (18632): [vo/gpu:v] Using FBO format rgba16f.
+08-02 22:58:11.430 V/mpv     (18632): [vo/gpu:v] No advanced processing required. Enabling dumb mode.
+08-02 22:58:11.430 V/mpv     (18632): [vo/gpu:v] reconfig to 960x540 rgba rgb/bt.709/srgb/full/display CL=mpeg1/jpeg
+08-02 22:58:11.430 V/mpv     (18632): [vo/gpu:v] Resize: 1080x2308
+08-02 22:58:11.430 V/mpv     (18632): [vo/gpu:v] Window size: 1080x2308 (Borders: l=0 t=0 r=0 b=0)
+08-02 22:58:11.430 V/mpv     (18632): [vo/gpu:v] Video source: 960x540 (1:1)
+08-02 22:58:11.430 V/mpv     (18632): [vo/gpu:v] Video display: (0, 0) 960x540 -> (0, 850) 1080x607
+08-02 22:58:11.430 V/mpv     (18632): [vo/gpu:v] Video scale: 1.125000/1.124074
+08-02 22:58:11.430 V/mpv     (18632): [vo/gpu:v] OSD borders: l=0 t=850 r=0 b=851
+08-02 22:58:11.430 V/mpv     (18632): [vo/gpu:v] Video borders: l=0 t=850 r=0 b=851
+08-02 22:58:11.430 V/mpv     (18632): [vo/gpu:v] Reported display depth: 8
+08-02 22:58:11.430 V/mpv     (18632): [vo/gpu:v] Texture for plane 0: 960x540
+08-02 22:58:11.430 V/mpv     (18632): [vo/gpu:v] Testing FBO format rgba16f
+08-02 22:58:11.431 V/mpv     (18632): [vo/gpu:v] Using FBO format rgba16f.
+08-02 22:58:11.431 V/mpv     (18632): [vo/gpu:v] No advanced processing required. Enabling dumb mode.
+08-02 22:58:11.431 V/mpv     (18632): event: video-reconfig
+08-02 22:58:11.431 V/mpv     (18632): [main:error] Command 'video-reconfig' not found.
+08-02 22:58:11.431 V/mpv     (18632): [cplayer:v] Set property: aid="auto" -> 1
+08-02 22:58:11.431 V/mpv     (18632): [cplayer:v] Set property: sid="auto" -> 1
+08-02 22:58:11.431 V/mpv     (18632): [cplayer:v] Set property: sub-visibility=true -> 1
+08-02 22:58:11.431 V/mpv     (18632): [cplayer:v] Set property: slang="tr" -> 1
+08-02 22:58:11.433 V/mpv     (18632): event: start-file
+08-02 22:58:11.433 V/mpv     (18632): [cplayer:v] Running hook: auto_profiles/on_before_start_file
+08-02 22:58:11.433 D/KitsugiPlayerDebug(18632): onTracksChanged: audioTracks=0, subTracks=0
+08-02 22:58:11.433 D/KitsugiPlayer(18632): prepare() ├çA─ŞRILDI: url=https://vkvd550.okcdn.ru/video.m3u8?cmd=videoPlayerCdn&expires=1785959798968&srcIp=159.146.42.197&pr=40&srcAg=CHROME&ch=-536166974&ms=185.226.55.188&mid=11301491452147&type=2&sig=fXVxpNJ-iEA&ct=8&urls=178.237.23.203&clientType=13&id=10427610106611 addon=JetFilmizle startPos=0
+08-02 22:58:11.434 V/mpv     (18632): mpv_get_property(video-codec) format 1 was unavailable
+08-02 22:58:11.434 V/mpv     (18632): mpv_get_property(audio-codec) format 1 was unavailable
+08-02 22:58:11.434 V/mpv     (18632): mpv_get_property(video-params/w) format 4 was unavailable
+08-02 22:58:11.434 V/mpv     (18632): mpv_get_property(video-params/h) format 4 was unavailable
+08-02 22:58:11.434 V/mpv     (18632): mpv_get_property(estimated-vf-fps) format 5 was unavailable
+08-02 22:58:11.434 V/mpv     (18632): mpv_get_property(file-size) format 4 was unavailable
+08-02 22:58:11.434 D/KitsugiPlayerDebug(18632): onTracksChanged: audioTracks=0, subTracks=0
+08-02 22:58:11.434 V/mpv     (18632): mpv_get_property(video-codec) format 1 was unavailable
+08-02 22:58:11.434 D/PlayerAudioCtrl(18632): Route: SPEAKER ÔåÆ delay=0ms (route=0, manual=0)
+08-02 22:58:11.434 V/mpv     (18632): mpv_get_property(audio-codec) format 1 was unavailable
+08-02 22:58:11.434 V/mpv     (18632): mpv_get_property(video-params/w) format 4 was unavailable
+08-02 22:58:11.434 V/mpv     (18632): mpv_get_property(video-params/h) format 4 was unavailable
+08-02 22:58:11.434 V/mpv     (18632): mpv_get_property(estimated-vf-fps) format 5 was unavailable
+08-02 22:58:11.434 V/mpv     (18632): mpv_get_property(file-size) format 4 was unavailable
+08-02 22:58:11.434 V/mpv     (18632): [cplayer:v] Failed sending hook command auto_profiles/on_before_start_file. Removing hook.
+08-02 22:58:11.434 V/mpv     (18632): [cplayer:v] Running hook: auto_profiles/on_load
+08-02 22:58:11.434 V/mpv     (18632): [cplayer:v] Failed sending hook command auto_profiles/on_load. Removing hook.
+08-02 22:58:11.434 V/mpv     (18632): [cplayer:v] Running hook: ytdl_hook/on_load
+08-02 22:58:11.434 V/mpv     (18632): [cplayer:v] Running hook: ytdl_hook/on_load
+08-02 22:58:11.435 V/mpv     (18632): [ytdl_hook:v] playlist hook
+08-02 22:58:11.435 V/mpv     (18632): [stream_callback:v] Opening https://vkvd550.okcdn.ru/video.m3u8?cmd=videoPlayerCdn&expires=1785959798968&srcIp=159.146.42.197&pr=40&srcAg=CHROME&ch=-536166974&ms=185.226.55.188&mid=11301491452147&type=2&sig=fXVxpNJ-iEA&ct=8&urls=178.237.23.203&clientType=13&id=10427610106611
+08-02 22:58:11.435 V/mpv     (18632): [ffmpeg:v] Opening https://vkvd550.okcdn.ru/video.m3u8?cmd=videoPlayerCdn&expires=1785959798968&srcIp=159.146.42.197&pr=40&srcAg=CHROME&ch=-536166974&ms=185.226.55.188&mid=11301491452147&type=2&sig=fXVxpNJ-iEA&ct=8&urls=178.237.23.203&clientType=13&id=10427610106611
+08-02 22:58:11.435 V/mpv     (18632): [cplayer:v] Set property: audio-delay=0.000000 -> 1
+08-02 22:58:11.435 W/KitsugiApiBase(18632): HTTP Error: 400  for URL: https://arm.haglund.dev/api/v2/ids?source=themoviedb&id=969681
+08-02 22:58:11.435 W/KitsugiIdResolver(18632): fetchArmJson: Network failure or empty response for URL: https://arm.haglund.dev/api/v2/ids?source=themoviedb&id=969681
+08-02 22:58:11.435 W/KitsugiIdResolver(18632): ARM lookup failed for all sources (malId=969681, aniListId=null, tmdbId=969681)
+08-02 22:58:11.452 I/tsugi.animelist(18632): Compiler allocated 9812KB to compile java.lang.Object com.kitsugi.animelist.data.settings.SettingsDataStore$settingsFlow$1$1.emit(androidx.datastore.preferences.core.Preferences, kotlin.coroutines.Continuation)
+08-02 22:58:11.452 D/SurfaceView(18632): UPDATE Surface(name=SurfaceView[com.kitsugi.animelist/com.kitsugi.animelist.ui.screens.fullscreen.KitsugiFullscreenPlayerActivity])/@0x47f88e8, mIsProjectionMode = false
+08-02 22:58:11.452 D/SurfaceControl(18632): nativeSetScreenProjection ===> setScreenProjection
+08-02 22:58:11.452 D/SurfaceControl(18632): nativeSetScreenProjection ===> setScreenProjection
+08-02 22:58:11.452 D/SurfaceControl(18632): nativeSetScreenProjection ===> setScreenProjection
+08-02 22:58:11.472 D/VRI[KitsugiFullscreenPlayerActivity](18632): vri.reportNextDraw android.view.ViewRootImpl.handleResized:243 android.view.ViewRootImpl.-$$Nest$mhandleResized:0 android.view.ViewRootImpl$ViewRootHandler.handleMessageImpl:658 android.view.ViewRootImpl$ViewRootHandler.handleMessage:15 android.os.Handler.dispatchMessage:19 
+08-02 22:58:11.473 D/ScrobbleController(18632): Episode started: mediaId=0 ep=1 dur=0ms
+08-02 22:58:11.473 D/DecorView[KitsugiFullscreenPlayerActivity](18632): onWindowFocusChanged hasWindowFocus true
+08-02 22:58:11.474 I/HandWritingStubImpl(18632): refreshLastKeyboardType: 1
+08-02 22:58:11.474 I/HandWritingStubImpl(18632): getCurrentKeyboardType: 1
+08-02 22:58:11.478 D/CsStreamRunner(18632): [Invidious] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:11.481 D/VRI[KitsugiFullscreenPlayerActivity](18632): vri.Setup new sync id=1 syncSeqId=0
+08-02 22:58:11.481 E/SurfaceSyncer(18632): Failed to find sync for id=0
+08-02 22:58:11.481 E/SurfaceSyncer(18632): Failed to find sync for id=1
+08-02 22:58:11.482 D/TrafficStats(18632): tagSocket(972) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:11.483 D/VRI[KitsugiFullscreenPlayerActivity](18632): vri.reportDrawFinished syncSeqId=0 android.view.ViewRootImpl.lambda$createSyncIfNeeded$4$android-view-ViewRootImpl:5 android.view.ViewRootImpl$$ExternalSyntheticLambda1.run:6 android.os.Handler.handleCallback:2 android.os.Handler.dispatchMessage:4 android.os.Looper.loopOnce:182 
+08-02 22:58:11.500 D/CsStreamRunner(18632): [CollectionOfBestPorn] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:11.513 D/TrafficStats(18632): tagSocket(694) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:11.586 W/KitsugiApiBase(18632): HTTP Error: 404  for URL: https://api.themoviedb.org/3/tv/969681/external_ids?api_key=8265bd1679663a7ea12ac168da84d2e8
+08-02 22:58:11.596 D/KitsugiIdResolver(18632): resolveIds complete ÔåÆ imdb=tt22084616 kitsu=null tmdb=969681 anilist=null mal=969681 tvdb=null wikidata=Q113244935
+08-02 22:58:11.596 D/KitsugiPlayerViewModel(18632): Altyaz─▒ sorgulama: queryIds=[tt22084616:1:1, Spider-Man: Brand New Day:1:1], type=series (imdb=tt22084616, kitsu=null, title=Spider-Man: Brand New Day)
+08-02 22:58:11.596 D/KitsugiPlayerViewModel(18632): Fetching subtitles: queryIds=[tt22084616:1:1, Spider-Man: Brand New Day:1:1], type=series, filename=VK - Dublaj
+08-02 22:58:11.598 D/SubtitleRepository(18632): Altyaz─▒ fetch ba┼şlat─▒l─▒yor: 3 addon, type=series, id=tt22084616:1:1, filename=VK - Dublaj
+08-02 22:58:11.598 D/SubtitleRepository(18632): Altyaz─▒ fetch ba┼şlat─▒l─▒yor: 3 addon, type=series, id=Spider-Man: Brand New Day:1:1, filename=VK - Dublaj
+08-02 22:58:11.604 D/TrafficStats(18632): tagSocket(840) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:11.604 D/TrafficStats(18632): tagSocket(759) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:11.660 D/CsStreamRunner(18632): [XChina] HEAD Ô£à HTTP 200: https://video.xchina.download/m3u8/6a6f885ea4525/720.m3u8?expires=1785704774&md5
+08-02 22:58:11.660 D/CsStreamRunner(18632): [XChina] Ô£à Sonu├ğ: 1 do─şrulanm─▒┼ş stream, 0 altyaz─▒
+08-02 22:58:11.660 D/StreamViewModel(18632): [ÔÜí XChina] Toplam 1 stream bulundu
+08-02 22:58:11.672 W/RetryInterceptor(18632): 504 server error. Retry after 300ms ÔÇö https://api.jikan.moe/v4/anime/969681/episodes?page=1
+08-02 22:58:11.676 D/CsStreamRunner(18632): [PornHub] load('https://www.pornhub.com/view_video.php?viewkey=6a6e927fbbdee') ├ğa─şr─▒l─▒yor...
+08-02 22:58:11.707 D/TrafficStats(18632): tagSocket(760) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:11.766 D/kraptor_TurkPorno(18632): videolar = /player.php?url1=https://veev.to/e/3zpu2is0st3k&url2=https://plyr.upns.live/%23j39erh
+08-02 22:58:11.767 D/kraptor_VeevTo(18632): Getting VeevTo URL: https://veev.to/e/3zpu2is0st3k
+08-02 22:58:11.772 D/CsStreamRunner(18632): [CollectionOfBestPorn] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:11.778 D/TrafficStats(18632): tagSocket(799) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:11.780 D/CsStreamRunner(18632): [BadTv] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:11.784 D/CsStreamRunner(18632): [YoTurkish] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:11.786 D/CsStreamRunner(18632): [SuperCartoons] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:11.792 D/TrafficStats(18632): tagSocket(755) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:11.811 V/mpv     (18632): [ffmpeg:v] Mime-type: 'application/x-mpegURL'
+08-02 22:58:11.811 V/mpv     (18632): [demux:v] Trying demuxers for level=normal.
+08-02 22:58:11.817 V/mpv     (18632): [ffmpeg:warn] mime type is not rfc8216 compliant
+08-02 22:58:11.818 V/mpv     (18632): [lavf:v] Found 'hls' at score=100 size=1937.
+08-02 22:58:11.818 V/mpv     (18632): [lavf:v] Option extension_picky=0 was set due to known FFmpeg bugs
+08-02 22:58:11.854 D/CsStreamRunner(18632): [Asya Fanatikleri] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:11.867 D/TrafficStats(18632): tagSocket(827) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:11.873 D/OpenGLRenderer(18632): endAllActiveAnimators on 0xb4000069df9d1b00 (UnprojectedRipple) with handle 0xb4000069614db0a0
+08-02 22:58:11.938 D/AddonStreamClient(18632): fetchSubtitles URL: https://5a0d1888fa64-turkcealtyaziorg.baby-beamup.club/subtitles/series/Spider-Man%3A%20Brand%20New%20Day%3A1%3A1/filename=VK+-+Dublaj.json
+08-02 22:58:11.938 D/AddonStreamClient(18632): fetchSubtitles URL: https://yts-subtitles.strem.io/subtitles/series/Spider-Man%3A%20Brand%20New%20Day%3A1%3A1/filename=VK+-+Dublaj.json
+08-02 22:58:11.938 D/AddonStreamClient(18632): fetchSubtitles URL: https://opensubtitles-v3.strem.io/subtitles/series/Spider-Man%3A%20Brand%20New%20Day%3A1%3A1/filename=VK+-+Dublaj.json
+08-02 22:58:11.941 D/TrafficStats(18632): tagSocket(338) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:11.942 D/TrafficStats(18632): tagSocket(485) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:11.943 E/AddonStreamClient(18632): Error fetching subtitles from https://yts-subtitles.strem.io/subtitles/series/Spider-Man%3A%20Brand%20New%20Day%3A1%3A1/filename=VK+-+Dublaj.json
+08-02 22:58:11.943 D/SubtitleRepository(18632): Addon 'YTS Subtitles': 0 altyaz─▒ d├Ând├╝
+08-02 22:58:11.973 D/RetryInterceptor(18632): Retry 1/2 for https://api.jikan.moe/v4/anime/969681/episodes?page=1
+08-02 22:58:12.034 D/AnimeSkipClient(18632): AnimeSkip resolveShowId: HTTP 422 MAL=969681
+08-02 22:58:12.034 D/AnimeSkipClient(18632): AnimeSkip: MAL=969681 i├ğin show bulunamad─▒
+08-02 22:58:12.044 W/RetryInterceptor(18632): 504 server error. Retry after 600ms ÔÇö https://api.jikan.moe/v4/anime/969681/episodes?page=1
+08-02 22:58:12.048 D/kraptor_VeevTo(18632): Media ID: 3zpu2is0st3k
+08-02 22:58:12.051 D/kraptor_VeevTo(18632): Found encoded strings: [Gujal00_loving_them_moves_buddy, 411002014aC-94-jblm6mjyhvdc-221-1719765A8-5fa0e9b4eb55e8cd779f8bbjf4C290, 21041─ä030─ä-159-3zpu2is0st3k─è46─è7857─å691-5bce─åbb9aa─äddb─ä984d─şef760682]
+08-02 22:58:12.051 D/kraptor_VeevTo(18632): Trying encoded string: 21041─ä030─ä-159-3zpu2is0st3k─è46─è7857─å691-5bce─åbb9aa─äddb─ä984d─şef760682
+08-02 22:58:12.051 D/kraptor_VeevTo(18632): Decoded to: 210411103011-159-3zpu2is0st3k-146-1785703691-5bce03bb9aa11ddb11984d78ef760682
+08-02 22:58:12.051 D/kraptor_VeevTo(18632): Found valid ch: 210411103011-159-3zpu2is0st3k-146-1785703691-5bce03bb9aa11ddb11984d78ef760682
+08-02 22:58:12.051 D/kraptor_VeevTo(18632): buildArray: Initial count = 2
+08-02 22:58:12.051 D/kraptor_VeevTo(18632): buildArray: Added array [0, 1]
+08-02 22:58:12.051 D/kraptor_VeevTo(18632): buildArray: Next count = 4
+08-02 22:58:12.051 D/kraptor_VeevTo(18632): buildArray: Added array [0, 1, 1, 1]
+08-02 22:58:12.051 D/kraptor_VeevTo(18632): buildArray: Next count = 3
+08-02 22:58:12.051 D/kraptor_VeevTo(18632): buildArray: Added array [1, 1, 0]
+08-02 22:58:12.051 D/kraptor_VeevTo(18632): buildArray: Next count = 0
+08-02 22:58:12.051 D/kraptor_VeevTo(18632): buildArray: Final array = [[0, 1], [0, 1, 1, 1], [1, 1, 0]]
+08-02 22:58:12.051 D/kraptor_VeevTo(18632): API URL: https://veev.to/dl?op=player_api&cmd=gi&file_code=3zpu2is0st3k&ch=210411103011-159-3zpu2is0st3k-146-1785703691-5bce03bb9aa11ddb11984d78ef760682&ie=1
+08-02 22:58:12.064 D/AddonStreamClient(18632): fetchSubtitles URL: https://yts-subtitles.strem.io/subtitles/series/tt22084616%3A1%3A1/filename=VK+-+Dublaj.json
+08-02 22:58:12.064 D/AddonStreamClient(18632): fetchSubtitles URL: https://opensubtitles-v3.strem.io/subtitles/series/tt22084616%3A1%3A1/filename=VK+-+Dublaj.json
+08-02 22:58:12.065 D/AddonStreamClient(18632): fetchSubtitles URL: https://5a0d1888fa64-turkcealtyaziorg.baby-beamup.club/subtitles/series/tt22084616%3A1%3A1/filename=VK+-+Dublaj.json
+08-02 22:58:12.065 E/AddonStreamClient(18632): Error fetching subtitles from https://yts-subtitles.strem.io/subtitles/series/tt22084616%3A1%3A1/filename=VK+-+Dublaj.json
+08-02 22:58:12.065 D/SubtitleRepository(18632): Addon 'YTS Subtitles': 0 altyaz─▒ d├Ând├╝
+08-02 22:58:12.065 D/TrafficStats(18632): tagSocket(624) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:12.066 D/TrafficStats(18632): tagSocket(663) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:12.072 D/CsStreamRunner(18632): [Beeg] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:12.072 D/beeg    (18632): Spider-Man: Brand
+08-02 22:58:12.083 D/TrafficStats(18632): tagSocket(778) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:12.084 D/CsStreamRunner(18632): [HanimeTV] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:12.084 D/HanimeTV(18632): ├ûnbellekten 3341 video getirildi.
+08-02 22:58:12.087 D/CsStreamRunner(18632): [Girlswallowed] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:12.108 D/HanimeTV(18632): search q=spider-man: brand page=1 total=0 showing=0
+08-02 22:58:12.109 D/CsStreamRunner(18632): [HanimeTV] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:12.161 D/kraptor_VeevTo(18632): API Response: {"mm":"6c0d9f1a68dfcb7757df535f94d4d4f3","status":"success","file":{"versions":[{"vid_container":"mp4","vid_length_txt":"21:09","file_size":104857600,"vid_mode":"o","vid_fps":"30","vid_audio_bitrate":"254","vid_codec":"H264","vid_audio_codec":"AAC","vid_title":"Original","vid_height":"720","vid_audio_rate":"48000","vid_bitrate":"1090","file_code":"3zpu2is0st3k","vid_length":"1269.62","vid_width":"1280","file_size_mb":"100.0 MB","quality_download_link":"https://veev.to/d/3zpu2is0st3k_o"}],"hide_title":1,"file_name":"de21f617-9a81-44ff-ac50-8680071455d2.mp4","file_created_txt":"Sep 18, 2025","img_screenlist_thumb":"https://s-gra-658913.veev.to/P8oXctcBgctY4GtzztWXAT8kGcRNzSMyTbP7RMS1D","hide_poster":0,"file_skip_time":"","dv":[{"s":"6458526d4f413d─î663─É4376532─æ─ö3─ù─É─Ø─Ü─ò─ù─Ö3─ñ3─ï─ñ9─Ñ8─Ñ─ù─ñ─É─æ─ô─Ö─ï─É─Ö7─ø─Å─▒─Ñ─ò─ô─ñ─Á─║─Å─æ┼Ç─ñ─ù─ş─┤─ö─û─Ü─ñ─Â─«─ø46─ï─ó┼ü─Ö─ô─½─Â─É─Â─½5┼ê┼ö─£─Ç┼ü─ù─ô─╝─Ğ─ø0─À─ø─®─Â─ï─Â┼½6┼ô┼ê─Å┼á─Ü─É─Æ─Ñ─É┼¬3─½┼Ä─ô┼ù─£─İ3┼Ä┼ô─á┼┐─Ü┼Ö┼¢─»ãâ┼ï─ø─Â┼¿3ãî─Ñ3┼Ñãë┼ó─Å─Ö┼Â┼ü─│┼ø─ø─ù─®─¢┼Ğãû─òãü─Ö─ù─│┼¥─ñ┼ó─½┼è─ø─ú─¼┼Á┼©┼¢─½─Şãù┼┐┼Ç─©ãâ┼â─»┼í┼¢─¥┼û─øãÅ┼å─Âãæã©ã«ã▒┼┤─ô┼▒─Ø┼¡─Üãîãó┼¥─ù┼¼ãò┼Å─Ü┼À┼Ñ┼Ü┼│ã¥┼Éãâ┼Ü┼«┼▒ãÅã╣ãÀ─ï┼╗ã¡ãáã│Ãİ┼╝ã½─¡ã¼─ş┼ïã┤┼¥Ãåã║─ÜÃŞ─Ñ┼╗Ã¼ãÄ┼ğÃ░ãéÃ¿─Â─╝Ãæ┼┤─ÅãİÃ¬─║┼¢Ã║┼ú┼İ┼ëã│┼▒╚â─®─Éãàãë╚ëãäãâÃİãòãÑã«┼®ÃÀ┼æÃÄ┼ØãñãñÃå┼»┼ú┼╝─ù┼ò╚é┼ú┼Ä┼å╚íÃü─┤Ã¼─«┼ê─à─şÃí┼î╚ş─Ü┼à┼ç┼æãç─ğ┼úã®ãÅ─ñã¿┼Ş─Ö╚Æ┼û╚╝╚ö┼¥ÃÇ┼ç╚¿╚¿╚Âã®ãæãê╔èã░┼Ş─░─ÑÃá┼Ç┼║─ÜÃîãà┼╗","t":"6458526d4f413d─î363─æ4─æ35─ö8─ö─û─æ2─ö─É─Æ─Å3─ô─æ─É─É─ó3─ï─ö─ö─ô─Ş─¬─á─®─Ğ─®─▒─ö0─▓37─Ø─¡─▓─¼─╗─Á─£─ú─©─║─Á─Ü─▒─¼─»─Á┼à─ö9┼ç┼ï─▓─À─┐─ş─Á┼Ç─í┼æ─Á─¿─▒─Ğ─╝─▓┼İ─╣┼ä─¢┼é─Á─İ─▓┼â┼å┼ü─Å─ó─Ç─ö─ï46─Ñ┼¿─É─£─û─İ─û─½","sz":"6343538─â323─Ç46─é6─ı313─ô─î─ö─Ç─è─ô─ü─Ö─ä─ô─å─ô─£─ê─Ö─Ç─ï─Ö─Ä─İ─ö─Ö─Æ─Ö─İ─é─½─ñ─½─ô7─░─ô─ë─│03d─©─æ4f4d62585─î"}],"img_timeslide_url":null,"video_uvi":"03zpu2is0st3k1","vid_container":"mp4","player_img":"https://s-gra-658913.veev.to/FvwoDoL8KgGjvU3Er79SWmqrmvzydz7R8acT9","img_screenlist":"https:mtbbrasilia.com.brwp-contentuploads201306videoxxx-600x330.jpg","player_watermark":{"link":"https://veev.to/d/3zpu2is0st3k","src":""},"file_a":0,"file_h":"1971849-159-146-1785700691-cf5f87e8967985ae15dfb530e34459eb","captions_json":0,"captions_list":[],"download_link":"https://veev.to/d/3zpu2is0st3k","file_code":"3zpu2is0st3k","vast_ad":null,"video_thumb_url":"https://s-gra-658913.veev.to/61rxsj3yi5QPFzLEmwwL6QtkMQbnNKtZGa6KYudZ","file_title":"de21f617-9a81-44ff-ac50-8680071455d2","vtt_timeslide_url":"https://s-gra-658913.veev.to/CinXGRjNh6jTPcrxCan3AAMYK34PGyowKpj48UXw241DUat7","disable_adb":0,"video_img_url":"https://s-gra-658913.veev.to/FvwoDoL8KgGjvU3Er79SWmqrmvzydz7R8acT9","file_status":"OK","file_mime_type":"video/mp4"}}
+08-02 22:58:12.162 D/kraptor_VeevTo(18632): Using transformation array: [0, 1]
+08-02 22:58:12.162 D/kraptor_VeevTo(18632): Source 0 encoded URL: 6458526d4f413d─î663─É4376532─æ─ö3─ù─É─Ø─Ü─ò─ù─Ö3─ñ3─ï─ñ9─Ñ8─Ñ─ù─ñ─É─æ─ô─Ö─ï─É─Ö7─ø─Å─▒─Ñ─ò─ô─ñ─Á─║─Å─æ┼Ç─ñ─ù─ş─┤─ö─û─Ü─ñ─Â─«─ø46─ï─ó┼ü─Ö─ô─½─Â─É─Â─½5┼ê┼ö─£─Ç┼ü─ù─ô─╝─Ğ─ø0─À─ø─®─Â─ï─Â┼½6┼ô┼ê─Å┼á─Ü─É─Æ─Ñ─É┼¬3─½┼Ä─ô┼ù─£─İ3┼Ä┼ô─á┼┐─Ü┼Ö┼¢─»ãâ┼ï─ø─Â┼¿3ãî─Ñ3┼Ñãë┼ó─Å─Ö┼Â┼ü─│┼ø─ø─ù─®─¢┼Ğãû─òãü─Ö─ù─│┼¥─ñ┼ó─½┼è─ø─ú─¼┼Á┼©┼¢─½─Şãù┼┐┼Ç─©ãâ┼â─»┼í┼¢─¥┼û─øãÅ┼å─Âãæã©ã«ã▒┼┤─ô┼▒─Ø┼¡─Üãîãó┼¥─ù┼¼ãò┼Å─Ü┼À┼Ñ┼Ü┼│ã¥┼Éãâ┼Ü┼«┼▒ãÅã╣ãÀ─ï┼╗ã¡ãáã│Ãİ┼╝ã½─¡ã¼─ş┼ïã┤┼¥Ãåã║─ÜÃŞ─Ñ┼╗Ã¼ãÄ┼ğÃ░ãéÃ¿─Â─╝Ãæ┼┤─ÅãİÃ¬─║┼¢Ã║┼ú┼İ┼ëã│┼▒╚â─®─Éãàãë╚ëãäãâÃİãòãÑã«┼®ÃÀ┼æÃÄ┼ØãñãñÃå┼»┼ú┼╝─ù┼ò╚é┼ú┼Ä┼å╚íÃü─┤Ã¼─«┼ê─à─şÃí┼î╚ş─Ü┼à┼ç┼æãç─ğ┼úã®ãÅ─ñã¿┼Ş─Ö╚Æ┼û╚╝╚ö┼¥ÃÇ┼ç╚¿╚¿╚Âã®ãæãê╔èã░┼Ş─░─ÑÃá┼Ç┼║─ÜÃîãà┼╗
+08-02 22:58:12.162 D/kraptor_VeevTo(18632): Source 0 after veevDecode: 6458526d4f413d3d663634376532363735363536363765323333313339333833353336336432313632373736643233376433323733376636663335353636323765363337333637346135323662343837363738356534383564366534343331373037363739373137373762346536653436363634333631373834643637353234623436373436383535363334373337373937393733333037333433366236313661366534373539333237363631376234323531363233343338333737323333353336383538363536613466366434333563343435323737363733333632373037633438363536343435343536623639373235323537376236613631373035663633336135343562346534333334343335613436333637623461353637323335333335353637336636323435353236343433333436663639373337393634363735333734336136343661366536373337353734313738363334653437343936383537333734393638343135323632333837313634353235373561363136343565363136373538373537313466323837303766326636333665326536343633363637353635363637653236333133313337333333383364323236373664323837323730376632663261333337303734373437383664336433313466346436323538353436
+08-02 22:58:12.162 D/kraptor_VeevTo(18632): decodeUrl: Initial encoded = 6458526d4f413d3d663634376532363735363536363765323333313339333833353336336432313632373736643233376433323733376636663335353636323765363337333637346135323662343837363738356534383564366534343331373037363739373137373762346536653436363634333631373834643637353234623436373436383535363334373337373937393733333037333433366236313661366534373539333237363631376234323531363233343338333737323333353336383538363536613466366434333563343435323737363733333632373037633438363536343435343536623639373235323537376236613631373035663633336135343562346534333334343335613436333637623461353637323335333335353637336636323435353236343433333436663639373337393634363735333734336136343661366536373337353734313738363334653437343936383537333734393638343135323632333837313634353235373561363136343565363136373538373537313466323837303766326636333665326536343633363637353635363637653236333133313337333333383364323236373664323837323730376632663261333337303734373437383664336433313466346436323538353436
+08-02 22:58:12.162 D/kraptor_VeevTo(18632): decodeUrl: Processing transformation 0
+08-02 22:58:12.162 D/kraptor_VeevTo(18632): decodeUrl: After hex decode = dXRmOA==f647e267565667e2331393835363d2162776d237d32737f6f3556627e6373674a526b4876785e485d6e443170767971777b4e6e46664361784d67524b467468556347377979733073436b616a6e47593276617b4251623438377233536858656a4f6d435c445277673362707c48656445456b697252577b6a61705f633a545b4e4334435a46367b4a5672353355673f6245526443346f697379646753743a646a6e6737574178634e4749685737496841526238716452575a61645e61675875714f28707f2f636e2e6463667565667e2631313733383d22676d2872707f2f2a33707474786d3d314f4d6258546
+08-02 22:58:12.162 D/kraptor_VeevTo(18632): decodeUrl: After replace = f647e267565667e2331393835363d2162776d237d32737f6f3556627e6373674a526b4876785e485d6e443170767971777b4e6e46664361784d67524b467468556347377979733073436b616a6e47593276617b4251623438377233536858656a4f6d435c445277673362707c48656445456b697252577b6a61705f633a545b4e4334435a46367b4a5672353355673f6245526443346f697379646753743a646a6e6737574178634e4749685737496841526238716452575a61645e61675875714f28707f2f636e2e6463667565667e2631313733383d22676d2872707f2f2a33707474786d3d314f4d6258546
+08-02 22:58:12.162 D/kraptor_VeevTo(18632): decodeUrl: Processing transformation 1
+08-02 22:58:12.162 D/kraptor_VeevTo(18632): decodeUrl: After reverse = 6458526d4f413d3d68747470733a2f2f7072782d67622d3833373131362e7665657663646e2e636f2f70782f41757857616e54616a5752546178326251486947375869474e4368714757376e6a646a347357646973796f6433446255426f3765533532765a4b76364a5344334e4b545a336f50716a6b775252796b65454465684c707263376772544c534d6f4a6568586353327738343261524b71667239574e6a616b634370337979773743655864764b42576d48716346664e6e4b777179767071344e6d584e5876784b625a4763736e7266553f6f73723d732d6772612d3635383931332e766565762e746f
+08-02 22:58:12.162 D/kraptor_VeevTo(18632): decodeUrl: After hex decode = dXRmOA==https://prx-gb-837116.veevcdn.co/px/AuxWanTajWRTax2bQHiG7XiGNChqGW7njdj4sWdisyod3DbUBo7eS52vZKv6JSD3NKTZ3oPqjkwRRykeEDehLprc7grTLSMoJehXcS2w842aRKqfr9WNjakcCp3yyw7CeXdvKBWmHqcFfNnKwqyvpq4NmXNXvxKbZGcsnrfU?osr=s-gra-658913.veev.to
+08-02 22:58:12.162 D/kraptor_VeevTo(18632): decodeUrl: After replace = https://prx-gb-837116.veevcdn.co/px/AuxWanTajWRTax2bQHiG7XiGNChqGW7njdj4sWdisyod3DbUBo7eS52vZKv6JSD3NKTZ3oPqjkwRRykeEDehLprc7grTLSMoJehXcS2w842aRKqfr9WNjakcCp3yyw7CeXdvKBWmHqcFfNnKwqyvpq4NmXNXvxKbZGcsnrfU?osr=s-gra-658913.veev.to
+08-02 22:58:12.162 D/kraptor_VeevTo(18632): decodeUrl: Final decoded = https://prx-gb-837116.veevcdn.co/px/AuxWanTajWRTax2bQHiG7XiGNChqGW7njdj4sWdisyod3DbUBo7eS52vZKv6JSD3NKTZ3oPqjkwRRykeEDehLprc7grTLSMoJehXcS2w842aRKqfr9WNjakcCp3yyw7CeXdvKBWmHqcFfNnKwqyvpq4NmXNXvxKbZGcsnrfU?osr=s-gra-658913.veev.to
+08-02 22:58:12.162 D/kraptor_VeevTo(18632): Source 0 decoded URL: https://prx-gb-837116.veevcdn.co/px/AuxWanTajWRTax2bQHiG7XiGNChqGW7njdj4sWdisyod3DbUBo7eS52vZKv6JSD3NKTZ3oPqjkwRRykeEDehLprc7grTLSMoJehXcS2w842aRKqfr9WNjakcCp3yyw7CeXdvKBWmHqcFfNnKwqyvpq4NmXNXvxKbZGcsnrfU?osr=s-gra-658913.veev.to
+08-02 22:58:12.162 D/kraptor_VeevTo(18632): Ô£à Final video URL: https://prx-gb-837116.veevcdn.co/px/AuxWanTajWRTax2bQHiG7XiGNChqGW7njdj4sWdisyod3DbUBo7eS52vZKv6JSD3NKTZ3oPqjkwRRykeEDehLprc7grTLSMoJehXcS2w842aRKqfr9WNjakcCp3yyw7CeXdvKBWmHqcFfNnKwqyvpq4NmXNXvxKbZGcsnrfU?osr=s-gra-658913.veev.to
+08-02 22:58:12.162 D/CsStreamRunner(18632): [TurkPorno] Link bulundu: VeevTo (Unknown) ÔåÆ https://prx-gb-837116.veevcdn.co/px/AuxWanTajWRTax2bQHiG7XiGNChqGW7njdj4sWdisyod3DbUBo7eS52vZKv6JSD3NKTZ3oPqjkwRRykeEDehLprc7grTLSMoJehXcS2w842aRKqfr9WNjakcCp3yyw7CeXdvKBWmHqcFfNnKwqyvpq4NmXNXvxKbZGcsnrfU?osr=s-gra-658913.veev.to
+08-02 22:58:12.163 D/kraptor_UpnsLive(18632): url = https://plyr.upns.live/%23j39erh
+08-02 22:58:12.174 D/TrafficStats(18632): tagSocket(966) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:12.191 D/TrafficStats(18632): tagSocket(967) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:12.271 V/mpv     (18632): [ffmpeg/demuxer:v] hls: Opening 'https://vkvd550.okcdn.ru/expires/1785959798968/srcIp/159.146.42.197/pr/40/srcAg/CHROME/ch/-536166974/ms/185.226.55.188/mid/11301491452147/type/2/sig/fXVxpNJ-iEA/ct/8/urls/178.237.23.203/clientType/13/id/10427610106611/video/' for reading
+08-02 22:58:12.283 D/CsStreamRunner(18632): [18EU] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:12.283 D/SubtitleRepository(18632): Addon 'OpenSubtitles v3': 0 altyaz─▒ d├Ând├╝
+08-02 22:58:12.288 D/CsStreamRunner(18632): [Beeg] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:12.292 D/TrafficStats(18632): tagSocket(146) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:12.311 D/SubtitleRepository(18632): Addon 'OpenSubtitles v3': 0 altyaz─▒ d├Ând├╝
+08-02 22:58:12.361 D/CsStreamRunner(18632): [BadTv] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:12.387 D/CsStreamRunner(18632): [Allpornstream] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:12.399 D/TrafficStats(18632): tagSocket(663) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:12.409 D/CsStreamRunner(18632): [Yablom] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:12.423 D/TrafficStats(18632): tagSocket(691) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:12.458 D/CsStreamRunner(18632): [PornHub] load tamamland─▒: MovieLoadResponse
+08-02 22:58:12.458 D/CsStreamRunner(18632): [ID-Mapping] Candidate syncData: {}
+08-02 22:58:12.458 D/CsStreamRunner(18632): [PornHub] Ô£ô E┼şle┼şme: 'Spider-Man brand new day and Nut' ÔåÆ https://www.pornhub.com/view_video.php?viewkey=69bb2854dbdd5
+08-02 22:58:12.476 D/kraptor_UpnsLive(18632): istek = {"message": "Video not found or deleted"}
+08-02 22:58:12.476 D/kraptor_UpnsLive(18632): istek length = 41
+08-02 22:58:12.476 D/kraptor_UpnsLive(18632): edataHex length = 40
+08-02 22:58:12.476 E/kraptor_UpnsLive(18632): Decryption error: For input string: "{""
+08-02 22:58:12.476 D/kraptor_TurkPorno(18632): videocuklar = [https://veev.to/e/3zpu2is0st3k, https://plyr.upns.live/%23j39erh]
+08-02 22:58:12.476 D/CsStreamRunner(18632): [TurkPorno] Ham sonu├ğ: 1 stream, 0 altyaz─▒
+08-02 22:58:12.476 D/CsStreamRunner(18632): [TurkPorno] Ô£à Sonu├ğ: 1 do─şrulanm─▒┼ş stream, 0 altyaz─▒
+08-02 22:58:12.477 D/StreamViewModel(18632): [ÔÜí TurkPorno] Toplam 1 stream bulundu
+08-02 22:58:12.589 D/CsStreamRunner(18632): [JPFilms] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:12.599 D/TrafficStats(18632): tagSocket(148) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:12.622 W/Choreographer(18632): Frame time is 0.032184 ms in the future!  Check that graphics HAL is generating vsync timestamps using the correct timebase.
+08-02 22:58:12.644 D/RetryInterceptor(18632): Retry 2/2 for https://api.jikan.moe/v4/anime/969681/episodes?page=1
+08-02 22:58:12.662 D/CsStreamRunner(18632): [CamCaps] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:12.672 D/TrafficStats(18632): tagSocket(973) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:12.673 V/mpv     (18632): [ffmpeg:v] https: Opening 'https://vkvd550.okcdn.ru/expires/1785959798968/srcIp/159.146.42.197/pr/40/srcAg/CHROME/ch/-536166974/ms/185.226.55.188/mid/11301491452147/type/0/sig/i0X3na15bxk/ct/8/urls/178.237.23.203/clientType/13/id/10427610106611/video/' for reading
+08-02 22:58:12.700 I/System.out(18632): Exception in NiceHttp: java.io.IOException Canceled
+08-02 22:58:12.701 W/System.err(18632): java.io.IOException: Canceled
+08-02 22:58:12.701 W/System.err(18632): 	at okhttp3.internal.http.RetryAndFollowUpInterceptor.intercept(RetryAndFollowUpInterceptor.kt:70)
+08-02 22:58:12.701 W/System.err(18632): 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:126)
+08-02 22:58:12.701 W/System.err(18632): 	at com.lagradost.cloudstream3.network.DdosGuardKiller.intercept(DdosGuardKiller.kt:47)
+08-02 22:58:12.701 W/System.err(18632): 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:126)
+08-02 22:58:12.701 W/System.err(18632): 	at com.lagradost.cloudstream3.network.CloudflareKiller.intercept(CloudflareKiller.kt:176)
+08-02 22:58:12.701 W/System.err(18632): 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:126)
+08-02 22:58:12.701 W/System.err(18632): 	at com.kitsugi.animelist.data.cloudstream.CsRuntimeInit$init$$inlined$-addInterceptor$1.intercept(OkHttpClient.kt:1395)
+08-02 22:58:12.701 W/System.err(18632): 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:126)
+08-02 22:58:12.701 W/System.err(18632): 	at okhttp3.internal.connection.RealCall.getResponseWithInterceptorChain$okhttp(RealCall.kt:226)
+08-02 22:58:12.701 W/System.err(18632): 	at okhttp3.internal.connection.RealCall$AsyncCall.run(RealCall.kt:574)
+08-02 22:58:12.701 W/System.err(18632): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1137)
+08-02 22:58:12.701 W/System.err(18632): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:637)
+08-02 22:58:12.701 W/System.err(18632): 	at java.lang.Thread.run(Thread.java:1012)
+08-02 22:58:12.715 W/KitsugiApiBase(18632): HTTP Error: 504 Gateway Time-out for URL: https://api.jikan.moe/v4/anime/969681/episodes?page=1
+08-02 22:58:12.791 V/mpv     (18632): [ffmpeg:v] https: Opening 'https://vkvd550.okcdn.ru/expires/1785959798968/srcIp/159.146.42.197/pr/40/srcAg/CHROME/ch/-536166974/ms/185.226.55.188/mid/11301491452147/type/1/sig/OFqJqM10OY8/ct/8/urls/178.237.23.203/clientType/13/id/10427610106611/video/' for reading
+08-02 22:58:12.831 D/CsStreamRunner(18632): [Porn36] api.search('Spider-Man: Brand New', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:12.902 V/mpv     (18632): [ffmpeg:v] https: Opening 'https://vkvd550.okcdn.ru/expires/1785959798968/srcIp/159.146.42.197/pr/40/srcAg/CHROME/ch/-536166974/ms/185.226.55.188/mid/11301491452147/type/3/sig/0l-7kAqMMSg/ct/8/urls/178.237.23.203/clientType/13/id/10427610106611/video/' for reading
+08-02 22:58:12.959 D/CsStreamRunner(18632): [XMoviesForYou] loadLinks ├ğa─şr─▒l─▒yor...
+08-02 22:58:12.971 D/TrafficStats(18632): tagSocket(948) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:12.977 D/CsStreamRunner(18632): [Xpaja] loadLinks ├ğa─şr─▒l─▒yor...
+08-02 22:58:12.977 D/Xpaja   (18632): data https://www.xpaja.net/videos/spider-gwen-porn/
+08-02 22:58:12.987 D/TrafficStats(18632): tagSocket(974) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:13.001 D/CsStreamRunner(18632): [AdultTvChannels] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:13.003 D/AniSkipClient(18632): AniSkip: veri bulunamad─▒ ÔÇö MAL=969681 E1 (HTTP 404)
+08-02 22:58:13.003 D/PlayerSkipCtrl(18632): Loaded: AniSkip=0, AnimeSkip=0, merged=0
+08-02 22:58:13.011 D/TrafficStats(18632): tagSocket(598) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:13.021 V/mpv     (18632): [ffmpeg:v] https: Opening 'https://vkvd550.okcdn.ru/expires/1785959798968/srcIp/159.146.42.197/pr/40/srcAg/CHROME/ch/-536166974/ms/185.226.55.188/mid/11301491452147/type/5/sig/67eB6CiyyK4/ct/8/urls/178.237.23.203/clientType/13/id/10427610106611/video/' for reading
+08-02 22:58:13.142 V/mpv     (18632): [ffmpeg:v] https: Opening 'https://vkvd550.okcdn.ru/expires/1785959798968/srcIp/159.146.42.197/pr/40/srcAg/CHROME/ch/-536166974/ms/185.226.55.188/mid/11301491452147/type/4/sig/McJt5VMbrAY/ct/8/urls/178.237.23.203/clientType/13/id/10427610106611/video/' for reading
+08-02 22:58:13.181 D/CsStreamRunner(18632): [18EU] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:13.205 D/StreamtapeDebug(18632): ─░stek ba┼şlad─▒: https://streamtape.com/v/g1d7PJXXWkhqyZq
+08-02 22:58:13.216 D/TrafficStats(18632): tagSocket(755) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:13.257 V/mpv     (18632): [ffmpeg/demuxer:v] hls: Opening 'https://vkvd550.okcdn.ru/expires/1785959798968/srcIp/159.146.42.197/pr/40/srcAg/CHROME/ch/-536166974/ms/185.226.55.188/mid/11301491452147/type/2/sig/fXVxpNJ-iEA/ct/8/urls/178.237.23.203/clientType/13/id/10427610106611/video/MEDIUM00000.ts' for reading
+08-02 22:58:13.456 D/StreamtapeDebug(18632): HTML al─▒nd─▒, boyut: 33741
+08-02 22:58:13.457 D/StreamtapeDebug(18632): ID: g1d7PJXXWkhqyZq
+08-02 22:58:13.457 D/StreamtapeDebug(18632): Expires: 1785770693
+08-02 22:58:13.457 D/StreamtapeDebug(18632): IP: F0IVKRWNEy9XKxR
+08-02 22:58:13.457 D/StreamtapeDebug(18632): Token: ggoDykMpEuQQ
+08-02 22:58:13.457 D/StreamtapeDebug(18632): Get Video URL: https://streamtape.com/get_video?id=g1d7PJXXWkhqyZq&expires=1785770693&ip=F0IVKRWNEy9XKxR&token=ggoDykMpEuQQ&stream=1
+08-02 22:58:13.461 D/CsStreamRunner(18632): [CamCaps] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:13.461 D/CsStreamRunner(18632): [Allpornstream] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:13.483 D/CsStreamRunner(18632): [Hentaila] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:13.497 D/TrafficStats(18632): tagSocket(728) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:13.548 D/CsStreamRunner(18632): [Yablom] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:13.629 D/StreamtapeDebug(18632): Final URL: https://860718744.tapecontent.net/radosgw/g1d7PJXXWkhqyZq/Jb4E-ErpspXlzhXETRNMSYhVvCo1VZcIfGaHwC6NJa9yvmBg5U1920ZwqX_-o3RHenHhO3ex9_ZuYTtojBftrDV95VdszNyfno9VWWODFZXTiJH9CEft2APS23pR1U7pX2h_LjtmfPQuEP8-m-SSWgdBZi6ZX9fondJ2YoyrddZEa1OciPuIvP5Vtiy3knnCdI6FDtznoAHiIuepOvKDXWVXy7b97CBs8kyqDXyOkqXiDyiWm6k4VJ9lqZ8JV451-ExK2nEz5_DBgX4DOzR7R4ldkJOJU-bV0hvhhhxwI75koNQ6so9crPOcQSlIJb8Q3_eRHze-d4mBd9Zo/%5BBBCPie%5D+CC+Wilde+%28Our+New+Roommate+Agreement+%2F+07.28.2026%29?stream=1
+08-02 22:58:13.630 D/CsStreamRunner(18632): [XMoviesForYou] Link bulundu: Streamtape ÔåÆ https://860718744.tapecontent.net/radosgw/g1d7PJXXWkhqyZq/Jb4E-ErpspXlzhXETRNMSYhVvCo1VZcIfGaHwC6NJa9yvmBg5U1920ZwqX_-o3RHenHhO3ex9_ZuYTtojBftrDV95VdszNyfno9VWWODFZXTiJH9CEft2APS23pR1U7pX2h_LjtmfPQuEP8-m-SSWgdBZi6ZX9fondJ2YoyrddZEa1OciPuIvP5Vtiy3knnCdI6FDtznoAHiIuepOvKDXWVXy7b97CBs8kyqDXyOkqXiDyiWm6k4VJ9lqZ8JV451-ExK2nEz5_DBgX4DOzR7R4ldkJOJU-bV0hvhhhxwI75koNQ6so9crPOcQSlIJb8Q3_eRHze-d4mBd9Zo/%5BBBCPie%5D+CC+Wilde+%28Our+New+Roommate+Agreement+%2F+07.28.2026%29?stream=1
+08-02 22:58:13.631 D/CsStreamRunner(18632): [XMoviesForYou] Ham sonu├ğ: 1 stream, 0 altyaz─▒
+08-02 22:58:13.631 D/CsStreamRunner(18632): [XMoviesForYou] Ô£à Sonu├ğ: 1 do─şrulanm─▒┼ş stream, 0 altyaz─▒
+08-02 22:58:13.631 D/StreamViewModel(18632): [ÔÜí XMoviesForYou] Toplam 1 stream bulundu
+08-02 22:58:13.671 V/mpv     (18632): [ffmpeg/demuxer:v] hls: Opening 'https://vkvd550.okcdn.ru/expires/1785959798968/srcIp/159.146.42.197/pr/40/srcAg/CHROME/ch/-536166974/ms/185.226.55.188/mid/11301491452147/type/2/sig/fXVxpNJ-iEA/ct/8/urls/178.237.23.203/clientType/13/id/10427610106611/video/MEDIUM00001.ts' for reading
+08-02 22:58:13.762 D/CsStreamRunner(18632): [Rule34Video] api.search('Spider-Man: Brand New', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:13.762 D/CsStreamRunner(18632): [DoedaOrijinal] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:13.773 D/Xpaja   (18632): Document title: Spider gwen porn | Xpaja
+08-02 22:58:13.774 D/Xpaja   (18632): Document body length: 3454
+08-02 22:58:13.774 D/Xpaja   (18632): Video element 
+08-02 22:58:13.774 D/CsStreamRunner(18632): [Xpaja] Link bulundu: Xpaja  ÔåÆ https://www.xpaja.net/views/videos/2023/05/spider-gwen-porn/video480p.mp4
+08-02 22:58:13.775 D/CsStreamRunner(18632): [Xpaja] Link bulundu: Xpaja  ÔåÆ https://www.xpaja.net/views/videos/2023/05/spider-gwen-porn/video240p.mp4
+08-02 22:58:13.775 D/CsStreamRunner(18632): [Xpaja] Ham sonu├ğ: 2 stream, 0 altyaz─▒
+08-02 22:58:13.775 D/TrafficStats(18632): tagSocket(146) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:13.778 D/TrafficStats(18632): tagSocket(346) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:13.833 D/CsStreamRunner(18632): [Hentaila] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:13.837 D/CsStreamRunner(18632): [JPFilms] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:13.849 D/CsStreamRunner(18632): [Domlepen] api.search('Spider-Man: Brand') ├ğa─şr─▒l─▒yor...
+08-02 22:58:13.862 D/TrafficStats(18632): tagSocket(295) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:14.090 V/mpv     (18632): [ffmpeg/demuxer:v] hls: Opening 'https://vkvd550.okcdn.ru/expires/1785959798968/srcIp/159.146.42.197/pr/40/srcAg/CHROME/ch/-536166974/ms/185.226.55.188/mid/11301491452147/type/0/sig/i0X3na15bxk/ct/8/urls/178.237.23.203/clientType/13/id/10427610106611/video/LOWEST00000.ts' for reading
+08-02 22:58:14.132 D/CsStreamRunner(18632): [Puhu Tv] loadLinks ├ğa─şr─▒l─▒yor...
+08-02 22:58:14.135 D/CsStreamRunner(18632): [HentaiWorld] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:14.138 D/CsStreamRunner(18632): [Cloudbate] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:14.141 D/CsStreamRunner(18632): [Asya Fanatikleri] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:14.146 D/TrafficStats(18632): tagSocket(460) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:14.157 D/TrafficStats(18632): tagSocket(694) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:14.158 D/TrafficStats(18632): tagSocket(723) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:14.277 D/CsStreamRunner(18632): [Torrent Filmler] loadLinks ├ğa─şr─▒l─▒yor...
+08-02 22:58:14.316 I/System.out(18632): Exception in NiceHttp: java.net.UnknownHostException Unable to resolve host "yts.mx": No address associated with hostname
+08-02 22:58:14.318 E/CsStreamRunner(18632): [Torrent Filmler] loadLinks HATA: UnknownHostException: Unable to resolve host "yts.mx": No address associated with hostname
+08-02 22:58:14.318 E/CS_SEARCH_ERR(18632): ­şÆÑ LOAD_LINKS CRASH [Torrent Filmler] ÔÇö UnknownHostException: Unable to resolve host "yts.mx": No address associated with hostname
+08-02 22:58:14.318 D/CsStreamRunner(18632): [Torrent Filmler] Ham sonu├ğ: 0 stream, 0 altyaz─▒
+08-02 22:58:14.318 D/CsStreamRunner(18632): [Torrent Filmler] Ô£à Sonu├ğ: 0 do─şrulanm─▒┼ş stream, 0 altyaz─▒
+08-02 22:58:14.318 D/StreamViewModel(18632): [ÔÜí TorrentFilm] Toplam 0 stream bulundu
+08-02 22:58:14.381 D/CsStreamRunner(18632): [DoedaOrijinal] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:14.442 D/CsStreamRunner(18632): [FamilyPorn] api.search('Spider-Man: Brand', 1) ├ğa─şr─▒l─▒yor...
+08-02 22:58:14.447 D/CsStreamRunner(18632): [HentaiWorld] search('Spider-Man: Brand') ÔåÆ 0 sonu├ğ
+08-02 22:58:14.455 D/TrafficStats(18632): tagSocket(691) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:14.461 I/System.out(18632): Exception in NiceHttp: java.net.SocketTimeoutException failed to connect to videocelebs.net/195.175.254.2 (port 443) from /192.168.1.117 (port 38546) after 10000ms
+08-02 22:58:14.461 I/System.out(18632): Exception in NiceHttp: java.io.IOException Canceled
+08-02 22:58:14.462 W/System.err(18632): java.io.IOException: Canceled
+08-02 22:58:14.462 W/System.err(18632): 	at okhttp3.internal.http.RetryAndFollowUpInterceptor.intercept(RetryAndFollowUpInterceptor.kt:70)
+08-02 22:58:14.462 W/System.err(18632): 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:126)
+08-02 22:58:14.462 W/System.err(18632): 	at com.lagradost.cloudstream3.network.DdosGuardKiller.proceedWithCookies(DdosGuardKiller.kt:88)
+08-02 22:58:14.462 W/System.err(18632): 	at com.lagradost.cloudstream3.network.DdosGuardKiller.intercept(DdosGuardKiller.kt:51)
+08-02 22:58:14.462 W/System.err(18632): 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:126)
+08-02 22:58:14.462 W/System.err(18632): 	at com.lagradost.cloudstream3.network.CloudflareKiller.intercept(CloudflareKiller.kt:176)
+08-02 22:58:14.462 W/System.err(18632): 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:126)
+08-02 22:58:14.462 W/System.err(18632): 	at com.kitsugi.animelist.data.cloudstream.CsRuntimeInit$init$$inlined$-addInterceptor$1.intercept(OkHttpClient.kt:1395)
+08-02 22:58:14.462 W/System.err(18632): 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:126)
+08-02 22:58:14.462 W/System.err(18632): 	at okhttp3.internal.connection.RealCall.getResponseWithInterceptorChain$okhttp(RealCall.kt:226)
+08-02 22:58:14.462 W/System.err(18632): 	at okhttp3.internal.connection.RealCall$AsyncCall.run(RealCall.kt:574)
+08-02 22:58:14.462 W/System.err(18632): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1137)
+08-02 22:58:14.462 W/System.err(18632): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:637)
+08-02 22:58:14.462 W/System.err(18632): 	at java.lang.Thread.run(Thread.java:1012)
+08-02 22:58:14.478 D/TrafficStats(18632): tagSocket(148) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:14.493 D/TrafficStats(18632): tagSocket(595) with statsTag=0xffffffff, statsUid=-1
+08-02 22:58:14.519 V/mpv     (18632): [ffmpeg/demuxer:v] hls: Opening 'https://vkvd550.okcdn.ru/expires/1785959798968/srcIp/159.146.42.197/pr/40/srcAg/CHROME/ch/-536166974/ms/185.226.55.188/mid/11301491452147/type/0/sig/i0X3na15bxk/ct/8/urls/178.237.23.203/clientType/13/id/10427610106611/video/LOWEST00001.ts' for reading

@@ -1,4 +1,4 @@
-# Kitsugi Release Notes - v2.4.136-beta
+# Kitsugi Release Notes - v2.4.137-beta
 
 Bu sürümde, Cloudstream eklentileriyle tam uyumlu, zenginleştirilmiş Keşfet ve Özel Arama özellikleri entegre edilmiştir.
 

@@ -208,7 +208,14 @@ data class StreamSource(
     val qualityValue: Int? = null,
     val subtitles: List<com.kitsugi.animelist.core.player.SubtitleInput> = emptyList(),
     /** Episode/source thumbnail URL from the stream provider (e.g. episode cover art from Cloudstream). */
-    val thumbnailUrl: String? = null
+    val thumbnailUrl: String? = null,
+    /**
+     * CS3 eklentisinin ADULT_PLUGINS listesinde olup olmadığını belirtir.
+     * true ise ve kullanıcının `blurAdultMedia` ayarı aktifse;
+     * stream listesindeki thumbnail/artwork blur’lanır.
+     * `showAdultContent = true` iken bile blur uygulaması bu flag ile kontrol edilir.
+     */
+    val isAdultContent: Boolean = false
 ) : java.io.Serializable
 
 /**

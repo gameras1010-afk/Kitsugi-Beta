@@ -58,7 +58,8 @@ import kotlinx.coroutines.withContext
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddonSearchDialog(
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
+    onSeeAllAddonSection: ((apiName: String, title: String, mainPageData: String, horizontalImages: Boolean, initialItems: List<SearchResponse>) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val accentColor = LocalKitsugiAccent.current
@@ -425,9 +426,15 @@ fun AddonSearchDialog(
     }
 
     if (exploreApi != null) {
+        val capturedApi = exploreApi!!
         AddonExploreDialog(
-            api = exploreApi!!,
-            onDismissRequest = { exploreApi = null }
+            api = capturedApi,
+            onDismissRequest = { exploreApi = null },
+            onSeeAllClick = if (onSeeAllAddonSection != null) {
+                { title, mainPageData, horizontalImages, initialItems ->
+                    onSeeAllAddonSection(capturedApi.name, title, mainPageData, horizontalImages, initialItems)
+                }
+            } else null
         )
     }
 }
@@ -455,8 +462,29 @@ fun ResultItemCard(
                     .clip(RoundedCornerShape(16.dp))
             ) {
                 if (!imageUrl.isNullOrBlank()) {
+                    val context = LocalContext.current
+                    // Bazı Türk siteleri (DiziBox, SezonlukDizi vb.) görselleri
+                    // Referer header olmadan engeller. Referer olarak sitenin kendi
+                    // mainUrl'ini gönderiyoruz — hotlink korumasını aşmak için.
+                    val imageRequest = remember(imageUrl) {
+                        coil.request.ImageRequest.Builder(context)
+                            .data(imageUrl)
+                            .addHeader(
+                                "Referer",
+                                try {
+                                    val uri = android.net.Uri.parse(imageUrl)
+                                    "${uri.scheme}://${uri.host}/"
+                                } catch (_: Exception) { imageUrl }
+                            )
+                            .addHeader(
+                                "User-Agent",
+                                "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36"
+                            )
+                            .crossfade(true)
+                            .build()
+                    }
                     AsyncImage(
-                        model = imageUrl,
+                        model = imageRequest,
                         contentDescription = title,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop

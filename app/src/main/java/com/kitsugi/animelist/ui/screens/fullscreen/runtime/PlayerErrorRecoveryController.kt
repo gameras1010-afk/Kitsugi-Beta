@@ -1,7 +1,12 @@
 package com.kitsugi.animelist.ui.screens.fullscreen.runtime
 
+import android.content.Context
+import android.os.Looper
 import android.util.Log
-import com.kitsugi.animelist.core.player.engine.PlayerEngine
+import android.widget.Toast
+import com.kitsugi.animelist.core.player.PlayerManagerListener
+import com.kitsugi.animelist.core.player.engine.PlayerEngineType
+import com.kitsugi.animelist.core.player.engine.PlayerFallbackCoordinator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,15 +18,24 @@ import kotlinx.coroutines.launch
  * T1.6: PlayerErrorRecoveryController
  *
  * Oynatma hatalarını yakalar ve fallback / retry mantığını yönetir.
- * Hata → retry (max 3x) → fallback source → kullanıcıya bildir zinciri.
+ * Hata → engine fallback (MEDIA3→MPV) → source fallback → retry (max 3x) → kullanıcıya bildir.
  *
- * NuvioTV PlayerErrorRecoveryController referansından adapte edildi.
+ * Engine switching ([PlayerFallbackCoordinator]) artık bu sınıfın içinde yönetilmektedir;
+ * UI katmanındaki ad-hoc fallback koordinatörüne gerek kalmamaktadır.
  */
 class PlayerErrorRecoveryController(
     private val scope: CoroutineScope,
     private val onRetry: (attempt: Int) -> Unit,
     private val onFallback: () -> Unit,
-    private val onFatal: (errorCode: Int, errorMsg: String) -> Unit
+    private val onFatal: (errorCode: Int, errorMsg: String) -> Unit,
+    /** Called when a fallback engine switch is required (e.g. MEDIA3 → MPV). */
+    private val onSwitchEngine: ((to: PlayerEngineType) -> Unit)? = null,
+    /** Lambda that provides the currently active engine type. */
+    private val getCurrentEngine: (() -> PlayerEngineType)? = null,
+    /** Whether the user has MPV enabled in settings. */
+    private val isMpvEnabled: (() -> Boolean)? = null,
+    /** Application context for showing toasts. */
+    private val context: Context? = null
 ) {
     private val TAG = "ErrorRecovery"
 
@@ -34,15 +48,31 @@ class PlayerErrorRecoveryController(
     private val _isRecovering = MutableStateFlow(false)
     val isRecovering: StateFlow<Boolean> = _isRecovering.asStateFlow()
 
+    /** Internal engine-level fallback coordinator */
+    private val engineFallback = PlayerFallbackCoordinator(
+        maxAttempts = 3,
+        listener = object : PlayerManagerListener {
+            override fun onPlayerSwitched(from: PlayerEngineType, to: PlayerEngineType) {
+                Log.d(TAG, "Engine fallback: $from → $to")
+                showToastOnMain("⚠️ Oynatma hatası — Oynatıcı motoru değiştiriliyor...")
+                onSwitchEngine?.invoke(to)
+            }
+            override fun onFatalError(errorCode: Int, errorMsg: String) {
+                Log.e(TAG, "Engine fallback exhausted: $errorMsg")
+                // All engines tried — now fall through to source-level fallback
+                triggerSourceFallbackOrFatal(errorCode, errorMsg)
+            }
+        }
+    )
+
     /**
      * Hata bildirimi alındığında çağrılır.
-     * @param errorCode PlayerEngine hata kodu
-     * @param errorMsg Hata mesajı
+     * Engine switching önce denenir, sonra kaynak değiştirme, sonra retry, sonra fatal.
      */
     fun onPlaybackError(errorCode: Int, errorMsg: String) {
         Log.w(TAG, "Playback error: code=$errorCode, msg=$errorMsg, retry=$retryCount, hasFallback=$hasFallback")
 
-        val isNonRecoverableFormatOrHttp = errorCode == 403 ||
+        val isNonRecoverable = errorCode == 403 ||
             errorMsg.contains("403") ||
             errorMsg.contains("404") ||
             errorMsg.contains("401") ||
@@ -51,56 +81,45 @@ class PlayerErrorRecoveryController(
             errorMsg.contains("Response code: 4") ||
             errorMsg.contains("Response code: 5")
 
-        // 1. Non-recoverable failures (403, 404, 5xx, Format errors): Trigger immediate fallback source
-        if (isNonRecoverableFormatOrHttp) {
-            Log.e(TAG, "Non-recoverable failure ($errorCode / $errorMsg). hasFallback=$hasFallback — ${if (hasFallback) "trying fallback source" else "triggering fatal"}")
+        val isCodecFailure = errorCode in 4000..4005
+
+        // 1. Codec or non-recoverable failures: skip engine fallback, go straight to source fallback
+        if (isNonRecoverable || isCodecFailure) {
+            Log.e(TAG, "Non-recoverable/codec failure ($errorCode). Going to source fallback.")
             retryCount = 0
             _isRecovering.value = false
-            if (hasFallback) {
-                onFallback()
-            } else {
-                onFatal(errorCode, "Yayın kaynağı okunamadı ($errorCode). Lütfen farklı bir kaynak seçin.")
-            }
+            triggerSourceFallbackOrFatal(errorCode, errorMsg)
             return
         }
 
-        // 2. Codec/Decoding failures (4000..4005): Trigger immediate fallback without retries
-        if (errorCode in 4000..4005) {
-            Log.w(TAG, "Codec/Decoding failure ($errorCode). Triggering immediate fallback.")
+        // 2. Try engine-level fallback first (MEDIA3 → MPV)
+        val currentEngine = getCurrentEngine?.invoke() ?: PlayerEngineType.MEDIA3
+        val mpvEnabled = isMpvEnabled?.invoke() ?: false
+        val nextEngine = engineFallback.getFallbackEngine(
+            currentEngine = currentEngine,
+            errorCode = errorCode,
+            mpvEnabled = mpvEnabled
+        )
+
+        if (nextEngine != null) {
+            // Engine switch is being triggered — wait for the new engine to pick up
+            Log.d(TAG, "Switching to engine $nextEngine — deferring source fallback")
             retryCount = 0
             _isRecovering.value = false
-            if (hasFallback) {
-                onFallback()
-            } else {
-                onFatal(errorCode, "Codec/decoder hatası ($errorCode). Lütfen farklı bir kaynak deneyin.")
-            }
             return
         }
+        // nextEngine == null means engineFallback.onFatalError was called → handled by listener
+    }
 
-        // 3. Network/Other failures: Trigger backoff retries up to MAX_RETRY times, then fallback
-        if (retryCount < MAX_RETRY) {
-            _isRecovering.value = true
-            scope.launch {
-                retryCount++
-                delay(RETRY_DELAY_MS * retryCount) // Exponential-ish backoff
-                Log.d(TAG, "Retrying... attempt $retryCount/$MAX_RETRY")
-                onRetry(retryCount)
-                _isRecovering.value = false
-            }
+    private fun triggerSourceFallbackOrFatal(errorCode: Int, errorMsg: String) {
+        if (hasFallback) {
+            onFallback()
         } else {
-            // Max retry aşıldı → fallback source dene
-            Log.w(TAG, "Max retries ($MAX_RETRY) reached. hasFallback=$hasFallback")
-            _isRecovering.value = false
-            retryCount = 0
-            if (hasFallback) {
-                onFallback()
-            } else {
-                onFatal(errorCode, "Bağlantı hatası. Tüm yeniden denemeler başarısız oldu.")
-            }
+            onFatal(errorCode, "Yayın kaynağı okunamadı ($errorCode). Lütfen farklı bir kaynak seçin.")
         }
     }
 
-    /** Oynatma başarılı olduğunda retry sayacını sıfırla */
+    /** Oynatma başarılı olduğunda retry sayacını ve engine fallback durumunu sıfırla */
     fun onPlaybackReady() {
         if (retryCount > 0) {
             Log.d(TAG, "Recovery successful after $retryCount retries")
@@ -112,9 +131,17 @@ class PlayerErrorRecoveryController(
     /** Fallback kaynak mevcut mu (PlayerSourceController ile iletişim için) */
     var hasFallback: Boolean = false
 
-    /** Controller durumunu sıfırla (yeni medya açıldığında) */
+    /** Controller durumunu ve engine fallback sayacını sıfırla (yeni medya açıldığında) */
     fun reset() {
         retryCount = 0
         _isRecovering.value = false
+        engineFallback.reset()
+    }
+
+    private fun showToastOnMain(msg: String) {
+        val ctx = context ?: return
+        val run = Runnable { Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show() }
+        if (Looper.myLooper() == Looper.getMainLooper()) run.run()
+        else android.os.Handler(Looper.getMainLooper()).post(run)
     }
 }

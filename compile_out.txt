@@ -1,0 +1,54 @@
+﻿
+> Configure project :app
+w: History based incremental compilation approach for JVM platform is deprecated and will be removed soon in favor of approach based on ABI snapshots.
+Please remove 'kotlin.incremental.useClasspathSnapshot=false' from 'gradle.properties' file.
+
+
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preFossDebugBuild UP-TO-DATE
+> Task :app:generateFossDebugBuildConfig
+> Task :app:checkFossDebugAarMetadata UP-TO-DATE
+> Task :app:processFossDebugNavigationResources UP-TO-DATE
+> Task :app:compileFossDebugNavigationResources UP-TO-DATE
+> Task :app:generateFossDebugResValues UP-TO-DATE
+> Task :app:mapFossDebugSourceSetPaths UP-TO-DATE
+> Task :app:extractFossDebugSupportedLocales UP-TO-DATE
+> Task :app:generateFossDebugLocaleConfig UP-TO-DATE
+> Task :app:generateFossDebugResources UP-TO-DATE
+> Task :app:mergeFossDebugResources UP-TO-DATE
+> Task :app:packageFossDebugResources UP-TO-DATE
+> Task :app:parseFossDebugLocalResources UP-TO-DATE
+> Task :app:createFossDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksFossDebug UP-TO-DATE
+> Task :app:processFossDebugMainManifest
+> Task :app:processFossDebugManifest
+> Task :app:processFossDebugManifestForPackage
+> Task :app:processFossDebugResources
+
+> Task :app:kspFossDebugKotlin FAILED
+.\gradlew.bat : e: file:///C:/Kitsugi-Beta/app/src/main/java/com/kitsugi/animelist/data/cloudstream/CsStreamRunner.kt:3
+46:90 Expecting ','
+At line:1 char:1
++ .\gradlew.bat :app:compileFossDebugKotlin 2>&1 | Out-File -FilePath " ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (e: file:///C:/K...0 Expecting ',':String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:kspFossDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCo
+mpilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 6s
+19 actionable tasks: 7 executed, 12 up-to-date

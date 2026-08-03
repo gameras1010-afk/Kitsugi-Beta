@@ -159,8 +159,12 @@ class KitsugiFullscreenPlayerActivity : ComponentActivity() {
                     if (cast.isNotEmpty()) {
                         putExtra(EXTRA_CAST_JSON, gson.toJson(cast))
                     }
-
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    // FLAG_ACTIVITY_NEW_TASK KALDIRILDI:
+                    // KitsugiStreamActivity zaten aynı task içinde çalışıyor.
+                    // Bu flag, singleTop launchMode ile birleşince Android'i mevcut
+                    // player instance'ını yeniden kullanmaya/yok etmeye zorluyordu.
+                    // Bu da LeftCompositionCancellationException → activity kapanması
+                    // → kullanıcının home ekranına atılması sorununa neden oluyordu.
                 }
             )
         }

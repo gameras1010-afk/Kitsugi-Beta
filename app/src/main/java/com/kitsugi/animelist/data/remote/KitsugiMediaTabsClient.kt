@@ -104,6 +104,15 @@ class KitsugiMediaTabsClient {
             }
 
             val list: List<KitsugiStreamingEpisode> = when (effectiveSource) {
+                "kitsu" -> {
+                    // externalId = kitsuStableId = kitsuNumericId + 300_000_000
+                    val kitsuOffset = 300_000_000
+                    val kitsuNumericId = if (effectiveId >= kitsuOffset) effectiveId - kitsuOffset else effectiveId
+                    Log.d("KitsugiMediaTabsClient", "Kitsu episode fetch: kitsuNumericId=$kitsuNumericId")
+                    if (kitsuNumericId > 0) {
+                        runCatching { KitsuClient.fetchKitsuEpisodes(kitsuNumericId) }.getOrElse { emptyList() }
+                    } else emptyList()
+                }
                 "simkl" -> {
                     // Simkl için önce realMalId varsa Jikan'dan çek (anime)
                     if (realMalId != null && realMalId > 0) {
