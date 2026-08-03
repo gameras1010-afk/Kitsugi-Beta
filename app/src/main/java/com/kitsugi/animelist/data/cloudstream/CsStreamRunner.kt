@@ -497,6 +497,63 @@ object CsStreamRunner {
         }
     }
 
+    /**
+     * Herhangi bir URL'yi bilinen dinamik veya lokal domain kurallarıyla günceller.
+     * CsCfWarmupManager gibi dış yardımcı sınıfların güncel domainleri ziyaret etmesini sağlar.
+     */
+    fun getFixedUrl(url: String): String {
+        if (url.isBlank()) return url
+        try {
+            val uri = java.net.URI(url)
+            val host = uri.host ?: ""
+            if (host.isNotBlank()) {
+                val cleanHost = host.replace("www.", "").lowercase(Locale.ROOT)
+                
+                // 1. Dinamik domain listesinden eşleşme ara (ör. "dizipal" içeren hostlar)
+                for ((pluginName, newUrl) in dynamicDomains) {
+                    if (cleanHost.contains(pluginName) || pluginName.contains(cleanHost)) {
+                        val newUri = java.net.URI(newUrl)
+                        val newHost = newUri.host ?: ""
+                        if (newHost.isNotBlank()) {
+                            val scheme = uri.scheme ?: "https"
+                            val path = uri.rawPath ?: ""
+                            val query = uri.rawQuery?.let { "?$it" } ?: ""
+                            val fragment = uri.rawFragment?.let { "#$it" } ?: ""
+                            val preferredHost = if (host.startsWith("www.") && !newHost.startsWith("www.")) "www.$newHost" else newHost
+                            return "$scheme://$preferredHost$path$query$fragment"
+                        }
+                    }
+                }
+
+                // 2. Lokal domain düzeltme listesinden (KNOWN_DOMAIN_FIXES) eşleşme ara
+                for ((oldDomain, newDomain) in KNOWN_DOMAIN_FIXES) {
+                    val cleanOld = oldDomain.replace("www.", "")
+                    if (cleanHost.equals(cleanOld, ignoreCase = true) || cleanHost.contains(cleanOld, ignoreCase = true)) {
+                        val cleanNew = newDomain.replace("www.", "")
+                        val preferredHost = if (host.startsWith("www.") || newDomain.startsWith("www.")) "www.$cleanNew" else cleanNew
+                        val scheme = uri.scheme ?: "https"
+                        val path = uri.rawPath ?: ""
+                        val query = uri.rawQuery?.let { "?$it" } ?: ""
+                        val fragment = uri.rawFragment?.let { "#$it" } ?: ""
+                        return "$scheme://$preferredHost$path$query$fragment"
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to parse URI for getFixedUrl: ${e.message}")
+        }
+        
+        // Basit string değişimi fallback
+        var fixedUrl = url
+        for ((oldDomain, newDomain) in KNOWN_DOMAIN_FIXES) {
+            if (fixedUrl.contains(oldDomain)) {
+                fixedUrl = fixedUrl.replace(oldDomain, newDomain).replace("www.www.", "www.")
+                break
+            }
+        }
+        return fixedUrl
+    }
+
     // Tracks unsupported methods per provider to avoid calling them repeatedly
     // Format of key: "ProviderName:methodName"
     // NOTE: This is cleared on every new fetch (startFetch) to avoid stale state from previous anime searches.

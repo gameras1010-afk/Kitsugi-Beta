@@ -110,6 +110,7 @@ object CsCfWarmupManager {
 
         // Zaten cookie'si olan siteleri filtrele
         val sitesToWarm = WARMUP_SITES
+            .map { CsStreamRunner.getFixedUrl(it) } // Güncel dinamik domaini kullan
             .filter { url ->
                 val host = runCatching { java.net.URI(url).host }.getOrNull() ?: return@filter true
                 val existing = CloudflareKiller.savedCookies[host]
@@ -268,12 +269,13 @@ object CsCfWarmupManager {
      * Kullanım: Bir site çalışmıyorsa UI'dan "Yenile" butonuna basıldığında.
      */
     suspend fun refreshCookieForHost(context: Context, url: String) {
-        val host = runCatching { java.net.URI(url).host }.getOrNull() ?: return
+        val fixedUrl = CsStreamRunner.getFixedUrl(url)
+        val host = runCatching { java.net.URI(fixedUrl).host }.getOrNull() ?: return
         CloudflareKiller.savedCookies.remove(host)
         CloudflareKiller.savedCookies.remove("www.$host")
         CloudflareKiller.hostFailureCooldown.remove(host)
         CloudflareKiller.hostFailureCooldown.remove("www.$host")
         Log.d(TAG, "[$host] Cookie temizlendi, yeniden warmup yapılıyor...")
-        warmupSite(context, url, host, 15_000L)
+        warmupSite(context, fixedUrl, host, 15_000L)
     }
 }
