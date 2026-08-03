@@ -352,6 +352,7 @@ object CsStreamRunner {
     private const val CF_PROVIDER_TIMEOUT_MS = 90_000L
 
     private val dynamicDomains = java.util.concurrent.ConcurrentHashMap<String, String>()
+    private val dynamicBlockedPlugins = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
     private val isDomainListFetched = java.util.concurrent.atomic.AtomicBoolean(false)
     private val runnerScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO)
 
@@ -372,6 +373,7 @@ object CsStreamRunner {
     fun forceRefreshDomains() {
         isDomainListFetched.set(false)
         dynamicDomains.clear()
+        dynamicBlockedPlugins.clear()
         runnerScope.launch { fetchRemoteDomains() }
         Log.i(TAG, "Remote domain cache temizlendi, yeniden çekiliyor...")
     }
@@ -413,7 +415,22 @@ object CsStreamRunner {
                     loaded++
                 }
             }
-            Log.i(TAG, "✅ Uzak domain listesi başarıyla yüklendi: $loaded eklenti domaini güncellendi.")
+
+            // Parse dynamic blocked plugins: { "blocked": ["eklenti1", "eklenti2"] }
+            val blockedArr = jsonObj.optJSONArray("blocked")
+            val blockedSet = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+            if (blockedArr != null) {
+                for (i in 0 until blockedArr.length()) {
+                    val pName = blockedArr.optString(i, "")
+                    if (pName.isNotEmpty()) {
+                        blockedSet.add(pName.lowercase(Locale.ROOT))
+                    }
+                }
+            }
+            dynamicBlockedPlugins.clear()
+            dynamicBlockedPlugins.addAll(blockedSet)
+
+            Log.i(TAG, "✅ Uzak domain listesi başarıyla yüklendi: $loaded eklenti domaini güncellendi, ${dynamicBlockedPlugins.size} eklenti engellendi.")
         } catch (e: Exception) {
             Log.e(TAG, "❌ Uzak domain listesi çekilemedi: ${e.message}")
             // Bayrak sıfırlanır — bir sonraki açılışta tekrar denenecek
@@ -544,6 +561,13 @@ object CsStreamRunner {
 
         // Bilinen domain değişikliklerini uygula (ör. AsyaAnimeleri .pw → .top)
         applyDomainFix(api)
+
+        // Dinamik olarak engellenmiş (ölü/bozuk) eklentileri atla
+        val nameKey = api.name.lowercase(Locale.ROOT)
+        if (nameKey in dynamicBlockedPlugins) {
+            Log.w(TAG, "[${api.name}] Dinamik engelli listesinde (domain_fixes.json) — atlanıyor.")
+            return@withContext emptyList()
+        }
 
         // Kalıcı bozuk olduğu bilinen plugin'leri direkt atla — ağ kaynağı harcama
         if (api.name in KNOWN_BROKEN_PLUGINS) {

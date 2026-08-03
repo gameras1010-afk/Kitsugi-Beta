@@ -468,9 +468,10 @@ def run():
     added   = [k for k in new_domains if k not in existing]
     removed = [k for k in existing   if k not in new_domains]
     changed = [k for k in new_domains if k in existing and new_domains[k] != existing[k]]
+    blocked = sorted([k for k in plugin_map if k not in new_domains])
 
     print(f"  Önceki: {len(existing)} | Yeni: {len(new_domains)} | "
-          f"➕{len(added)} ➖{len(removed)} 🔄{len(changed)}")
+          f"➕{len(added)} ➖{len(removed)} 🔄{len(changed)} | 🚫{len(blocked)} blocked")
 
     if changed:
         print("\n  🔄 Değişen domainler:")
@@ -487,8 +488,10 @@ def run():
             "removed": len(removed),
             "changed": len(changed),
             "ai_assisted": sum(1 for k in new_domains if k not in existing),
+            "blocked": len(blocked),
         },
         "domains": dict(sorted(new_domains.items())),
+        "blocked": blocked,
     }
 
     with open(DOMAIN_FIXES_PATH, "w", encoding="utf-8") as f:
