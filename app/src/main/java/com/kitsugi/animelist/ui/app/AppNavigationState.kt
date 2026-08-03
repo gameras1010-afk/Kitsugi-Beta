@@ -51,6 +51,10 @@ class AppNavigationState(
     var mangaReaderNavState by mutableStateOf<MangaReaderNavState?>(null)
     var fullScreenGridState by mutableStateOf<FullScreenMediaGridState?>(null)
     var addonFullScreenGridState by mutableStateOf<AddonFullScreenGridState?>(null)
+    /** Eklenti Keşfet dialogunun açık olup olmadığını saklar.
+     * AnimatedContent geçişleri sırasında yerel remember state sıfırlandığından
+     * bu değer navState'te tutulur — tam ekran grid kapandığında dialog geri gelir. */
+    var addonExploreOpen by mutableStateOf(false)
     var previousBackStack by mutableStateOf<List<DetailScreen>>(emptyList())
 
     fun popDetailStack() {

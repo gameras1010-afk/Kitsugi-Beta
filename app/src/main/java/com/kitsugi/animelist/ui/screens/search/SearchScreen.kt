@@ -43,9 +43,8 @@ import com.kitsugi.animelist.model.MediaEntry
 import com.kitsugi.animelist.model.MediaType
 import com.kitsugi.animelist.ui.components.KitsugiEmptyState
 import com.kitsugi.animelist.ui.components.KitsugiShimmerSearchResultList
+import com.kitsugi.animelist.ui.screens.search.components.AddonExploreDialog
 import com.kitsugi.animelist.ui.screens.search.components.PluginPickerBottomSheet
-import com.kitsugi.animelist.ui.screens.search.components.addonExploreInlineSections
-import com.kitsugi.animelist.ui.screens.search.components.rememberAddonExploreInlineState
 import com.kitsugi.animelist.ui.screens.search.composables.KitsugiSearchCountryChip
 import com.kitsugi.animelist.ui.screens.search.composables.KitsugiSearchDateChip
 import com.kitsugi.animelist.ui.screens.search.composables.KitsugiSearchEpChDurationChip
@@ -71,7 +70,11 @@ fun SearchScreen(
     titleLanguage: String = "ROMAJI",
     scoreFormat: String = "POINT_10",
     hideScores: Boolean = false,
-    onSeeAllAddonSection: ((apiName: String, title: String, mainPageData: String, horizontalImages: Boolean, initialItems: List<com.lagradost.cloudstream3.SearchResponse>) -> Unit)? = null
+    onSeeAllAddonSection: ((apiName: String, title: String, mainPageData: String, horizontalImages: Boolean, initialItems: List<com.lagradost.cloudstream3.SearchResponse>) -> Unit)? = null,
+    // Eklenti Keşfet dialogı state'i — AnimatedContent geçişlerinde
+    // yerel remember sıfırlanmaması için dışarıdan yönetilir (navState)
+    addonExploreOpen: Boolean = false,
+    onAddonExploreOpenChange: (Boolean) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val accentColor = LocalKitsugiAccent.current
@@ -87,21 +90,14 @@ fun SearchScreen(
     var openTmdbGenreDialog by remember { mutableStateOf(false) }
     var openAddonSearchDialog by rememberSaveable { mutableStateOf(false) }
     var showPluginPicker by remember { mutableStateOf(false) }
+    var activeDetailCs3Item by remember { mutableStateOf<JikanSearchResult?>(null) }
 
-    // Plugin Explore State
+    // Seçili eklentinin keşfet dialogunu aç/kapat
+    // showPluginExploreDialog navState'ten gelir — AnimatedContent geçişlerinde sıfırlanmaz
     val selectedPluginApiName = uiState.selectedPluginApiName
     val selectedPluginApi = remember(selectedPluginApiName) {
         if (selectedPluginApiName == null) null
         else APIHolder.allProviders.firstOrNull { it.name == selectedPluginApiName }
-    }
-    val pluginExploreState = selectedPluginApiName?.let {
-        rememberAddonExploreInlineState(apiName = it)
-    }
-    // Eklenti seçildiğinde home feed'i yükle
-    LaunchedEffect(selectedPluginApiName, selectedPluginApi) {
-        val api = selectedPluginApi ?: return@LaunchedEffect
-        val state = pluginExploreState ?: return@LaunchedEffect
-        state.load(api)
     }
 
     val entryMap = remember(currentEntries) {
@@ -375,6 +371,24 @@ fun SearchScreen(
                                     fontWeight = FontWeight.SemiBold,
                                     maxLines = 1
                                 )
+                                // Keşfet butonu
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(accentColor.copy(alpha = 0.25f))
+                                        .tvClickable(shape = RoundedCornerShape(10.dp)) {
+                                            onAddonExploreOpenChange(true)
+                                        }
+                                        .padding(horizontal = 8.dp, vertical = 3.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    androidx.compose.material3.Text(
+                                        text = "Keşfet →",
+                                        color = accentColor,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
                                 // X butonu
                                 Box(
                                     modifier = Modifier
@@ -395,7 +409,7 @@ fun SearchScreen(
                                 }
                             }
                             Text(
-                                text = "Bu eklentide ara veya keşfet",
+                                text = "Bu eklentide ara",
                                 color = KitsugiColors.TextMuted,
                                 fontSize = 12.sp
                             )
@@ -570,26 +584,6 @@ fun SearchScreen(
             // Active Filters Inline Dismissible Chips Row
             // (Active filter pills removed – chips themselves show active state)
 
-            // ── Plugin Explore Mode ─────────────────────────────────────────
-            // Eklenti seçili + query boş = eklentinin home feed'ini göster
-            val isPluginExploreMode = selectedPluginApiName != null &&
-                uiState.query.isEmpty() && !uiState.hasSearched
-
-            if (isPluginExploreMode && pluginExploreState != null) {
-                val capturedApi = selectedPluginApi
-                if (capturedApi != null) {
-                    addonExploreInlineSections(
-                        state = pluginExploreState,
-                        api = capturedApi,
-                        onSeeAllClick = onSeeAllAddonSection?.let { cb ->
-                            { apiName, title, mainPageData, horizontalImages, initialItems ->
-                                cb(apiName, title, mainPageData, horizontalImages, initialItems)
-                            }
-                        }
-                    )
-                }
-            } else {
-
             // Search History Section
             if (showIdleContent && uiState.searchHistory.isNotEmpty()) {
                 item {
@@ -632,17 +626,7 @@ fun SearchScreen(
                     mediaEntry = getMediaEntry(result),
                     onItemClick = {
                         if (result.source == "cs3") {
-                            com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity.start(
-                                context = context,
-                                malId = null,
-                                aniListId = null,
-                                episode = 1,
-                                season = 1,
-                                title = result.title,
-                                posterUrl = result.imageUrl,
-                                cs3Url = result.cs3Url,
-                                cs3ApiName = result.cs3ApiName
-                            )
+                            activeDetailCs3Item = result
                         } else {
                             onOpenApiDetail(result)
                         }
@@ -658,8 +642,6 @@ fun SearchScreen(
             }
 
             item { Spacer(modifier = Modifier.height(90.dp)) }
-
-            } // end isPluginExploreMode else branch
         }
 
         // Scroll to Top FAB
@@ -766,8 +748,38 @@ fun SearchScreen(
             onPluginSelected = { apiName ->
                 viewModel.setSelectedPlugin(apiName, keepPlatformCs3 = true)
                 showPluginPicker = false
+                // Eklenti seçilince anında Keşfet ekranını aç
+                if (apiName != null) onAddonExploreOpenChange(true)
             }
         )
+    }
+
+    // ── Eklentiye Özel Keşfet (tam ekran dialog) ──────────────────────────
+    val exploreApi = selectedPluginApi
+    if (addonExploreOpen && exploreApi != null) {
+        AddonExploreDialog(
+            api = exploreApi,
+            onDismissRequest = { onAddonExploreOpenChange(false) },
+            onSeeAllClick = onSeeAllAddonSection?.let { cb ->
+                { title, mainPageData, horizontalImages, initialItems ->
+                    cb(exploreApi.name, title, mainPageData, horizontalImages, initialItems)
+                }
+            }
+        )
+    }
+
+    // ── KitsugiAddonDetailDialog ──────────────────────────────────────────
+    activeDetailCs3Item?.let { result ->
+        val api = remember(result.cs3ApiName) {
+            APIHolder.allProviders.firstOrNull { it.name.equals(result.cs3ApiName, ignoreCase = true) }
+        }
+        if (api != null && !result.cs3Url.isNullOrBlank()) {
+            com.kitsugi.animelist.ui.screens.search.components.KitsugiAddonDetailDialog(
+                api = api,
+                url = result.cs3Url,
+                onDismissRequest = { activeDetailCs3Item = null }
+            )
+        }
     }
 }
 

@@ -77,6 +77,7 @@ fun AddonSearchDialog(
     var searchResults by remember { mutableStateOf<List<Pair<MainAPI, SearchResponse>>>(emptyList()) }
     var activeApis by remember { mutableStateOf<List<MainAPI>>(emptyList()) }
     var hasSearched by remember { mutableStateOf(false) }
+    var activeDetailItem by remember { mutableStateOf<Pair<MainAPI, SearchResponse>?>(null) }
 
     // Load active addons
     LaunchedEffect(Unit) {
@@ -93,7 +94,7 @@ fun AddonSearchDialog(
                 }
                 val enabledIds = enabledPlugins.map { it.id }.toSet()
                 activeApis = APIHolder.allProviders.filter { api ->
-                    val pluginId = java.io.File(api.sourcePlugin).nameWithoutExtension
+                    val pluginId = java.io.File(api.sourcePlugin ?: "").nameWithoutExtension
                     enabledIds.contains(pluginId)
                 }
             } catch (e: Exception) {
@@ -280,7 +281,7 @@ fun AddonSearchDialog(
                                 .weight(1f),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            items(groupedResults.keys.toList()) { api ->
+                            items(groupedResults.keys.toList(), key = { "grp_${java.io.File(it.sourcePlugin ?: "").nameWithoutExtension}_${it.name}" }) { api ->
                                 val itemsForApi = groupedResults[api] ?: emptyList()
                                 if (itemsForApi.isNotEmpty()) {
                                     Column(modifier = Modifier.fillMaxWidth()) {
@@ -304,17 +305,7 @@ fun AddonSearchDialog(
                                                     apiName = api.name,
                                                     quality = response.quality?.name,
                                                     onClick = {
-                                                        com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity.start(
-                                                            context = context,
-                                                            malId = null,
-                                                            aniListId = null,
-                                                            episode = 1,
-                                                            season = 1,
-                                                            title = response.name,
-                                                            posterUrl = response.posterUrl,
-                                                            cs3Url = response.url,
-                                                            cs3ApiName = api.name
-                                                        )
+                                                        activeDetailItem = api to response
                                                     }
                                                 )
                                             }
@@ -368,7 +359,7 @@ fun AddonSearchDialog(
                                     modifier = Modifier.fillMaxWidth(),
                                     verticalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    items(activeApis) { api ->
+                                    items(activeApis, key = { "api_${java.io.File(it.sourcePlugin ?: "").nameWithoutExtension}_${it.name}" }) { api ->
                                         Box(
                                             modifier = Modifier
                                                 .fillMaxWidth()
@@ -442,6 +433,15 @@ fun AddonSearchDialog(
                     )
                 }
             } else null
+        )
+    }
+
+    // ── Detail Dialog ─────────────────────────────────────────────────────────
+    activeDetailItem?.let { (api, response) ->
+        KitsugiAddonDetailDialog(
+            api = api,
+            url = response.url,
+            onDismissRequest = { activeDetailItem = null }
         )
     }
 }

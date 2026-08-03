@@ -121,8 +121,41 @@ class CloudstreamRepoRepository(private val context: Context) {
         }
     }
 
-    /** Removes a repo from the database. Does NOT remove its installed addons. */
+    /** Removes a repo from the database and deletes all its installed plugins and addons. */
     suspend fun deleteRepo(repo: CloudstreamRepoEntity) = withContext(Dispatchers.IO) {
+        try {
+            // 1. Delete all CS plugins associated with this repo
+            val csPluginsToDelete = csPluginDao.getAllPlugins().filter {
+                it.repositoryUrl.equals(repo.repoUrl, ignoreCase = true)
+            }
+            for (pluginEntity in csPluginsToDelete) {
+                val csPlugin = CsPlugin(
+                    name = pluginEntity.name,
+                    internalName = pluginEntity.id,
+                    url = pluginEntity.downloadUrl,
+                    description = "",
+                    version = pluginEntity.version,
+                    language = null,
+                    tvTypes = null,
+                    iconUrl = pluginEntity.iconUrl,
+                    authors = emptyList(),
+                    repositoryUrl = pluginEntity.repositoryUrl
+                )
+                uninstallCsPlugin(csPlugin)
+            }
+
+            // 2. Delete all Stremio addons associated with this repo
+            val addonsToDelete = addonDao.getAllAddons().filter {
+                it.repositoryUrl.equals(repo.repoUrl, ignoreCase = true)
+            }
+            for (addon in addonsToDelete) {
+                addonDao.deleteAddon(addon)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error cascading delete for repo ${repo.name}", e)
+        }
+
+        // 3. Delete the repo itself
         repoDao.deleteRepo(repo)
         Log.d(TAG, "Deleted repo: ${repo.name}")
     }
@@ -158,7 +191,8 @@ class CloudstreamRepoRepository(private val context: Context) {
             val entity = if (fetched != null) {
                 fetched.copy(
                     orderIndex = existing.size + 1,
-                    isEnabled = true
+                    isEnabled = true,
+                    repositoryUrl = plugin.repositoryUrl
                 )
             } else {
                 ManagedAddonEntity(
@@ -169,7 +203,8 @@ class CloudstreamRepoRepository(private val context: Context) {
                     isEnabled = true,
                     orderIndex = existing.size + 1,
                     idPrefixes = null,
-                    streamTypes = plugin.tvTypes?.joinToString(",")?.lowercase()
+                    streamTypes = plugin.tvTypes?.joinToString(",")?.lowercase(),
+                    repositoryUrl = plugin.repositoryUrl
                 )
             }
             addonDao.insertAddon(entity)
@@ -228,7 +263,8 @@ class CloudstreamRepoRepository(private val context: Context) {
                 iconUrl = plugin.iconUrl,
                 version = plugin.version,
                 enabled = true,
-                installedAt = System.currentTimeMillis()
+                installedAt = System.currentTimeMillis(),
+                repositoryUrl = plugin.repositoryUrl
             )
             csPluginDao.upsert(entity)
             Log.d(TAG, "Successfully installed CS plugin: ${plugin.name}")

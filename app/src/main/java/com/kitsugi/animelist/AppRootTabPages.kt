@@ -263,7 +263,10 @@ private fun SearchTabPage(ctx: TabPagesContext) {
                 mainPageData = mainPageData,
                 horizontalImages = horizontalImages
             )
-        }
+            // Tam ekran grid açılırken dialog state'ini koru — geri gelince yeniden açılır
+        },
+        addonExploreOpen = ctx.navState.addonExploreOpen,
+        onAddonExploreOpenChange = { open -> ctx.navState.addonExploreOpen = open }
     )
 }
 

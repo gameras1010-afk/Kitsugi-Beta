@@ -27,5 +27,6 @@ data class ManagedAddonEntity(
      * Comma-separated list of resource types supported for subtitles (e.g. "series,movie").
      * Null means no subtitle resource is supported or not a subtitle addon.
      */
-    val subtitleTypes: String? = null
+    val subtitleTypes: String? = null,
+    val repositoryUrl: String? = null
 )

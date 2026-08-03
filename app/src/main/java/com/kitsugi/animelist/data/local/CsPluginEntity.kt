@@ -12,5 +12,6 @@ data class CsPluginEntity(
     val iconUrl: String?,
     val version: Int,
     val enabled: Boolean = true,
-    val installedAt: Long = System.currentTimeMillis()
+    val installedAt: Long = System.currentTimeMillis(),
+    val repositoryUrl: String? = null
 )

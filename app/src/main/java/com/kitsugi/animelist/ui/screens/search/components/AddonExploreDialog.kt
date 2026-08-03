@@ -91,6 +91,7 @@ fun AddonExploreDialog(
     var isHomeLoading by remember { mutableStateOf(false) }
     var homeLists by remember { mutableStateOf<List<HomePageList>>(emptyList()) }
     var hasSearched by remember { mutableStateOf(false) }
+    var activeDetailUrl by remember { mutableStateOf<String?>(null) }
 
     val loadHomeFeed = { forceRefresh: Boolean ->
         isHomeLoading = true
@@ -214,15 +215,7 @@ fun AddonExploreDialog(
                                                         apiName = api.name,
                                                         quality = item.quality?.name,
                                                         onClick = {
-                                                            com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity.start(
-                                                                context = context,
-                                                                malId = null, aniListId = null,
-                                                                episode = 1, season = 1,
-                                                                title = item.name,
-                                                                posterUrl = item.posterUrl,
-                                                                cs3Url = item.url,
-                                                                cs3ApiName = api.name
-                                                            )
+                                                            activeDetailUrl = item.url
                                                         }
                                                     )
                                                 }
@@ -248,15 +241,7 @@ fun AddonExploreDialog(
                                     apiName = api.name,
                                     onPlayClick = {
                                         heroItem?.let { item ->
-                                            com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity.start(
-                                                context = context,
-                                                malId = null, aniListId = null,
-                                                episode = 1, season = 1,
-                                                title = item.name,
-                                                posterUrl = item.posterUrl,
-                                                cs3Url = item.url,
-                                                cs3ApiName = api.name
-                                            )
+                                            activeDetailUrl = item.url
                                         }
                                     }
                                 )
@@ -287,14 +272,15 @@ fun AddonExploreDialog(
                             }
 
                             // Category rows
-                            items(homeLists, key = { "cat_${it.name}" }) { homeList ->
+                            items(homeLists, key = { "cat_${homeLists.indexOf(it)}_${it.name}" }) { homeList ->
                                 if (homeList.list.isNotEmpty()) {
                                     AddonCategoryRow(
                                         homeList = homeList,
                                         api = api,
                                         accentColor = accentColor,
                                         onSeeAllClick = onSeeAllClick,
-                                        context = context
+                                        context = context,
+                                        onItemClick = { url -> activeDetailUrl = url }
                                     )
                                 }
                             }
@@ -321,6 +307,15 @@ fun AddonExploreDialog(
                 )
             }
         }
+    }
+
+    // ── Detail Dialog (opens when a content card is tapped) ──────────────────
+    activeDetailUrl?.let { detailUrl ->
+        KitsugiAddonDetailDialog(
+            api = api,
+            url = detailUrl,
+            onDismissRequest = { activeDetailUrl = null }
+        )
     }
 }
 
@@ -616,7 +611,8 @@ private fun AddonCategoryRow(
     api: MainAPI,
     accentColor: androidx.compose.ui.graphics.Color,
     onSeeAllClick: ((title: String, mainPageData: String, horizontalImages: Boolean, initialItems: List<SearchResponse>) -> Unit)?,
-    context: android.content.Context
+    context: android.content.Context,
+    onItemClick: (url: String) -> Unit = {}
 ) {
     val matchingPage = remember(homeList.name) {
         api.mainPage.firstOrNull { it.name == homeList.name }
@@ -684,15 +680,7 @@ private fun AddonCategoryRow(
                     apiName = api.name,
                     quality = item.quality?.name,
                     onClick = {
-                        com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity.start(
-                            context = context,
-                            malId = null, aniListId = null,
-                            episode = 1, season = 1,
-                            title = item.name,
-                            posterUrl = item.posterUrl,
-                            cs3Url = item.url,
-                            cs3ApiName = api.name
-                        )
+                        onItemClick(item.url)
                     }
                 )
             }

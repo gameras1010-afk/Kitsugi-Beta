@@ -110,7 +110,8 @@ fun rememberAddonExploreInlineState(apiName: String): AddonExploreInlineState {
 fun LazyListScope.addonExploreInlineSections(
     state: AddonExploreInlineState,
     api: MainAPI,
-    onSeeAllClick: ((apiName: String, title: String, mainPageData: String, horizontalImages: Boolean, initialItems: List<SearchResponse>) -> Unit)? = null
+    onSeeAllClick: ((apiName: String, title: String, mainPageData: String, horizontalImages: Boolean, initialItems: List<SearchResponse>) -> Unit)? = null,
+    onItemClick: ((api: MainAPI, url: String) -> Unit)? = null
 ) {
     // ── Hero Banner ─────────────────────────────────────────────────────────
     item(key = "inline_hero_${api.name}") {
@@ -124,15 +125,19 @@ fun LazyListScope.addonExploreInlineSections(
             accentColor = accentColor,
             onPlayClick = {
                 heroItem?.let { item ->
-                    com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity.start(
-                        context = context,
-                        malId = null, aniListId = null,
-                        episode = 1, season = 1,
-                        title = item.name,
-                        posterUrl = item.posterUrl,
-                        cs3Url = item.url,
-                        cs3ApiName = api.name
-                    )
+                    if (onItemClick != null) {
+                        onItemClick(api, item.url)
+                    } else {
+                        com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity.start(
+                            context = context,
+                            malId = null, aniListId = null,
+                            episode = 1, season = 1,
+                            title = item.name,
+                            posterUrl = item.posterUrl,
+                            cs3Url = item.url,
+                            cs3ApiName = api.name
+                        )
+                    }
                 }
             },
             onRefresh = { state.load(api, forceRefresh = true) }
@@ -208,7 +213,8 @@ fun LazyListScope.addonExploreInlineSections(
                 accentColor = accentColor,
                 context = context,
                 matchingPage = matchingPage,
-                onSeeAllClick = onSeeAllClick
+                onSeeAllClick = onSeeAllClick,
+                onItemClick = onItemClick
             )
         }
     }
@@ -349,7 +355,8 @@ private fun InlineCategoryRow(
     accentColor: androidx.compose.ui.graphics.Color,
     context: android.content.Context,
     matchingPage: com.lagradost.cloudstream3.MainPageData?,
-    onSeeAllClick: ((apiName: String, title: String, mainPageData: String, horizontalImages: Boolean, initialItems: List<SearchResponse>) -> Unit)?
+    onSeeAllClick: ((apiName: String, title: String, mainPageData: String, horizontalImages: Boolean, initialItems: List<SearchResponse>) -> Unit)?,
+    onItemClick: ((api: MainAPI, url: String) -> Unit)? = null
 ) {
     Column(
         modifier = Modifier
@@ -413,15 +420,19 @@ private fun InlineCategoryRow(
                     apiName = api.name,
                     quality = item.quality?.name,
                     onClick = {
-                        com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity.start(
-                            context = context,
-                            malId = null, aniListId = null,
-                            episode = 1, season = 1,
-                            title = item.name,
-                            posterUrl = item.posterUrl,
-                            cs3Url = item.url,
-                            cs3ApiName = api.name
-                        )
+                        if (onItemClick != null) {
+                            onItemClick(api, item.url)
+                        } else {
+                            com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity.start(
+                                context = context,
+                                malId = null, aniListId = null,
+                                episode = 1, season = 1,
+                                title = item.name,
+                                posterUrl = item.posterUrl,
+                                cs3Url = item.url,
+                                cs3ApiName = api.name
+                            )
+                        }
                     }
                 )
             }

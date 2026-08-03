@@ -34,7 +34,8 @@ data class CsPlugin(
     /** SHA-256 hash of the .cs3 file for integrity verification (optional, provided by repo). */
     val fileHash: String? = null,
     /** File size in bytes, for display purposes (optional, provided by repo). */
-    val fileSize: Long? = null
+    val fileSize: Long? = null,
+    val repositoryUrl: String? = null
 )
 
 /**
@@ -180,7 +181,8 @@ class CloudstreamRepoClient {
                         authors = authors,
                         status = status,
                         fileHash = fileHash,
-                        fileSize = fileSize
+                        fileSize = fileSize,
+                        repositoryUrl = obj.optString("repositoryUrl").takeIf { it.isNotBlank() }
                     )
                 )
             }
@@ -200,7 +202,8 @@ class CloudstreamRepoClient {
         val repo = fetchRepo(normalizedRepoUrl, useGithubProxy) ?: return null
         val all = mutableListOf<CsPlugin>()
         for (listUrl in repo.pluginLists) {
-            all.addAll(fetchPlugins(listUrl, useGithubProxy))
+            val plugins = fetchPlugins(listUrl, useGithubProxy)
+            all.addAll(plugins.map { it.copy(repositoryUrl = it.repositoryUrl ?: normalizedRepoUrl) })
         }
         return all
     }

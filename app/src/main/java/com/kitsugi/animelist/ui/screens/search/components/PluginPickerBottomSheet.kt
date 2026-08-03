@@ -86,7 +86,7 @@ fun PluginPickerBottomSheet(
                 }
                 val enabledIds = enabledPlugins.map { it.id }.toSet()
                 activeApis = APIHolder.allProviders.filter { api ->
-                    val pluginId = java.io.File(api.sourcePlugin).nameWithoutExtension
+                    val pluginId = java.io.File(api.sourcePlugin ?: "").nameWithoutExtension
                     enabledIds.contains(pluginId)
                 }.sortedBy { it.name.lowercase() }
             } catch (e: Exception) {
@@ -244,7 +244,7 @@ fun PluginPickerBottomSheet(
                             )
                         }
 
-                        items(filteredApis, key = { it.name }) { api ->
+                        items(filteredApis, key = { "${java.io.File(it.sourcePlugin ?: "").nameWithoutExtension}_${it.name}" }) { api ->
                             PluginListItem(
                                 api = api,
                                 accentColor = accentColor,

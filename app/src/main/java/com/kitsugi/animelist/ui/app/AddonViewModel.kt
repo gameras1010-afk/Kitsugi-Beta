@@ -541,7 +541,8 @@ class AddonViewModel(application: Application) : AndroidViewModel(application) {
                 language = null,
                 tvTypes = null,
                 iconUrl = plugin.iconUrl,
-                authors = emptyList()
+                authors = emptyList(),
+                repositoryUrl = plugin.repositoryUrl
             )
             csRepoRepository.uninstallCsPlugin(csPlugin)
             onShowMessage?.invoke("Eklenti kaldırıldı: ${plugin.name}")

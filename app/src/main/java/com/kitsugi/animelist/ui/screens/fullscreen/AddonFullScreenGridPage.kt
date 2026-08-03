@@ -115,6 +115,8 @@ fun AddonFullScreenGridPage(
     var hasMorePages by remember { mutableStateOf(true) }
     var loadError by remember { mutableStateOf<String?>(null) }
     var apiReady by remember { mutableStateOf(false) }
+    var activeDetailItem by remember { mutableStateOf<com.lagradost.cloudstream3.SearchResponse?>(null) }
+    var activeDetailApiName by remember { mutableStateOf<String?>(null) }
 
     // Resolve the MainAPI instance (may need to load the plugin first)
     LaunchedEffect(state.apiName) {
@@ -292,17 +294,8 @@ fun AddonFullScreenGridPage(
                     apiName = state.apiName,
                     quality = item.quality?.name,
                     onClick = {
-                        com.kitsugi.animelist.ui.screens.stream.KitsugiStreamActivity.start(
-                            context = context,
-                            malId = null,
-                            aniListId = null,
-                            episode = 1,
-                            season = 1,
-                            title = item.name,
-                            posterUrl = item.posterUrl,
-                            cs3Url = item.url,
-                            cs3ApiName = state.apiName
-                        )
+                        activeDetailItem = item
+                        activeDetailApiName = state.apiName
                     }
                 )
             }
@@ -428,6 +421,20 @@ fun AddonFullScreenGridPage(
                     modifier = Modifier.size(28.dp)
                 )
             }
+        }
+    }
+
+    // ── Detail Dialog ───────────────────────────────────────────────────
+    activeDetailItem?.let { detailResponse ->
+        val detailApi = remember(activeDetailApiName) {
+            APIHolder.allProviders.firstOrNull { it.name.equals(activeDetailApiName, ignoreCase = true) }
+        }
+        if (detailApi != null) {
+            com.kitsugi.animelist.ui.screens.search.components.KitsugiAddonDetailDialog(
+                api = detailApi,
+                url = detailResponse.url,
+                onDismissRequest = { activeDetailItem = null; activeDetailApiName = null }
+            )
         }
     }
 }

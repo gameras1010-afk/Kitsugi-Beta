@@ -204,7 +204,7 @@ fun TvMangaSourceHealthScreen(
                             }
                         }
                     ),
-                    key = { it.name }
+                    key = { "${it.baseUrl}_${it.name}" }
                 ) { source ->
                     val health = onGetSourceHealth(source)
                     val isChecking = checkingSource?.name == source.name

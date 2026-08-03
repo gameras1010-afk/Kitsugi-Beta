@@ -607,7 +607,7 @@ private fun TvExtInstalledTab(
             }
         }
 
-        items(sources, key = { it.name }) { source ->
+        items(sources, key = { "${it.baseUrl}_${it.name}" }) { source ->
             val health = onGetSourceHealth(source)
             val stats = onGetRuntimeStats(source)
 

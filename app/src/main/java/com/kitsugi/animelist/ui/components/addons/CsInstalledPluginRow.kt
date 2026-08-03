@@ -161,7 +161,8 @@ internal fun CsInstalledPluginRow(
                                         com.google.gson.Gson().fromJson(plugin.tvTypes, Array<String>::class.java).toList()
                                     } catch (_: Exception) { null },
                                     iconUrl = plugin.iconUrl,
-                                    authors = emptyList()
+                                    authors = emptyList(),
+                                    repositoryUrl = plugin.repositoryUrl
                                 )
                                 onInstallPlugin(csPlugin) { success ->
                                     onReinstallResult(success)
@@ -192,7 +193,8 @@ internal fun CsInstalledPluginRow(
                                         com.google.gson.Gson().fromJson(plugin.tvTypes, Array<String>::class.java).toList()
                                     } catch (_: Exception) { null },
                                     iconUrl = plugin.iconUrl,
-                                    authors = emptyList()
+                                    authors = emptyList(),
+                                    repositoryUrl = plugin.repositoryUrl
                                 )
                                 onInstallPlugin(csPlugin) { success ->
                                     onReinstallResult(success)
@@ -336,7 +338,8 @@ internal fun CsInstalledPluginRow(
                                 com.google.gson.Gson().fromJson(plugin.tvTypes, Array<String>::class.java).toList()
                             } catch (_: Exception) { null },
                             iconUrl = plugin.iconUrl,
-                            authors = emptyList()
+                            authors = emptyList(),
+                            repositoryUrl = plugin.repositoryUrl
                         )
                         onInstallPlugin(csPlugin, null)
                     },

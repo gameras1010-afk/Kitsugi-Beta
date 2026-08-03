@@ -314,7 +314,7 @@ internal fun CloudstreamExtensionsTab(
                     }
                 }
             } else {
-                items(repos) { repo ->
+                items(repos, key = { it.repoUrl }) { repo ->
                     val plugins = repoPlugins[repo.repoUrl]
                     val hasAttemptedFetch = repoPlugins.containsKey(repo.repoUrl)
                     val isLoading = repoLoadingState[repo.repoUrl] == true
@@ -382,7 +382,7 @@ internal fun CloudstreamExtensionsTab(
                     }
                 }
             } else {
-                items(csPlugins) { plugin ->
+                items(csPlugins, key = { it.id }) { plugin ->
                     val reinstallState = reinstallStates[plugin.id] ?: PluginInstallState.IDLE
 
                     CsInstalledPluginRow(
