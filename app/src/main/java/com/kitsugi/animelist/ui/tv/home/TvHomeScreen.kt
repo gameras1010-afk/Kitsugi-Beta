@@ -39,7 +39,8 @@ fun TvHomeScreen(
     showAdultContent: Boolean = false,
     selectedHomeLayoutId: String = "classic",
     onNavigateToDetail: (JikanSearchResult) -> Unit = {},
-    onSeeAllClick: (String, List<JikanSearchResult>) -> Unit = { _, _ -> }
+    onSeeAllClick: (String, List<JikanSearchResult>) -> Unit = { _, _ -> },
+    onNavigateToWatchHistory: () -> Unit = {}
 ) {
     val selectedPlatform = exploreViewModel.selectedPlatform
     val isLoading = exploreViewModel.isLoading
@@ -181,6 +182,7 @@ fun TvHomeScreen(
                 onItemFocusedStable = onItemFocusedStable,
                 onNavigateToDetail = onNavigateToDetail,
                 onSeeAllClick = onSeeAllClick,
+                onNavigateToWatchHistory = onNavigateToWatchHistory,
                 listState = listState,
                 catalogRowScrollStates = catalogRowScrollStates
             )
@@ -208,6 +210,7 @@ fun TvHomeScreen(
                 onItemFocusedStable = onItemFocusedStable,
                 onNavigateToDetail = onNavigateToDetail,
                 onSeeAllClick = onSeeAllClick,
+                onNavigateToWatchHistory = onNavigateToWatchHistory,
                 listState = listState,
                 catalogRowScrollStates = catalogRowScrollStates
             )

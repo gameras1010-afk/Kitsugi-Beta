@@ -59,6 +59,7 @@ class AddonViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         viewModelScope.launch {
+            csRepoRepository.seedDefaultRepoIfEmpty()
             csRepoRepository.syncAndAutoUpdate()
             seedSubtitlePresets()
         }

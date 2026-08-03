@@ -43,6 +43,39 @@ class CloudstreamRepoRepository(private val context: Context) {
     /** Flow of all stored repos, ordered by insertion time. */
     fun getReposFlow(): Flow<List<CloudstreamRepoEntity>> = repoDao.getAllReposFlow()
 
+    suspend fun seedDefaultRepoIfEmpty() = withContext(Dispatchers.IO) {
+        try {
+            val allRepos = repoDao.getAllRepos()
+            val defaultUrl = "https://raw.githubusercontent.com/gameras1010-afk/Kitsugi-Plugins/builds/repo.json"
+            val hasDefault = allRepos.any { it.repoUrl.trim().equals(defaultUrl, ignoreCase = true) }
+            if (!hasDefault) {
+                Log.d(TAG, "No default repository found, seeding Kitsugi Plugins repository...")
+                val fetched = try {
+                    client.fetchRepo(defaultUrl)
+                } catch (e: Exception) {
+                    null
+                }
+                val entity = if (fetched != null) {
+                    CloudstreamRepoEntity(
+                        repoUrl = defaultUrl,
+                        name = fetched.name,
+                        description = fetched.description
+                    )
+                } else {
+                    CloudstreamRepoEntity(
+                        repoUrl = defaultUrl,
+                        name = "Kitsugi Plugins (Önerilen)",
+                        description = "DiziPal, RecTV, DDizi, Dizilla vb. derlenmiş ve güncel Türkçe eklenti deposu."
+                    )
+                }
+                repoDao.insertRepo(entity)
+                Log.d(TAG, "Successfully seeded default repository: ${entity.name}")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to seed default repo", e)
+        }
+    }
+
     /**
      * Normalizes a Cloudstream repository URL, handling custom redirector wrappers
      * and stripping the cloudstreamrepo:// custom protocol scheme.
@@ -238,7 +271,7 @@ class CloudstreamRepoRepository(private val context: Context) {
 
 
 
-            // 1. Automatically migrate legacy repository URLs (e.g. keyiflerolsun -> maarrem)
+            // 1. Automatically migrate legacy repository URLs (e.g. keyiflerolsun/maarrem -> gameras1010-afk)
             val refreshedRepos = repoDao.getAllRepos()
             for (repo in refreshedRepos) {
                 val normalized = com.kitsugi.animelist.utils.CloudstreamUrlHelper.normalizeUrl(repo.repoUrl)
@@ -258,8 +291,8 @@ class CloudstreamRepoRepository(private val context: Context) {
                     } else {
                         CloudstreamRepoEntity(
                             repoUrl = normalized,
-                            name = if (repo.name.contains("keyiflerolsun", ignoreCase = true) || repo.name.contains("KekikAkademi", ignoreCase = true)) {
-                                "Turkish Providers Repository | @maarrem"
+                            name = if (repo.name.contains("keyiflerolsun", ignoreCase = true) || repo.name.contains("KekikAkademi", ignoreCase = true) || repo.name.contains("maarrem", ignoreCase = true)) {
+                                "Kitsugi Plugins Repository"
                             } else {
                                 repo.name
                             },

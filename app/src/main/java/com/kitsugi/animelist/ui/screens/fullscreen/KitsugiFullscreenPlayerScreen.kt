@@ -114,6 +114,8 @@ fun KitsugiFullscreenPlayerScreen(
     description: String? = null,
     castList: List<MetaCastMember> = emptyList(),
     isMovie: Boolean = false,
+    cs3Url: String? = null,
+    cs3ApiName: String? = null,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -195,6 +197,36 @@ fun KitsugiFullscreenPlayerScreen(
         }
     }
     
+    // ── İzleme geçmişi için animeId türet ────────────────────────────────────
+    val watchHistoryAnimeId = remember(aniListId, malId, cs3Url, animeTitle) {
+        when {
+            aniListId != null -> aniListId.toString()
+            malId != null     -> malId.toString()
+            !cs3Url.isNullOrBlank() -> cs3Url.hashCode().toString()
+            else              -> animeTitle.hashCode().toString()
+        }
+    }
+
+    // ── Periyodik izleme konumu kaydı (her 10 sn) ───────────────────────────
+    // Not: currentEpisode aşağıda (satır ~263) collectAsState() ile tanımlanıyor,
+    // burada duplicate oluşmasın diye viewModel StateFlow'larına doğrudan erişiyoruz.
+    LaunchedEffect(watchHistoryAnimeId) {
+        while (true) {
+            kotlinx.coroutines.delay(10_000L)
+            val currentPos = viewModel.pos.value
+            val currentDur = viewModel.duration.value
+            val ep = viewModel.currentEpisode.value
+            if (currentPos > 0L && currentDur > 0L && watchHistoryAnimeId.isNotBlank()) {
+                com.kitsugi.animelist.data.local.WatchHistoryManager.updateProgress(
+                    animeId    = watchHistoryAnimeId,
+                    episode    = ep,
+                    positionMs = currentPos,
+                    durationMs = currentDur
+                )
+            }
+        }
+    }
+
     LaunchedEffect(videoId, videoUrl, audioUrl, title, initialIndex, episode, tmdbId, isMovie) {
         viewModel.initialize(
             videoId = videoId,
@@ -216,7 +248,9 @@ fun KitsugiFullscreenPlayerScreen(
             titleNative = titleNative,
             startYear = startYear,
             isMovie = isMovie,
-            activity = activity
+            activity = activity,
+            cs3Url = cs3Url,
+            cs3ApiName = cs3ApiName
         )
     }
 
@@ -321,8 +355,10 @@ fun KitsugiFullscreenPlayerScreen(
     // Stream diagnostics
     var streamInfoData by remember { mutableStateOf(StreamInfoData(playerEngine = "ExoPlayer")) }
 
-    val mediaIdForHistory = remember(malId, aniListId, animeTitle) {
-        malId ?: aniListId ?: animeTitle.hashCode()
+    val mediaIdForHistory = remember(malId, aniListId, cs3Url, animeTitle) {
+        malId ?: aniListId
+            ?: if (!cs3Url.isNullOrBlank()) cs3Url.hashCode()
+               else animeTitle.hashCode()
     }
     var savedPos by remember(mediaIdForHistory, currentEpisode, currentAddonName) { mutableStateOf<Long?>(null) }
     var showResumeDialog by remember(mediaIdForHistory, currentEpisode, currentAddonName) { mutableStateOf(false) }

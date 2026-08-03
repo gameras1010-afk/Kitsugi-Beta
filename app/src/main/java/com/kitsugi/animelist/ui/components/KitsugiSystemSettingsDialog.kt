@@ -32,6 +32,7 @@ import com.kitsugi.animelist.BuildConfig
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.utils.tvClickable
+import com.kitsugi.animelist.ui.screens.settings.DeveloperLogsDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -191,6 +192,8 @@ private fun DataManagementTab(
     accentColor: Color,
     scrollState: ScrollState = rememberScrollState()
 ) {
+    var showDeveloperLogs by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -251,6 +254,34 @@ private fun DataManagementTab(
                 }
             }
         }
+
+        KitsugiSettingsSection(title = "Geliştirici & Tanılama") {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Uygulamanın arka plan ve logcat günlüklerini incelemek veya hata bildiriminde bulunmak için tanılama panelini açabilirsin.",
+                    color = KitsugiColors.TextSecondary,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Button(
+                    onClick = { showDeveloperLogs = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = accentColor),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Logcat Görüntüle", color = KitsugiColors.Background, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+
+    if (showDeveloperLogs) {
+        DeveloperLogsDialog(
+            onDismiss = { showDeveloperLogs = false }
+        )
     }
 }
 

@@ -2057,9 +2057,11 @@ object CsStreamRunner {
                 throw cancel // always rethrow so coroutine scope can cancel properly
             } catch (e: Throwable) {
                 // Catches both Exception AND Error subclasses (including NotImplementedError)
+                val resource = throwAbleToResource<List<SearchResponse>>(e)
+                val errMsg = if (resource is Resource.Failure) resource.errorString else (e.message ?: e.javaClass.simpleName)
                 CsPluginStatusTracker.recordFailure(api.name, e)
-                Log.e(TAG, "[${api.name}] search('$query') HATA: ${e.javaClass.simpleName}: ${e.message}")
-                Log.e(SERR, "💥 SEARCH CRASH [${api.name}] query='$query' — ${e.javaClass.simpleName}: ${e.message}\n${android.util.Log.getStackTraceString(e)}")
+                Log.e(TAG, "[${api.name}] search('$query') HATA: ${e.javaClass.simpleName}: $errMsg")
+                Log.e(SERR, "💥 SEARCH CRASH [${api.name}] query='$query' — ${e.javaClass.simpleName}: $errMsg\n${e.getStackTracePretty()}")
                 emptyList()
             }
             } ?: emptyList()
@@ -2094,9 +2096,11 @@ object CsStreamRunner {
                 throw cancel
             } catch (e: Throwable) {
                 // Catches both Exception AND Error subclasses (including NotImplementedError)
+                val resource = throwAbleToResource<LoadResponse>(e)
+                val errMsg = if (resource is Resource.Failure) resource.errorString else (e.message ?: e.javaClass.simpleName)
                 CsPluginStatusTracker.recordFailure(api.name, e)
-                Log.e(TAG, "[${api.name}] load('$url') HATA: ${e.javaClass.simpleName}: ${e.message}", e)
-                Log.e(SERR, "💥 LOAD CRASH [${api.name}] url='$url' — ${e.javaClass.simpleName}: ${e.message}\n${android.util.Log.getStackTraceString(e)}")
+                Log.e(TAG, "[${api.name}] load('$url') HATA: ${e.javaClass.simpleName}: $errMsg")
+                Log.e(SERR, "💥 LOAD CRASH [${api.name}] url='$url' — ${e.javaClass.simpleName}: $errMsg\n${e.getStackTracePretty()}")
                 null
             }
             }  // withTimeoutOrNull

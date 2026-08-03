@@ -150,10 +150,14 @@ fun AddonFullScreenGridPage(
                 val response = withContext(Dispatchers.IO) {
                     runCatching { api.getMainPage(nextPage, request) }.getOrNull()
                 }
-                val newItems = response?.items?.flatMap { it.list } ?: emptyList()
-                if (newItems.isNotEmpty()) {
-                    loadedItems = loadedItems + newItems
-                    currentPage = nextPage
+                if (response != null) {
+                    val newItems = response.items.flatMap { it.list }
+                    if (newItems.isNotEmpty()) {
+                        loadedItems = (loadedItems + newItems).distinctBy { it.url }
+                        currentPage = nextPage
+                    }
+                    // Respect the plugin's own hasNext flag (CS3 standard)
+                    hasMorePages = response.hasNext
                 } else {
                     hasMorePages = false
                 }

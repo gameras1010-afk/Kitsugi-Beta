@@ -66,6 +66,20 @@
 
 ---
 
+## 🔌 Eklenti (Plugin) Kurulumu
+
+Kitsugi'nin medya akış özelliklerini (dizi, anime ve film izleme) kullanabilmek için eklenti deposunu eklemeniz önerilir:
+
+1. Uygulamada **Ayarlar -> Eklentiler -> Cloudstream Uzantıları** yolunu izleyin.
+2. **Repo Ekle** butonuna basın.
+3. Aşağıdaki depo adresini yapıştırın ve ekleyin:
+   ```text
+   https://raw.githubusercontent.com/gameras1010-afk/Kitsugi-Plugins/builds/repo.json
+   ```
+4. Depo eklendikten sonra listeden dilediğiniz sağlayıcıları (örn. TurkAnime, FilmMakinesi, DiziBox vb.) yükleyebilirsiniz.
+
+---
+
 ## 🛠️ Mimari & Teknik Altyapı
 
 ```
@@ -133,6 +147,20 @@ app/src/main/java/com/kitsugi/animelist/
 1. Visit the **[Latest Release Download Page](https://github.com/gameras1010-afk/Kitsugi-Beta/releases/latest)**.
 2. Download `app-foss-debug.apk` or `app-gms-debug.apk`.
 3. Install the APK on your device *(Enable installation from unknown sources if prompted)*.
+
+---
+
+## 🔌 Extension (Plugin) Installation
+
+To utilize Kitsugi's media streaming features (watching TV series, anime, and movies), it is recommended to add the plugin repository:
+
+1. Navigate to **Settings -> Addons -> Cloudstream Extensions** in the app.
+2. Click the **Add Repository** button.
+3. Paste and add the following repository URL:
+   ```text
+   https://raw.githubusercontent.com/gameras1010-afk/Kitsugi-Plugins/builds/repo.json
+   ```
+4. Once the repository is added, you can install any media providers of your choice (e.g. TurkAnime, FilmMakinesi, DiziBox, etc.) from the list.
 
 ---
 

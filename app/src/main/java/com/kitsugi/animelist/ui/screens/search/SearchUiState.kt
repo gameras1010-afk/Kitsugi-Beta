@@ -26,6 +26,10 @@ data class SearchUiState(
     val errorMessage: String? = null,
     val isFilterSheetOpen: Boolean = false,
 
+    // ── Plugin Explore Mode ────────────────────────────────────────────────
+    /** When non-null, the search screen shows this plugin's explore page instead of normal search */
+    val selectedPluginApiName: String? = null,
+
     // ── Genre / Tag filters (used by GenresTagsSheet) ──────────────────────
     val genres: List<String> = emptyList(),
     val excludedGenres: List<String> = emptyList(),

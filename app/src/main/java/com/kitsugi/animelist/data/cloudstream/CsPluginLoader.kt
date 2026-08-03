@@ -344,27 +344,43 @@ object CsPluginLoader {
             // Timeout + runCatching: plugin'in load() veya asenkron başlattığı
             // kodların (örn. InatBox'ın runBlocking Jackson çağrısı) uygulamayı
             // çökertmesini engeller.
+            // ── Step 6: Plugin load() — dedicated thread to avoid runBlocking deadlock ──
+            // Bazı eklentiler (örn. Animeler.getDomain) load() içinde runBlocking kullanır.
+            // Bu, withTimeout ile paylaşılan IO coroutine thread pool'unu bloke eder ve
+            // APP_SCOUT_HANG (5s+ donma) oluşturur. Çözüm: load()'u ayrı bir thread'de
+            // çalıştırmak; böylece runBlocking kendi thread'ini bloke eder, UI/IO pool'unu değil.
+            val safeCtx = com.kitsugi.animelist.KitsugiApplication.getDynamicContext(
+                com.kitsugi.animelist.KitsugiApplication.activeActivity ?: context
+            )
             val loadResult = runCatching {
-                kotlinx.coroutines.withTimeout(30_000L) {
-                    if (pluginInstance is Plugin) {
-                        // ALWAYS use getDynamicContext() — never pass raw Activity.
-                        // Raw Activity bypass'es our WindowManagerProxy entirely.
-                        // getDynamicContext() wraps WINDOW_SERVICE with our proxy so that
-                        // plugin captcha dialogs (e.g. BotKontrol.runCaptchaSolve) get
-                        // BadTokenException intercepted instead of crashing the process.
-                        val safeCtx = com.kitsugi.animelist.KitsugiApplication.getDynamicContext(
-                            com.kitsugi.animelist.KitsugiApplication.activeActivity ?: context
-                        )
-                        pluginInstance.load(safeCtx)
-                    } else {
-                        pluginInstance.load()
+                // Her eklenti için yeni bir thread açıyoruz ki plugin'in runBlocking çağrısı
+                // sadece bu thread'i bloke etsin, coroutine scheduler'ı değil.
+                val pluginThread = kotlinx.coroutines.newSingleThreadContext("PluginLoad-$scraperId")
+                try {
+                    kotlinx.coroutines.withTimeout(30_000L) {
+                        kotlinx.coroutines.withContext(pluginThread) {
+                            if (pluginInstance is Plugin) {
+                                pluginInstance.load(safeCtx)
+                            } else {
+                                pluginInstance.load()
+                            }
+                        }
                     }
+                } finally {
+                    pluginThread.close()
                 }
             }
             if (loadResult.isFailure) {
                 val loadErr = loadResult.exceptionOrNull()
-                Log.e(TAG, "Plugin $scraperId load() failed — unloading. Cause: ${loadErr?.javaClass?.simpleName}: ${loadErr?.message}", loadErr)
-                Log.e(PLUGIN_DIAG, "❌ CS3 LOAD() HATASI: $scraperId — ${loadErr?.javaClass?.simpleName}: ${loadErr?.message}")
+                val errType = loadErr?.javaClass?.simpleName ?: "UnknownError"
+                val errMsg  = loadErr?.message ?: "(mesaj yok)"
+                if (loadErr is kotlinx.coroutines.TimeoutCancellationException) {
+                    Log.e(TAG, "Plugin $scraperId load() TIMEOUT (30s) — eklenti çok uzun süre engelledi. Kaldırılıyor.")
+                    Log.e(PLUGIN_DIAG, "⏱️ CS3 TIMEOUT: $scraperId — load() 30 saniyede tamamlanamadı (runBlocking deadlock?)")
+                } else {
+                    Log.e(TAG, "Plugin $scraperId load() failed — unloading. Cause: $errType: $errMsg", loadErr)
+                    Log.e(PLUGIN_DIAG, "❌ CS3 LOAD() HATASI: $scraperId — $errType: $errMsg")
+                }
                 unloadExtensionInternal(context, scraperId)
                 return@withLock emptyList()
             }

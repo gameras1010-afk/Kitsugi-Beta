@@ -66,6 +66,7 @@ fun TvClassicHomeContent(
     onItemFocusedStable: (JikanSearchResult) -> Unit,
     onNavigateToDetail: (JikanSearchResult) -> Unit,
     onSeeAllClick: (String, List<JikanSearchResult>) -> Unit,
+    onNavigateToWatchHistory: () -> Unit = {},
     listState: LazyListState,
     catalogRowScrollStates: MutableMap<String, Int>
 ) {
@@ -164,8 +165,8 @@ fun TvClassicHomeContent(
     val onSeeAllPublishingManga = remember(filteredPublishingManga) { { onSeeAllClick("En Yüksek Puanlı Filmler", filteredPublishingManga) } }
     val onSeeAllSeasonalAnime = remember(filteredSeasonalAnime) { { onSeeAllClick("En Yüksek Puanlı Diziler", filteredSeasonalAnime) } }
     val onSeeAllTrendingAnime = remember(filteredTrendingAnime) { { onSeeAllClick("Trend Anime", filteredTrendingAnime) } }
-    val onSeeAllSimklContinueSeries = remember(exploreViewModel.simklContinueSeries) { { onSeeAllClick("İzlemeye Devam Et — Diziler", exploreViewModel.simklContinueSeries) } }
-    val onSeeAllSimklContinueMovies = remember(exploreViewModel.simklContinueMovies) { { onSeeAllClick("İzlemeye Devam Et — Filmler", exploreViewModel.simklContinueMovies) } }
+    val onSeeAllSimklContinueSeries = remember(onNavigateToWatchHistory) { { onNavigateToWatchHistory() } }
+    val onSeeAllSimklContinueMovies = remember(onNavigateToWatchHistory) { { onNavigateToWatchHistory() } }
     val onSeeAllSimklPlannedSeries = remember(exploreViewModel.simklPlannedSeries) { { onSeeAllClick("Planladıklarım — Diziler", exploreViewModel.simklPlannedSeries) } }
     val onSeeAllSimklPlannedMovies = remember(exploreViewModel.simklPlannedMovies) { { onSeeAllClick("Planladıklarım — Filmler", exploreViewModel.simklPlannedMovies) } }
 

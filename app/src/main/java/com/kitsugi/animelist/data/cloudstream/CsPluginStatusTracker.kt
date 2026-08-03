@@ -61,7 +61,12 @@ object CsPluginStatusTracker {
      * @param error     The throwable that was caught.
      */
     fun recordFailure(pluginId: String, error: Throwable) {
-        val message = error.localizedMessage ?: error.message ?: error.javaClass.simpleName
+        // Use throwAbleToResource to get enriched classification
+        val resource = throwAbleToResource<Any>(error)
+        val message = when (resource) {
+            is Resource.Failure -> resource.errorString
+            else -> error.localizedMessage ?: error.message ?: error.javaClass.simpleName
+        }
         errorMessages[pluginId] = message
 
         if (error is kotlin.NotImplementedError) {
@@ -75,6 +80,12 @@ object CsPluginStatusTracker {
                 Log.e(PLUGIN_DIAG, "🚫 BLOK [$pluginId] — 3/3 NotImplementedError — Hiçbir search metodu desteklenmiyor!")
                 blocklist.add(pluginId)
             }
+        } else if (resource is Resource.Failure && resource.isNetworkError) {
+            // Transient network/timeout issues — log but do NOT count toward blocking threshold.
+            // These failures are environmental (network down, server overloaded) and should
+            // never cause premature plugin pruning.
+            Log.d(TAG, "[$pluginId] Geçici ağ/zaman aşımı hatası — blok sayacına dahil edilmiyor: $message")
+            Log.w(PLUGIN_DIAG, "⚠️ TRANSIENT [$pluginId] — ${error.javaClass.simpleName}: $message")
         } else if (isParseException(error)) {
             // Parse/NPE errors may be query-specific, but if they fire on EVERY call
             // (e.g. DiziKorea NPE on search+quickSearch each round) we block after the threshold.
@@ -87,13 +98,13 @@ object CsPluginStatusTracker {
                 blocklist.add(pluginId)
             }
         } else {
-            // Real error (network, HTTP 5xx, etc.) — use cumulative threshold
+            // Real error (HTTP 5xx, outdated API, etc.) — use cumulative threshold
             val count = (failures[pluginId] ?: 0) + 1
             failures[pluginId] = count
-            Log.d(TAG, "[$pluginId] Gerçek hata #$count/3: ${error.javaClass.simpleName}")
+            Log.d(TAG, "[$pluginId] Gerçek hata #$count/3: ${error.javaClass.simpleName}: $message")
             if (count >= 3) {
                 Log.w(TAG, "[$pluginId] 3 gerçek hata — bloklanıyor.")
-                Log.e(PLUGIN_DIAG, "🚫 BLOK [$pluginId] — 3/3 Ağ/HTTP hatası — Son hata: ${error.javaClass.simpleName}: ${error.message}")
+                Log.e(PLUGIN_DIAG, "🚫 BLOK [$pluginId] — 3/3 Ağ/HTTP hatası — Son hata: ${error.javaClass.simpleName}: $message")
                 blocklist.add(pluginId)
             }
         }

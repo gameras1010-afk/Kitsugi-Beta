@@ -240,6 +240,8 @@ dependencies {
     implementation("androidx.media3:media3-database:1.8.0")
     implementation("androidx.media3:media3-container:1.8.0")
     implementation("androidx.media3:media3-decoder:1.8.0")
+    // DASH stream desteği — ClassNotFoundException: DashMediaSource$Factory hatası için zorunlu
+    implementation("androidx.media3:media3-exoplayer-dash:1.8.0")
     implementation("androidx.annotation:annotation-experimental:1.3.1")
     compileOnly("org.checkerframework:checker-qual:3.43.0")
 

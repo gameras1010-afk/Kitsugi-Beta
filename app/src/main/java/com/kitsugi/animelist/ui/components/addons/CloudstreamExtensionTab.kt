@@ -54,6 +54,8 @@ internal fun CloudstreamExtensionsTab(
     onUninstallCsPlugin: (CsPluginEntity) -> Unit,
     onVerifyPlugin: (pluginId: String, pluginName: String) -> Unit,
     onOpenDiagnostic: (() -> Unit)? = null,
+    useGithubProxy: Boolean = false,
+    onUseGithubProxyChanged: (Boolean) -> Unit = {},
     listState: LazyListState = rememberLazyListState()
 ) {
     var activeSection by rememberSaveable { mutableStateOf(CsTabSection.REPOS) }
@@ -86,6 +88,23 @@ internal fun CloudstreamExtensionsTab(
         contentPadding = PaddingValues(bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        // ─ GitHub Vekil Sunucu (jsDelivr) Toggle ────────────────────────────────────────
+        item {
+            androidx.compose.foundation.layout.Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(KitsugiColors.SurfaceSoft)
+            ) {
+                com.kitsugi.animelist.ui.components.KitsugiSwitchSettingItem(
+                    title = "🌐 GitHub Vekil Sunucu (jsDelivr)",
+                    description = "raw.githubusercontent.com URL'lerini jsDelivr CDN'e yönlendirir. Ağ kısıtlamalarında eklenti/repo güncellemelerini güvenilir kılar.",
+                    checked = useGithubProxy,
+                    onCheckedChange = onUseGithubProxyChanged
+                )
+            }
+        }
+
         // ─ Plugin Tanı Modu Bantı ─────────────────────────────────────────────────────
         if (onOpenDiagnostic != null) {
             item {
@@ -196,7 +215,7 @@ internal fun CloudstreamExtensionsTab(
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         val predefinedRepos = listOf(
-                            Triple("⚡ Keyiflerolsun (maarrem)", "DiziPal, RecTV, DDizi, Dizilla vb. eklentiler ve Türkçe eklenti deposu.", "https://raw.githubusercontent.com/maarrem/cs-Kekik/master/repo.json"),
+                            Triple("⚡ Kitsugi Eklentileri (Önerilen)", "DiziPal, RecTV, DDizi, Dizilla vb. derlenmiş ve güncel Türkçe eklenti deposu.", "https://raw.githubusercontent.com/gameras1010-afk/Kitsugi-Plugins/builds/repo.json"),
                             Triple("⚡ Kekik (feroxx)", "Aktif Kekik eklenti deposu derlemeleri (builds) ve Türkçe topluluk havuzu.", "https://raw.githubusercontent.com/feroxx/Kekik-cloudstream/refs/heads/builds/repo.json"),
                             Triple("⚡ Kraptor (Kraptor123)", "AnimeciX, Animeler, AnimeElysium eklentilerini içeren dizi/film ve anime deposu.", "https://raw.githubusercontent.com/Kraptor123/cs-kraptor/refs/heads/master/repo.json"),
                             Triple("⚡ CS-Karma (Kraptor123)", "Kraptor'un alternatif Karma Türkçe eklenti deposu.", "https://raw.githubusercontent.com/Kraptor123/Cs-Karma/refs/heads/master/repo.json"),

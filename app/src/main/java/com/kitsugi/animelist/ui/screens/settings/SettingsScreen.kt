@@ -713,6 +713,8 @@ private fun SettingsAddonsDialogWrapper(
         onClearBulkInstallResult = addon.onClearBulkInstallResult,
         onToggleCsPlugin = addon.onToggleCsPlugin,
         onUninstallCsPlugin = addon.onUninstallCsPlugin,
+        useGithubProxy = addon.useGithubProxy,
+        onUseGithubProxyChanged = addon.onUseGithubProxyChanged,
         mangaSources = manga.mangaSources,
         onInstallMangaExtension = manga.onInstallMangaExtension,
         onDeleteMangaExtension = manga.onDeleteMangaExtension,

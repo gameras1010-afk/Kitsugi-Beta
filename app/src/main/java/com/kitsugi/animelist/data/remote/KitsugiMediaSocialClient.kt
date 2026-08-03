@@ -74,6 +74,29 @@ class KitsugiMediaSocialClient {
                         } else null
                     }
                 }
+                "kitsu" -> {
+                    val kitsuOffset = 300_000_000
+                    val kitsuNumericId = if (externalId >= kitsuOffset) externalId - kitsuOffset else externalId
+                    if (kitsuNumericId <= 0) return@withContext null
+
+                    val resolved = runCatching {
+                        KitsugiIdResolver.resolveIds(malId = realMalId, aniListId = null, kitsuId = kitsuNumericId)
+                    }.getOrNull()
+
+                    val aniListId = resolved?.aniListId
+                    if (aniListId != null && aniListId > 0) {
+                        val encoded = 100_000_000 + aniListId
+                        val stats = fetchStatsFromAniList(encoded, mediaType)
+                        if (stats != null) return@withContext stats
+                    }
+
+                    val jikanId = realMalId?.takeIf { it > 0 } ?: resolved?.malId?.takeIf { it > 0 }
+                    if (jikanId != null) {
+                        return@withContext fetchStatsFromJikan(jikanId, mediaType)
+                    }
+
+                    null
+                }
                 "jikan", "mal" -> {
                     val aniStats = fetchStatsFromAniList(externalId, mediaType)
                     if (aniStats != null && (aniStats.rankings.isNotEmpty() || aniStats.scoreDistribution.isNotEmpty())) {
@@ -261,6 +284,29 @@ class KitsugiMediaSocialClient {
                     }
 
                     list.distinctBy { it.username + it.fullText.take(20) }
+                }
+                "kitsu" -> {
+                    val kitsuOffset = 300_000_000
+                    val kitsuNumericId = if (externalId >= kitsuOffset) externalId - kitsuOffset else externalId
+                    if (kitsuNumericId <= 0) return@withContext emptyList()
+
+                    val resolved = runCatching {
+                        KitsugiIdResolver.resolveIds(malId = realMalId, aniListId = null, kitsuId = kitsuNumericId)
+                    }.getOrNull()
+
+                    val aniListId = resolved?.aniListId
+                    if (aniListId != null && aniListId > 0) {
+                        val encoded = 100_000_000 + aniListId
+                        val list = fetchReviewsFromAniList(encoded, mediaType, page)
+                        if (list.isNotEmpty()) return@withContext list
+                    }
+
+                    val jikanId = realMalId?.takeIf { it > 0 } ?: resolved?.malId?.takeIf { it > 0 }
+                    if (jikanId != null) {
+                        return@withContext fetchReviewsFromJikan(jikanId, mediaType, page)
+                    }
+
+                    emptyList()
                 }
                 "jikan", "mal" -> fetchReviewsFromJikan(externalId, mediaType, page)
                 "anilist"      -> fetchReviewsFromAniList(externalId, mediaType, page)

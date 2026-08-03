@@ -1,17 +1,17 @@
 # Kitsugi CS Plugin Live Diagnostics — Tam Rapor
 
-**Oluşturulma:** 2026-08-02T01:13:52.775660500
-**Toplam probe edilen eklenti:** 201
+**Oluşturulma:** 2026-08-03T13:32:06.535904
+**Toplam probe edilen eklenti:** 366
 
 ## Özet
 | Metrik | Sayı |
 |---|---|
-| ✅ CS3 İndirilebilir | 199 |
-| ❌ CS3 Erişilemiyor | 2 |
-| 🟢 Site 200 OK | 113 |
-| ⚠️ Cloudflare Korumalı | 108 |
+| ✅ CS3 İndirilebilir | 363 |
+| ❌ CS3 Erişilemiyor | 3 |
+| 🟢 Site 200 OK | 117 |
+| ⚠️ Cloudflare Korumalı | 112 |
 | 🚨 WAF Engeli | 0 |
-| ❓ Domain Bilinmiyor | 78 |
+| ❓ Domain Bilinmiyor | 236 |
 
 ---
 
@@ -88,7 +88,7 @@
 | **HDFilmCehennemi** | Movie, TvSeries | ✅200 | `https://www.hdfilmcehennemi.nl` | 200 | ⚠️ | - | [CF] |
 | **InatBox** | Movie, TvSeries, Live | ✅200 | _bilinmiyor_ | N/A | - | - |  |
 | **JetFilmizle** | Movie | ✅200 | `https://jetfilmizle.now` | 200 | ⚠️ | - | [CF] |
-| **KultFilmler** | Movie, TvSeries | ✅200 | `https://kultfilmler.net` | 200 | ⚠️ | - | [CF] |
+| **KultFilmler** | Movie, TvSeries | ✅200 | `https://kultfilmler.net` | -1 | - | - | Conn error: timeout |
 | **RareFilmm** | Movie | ✅200 | _bilinmiyor_ | N/A | - | - |  |
 | **RecTV** | Movie, Live, TvSeries | ✅200 | `https://b.prectv38.sbs` | -1 | - | - | DNS failed |
 | **SetFilmIzle** | Movie, TvSeries | ✅200 | `https://www.setfilmizle.uk` | 200 | ⚠️ | - | [CF] |
@@ -129,7 +129,7 @@
 | **DiziLife** | Movie, TvSeries | ✅200 | `https://dizi73.life` | 200 | ⚠️ | - | [CF] |
 | **DiziMom** | TvSeries | ✅200 | `https://www.dizimom.rest` | 200 | ⚠️ | - | [CF] |
 | **DiziPal** | Movie, TvSeries | ✅200 | `https://dizipal.bid` | 200 | ⚠️ | - | [CF] |
-| **DiziPalOrijinal** | TvSeries | ✅200 | `https://dizipal1572.com` | 200 | - | - |  |
+| **DiziPalOrijinal** | TvSeries | ✅200 | `https://dizipal1572.com` | 301 | - | - | [→https://dizipal1573.com/] |
 | **DiziYo** | TvSeries | ✅200 | `https://www.diziyo.so` | 200 | ⚠️ | - | [CF] |
 | **DiziYou** | TvSeries | ✅200 | `https://www.diziyou.one` | 200 | ⚠️ | - | [CF] |
 | **Dizigecesi** | Movie, TvSeries | ✅200 | _bilinmiyor_ | N/A | - | - |  |
@@ -178,6 +178,48 @@
 
 ---
 
+## 📦 Kraptor123 / Cs-Karma (35 eklenti)
+
+| Eklenti | TV Türleri | CS3 | Site URL | Site Kodu | CF | WAF | Açıklama |
+|---|---|---|---|---|---|---|---|
+| **AnimeAV** | Anime | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **AnimeWorld** | Anime | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **AnimeYTX** | Anime | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **BasketballReplays** | Live | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **DocumentaryArea** | Documentary | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **DoramasLatinoX** | AsianDrama | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Dramaizle** | AsianDrama | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Dubbindo** | AsianDrama | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Esheaq** | Movie, TvSeries | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **F1FullRaces** | Live | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Filmmirasım** | Documentary | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Flixlatam** | Movie | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **FootReplays** | Others | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Footballia** | Live | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Full4kizle** | Movie, AsianDrama | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **FullRaces** | Movie | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Gnulahd** | Movie, Anime, TvSeries | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Henaojara** | Anime, AnimeMovie | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Iwatchtheoffice** | Movie | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **JPFilms** | AsianDrama | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **KissKH** | AsianDrama | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Krmzy** | TvSeries | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Latanime** | Movie | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **LayarKaca** | Movie, TvSeries | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Movix** | Movie, TvSeries, Anime | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **OK** | Movie, TvSeries | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Sokuja** | Anime, AnimeMovie | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Streamed** | Live | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Subsplease** | Anime | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Supercartoons** | Cartoon | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **TVGarden** | Live | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **WatchWrestling** | Live | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Wcoflix** | Anime, Cartoon | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Yablom** | Movie | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **YoTurkish** | TvSeries | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+
+---
+
 ## 📦 nikyokki / nik-cloudstream (51 eklenti)
 
 | Eklenti | TV Türleri | CS3 | Site URL | Site Kodu | CF | WAF | Açıklama |
@@ -211,7 +253,7 @@
 | **HDFilmIzle** | Movie, TvSeries | ✅200 | _bilinmiyor_ | N/A | - | - |  |
 | **HDFilmSitesi** | Movie | ✅200 | _bilinmiyor_ | N/A | - | - |  |
 | **JetFilmizle** | Movie | ✅200 | `https://jetfilmizle.now` | 200 | ⚠️ | - | [CF] |
-| **KoreanTurk** | AsianDrama | ✅200 | `https://www.koreanturk.net` | 522 | ⚠️ | - | [CF] |
+| **KoreanTurk** | AsianDrama | ✅200 | `https://www.koreanturk.net` | 523 | ⚠️ | - | [CF] |
 | **KultFilmler** | Movie, TvSeries | ✅200 | `https://kultfilmler.net` | 200 | ⚠️ | - | [CF] |
 | **RecTV** | Movie, Live, TvSeries | ✅200 | `https://b.prectv38.sbs` | -1 | - | - | DNS failed |
 | **RoketDizi** | TvSeries | ✅200 | _bilinmiyor_ | N/A | - | - |  |
@@ -262,4 +304,155 @@
 | Eklenti | TV Türleri | CS3 | Site URL | Site Kodu | CF | WAF | Açıklama |
 |---|---|---|---|---|---|---|---|
 | **NeonSpor** | Live | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+
+---
+
+## 📦 Kraptor123 / Cs-GizliKeyif (108 eklenti)
+
+| Eklenti | TV Türleri | CS3 | Site URL | Site Kodu | CF | WAF | Açıklama |
+|---|---|---|---|---|---|---|---|
+| **18EU** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **3XChina** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **AZNude** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **AdultDeepFakes** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **AdultTvChannels** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Aki** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **AllClassicPorn** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Allpornstream** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **BadTv** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Beeg** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **CamCaps** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **CamWh** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Chatrubate** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Cloudbate** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **CollectionOfBestPorn** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Coomer** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **CosXPlay** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Cumlouder** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **DirtyShip** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Doeda** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **DoedaOrijinal** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Domlepen** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **EFukt** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **EPorner** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **EroThots** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Erome** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Evooli** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **FamilyPorn** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Fapix** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **FitNakedGirls** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **FreePornVideos** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **FreeUsePorn** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **FullPorner** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Fyptt** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Girlsswallowed** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **HQCollect** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **HQPorner** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **HanimeTV** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **HdAbla** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **HeavyR** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **HentaiCity** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **HentaiWorld** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Hentaila** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **HotLeak** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **JavGuru** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Javseen** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Javtiful** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Kalite18** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Kopeda** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Koreanpornmovie** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Koreaye** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **LiveCamRips** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Maheir** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Mangoporn** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **MilfNut** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **MissAV** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **NetFapX** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **NoodleMagazine** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Notmik** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **OnScreens** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **OppaiStream** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **PMVHaven** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **PerfectGirls** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **PerverZija** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Pimpbunny** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Pinkueiga** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Porn00** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Porn36** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **PornHat** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **PornHub** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **PornWatch** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Pornocarioca** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Pornslash** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Porntrex** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Redgifs** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **RoshyTv** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **RouVideo** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Rule34video** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Rusporn** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **SexTB** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Sexfilm** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **SimpCity** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Sxyprn** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **ThaiPorn** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **ThotDeep** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Tubepornclassic** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **TurkHub** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **TurkIfsalar** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **TurkPorno** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **UnusualPornX** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **VideoCelebs** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Vsex** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **WatchHentai** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **WatchPorn** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Wumaobi** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **XChina** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **XMoviesForYou** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **XNalgas** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **XRares** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **XXXParodyHD** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Xhamster** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Xpaja** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **YTBoob** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **YouJizz** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **Youperv** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **ePawg** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **xVideos** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **İnfluencerChicks** | NSFW | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+
+---
+
+## 📦 Sertel392 / Makotogecici (17 eklenti)
+
+| Eklenti | TV Türleri | CS3 | Site URL | Site Kodu | CF | WAF | Açıklama |
+|---|---|---|---|---|---|---|---|
+| **AnimeciX** | Anime | ✅200 | `https://animecix.tv` | 200 | ⚠️ | - | [CF] |
+| **AsyaAnimeleri** | Anime | ✅200 | `https://asyaanimeleri.top` | 200 | ⚠️ | - | [CF] |
+| **AsyaFilmIzlesene** | Movie | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **AsyaWatch** | Movie, TvSeries, AsianDrama | ✅200 | `https://asyawatch.com` | 200 | ⚠️ | - | [CF] |
+| **BelgeselX** | Live | ✅200 | `https://belgeselx.com` | 200 | - | - |  |
+| **CanliTv** | Live | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **CizgiVeDizi** | Cartoon, TvSeries | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **DiziBox** | TvSeries | ✅200 | `https://www.dizibox.live` | 200 | ⚠️ | - | [CF] |
+| **InatBox** | Movie, TvSeries, Live | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **JetFilmizle** | Movie | ✅200 | `https://jetfilmizle.now` | 200 | ⚠️ | - | [CF] |
+| **Kanal 7** | TvSeries | ❌404 | _bilinmiyor_ | N/A | - | - | [CS3:404] |
+| **Puhu** | Movie,TvSeries | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **RecTV** | Movie, Live, TvSeries | ✅200 | `https://b.prectv38.sbs` | -1 | - | - | DNS failed |
+| **TorrentFilm** | Movie, Torrent | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **WebDramaTurkey** | AsianDrama, Movie, TvSeries, Anime | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **YerelDiziler** | Tv Series | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **YerelProgramlar** | Tv Series | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+
+---
+
+## 📦 caca1403 / cloudstream-cagi-eklenti (5 eklenti)
+
+| Eklenti | TV Türleri | CS3 | Site URL | Site Kodu | CF | WAF | Açıklama |
+|---|---|---|---|---|---|---|---|
+| **AnimeSiteleri** | Anime, AnimeMovie | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **BelgeselProvider** | Documentary | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **DiziFilmSiteleri** | Movie, TvSeries, Anime, AsianDrama, Cartoon | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **TelevizyonEklentileri** | LiveStream, TvSeries | ✅200 | _bilinmiyor_ | N/A | - | - |  |
+| **TopluDiziler** | Movie, TvSeries, Anime, AsianDrama, Cartoon, Documentary, Live | ✅200 | _bilinmiyor_ | N/A | - | - |  |
 

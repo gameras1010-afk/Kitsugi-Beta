@@ -54,6 +54,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
+import androidx.compose.runtime.saveable.rememberSaveable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,8 +67,12 @@ fun AddonSearchDialog(
     val keyboardController = LocalSoftwareKeyboardController.current
     val scope = rememberCoroutineScope()
 
-    var query by remember { mutableStateOf("") }
-    var exploreApi by remember { mutableStateOf<MainAPI?>(null) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var exploreApiName by rememberSaveable { mutableStateOf<String?>(null) }
+    val exploreApi = remember(exploreApiName) {
+        if (exploreApiName == null) null
+        else APIHolder.allProviders.firstOrNull { it.name == exploreApiName }
+    }
     var isLoading by remember { mutableStateOf(false) }
     var searchResults by remember { mutableStateOf<List<Pair<MainAPI, SearchResponse>>>(emptyList()) }
     var activeApis by remember { mutableStateOf<List<MainAPI>>(emptyList()) }
@@ -370,7 +375,7 @@ fun AddonSearchDialog(
                                                 .clip(RoundedCornerShape(16.dp))
                                                 .background(KitsugiColors.Surface)
                                                 .clickable {
-                                                    exploreApi = api
+                                                    exploreApiName = api.name
                                                 }
                                                 .border(
                                                     width = 1.dp,
@@ -429,10 +434,12 @@ fun AddonSearchDialog(
         val capturedApi = exploreApi!!
         AddonExploreDialog(
             api = capturedApi,
-            onDismissRequest = { exploreApi = null },
+            onDismissRequest = { exploreApiName = null },
             onSeeAllClick = if (onSeeAllAddonSection != null) {
                 { title, mainPageData, horizontalImages, initialItems ->
-                    onSeeAllAddonSection(capturedApi.name, title, mainPageData, horizontalImages, initialItems)
+                    onSeeAllAddonSection(
+                        capturedApi.name, title, mainPageData, horizontalImages, initialItems
+                    )
                 }
             } else null
         )

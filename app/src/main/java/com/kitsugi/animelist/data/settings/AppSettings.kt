@@ -46,6 +46,9 @@ data class AppSettings(
     val mangaFitMode: String = "FitScreen",
     val mangaBrightness: Float = 1.0f,
     val dnsChoice: Int = 0,
+    // GitHub Vekil Sunucu: raw.githubusercontent.com URL'lerini jsDelivr CDN üzerinden yönlendirir.
+    // ISS engellerine karşı eklenti/repo güncellemelerini güvenilir kılar.
+    val useGithubProxy: Boolean = false,
     // ─── Harici API Entegrasyonları ──────────────────────────────────────────
     // TMDB: Kullanıcı kendi API anahtarını girebilir; boşsa dahili anahtar kullanılır
     val tmdbEnabled: Boolean = true,

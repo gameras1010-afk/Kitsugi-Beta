@@ -753,7 +753,21 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                     }
                 }
                 SearchPlatform.CS3 -> {
-                    val rawResults = com.kitsugi.animelist.data.cloudstream.CsStreamRunner.searchAllAddons(getApplication(), queryText)
+                    val targetApiName = state.selectedPluginApiName
+                    val rawResults = if (targetApiName != null) {
+                        // Seçili tek eklentide ara
+                        val api = com.lagradost.cloudstream3.APIHolder.allProviders
+                            .firstOrNull { it.name == targetApiName }
+                        if (api != null) {
+                            com.kitsugi.animelist.data.cloudstream.CsStreamRunner.safeSearch(api, queryText)
+                                .map { api to it }
+                        } else {
+                            com.kitsugi.animelist.data.cloudstream.CsStreamRunner.searchAllAddons(getApplication(), queryText)
+                        }
+                    } else {
+                        // Tüm aktif eklentilerde ara
+                        com.kitsugi.animelist.data.cloudstream.CsStreamRunner.searchAllAddons(getApplication(), queryText)
+                    }
                     rawResults.map { (api, response) ->
                         JikanSearchResult(
                             malId = response.url.hashCode(),
@@ -810,6 +824,25 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     fun clearQuery() {
         _uiState.update {
             it.copy(
+                query = "",
+                results = emptyList(),
+                hasSearched = false,
+                errorMessage = null
+            )
+        }
+    }
+
+    /**
+     * Bir eklenti seçildiğinde çağrılır.
+     * [apiName] null ise ve [keepPlatformCs3] true ise, platform CS3'te (Eklentiler) kalır ama tüm eklentiler aranır.
+     * [apiName] null ise ve [keepPlatformCs3] false ise, platform All (Tümü) olur.
+     */
+    fun setSelectedPlugin(apiName: String?, keepPlatformCs3: Boolean = false) {
+        _uiState.update {
+            it.copy(
+                selectedPluginApiName = apiName,
+                selectedPlatform = if (keepPlatformCs3 || apiName != null) SearchPlatform.CS3 else SearchPlatform.All,
+                // Arama geçmişini temizle, boş sayfa göster
                 query = "",
                 results = emptyList(),
                 hasSearched = false,

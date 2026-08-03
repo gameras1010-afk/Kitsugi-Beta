@@ -19,10 +19,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Extension
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.SearchOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,6 +43,9 @@ import com.kitsugi.animelist.model.MediaEntry
 import com.kitsugi.animelist.model.MediaType
 import com.kitsugi.animelist.ui.components.KitsugiEmptyState
 import com.kitsugi.animelist.ui.components.KitsugiShimmerSearchResultList
+import com.kitsugi.animelist.ui.screens.search.components.PluginPickerBottomSheet
+import com.kitsugi.animelist.ui.screens.search.components.addonExploreInlineSections
+import com.kitsugi.animelist.ui.screens.search.components.rememberAddonExploreInlineState
 import com.kitsugi.animelist.ui.screens.search.composables.KitsugiSearchCountryChip
 import com.kitsugi.animelist.ui.screens.search.composables.KitsugiSearchDateChip
 import com.kitsugi.animelist.ui.screens.search.composables.KitsugiSearchEpChDurationChip
@@ -53,6 +58,7 @@ import com.kitsugi.animelist.ui.theme.LocalIsTv
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
 import com.kitsugi.animelist.ui.utils.tvClickable
 import com.kitsugi.animelist.ui.utils.dpadVerticalFastScroll
+import com.lagradost.cloudstream3.APIHolder
 import kotlinx.coroutines.launch
 
 @Composable
@@ -79,7 +85,24 @@ fun SearchScreen(
     var openPlatformDialog by remember { mutableStateOf(false) }
     var openTmdbFormatDialog by remember { mutableStateOf(false) }
     var openTmdbGenreDialog by remember { mutableStateOf(false) }
-    var openAddonSearchDialog by remember { mutableStateOf(false) }
+    var openAddonSearchDialog by rememberSaveable { mutableStateOf(false) }
+    var showPluginPicker by remember { mutableStateOf(false) }
+
+    // Plugin Explore State
+    val selectedPluginApiName = uiState.selectedPluginApiName
+    val selectedPluginApi = remember(selectedPluginApiName) {
+        if (selectedPluginApiName == null) null
+        else APIHolder.allProviders.firstOrNull { it.name == selectedPluginApiName }
+    }
+    val pluginExploreState = selectedPluginApiName?.let {
+        rememberAddonExploreInlineState(apiName = it)
+    }
+    // Eklenti seçildiğinde home feed'i yükle
+    LaunchedEffect(selectedPluginApiName, selectedPluginApi) {
+        val api = selectedPluginApi ?: return@LaunchedEffect
+        val state = pluginExploreState ?: return@LaunchedEffect
+        state.load(api)
+    }
 
     val entryMap = remember(currentEntries) {
         val mapping = mutableMapOf<String, MediaEntry>()
@@ -291,22 +314,95 @@ fun SearchScreen(
                         }
                     }
 
+                    // Eklenti Seç butonu — seçili eklenti varsa vurgu rengi
                     IconButton(
-                        onClick = { openAddonSearchDialog = true },
+                        onClick = { showPluginPicker = true },
                         modifier = Modifier
                             .size(56.dp)
                             .clip(RoundedCornerShape(22.dp))
-                            .background(KitsugiColors.Surface)
-                            .border(1.dp, KitsugiColors.Border, RoundedCornerShape(22.dp))
+                            .background(
+                                if (selectedPluginApiName != null)
+                                    accentColor.copy(alpha = 0.18f)
+                                else KitsugiColors.Surface
+                            )
+                            .border(
+                                width = if (selectedPluginApiName != null) 1.5.dp else 1.dp,
+                                color = if (selectedPluginApiName != null) accentColor else KitsugiColors.Border,
+                                shape = RoundedCornerShape(22.dp)
+                            )
                     ) {
                         Icon(
                             imageVector = Icons.Default.Extension,
-                            contentDescription = "Eklenti Araması",
-                            tint = accentColor
+                            contentDescription = "Eklenti Seç",
+                            tint = if (selectedPluginApiName != null) accentColor else KitsugiColors.TextMuted
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // ── Seçili Eklenti Chip'i ─────────────────────────────────
+                AnimatedVisibility(
+                    visible = selectedPluginApiName != null,
+                    enter = fadeIn() + expandVertically(),
+                    exit = fadeOut() + shrinkVertically()
+                ) {
+                    if (selectedPluginApiName != null) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            // Chip
+                            Row(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .background(accentColor.copy(alpha = 0.15f))
+                                    .border(1.dp, accentColor.copy(alpha = 0.4f), RoundedCornerShape(20.dp))
+                                    .padding(start = 12.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Extension,
+                                    contentDescription = null,
+                                    tint = accentColor,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Text(
+                                    text = selectedPluginApiName,
+                                    color = accentColor,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    maxLines = 1
+                                )
+                                // X butonu
+                                Box(
+                                    modifier = Modifier
+                                        .size(22.dp)
+                                        .clip(RoundedCornerShape(11.dp))
+                                        .background(accentColor.copy(alpha = 0.2f))
+                                        .tvClickable(shape = RoundedCornerShape(11.dp)) {
+                                            viewModel.setSelectedPlugin(null)
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Eklentiyi Sıfırla",
+                                        tint = accentColor,
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                }
+                            }
+                            Text(
+                                text = "Bu eklentide ara veya keşfet",
+                                color = KitsugiColors.TextMuted,
+                                fontSize = 12.sp
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
             }
 
             // Search Type Selection (Anime, Manga, TMDB)
@@ -474,6 +570,26 @@ fun SearchScreen(
             // Active Filters Inline Dismissible Chips Row
             // (Active filter pills removed – chips themselves show active state)
 
+            // ── Plugin Explore Mode ─────────────────────────────────────────
+            // Eklenti seçili + query boş = eklentinin home feed'ini göster
+            val isPluginExploreMode = selectedPluginApiName != null &&
+                uiState.query.isEmpty() && !uiState.hasSearched
+
+            if (isPluginExploreMode && pluginExploreState != null) {
+                val capturedApi = selectedPluginApi
+                if (capturedApi != null) {
+                    addonExploreInlineSections(
+                        state = pluginExploreState,
+                        api = capturedApi,
+                        onSeeAllClick = onSeeAllAddonSection?.let { cb ->
+                            { apiName, title, mainPageData, horizontalImages, initialItems ->
+                                cb(apiName, title, mainPageData, horizontalImages, initialItems)
+                            }
+                        }
+                    )
+                }
+            } else {
+
             // Search History Section
             if (showIdleContent && uiState.searchHistory.isNotEmpty()) {
                 item {
@@ -542,6 +658,8 @@ fun SearchScreen(
             }
 
             item { Spacer(modifier = Modifier.height(90.dp)) }
+
+            } // end isPluginExploreMode else branch
         }
 
         // Scroll to Top FAB
@@ -638,6 +756,17 @@ fun SearchScreen(
         com.kitsugi.animelist.ui.screens.search.components.AddonSearchDialog(
             onDismissRequest = { openAddonSearchDialog = false },
             onSeeAllAddonSection = onSeeAllAddonSection
+        )
+    }
+
+    // ── Plugin Picker BottomSheet ─────────────────────────────────────────
+    if (showPluginPicker) {
+        PluginPickerBottomSheet(
+            onDismissRequest = { showPluginPicker = false },
+            onPluginSelected = { apiName ->
+                viewModel.setSelectedPlugin(apiName, keepPlatformCs3 = true)
+                showPluginPicker = false
+            }
         )
     }
 }

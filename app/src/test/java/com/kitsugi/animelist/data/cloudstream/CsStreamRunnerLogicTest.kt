@@ -203,12 +203,18 @@ class CsStreamRunnerLogicTest {
 
     @Test
     fun testKnownBrokenPlugins_Contains_IfsaLog() {
-        assertTrue(KNOWN_BROKEN_PLUGINS.contains("IfsaLog"))
+        // IfsaLog eskiden hard-coded broken listesindeydi,
+        // ancak artık dinamik domain-fix yönetimine taşındı.
+        // KNOWN_BROKEN_PLUGINS intentionally empty — handled by KNOWN_BROKEN_DOMAINS.
+        assertFalse(KNOWN_BROKEN_PLUGINS.contains("IfsaLog"))
     }
 
     @Test
     fun testKnownBrokenPlugins_Contains_SuperFilmGeldi() {
-        assertTrue(KNOWN_BROKEN_PLUGINS.contains("SuperFilmGeldi"))
+        // SuperFilmGeldi eskiden hard-coded broken listesindeydi,
+        // ancak artık dinamik domain-fix yönetimine taşındı.
+        // KNOWN_BROKEN_PLUGINS intentionally empty — handled by KNOWN_BROKEN_DOMAINS.
+        assertFalse(KNOWN_BROKEN_PLUGINS.contains("SuperFilmGeldi"))
     }
 
     @Test
@@ -220,12 +226,18 @@ class CsStreamRunnerLogicTest {
 
     @Test
     fun testKnownBrokenPlugins_Contains_KraptorPlus() {
-        assertTrue(KNOWN_BROKEN_PLUGINS.contains("KraptorPlus"))
+        // KraptorPlus eskiden hard-coded broken listesindeydi,
+        // ancak artık dinamik domain-fix yönetimine taşındı.
+        // KNOWN_BROKEN_PLUGINS intentionally empty — handled by KNOWN_BROKEN_DOMAINS.
+        assertFalse(KNOWN_BROKEN_PLUGINS.contains("KraptorPlus"))
     }
 
     @Test
     fun testKnownBrokenPlugins_Contains_TvDiziler() {
-        assertTrue(KNOWN_BROKEN_PLUGINS.contains("TvDiziler"))
+        // TvDiziler eskiden hard-coded broken listesindeydi,
+        // ancak artık dinamik domain-fix yönetimine taşındı.
+        // KNOWN_BROKEN_PLUGINS intentionally empty — handled by KNOWN_BROKEN_DOMAINS.
+        assertFalse(KNOWN_BROKEN_PLUGINS.contains("TvDiziler"))
     }
 
     @Test

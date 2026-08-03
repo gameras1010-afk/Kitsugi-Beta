@@ -76,6 +76,8 @@ class KitsugiFullscreenPlayerActivity : ComponentActivity() {
         const val EXTRA_DESCRIPTION = "extra_description"
         const val EXTRA_CAST_JSON   = "extra_cast_json"
         const val EXTRA_IS_MOVIE    = "extra_is_movie"
+        const val EXTRA_CS3_URL     = "extra_cs3_url"
+        const val EXTRA_CS3_API_NAME = "extra_cs3_api_name"
 
         @Volatile
         var tempStreamSources: List<StreamSource>? = null
@@ -118,7 +120,9 @@ class KitsugiFullscreenPlayerActivity : ComponentActivity() {
             startYear: Int? = null,
             description: String? = null,
             cast: List<MetaCastMember> = emptyList(),
-            isMovie: Boolean = false
+            isMovie: Boolean = false,
+            cs3Url: String? = null,
+            cs3ApiName: String? = null
         ) {
             tempSubtitles = subtitles
             tempStreamSources = allSources
@@ -129,6 +133,8 @@ class KitsugiFullscreenPlayerActivity : ComponentActivity() {
                     putExtra(EXTRA_VIDEO_URL, videoUrl)
                     putExtra(EXTRA_AUDIO_URL, audioUrl)
                     putExtra(EXTRA_TITLE, title)
+                    cs3Url?.let { putExtra(EXTRA_CS3_URL, it) }
+                    cs3ApiName?.let { putExtra(EXTRA_CS3_API_NAME, it) }
                     if (!headers.isNullOrEmpty()) {
                         val bundle = android.os.Bundle()
                         headers.forEach { (k, v) -> bundle.putString(k, v) }
@@ -280,6 +286,8 @@ class KitsugiFullscreenPlayerActivity : ComponentActivity() {
         val startYear = intent.getIntExtra(EXTRA_START_YEAR, -1).takeIf { it != -1 }
         val description = intent.getStringExtra(EXTRA_DESCRIPTION)
         val isMovie = intent.getBooleanExtra(EXTRA_IS_MOVIE, false)
+        val cs3Url = intent.getStringExtra(EXTRA_CS3_URL)
+        val cs3ApiName = intent.getStringExtra(EXTRA_CS3_API_NAME)
 
         val castList: List<MetaCastMember> = tempCast ?: run {
             val castJson = intent.getStringExtra(EXTRA_CAST_JSON)
@@ -339,10 +347,22 @@ class KitsugiFullscreenPlayerActivity : ComponentActivity() {
                     description      = description,
                     castList         = castList,
                     isMovie          = isMovie,
+                    cs3Url           = cs3Url,
+                    cs3ApiName       = cs3ApiName,
                     onBack           = { finish() }
                 )
             }
         }
+    }
+
+    /**
+     * Hızlı ardışık bölüm açma/kapama senaryolarında Android bazen henüz RESUME
+     * olmamış bir Activity'ye PAUSE transaction gönderir. onNewIntent override'ı
+     * intent'i günceller ve bu geçiş hatalarını engeller.
+     */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
     }
 
     override fun onUserLeaveHint() {

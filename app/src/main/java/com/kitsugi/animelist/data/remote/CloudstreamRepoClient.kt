@@ -85,8 +85,8 @@ class CloudstreamRepoClient {
         private const val TAG = "CloudstreamRepoClient"
     }
 
-    suspend fun fetchRepo(repoUrl: String): CsRepository? = withContext(Dispatchers.IO) {
-        val normalizedUrl = com.kitsugi.animelist.utils.CloudstreamUrlHelper.normalizeUrl(repoUrl)
+    suspend fun fetchRepo(repoUrl: String, useGithubProxy: Boolean = false): CsRepository? = withContext(Dispatchers.IO) {
+        val normalizedUrl = com.kitsugi.animelist.utils.CloudstreamUrlHelper.normalizeAndProxy(repoUrl, useGithubProxy)
         try {
             val request = Request.Builder()
                 .url(normalizedUrl)
@@ -101,7 +101,7 @@ class CloudstreamRepoClient {
                 response.body?.string()
             } ?: return@withContext null
 
-            val json = JSONObject(responseBody)
+            val json = org.json.JSONObject(responseBody)
             val name = json.optString("name", "Bilinmeyen Repo")
             val description = json.optString("description").takeIf { it.isNotBlank() }
             val pluginLists = mutableListOf<String>()
@@ -110,7 +110,7 @@ class CloudstreamRepoClient {
                 for (i in 0 until arr.length()) {
                     val url = arr.optString(i)
                     if (url.isNotBlank()) {
-                        pluginLists.add(com.kitsugi.animelist.utils.CloudstreamUrlHelper.normalizeUrl(url))
+                        pluginLists.add(com.kitsugi.animelist.utils.CloudstreamUrlHelper.normalizeAndProxy(url, useGithubProxy))
                     }
                 }
             }
@@ -121,8 +121,8 @@ class CloudstreamRepoClient {
         }
     }
 
-    suspend fun fetchPlugins(pluginListUrl: String): List<CsPlugin> = withContext(Dispatchers.IO) {
-        val normalizedUrl = com.kitsugi.animelist.utils.CloudstreamUrlHelper.normalizeUrl(pluginListUrl)
+    suspend fun fetchPlugins(pluginListUrl: String, useGithubProxy: Boolean = false): List<CsPlugin> = withContext(Dispatchers.IO) {
+        val normalizedUrl = com.kitsugi.animelist.utils.CloudstreamUrlHelper.normalizeAndProxy(pluginListUrl, useGithubProxy)
         try {
             val request = Request.Builder()
                 .url(normalizedUrl)
@@ -137,7 +137,7 @@ class CloudstreamRepoClient {
                 response.body?.string()
             } ?: return@withContext emptyList()
 
-            val arr = JSONArray(responseBody)
+            val arr = org.json.JSONArray(responseBody)
             val plugins = mutableListOf<CsPlugin>()
             for (i in 0 until arr.length()) {
                 val obj = arr.optJSONObject(i) ?: continue
@@ -145,7 +145,7 @@ class CloudstreamRepoClient {
                 val name = obj.optString("name", "")
                 if (rawUrl.isBlank() || name.isBlank()) continue
 
-                val url = com.kitsugi.animelist.utils.CloudstreamUrlHelper.normalizeUrl(rawUrl)
+                val url = com.kitsugi.animelist.utils.CloudstreamUrlHelper.normalizeAndProxy(rawUrl, useGithubProxy)
 
                 // status: 1=active, 2=beta/testing, 3=broken/deprecated (file may not exist)
                 val status = obj.optInt("status", 1)
@@ -195,13 +195,12 @@ class CloudstreamRepoClient {
      * Fetches the repo manifest and then all plugin lists it references.
      * Returns all plugins in a flat list.
      */
-    suspend fun fetchAllPlugins(repoUrl: String): List<CsPlugin>? {
-        val normalizedRepoUrl = com.kitsugi.animelist.utils.CloudstreamUrlHelper.normalizeUrl(repoUrl)
-        val repo = fetchRepo(normalizedRepoUrl) ?: return null
+    suspend fun fetchAllPlugins(repoUrl: String, useGithubProxy: Boolean = false): List<CsPlugin>? {
+        val normalizedRepoUrl = com.kitsugi.animelist.utils.CloudstreamUrlHelper.normalizeAndProxy(repoUrl, useGithubProxy)
+        val repo = fetchRepo(normalizedRepoUrl, useGithubProxy) ?: return null
         val all = mutableListOf<CsPlugin>()
         for (listUrl in repo.pluginLists) {
-            val normalizedListUrl = com.kitsugi.animelist.utils.CloudstreamUrlHelper.normalizeUrl(listUrl)
-            all.addAll(fetchPlugins(normalizedListUrl))
+            all.addAll(fetchPlugins(listUrl, useGithubProxy))
         }
         return all
     }

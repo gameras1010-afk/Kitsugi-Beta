@@ -111,6 +111,8 @@ fun KitsugiAddonsSettingsDialog(
     onDismissUntrustedSignature: () -> Unit = {},
     initialTab: Int = 0,
     onOpenDiagnostic: (() -> Unit)? = null,
+    useGithubProxy: Boolean = false,
+    onUseGithubProxyChanged: (Boolean) -> Unit = {},
     onDismiss: () -> Unit
 ) {
     val accentColor = LocalKitsugiAccent.current
@@ -289,6 +291,8 @@ fun KitsugiAddonsSettingsDialog(
                             bulkInstallCurrentName = bulkInstallCurrentName,
                             onToggleCsPlugin = onToggleCsPlugin,
                             onUninstallCsPlugin = onUninstallCsPlugin,
+                            useGithubProxy = useGithubProxy,
+                            onUseGithubProxyChanged = onUseGithubProxyChanged,
                             onVerifyPlugin = { pluginId, pluginName ->
                                 scope.launch(Dispatchers.IO) {
                                     val cs3File = java.io.File(context.filesDir, "cs_extensions/${pluginId}.cs3")

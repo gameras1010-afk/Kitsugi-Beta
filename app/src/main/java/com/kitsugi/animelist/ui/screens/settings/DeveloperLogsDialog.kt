@@ -30,6 +30,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import com.kitsugi.animelist.ui.theme.LocalKitsugiAccent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -51,6 +53,35 @@ fun DeveloperLogsDialog(
     var searchQuery by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
     var crashReport by remember { mutableStateOf<String?>(null) }
+
+    // Snapshot ref so the launcher callback can read the latest logLines/crashReport
+    // without a forward-reference to filteredLines (which is defined later).
+    val logSnapshotRef = remember { androidx.compose.runtime.mutableStateOf<Pair<String?, List<String>>>(null to emptyList()) }
+
+    val saveLogLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("text/plain")
+    ) { uri ->
+        if (uri != null) {
+            val (snap_crash, snap_lines) = logSnapshotRef.value
+            scope.launch {
+                try {
+                    withContext(Dispatchers.IO) {
+                        context.contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
+                            if (snap_crash != null) {
+                                writer.write("=== SON ÇÖKME RAPORU ===\n")
+                                writer.write(snap_crash)
+                                writer.write("\n=========================\n\n")
+                            }
+                            writer.write(snap_lines.joinToString("\n"))
+                        }
+                    }
+                    Toast.makeText(context, "Loglar başarıyla kaydedildi", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Kaydetme başarısız: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 
     val fetchLogs = suspend {
         isLoading = true
@@ -171,6 +202,21 @@ fun DeveloperLogsDialog(
                             colors = IconButtonDefaults.iconButtonColors(containerColor = KitsugiColors.SurfaceStrong)
                         ) {
                             Icon(Icons.Rounded.ContentCopy, "Kopyala", tint = KitsugiColors.TextPrimary)
+                        }
+
+                        IconButton(
+                            onClick = {
+                                // Snapshot current state so the launcher callback can access it
+                                logSnapshotRef.value = crashReport to filteredLines
+                                val timestamp = java.text.SimpleDateFormat(
+                                    "yyyyMMdd-HHmm",
+                                    java.util.Locale.US
+                                ).format(java.util.Date())
+                                saveLogLauncher.launch("Kitsugi-logcat-$timestamp.txt")
+                            },
+                            colors = IconButtonDefaults.iconButtonColors(containerColor = KitsugiColors.SurfaceStrong)
+                        ) {
+                            Icon(Icons.Rounded.Save, "Kaydet", tint = KitsugiColors.TextPrimary)
                         }
 
                         IconButton(

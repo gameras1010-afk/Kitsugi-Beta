@@ -20,5 +20,7 @@ data class WatchHistoryEntry(
     val streamUrl: String? = null,
     val streamHeaders: Map<String, String>? = null,
     val streamTitle: String? = null,
-    val streamName: String? = null
+    val streamName: String? = null,
+    val cs3Url: String? = null,
+    val cs3ApiName: String? = null
 )

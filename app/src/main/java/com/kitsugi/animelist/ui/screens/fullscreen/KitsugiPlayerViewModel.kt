@@ -568,6 +568,9 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
     private var titleRomaji: String? = null
     private var titleNative: String? = null
     private var startYear: Int? = null
+    // CS3 kökenli içerikler için kaynak bilgisi (binge-watch + geçmişten devam)
+    private var cs3Url: String? = null
+    private var cs3ApiName: String? = null
 
     private val _isInitialized = MutableStateFlow(false)
     val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
@@ -594,7 +597,9 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         titleNative: String?,
         startYear: Int?,
         isMovie: Boolean = false,
-        activity: android.app.Activity? = null
+        activity: android.app.Activity? = null,
+        cs3Url: String? = null,
+        cs3ApiName: String? = null
     ) {
         val initKey = "${videoId ?: ""}_${videoUrl ?: ""}_${episode}_${aniListId ?: 0}_${malId ?: 0}_${tmdbId ?: 0}"
         if (_isInitialized.value && lastInitializedKey == initKey) return
@@ -611,6 +616,8 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         this.titleRomaji = titleRomaji
         this.titleNative = titleNative
         this.startYear = startYear
+        this.cs3Url = cs3Url
+        this.cs3ApiName = cs3ApiName
         _animeTitleFlow.value = animeTitle
 
         _currentVideoUrl.value = videoUrl
@@ -844,6 +851,35 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
 
     suspend fun fetchStreamsForEpisode(nextEp: Int): List<StreamSource> = withContext(kotlinx.coroutines.Dispatchers.IO) {
         val repository = AddonStreamRepository(context)
+
+        // ── CS3 direkt URL modu: cs3Url varsa tüm eklentileri aramak yerine
+        // doğrudan o URL üzerinden ilgili bölümü çözümle. ─────────────────────────
+        val localCs3Url = cs3Url
+        val localCs3ApiName = cs3ApiName
+        if (!localCs3Url.isNullOrBlank() && !localCs3ApiName.isNullOrBlank()) {
+            val db = KitsugiDatabase.getDatabase(context)
+            val csPlugin = db.csPluginDao().getEnabledPlugins()
+                .firstOrNull { it.name.equals(localCs3ApiName, ignoreCase = true) }
+            if (csPlugin != null) {
+                CsPluginLoader.loadExtension(context, csPlugin.id)
+            }
+            val activeApi = com.lagradost.cloudstream3.APIHolder.allProviders
+                .firstOrNull { it.name.equals(localCs3ApiName, ignoreCase = true) }
+            if (activeApi != null) {
+                val resolved = CsStreamRunner.getStreamsForUrl(
+                    api = activeApi,
+                    url = localCs3Url,
+                    season = seasonNum,
+                    episode = nextEp
+                )
+                if (resolved.isNotEmpty()) {
+                    Log.d("KitsugiPlayerViewModel", "fetchStreamsForEpisode: CS3 direkt URL modu — ${resolved.size} kaynak")
+                    return@withContext StreamSorter.sort(resolved)
+                }
+            }
+            // Eklenti yüklenemedi veya 0 kaynak — devam ederek normal aramaya düş
+            Log.w("KitsugiPlayerViewModel", "fetchStreamsForEpisode: CS3 URL modu 0 kaynak döndürdü, başlık bazlı aramaya düşülüyor")
+        }
 
         // 1. Stremio stream sources
         val stremioJob = async {

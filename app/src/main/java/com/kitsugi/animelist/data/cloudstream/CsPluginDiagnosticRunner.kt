@@ -39,7 +39,7 @@ object CsPluginDiagnosticRunner {
 
     /** Türkçe CS eklenti depoları */
     val REPOS = listOf(
-        "https://raw.githubusercontent.com/maarrem/cs-Kekik/master/repo.json",
+        "https://raw.githubusercontent.com/gameras1010-afk/Kitsugi-Plugins/builds/repo.json",
         "https://raw.githubusercontent.com/feroxx/Kekik-cloudstream/refs/heads/builds/repo.json",
         "https://raw.githubusercontent.com/Kraptor123/cs-kraptor/refs/heads/master/repo.json",
         "https://raw.githubusercontent.com/Kraptor123/Cs-Karma/refs/heads/master/repo.json",
@@ -214,17 +214,22 @@ object CsPluginDiagnosticRunner {
 
     /** Throwable'dan PhaseError oluşturur */
     private fun buildPhaseError(phase: String, t: Throwable): PhaseError {
+        val resource = throwAbleToResource<Any>(t)
+        val (isNetwork, errorString) = when (resource) {
+            is Resource.Failure -> resource.isNetworkError to resource.errorString
+            else -> false to (t.message ?: t.javaClass.simpleName)
+        }
         val msg = t.message ?: t.javaClass.simpleName
-        val stackSnippet = t.stackTrace.take(3).joinToString("\n") { "\t${it.className}.${it.methodName}:${it.lineNumber}" }
+        val stackSnippet = t.getStackTracePretty()
         return PhaseError(
             phase         = phase,
             errorClass    = t.javaClass.simpleName,
-            message       = msg,
+            message       = errorString,
             httpCode      = extractHttpCode(t),
-            isCfPattern   = isCfPattern(msg) || isCfPattern(t.javaClass.name),
-            isDdosGuard   = isDdosGuard(msg),
-            isTimeout     = isTimeout(t),
-            isNetworkFail = isNetworkFail(t),
+            isCfPattern   = isCfPattern(msg) || isCfPattern(t.javaClass.name) || isCfPattern(errorString),
+            isDdosGuard   = isDdosGuard(msg) || isDdosGuard(errorString),
+            isTimeout     = isTimeout(t) || (resource is Resource.Failure && resource.isNetworkError && errorString.contains("Timeout", ignoreCase = true)),
+            isNetworkFail = isNetworkFail(t) || isNetwork,
             stackSnippet  = stackSnippet
         )
     }
@@ -458,7 +463,12 @@ object CsPluginDiagnosticRunner {
 
                     // Katman 2: Bu tanı çalışmasında DEAD durumundaki eklentileri pasifleştir.
                     // DEAD = plugin indirilemedi / yüklenemedi / ağ hatası ile tamamen çöktü.
-                    val deadPlugins = sorted.filter { it.status == ResultStatus.DEAD }
+                    // GÜNCELLEME: Sadece timeout olmayan ve yapısal olarak indirilemeyen/yüklenemeyen (dead) eklentileri pasifleştir.
+                    val deadPlugins = sorted.filter { 
+                        it.status == ResultStatus.DEAD && 
+                        !it.hasTimeout && 
+                        (!it.loaded || !it.downloaded)
+                    }
                     Log.i(TAG, "[Katman-2] DEAD durumunda ${deadPlugins.size} eklenti tespit edildi.")
                     var deadPruned = 0
                     for (dead in deadPlugins) {
@@ -474,9 +484,11 @@ object CsPluginDiagnosticRunner {
 
                     // Katman 3: NO_STREAMS olan ve kesin ağ hatası (DNS/ConnectException) yaşayan
                     // eklentileri pasifleştir. CF block olanları pasifleştirme — geçici olabilir.
+                    // GÜNCELLEME: Timeout yaşayanları pasifleştirme.
                     val noStreamNetFail = sorted.filter { result ->
                         result.status == ResultStatus.NO_STREAMS &&
                         result.hasNetworkFail &&
+                        !result.hasTimeout &&
                         !result.hasCfBlock &&
                         !result.hasDdosGuard
                     }

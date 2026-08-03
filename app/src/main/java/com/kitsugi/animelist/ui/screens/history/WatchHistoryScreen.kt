@@ -126,7 +126,7 @@ fun WatchHistoryScreen(
                                 entry.watchedAtMs < com.kitsugi.animelist.KitsugiApplication.APP_LAUNCH_TIME
                             )
                             if (!savedUrl.isNullOrBlank() && !isExpired) {
-                                // ── Direkt oynatma: kaynak yeniden araştırılmaz ──────────────
+                                // ── Direkt oynatma ──────────────
                                 KitsugiFullscreenPlayerActivity.startWithStreamUrls(
                                     context = context,
                                     videoUrl = savedUrl,
@@ -140,7 +140,9 @@ fun WatchHistoryScreen(
                                     episode = entry.episode,
                                     animeTitle = entry.animeTitle,
                                     posterUrl = entry.posterUrl,
-                                    isMovie = entry.isMovie
+                                    isMovie = entry.isMovie,
+                                    cs3Url = entry.cs3Url,
+                                    cs3ApiName = entry.cs3ApiName
                                 )
                             } else {
                                 // ── Geri dönüş: tüm kaynakları tara ────────────────────────
@@ -160,7 +162,9 @@ fun WatchHistoryScreen(
                                     isMovie = entry.isMovie,
                                     title = entry.animeTitle,
                                     posterUrl = entry.posterUrl,
-                                    isAutoplay = true
+                                    isAutoplay = true,
+                                    cs3Url = entry.cs3Url,
+                                    cs3ApiName = entry.cs3ApiName
                                 )
                             }
                         },

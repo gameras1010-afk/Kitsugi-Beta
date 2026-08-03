@@ -1191,6 +1191,7 @@ private fun AppNavigationContent(
                         onOpenApiDetail = onOpenApiDetail,
                         onAddApiSelectionToList = onAddApiSelectionToList,
                         onSeeAllSection = onSeeAllSection,
+                        onNavigateToWatchHistory = { navState.navigateToDetail(DetailScreen.WatchHistory) },
                         onOpenMangaReader = onOpenMangaReader,
                         onEditEntry = onEditEntry,
                         onSearchByGenre = triggerSearchByGenre,

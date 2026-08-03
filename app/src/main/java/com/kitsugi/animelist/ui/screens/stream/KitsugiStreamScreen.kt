@@ -194,7 +194,11 @@ fun KitsugiStreamScreen(
             // ── İzleme geçmişine kaydet ─────────────────────────────────────
             com.kitsugi.animelist.data.local.WatchHistoryManager.record(
                 com.kitsugi.animelist.data.model.WatchHistoryEntry(
-                    animeId = if (aniListId != null) aniListId.toString() else malId?.toString() ?: "",
+                    // animeId: cs3Url.hashCode() kullan (heartbeat ile aynı anahtar)
+                    animeId = if (aniListId != null) aniListId.toString()
+                              else if (malId != null) malId.toString()
+                              else if (!cs3Url.isNullOrBlank()) cs3Url.hashCode().toString()
+                              else title.hashCode().toString(),
                     animeTitle = title,
                     posterUrl = source.thumbnailUrl.takeIf { !it.isNullOrBlank() } ?: posterUrl,
                     episode = episode,
@@ -208,7 +212,9 @@ fun KitsugiStreamScreen(
                     streamUrl = resolvedUrl,
                     streamHeaders = source.requestHeaders,
                     streamTitle = source.title,
-                    streamName = source.name
+                    streamName = source.name,
+                    cs3Url = cs3Url,
+                    cs3ApiName = cs3ApiName
                 )
             )
 
@@ -222,7 +228,9 @@ fun KitsugiStreamScreen(
                     animeTitle = title, posterUrl = posterUrl,
                     titleEnglish = titleEnglish, titleRomaji = titleRomaji, titleNative = titleNative,
                     startYear = startYear, description = description, cast = castList,
-                    isMovie = isMovie
+                    isMovie = isMovie,
+                    cs3Url = cs3Url,
+                    cs3ApiName = cs3ApiName
                 )
             } else {
                 if (onLaunchExternalPlayer != null) {
@@ -242,7 +250,9 @@ fun KitsugiStreamScreen(
                         animeTitle = title, posterUrl = posterUrl,
                         titleEnglish = titleEnglish, titleRomaji = titleRomaji, titleNative = titleNative,
                         startYear = startYear, description = description, cast = castList,
-                        isMovie = isMovie
+                        isMovie = isMovie,
+                        cs3Url = cs3Url,
+                        cs3ApiName = cs3ApiName
                     )
                 }
             }

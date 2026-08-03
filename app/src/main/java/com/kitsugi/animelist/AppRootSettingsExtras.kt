@@ -243,7 +243,9 @@ internal fun SettingsContext.buildSettingsParams() =
             onClearBulkInstallResult = { addonViewModel.clearBulkInstallResult() },
             csPlugins = csPluginsList,
             onToggleCsPlugin = { plugin, enabled -> onToggleCsPlugin(plugin, enabled) },
-            onUninstallCsPlugin = { addonViewModel.uninstallCsPlugin(it) }
+            onUninstallCsPlugin = { addonViewModel.uninstallCsPlugin(it) },
+            useGithubProxy = appSettings.useGithubProxy,
+            onUseGithubProxyChanged = { enabled -> onUseGithubProxyChanged(enabled) }
         ),
         manga = com.kitsugi.animelist.ui.screens.settings.MangaSettings(
             mangaSources = mangaViewModel.mangaSources,
@@ -996,5 +998,14 @@ internal fun SettingsContext.onDownloadNewUnseenEpisodesOnlyChanged(enabled: Boo
 }
 internal fun SettingsContext.onSubtitleDownloadLanguagesChanged(langs: String) {
     coroutineScope.launch { settingsDataStore.setSubtitleDownloadLanguages(langs) }
+}
+
+internal fun SettingsContext.onUseGithubProxyChanged(enabled: Boolean) {
+    coroutineScope.launch {
+        settingsDataStore.setUseGithubProxy(enabled)
+        appViewModel.showSnackbarMessage(
+            if (enabled) "GitHub vekil sunucu etkin (jsDelivr)" else "GitHub vekil sunucu devre dışı"
+        )
+    }
 }
 

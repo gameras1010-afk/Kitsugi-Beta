@@ -70,6 +70,8 @@ class SettingsDataStore(
         val MangaFitMode = stringPreferencesKey("manga_fit_mode")
         val MangaBrightness = floatPreferencesKey("manga_brightness")
         val DnsChoice = intPreferencesKey("dns_choice")
+        // ─── GitHub Vekil Sunucu ───────────────────────────────────────────────
+        val UseGithubProxy = booleanPreferencesKey("use_github_proxy")
         // ─── Harici API Entegrasyonları ─────────────────────────────────────────
         // TMDB kullanıcı API anahtarı (boşsa dahili anahtar devreye girer)
         val TmdbEnabled = booleanPreferencesKey("tmdb_enabled")
@@ -279,6 +281,7 @@ class SettingsDataStore(
                     mangaFitMode = preferences[Keys.MangaFitMode] ?: "FitScreen",
                     mangaBrightness = preferences[Keys.MangaBrightness] ?: 1.0f,
                     dnsChoice = preferences[Keys.DnsChoice] ?: 0,
+                    useGithubProxy = preferences[Keys.UseGithubProxy] ?: false,
                     // ─── Harici API Entegrasyonları
                     tmdbEnabled = preferences[Keys.TmdbEnabled] ?: true,
                     tmdbUserApiKey = preferences[Keys.TmdbUserApiKey] ?: "",
@@ -623,6 +626,12 @@ class SettingsDataStore(
     suspend fun setDnsChoice(choice: Int) {
         context.settingsDataStore.edit { preferences ->
             preferences[Keys.DnsChoice] = choice
+        }
+    }
+
+    suspend fun setUseGithubProxy(enabled: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[Keys.UseGithubProxy] = enabled
         }
     }
 

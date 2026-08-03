@@ -33,8 +33,8 @@ class CsLivePluginTest {
 
     // ── Türk Cloudstream Depoları ─────────────────────────────────────────────
     private val REPOS = listOf(
-        RepoEntry("maarrem / cs-Kekik",
-            "https://raw.githubusercontent.com/maarrem/cs-Kekik/master/repo.json"),
+        RepoEntry("Kitsugi Plugins (Önerilen)",
+            "https://raw.githubusercontent.com/gameras1010-afk/Kitsugi-Plugins/builds/repo.json"),
         RepoEntry("feroxx / Kekik-cloudstream",
             "https://raw.githubusercontent.com/feroxx/Kekik-cloudstream/refs/heads/builds/repo.json"),
         RepoEntry("Kraptor123 / cs-kraptor",

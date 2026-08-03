@@ -63,6 +63,9 @@ class TvNavigationState {
     // ── TV Companion navigation ────────────────────────────────────────────────
     var isCompanionActive by mutableStateOf(false)
 
+    // ── Watch History navigation ────────────────────────────────────────────────
+    var isWatchHistoryActive by mutableStateOf(false)
+
     // ── Pending deep link state (B1.1) ───────────────────────────────────────
     // Channels / cold-start deep link'ten gelen navigasyon isteği.
     // ViewModel bu alanı tüketince null'a çeker.
@@ -113,7 +116,15 @@ class TvNavigationState {
         isCompanionActive = true
     }
 
+    fun navigateToWatchHistory() {
+        isWatchHistoryActive = true
+    }
+
     fun pop(): Boolean {
+        if (isWatchHistoryActive) {
+            isWatchHistoryActive = false
+            return true
+        }
         if (isCompanionActive) {
             isCompanionActive = false
             return true
@@ -158,6 +169,7 @@ class TvNavigationState {
         isMangaExtensionActive = false
         isMangaSourceHealthActive = false
         isCompanionActive = false
+        isWatchHistoryActive = false
         // Pending deep links de temizlenir (tab switch, logout)
         pendingDeepLinkDetail = null
         pendingDeepLinkManga  = null

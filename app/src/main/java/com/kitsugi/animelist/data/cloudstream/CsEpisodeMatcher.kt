@@ -53,7 +53,10 @@ internal object CsEpisodeMatcher {
         val foundSeason = CsTitleMatcher.parseSeasonFromTitle(responseName)
             ?: CsTitleMatcher.parseSeasonFromSlug(responseUrl)
 
-        val treatSeason1AsTarget = foundSeason != null && foundSeason == season
+        val allEpisodesList = response.episodes.values.flatten()
+        val rawSeasonsAnime = allEpisodesList.mapNotNull { getEpisodeSeason(it) }.toSet()
+        val hasMultipleRawSeasonsAnime = rawSeasonsAnime.size > 1
+        val treatSeason1AsTarget = !hasMultipleRawSeasonsAnime && !rawSeasonsAnime.contains(season) && foundSeason != null && foundSeason == season
 
         val getEffectiveSeason = { ep: Any ->
             val epSeason = getEpisodeSeason(ep)
@@ -155,7 +158,9 @@ internal object CsEpisodeMatcher {
         val foundSeason = CsTitleMatcher.parseSeasonFromTitle(responseName)
             ?: CsTitleMatcher.parseSeasonFromSlug(responseUrl)
 
-        val treatSeason1AsTarget = foundSeason != null && foundSeason == season
+        val rawSeasons = response.episodes.mapNotNull { getEpisodeSeason(it) }.toSet()
+        val hasMultipleRawSeasons = rawSeasons.size > 1
+        val treatSeason1AsTarget = !hasMultipleRawSeasons && !rawSeasons.contains(season) && foundSeason != null && foundSeason == season
 
         val getEffectiveSeason = { ep: Any ->
             val epSeason = getEpisodeSeason(ep)
@@ -172,7 +177,21 @@ internal object CsEpisodeMatcher {
             epSeason == season && epNum == episode
         }
 
-        // Fallback 1: episode number only (season-agnostic)
+        // Fallback 1: name-based match (e.g. "S2E5", "2. Sezon 5. Bölüm") — before index fallbacks
+        if (match == null) {
+            match = response.episodes.find { ep ->
+                val epName = getEpisodeName(ep)?.lowercase(java.util.Locale.ROOT) ?: return@find false
+                epName.contains("${season}x${episode}") ||
+                epName.contains("${season}x${String.format("%02d", episode)}") ||
+                epName.contains("${season}. sezon ${episode}. bölüm") ||
+                epName.contains("${season} sezon ${episode} bölüm") ||
+                epName.contains("s${season}e${episode}") ||
+                epName.contains("s${String.format("%02d", season)}e${String.format("%02d", episode)}")
+            }
+            if (match != null) Log.d(TAG, "TvSeries: Name-based season match: '${getEpisodeName(match)}' for S${season}E${episode}")
+        }
+
+        // Fallback 2: episode number only (season-agnostic)
         if (match == null && (season == 1 || treatSeason1AsTarget)) {
             match = response.episodes.find { ep ->
                 (getEpisodeNumber(ep) ?: -1) == episode
@@ -180,13 +199,13 @@ internal object CsEpisodeMatcher {
             if (match != null) Log.d(TAG, "TvSeries: sezon bağımsız fallback ep=$episode")
         }
 
-        // Fallback 2: single episode → always return it for ep=1
+        // Fallback 3: single episode → always return it for ep=1
         if (match == null && episode == 1 && response.episodes.size == 1) {
             match = response.episodes.first()
             Log.d(TAG, "TvSeries: tek bölüm fallback kullanıldı")
         }
 
-        // Fallback 3: index-based — used when episodes have no metadata at all
+        // Fallback 4: index-based — used when ALL episodes have no metadata at all (flat list, no season/ep fields)
         if (match == null && response.episodes.isNotEmpty()) {
             val allHaveNoMeta = response.episodes.all { ep ->
                 getEpisodeNumber(ep) == null && getEpisodeSeason(ep) == null
@@ -200,10 +219,20 @@ internal object CsEpisodeMatcher {
             }
         }
 
-        // Fallback 3b: season matched but episode field is null/missing — use index within that season's episodes (DiziBox style)
+        // Fallback 5: season matched but episode field is null/missing — use positional index within that season
+        // (DiziBox style: episodes have season set, but episode number is always null)
+        // IMPORTANT: Use raw getEpisodeSeason() here — NOT getEffectiveSeason() — to avoid remapping
+        // season=1 episodes into the target season when treatSeason1AsTarget is active.
         if (match == null && response.episodes.isNotEmpty()) {
+            // Partition by raw season: episodes that explicitly belong to `season`, or
+            // (when treatSeason1AsTarget) episodes whose raw season is 1 (the site's internal representation).
             val sameSeasonEps = response.episodes.filter { ep ->
-                getEffectiveSeason(ep) == season
+                val rawSeason = getEpisodeSeason(ep)
+                if (treatSeason1AsTarget) {
+                    rawSeason == null || rawSeason == 1
+                } else {
+                    (rawSeason ?: 1) == season
+                }
             }
             if (sameSeasonEps.isNotEmpty()) {
                 val allEpNull = sameSeasonEps.all { getEpisodeNumber(it) == null }

@@ -96,6 +96,36 @@ class KitsugiStaffClient {
                     }
                 }
 
+                "kitsu" -> {
+                    // externalId = kitsuStableId = kitsuNumericId + 300_000_000
+                    val kitsuOffset = 300_000_000
+                    val kitsuNumericId = if (externalId >= kitsuOffset) externalId - kitsuOffset else externalId
+                    android.util.Log.d("KitsugiStaffClient", "Kitsu staff fetch: stableId=$externalId, kitsuNumericId=$kitsuNumericId")
+                    if (kitsuNumericId <= 0) return@withContext emptyList()
+
+                    // Kitsu has no native staff endpoint — resolve to AniList/Jikan via ARM
+                    val resolved = runCatching {
+                        KitsugiIdResolver.resolveIds(malId = realMalId, aniListId = null, kitsuId = kitsuNumericId)
+                    }.getOrNull()
+
+                    val aniListId = resolved?.aniListId
+                    if (aniListId != null && aniListId > 0) {
+                        // Encode aniListId with the 100M offset so fetchStaff("anilist") handles it correctly
+                        val encoded = 100_000_000 + aniListId
+                        val aniList = fetchStaff("anilist", encoded, mediaType, tmdbId, realMalId ?: resolved?.malId)
+                        if (aniList.isNotEmpty()) return@withContext aniList
+                    }
+
+                    val jikanId = realMalId?.takeIf { it > 0 } ?: resolved?.malId?.takeIf { it > 0 }
+                    if (jikanId != null) {
+                        val jikanList = fetchStaff("jikan", jikanId, mediaType, tmdbId, null)
+                        if (jikanList.isNotEmpty()) return@withContext jikanList
+                    }
+
+                    android.util.Log.w("KitsugiStaffClient", "Kitsu staff: AniList ve Jikan fallback boş döndü (kitsuId=$kitsuNumericId)")
+                    emptyList()
+                }
+
                 "anilist" -> {
                     val aniListId = if (externalId >= 100_000_000) externalId - 100_000_000 else null
                     val idParam = if (aniListId != null) "\$id: Int" else "\$idMal: Int"
