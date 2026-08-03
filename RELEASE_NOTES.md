@@ -1,4 +1,4 @@
-# Kitsugi Release Notes - v2.4.138-beta
+# Kitsugi Release Notes - v2.4.139-beta
 
 Bu sürümde, Cloudstream eklenti yükleme performansına odaklanılmış, başlangıç kilitlenmeleri ve arayüz donmaları giderilmiştir.
 
