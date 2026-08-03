@@ -357,6 +357,12 @@ object CsStreamRunner {
     private val runnerScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO)
 
     /**
+     * Uzak domain listesinin başarıyla yüklenip yüklenmediğini döndürür.
+     * KitsugiApplication, warmup başlatmadan önce bu fonksiyonu bekler.
+     */
+    fun isDomainListReady(): Boolean = isDomainListFetched.get() && dynamicDomains.isNotEmpty()
+
+    /**
      * Uzak domain listesini arka planda çeker (henüz çekilmediyse).
      * Uygulama açılışında ve her arama başında otomatik tetiklenir.
      */

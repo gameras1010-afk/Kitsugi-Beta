@@ -312,10 +312,17 @@ class KitsugiApplication : Application(), SingletonImageLoader.Factory {
         // Initialize Cloudstream runtime singleton context and client
         com.kitsugi.animelist.data.cloudstream.CsRuntimeInit.init(this)
 
-        // Trigger proactive cookie warmup asynchronously on startup for Turkish hosts
+        // Trigger proactive cookie warmup AFTER domain fetch completes — ensures getFixedUrl()
+        // uses the latest dynamic domains and doesn't warmup dead/old addresses.
         applicationScope.launch {
             try {
-                android.util.Log.i("KitsugiApplication", "Triggering proactive cookie warmup on startup...")
+                // Önce güncel domain listesinin yüklenmesini bekle (max 8 saniye)
+                var waited = 0
+                while (!com.kitsugi.animelist.data.cloudstream.CsStreamRunner.isDomainListReady() && waited < 8_000) {
+                    kotlinx.coroutines.delay(200)
+                    waited += 200
+                }
+                android.util.Log.i("KitsugiApplication", "Triggering proactive cookie warmup on startup (domains ready: ${com.kitsugi.animelist.data.cloudstream.CsStreamRunner.isDomainListReady()})...")
                 com.kitsugi.animelist.data.cloudstream.CsCfWarmupManager.runWarmup(this@KitsugiApplication)
             } catch (e: Exception) {
                 android.util.Log.e("KitsugiApplication", "Proactive cookie warmup failed: ${e.message}", e)
