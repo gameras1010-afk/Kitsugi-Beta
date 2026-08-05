@@ -1,4 +1,4 @@
-# Kitsugi-Beta v2.4.142 — Sürüm Notları
+# Kitsugi-Beta v2.4.143 — Sürüm Notları
 
 Bu Sürümde; Türkçe altyazı alma, otomatik altyazı seçimi, sıkıştırılmış paket/batch altyazı çözme ve oynatıcı altyazı öncelik hiyerarşisi kararlı hale getirilerek kapsamlı bir şekilde güncellendi.
 
