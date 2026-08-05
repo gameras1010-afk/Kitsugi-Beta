@@ -22,12 +22,14 @@ import com.kitsugi.animelist.ui.theme.KitsugiAnimeListTheme
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class KitsugiFullscreenPlayerActivity : ComponentActivity() {
 
+    private val viewModel: KitsugiPlayerViewModel by viewModels()
     private var isPipEnabled = true
 
     // ── T2.3: MediaSession + PiP BroadcastReceiver ────────────────────────────
@@ -301,6 +303,18 @@ class KitsugiFullscreenPlayerActivity : ComponentActivity() {
         lifecycleScope.launch {
             SettingsDataStore(applicationContext).settingsFlow.collectLatest { settings ->
                 isPipEnabled = settings.pipEnabled
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.subtitleEvents.collectLatest { event ->
+                if (event is KitsugiPlayerViewModel.SubtitleEvent.LoadFailed) {
+                    Toast.makeText(
+                        this@KitsugiFullscreenPlayerActivity,
+                        "Eklentilerden altyaz\u0131 bulunamad\u0131. L\u00fctfen dahili altyaz\u0131lar\u0131 veya dosya se\u00e7iciyi kontrol edin.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }
         }
 

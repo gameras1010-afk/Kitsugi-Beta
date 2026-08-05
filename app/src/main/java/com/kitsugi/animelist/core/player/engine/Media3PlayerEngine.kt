@@ -314,47 +314,50 @@ class Media3PlayerEngine(
                 }
 
                 // ── Altyazı: Öncelik hiyerarşisi ─────────────────────────────────────
-                // 1. Dahili (stream içi) Türkçe  — preparedSubtitles listesinde isExternal=false olanlara karşılık gelir
-                // 2. Harici/addon Türkçe          — preparedSubtitles listesinde isExternal=true olanlar
-                // 3. Kullanıcı tercih dilleri
-                // 4. İlk mevcut altyazı
+                // Tercih edilen diller için sırayla:
+                // 1. Dahili (isExternal = false)
+                // 2. Harici (isExternal = true)
+                // Sonra fallback: dahili ilk, en son herhangi ilk
                 if (!isSubtitleDisabled && textOptions.isNotEmpty()) {
                     val isAnySubSelected = textOptions.any { it.isSelected }
                     if (!isAnySubSelected) {
-                        // Adım 1: Dahili Türkçe — stream içinde gömülü, ExoPlayer tarafından sunulan
-                        val internalTurkishSub = textOptions.find { opt ->
+                        val isExternalTrack: (TrackOption) -> Boolean = { opt ->
                             val format = opt.group.getTrackFormat(opt.trackIndex)
                             val lang = format.language ?: ""
-                            com.kitsugi.animelist.core.player.PlayerSubtitleUtils.isTurkishLang(lang)
-                                && preparedSubtitles.none { sub ->
-                                    sub.isExternal && sub.lang.isNotBlank() &&
-                                    com.kitsugi.animelist.core.player.PlayerSubtitleUtils.matchesLanguageCode(sub.lang, lang)
-                               }
+                            val label = format.label ?: ""
+                            preparedSubtitles.any { sub ->
+                                sub.isExternal && 
+                                com.kitsugi.animelist.core.player.PlayerSubtitleUtils.matchesLanguageCode(sub.lang, lang) &&
+                                (label == sub.name || label.contains(sub.name, ignoreCase = true))
+                            }
                         }
 
-                        // Adım 2: Harici Türkçe (addon'dan yüklenen)
-                        val externalTurkishSub = if (internalTurkishSub == null) {
-                            textOptions.find { opt ->
-                                val format = opt.group.getTrackFormat(opt.trackIndex)
-                                val lang = format.language ?: ""
-                                com.kitsugi.animelist.core.player.PlayerSubtitleUtils.isTurkishLang(lang)
+                        var bestSub: TrackOption? = null
+                        for (lang in preferredLangs) {
+                            // 1. Dahili matching lang
+                            bestSub = textOptions.find { opt ->
+                                val l = opt.group.getTrackFormat(opt.trackIndex).language ?: ""
+                                com.kitsugi.animelist.core.player.PlayerSubtitleUtils.matchesLanguageCode(l, lang) && !isExternalTrack(opt)
                             }
-                        } else null
+                            if (bestSub != null) break
 
-                        // Adım 3: Kullanıcı tercih listesi
-                        val preferredSub = if (internalTurkishSub == null && externalTurkishSub == null) {
-                            var found: TrackOption? = null
-                            for (lang in preferredLangs) {
-                                found = textOptions.find { opt ->
-                                    val l = opt.group.getTrackFormat(opt.trackIndex).language ?: ""
-                                    com.kitsugi.animelist.core.player.PlayerSubtitleUtils.matchesLanguageCode(l, lang)
-                                }
-                                if (found != null) break
+                            // 2. Harici matching lang
+                            bestSub = textOptions.find { opt ->
+                                val l = opt.group.getTrackFormat(opt.trackIndex).language ?: ""
+                                com.kitsugi.animelist.core.player.PlayerSubtitleUtils.matchesLanguageCode(l, lang) && isExternalTrack(opt)
                             }
-                            found
-                        } else null
+                            if (bestSub != null) break
+                        }
 
-                        val bestSub = internalTurkishSub ?: externalTurkishSub ?: preferredSub ?: textOptions.firstOrNull()
+                        if (bestSub == null) {
+                            // Fallback 1: İlk dahili altyazı
+                            bestSub = textOptions.find { !isExternalTrack(it) }
+                        }
+                        if (bestSub == null) {
+                            // Fallback 2: Herhangi ilk altyazı
+                            bestSub = textOptions.firstOrNull()
+                        }
+
                         bestSub?.let {
                             Log.i(TAG, "Auto-selecting subtitle track: ${it.label}")
                             selectTrack(it)

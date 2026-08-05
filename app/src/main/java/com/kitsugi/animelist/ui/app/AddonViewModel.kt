@@ -82,6 +82,7 @@ class AddonViewModel(application: Application) : AndroidViewModel(application) {
                                 url.contains("opensubtitles") -> "OpenSubtitles"
                                 url.contains("yts") -> "YTS Subtitles"
                                 url.contains("turkcealtyaziorg") -> "TurkceAltyazi.org"
+                                url.contains("altyazidb") -> "AltyaziDB"
                                 url.contains("anisub.co") -> "AniSub.co"
                                 else -> "Subtitle Addon"
                             },
@@ -99,7 +100,7 @@ class AddonViewModel(application: Application) : AndroidViewModel(application) {
                 addonDao.updateAddon(existing.copy(subtitleTypes = "movie,series", isEnabled = true))
             }
         }
-
+ 
         val deprecatedV2 = addonDao.getAllAddons().find {
             it.manifestUrl.contains("opensubtitles.strem.io", ignoreCase = true) &&
             !it.manifestUrl.contains("opensubtitles-v3", ignoreCase = true)
@@ -107,9 +108,9 @@ class AddonViewModel(application: Application) : AndroidViewModel(application) {
         if (deprecatedV2 != null) {
             addonDao.deleteAddon(deprecatedV2)
         }
-
+ 
         val deprecatedTurkceAltyazi = addonDao.getAllAddons().find {
-            it.manifestUrl.contains("turkcealtyaziorg.baby-beamup.club", ignoreCase = true)
+            it.manifestUrl.contains("turkcealtyaziorg", ignoreCase = true)
         }
         if (deprecatedTurkceAltyazi != null) {
             addonDao.deleteAddon(deprecatedTurkceAltyazi)

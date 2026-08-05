@@ -31,6 +31,13 @@ class SubtitleRepositoryImpl(private val context: Context) {
     companion object {
         private const val TAG = "SubtitleRepository"
         private const val PER_ADDON_TIMEOUT_MS = 20_000L
+
+        data class CircuitBreakerState(
+            var failureCount: Int = 0,
+            var lastFailureTimeMs: Long = 0L
+        )
+
+        private val circuitBreakers = java.util.concurrent.ConcurrentHashMap<String, CircuitBreakerState>()
     }
 
     private val database = KitsugiDatabase.getDatabase(context.applicationContext)
@@ -118,6 +125,14 @@ class SubtitleRepositoryImpl(private val context: Context) {
         // 3. Her addon için paralel fetch
         val deferredResults = subtitleAddons.map { addon ->
             async(Dispatchers.IO) {
+                val manifestUrl = addon.manifestUrl
+                val cbState = circuitBreakers.getOrPut(manifestUrl) { CircuitBreakerState() }
+                val now = System.currentTimeMillis()
+                if (cbState.failureCount >= 3 && now - cbState.lastFailureTimeMs < 5 * 60 * 1000) {
+                    Log.w(TAG, "Circuit breaker tripped for addon '${addon.name}' (${manifestUrl}). Skipping query.")
+                    return@async emptyList()
+                }
+
                 val hashResult = try { hashJob.await() } catch (_: Exception) { null }
 
                 val extraParams = buildMap<String, String> {
@@ -127,6 +142,9 @@ class SubtitleRepositoryImpl(private val context: Context) {
                     }
                     if (!filename.isNullOrBlank()) put("filename", filename)
                 }
+
+                var querySuccess = false
+                var errorType: String? = null
 
                 val subtitles = withTimeoutOrNull(PER_ADDON_TIMEOUT_MS) {
                     try {
@@ -140,6 +158,7 @@ class SubtitleRepositoryImpl(private val context: Context) {
                             animeTitle = animeTitle,
                             episode = episode
                         )
+                        querySuccess = true
                         Log.d(TAG, "Addon '${addon.name}': ${items.size} altyazı döndü")
                         items.mapNotNull { item ->
                             val url = item.url ?: return@mapNotNull null
@@ -154,13 +173,25 @@ class SubtitleRepositoryImpl(private val context: Context) {
                             )
                         }
                     } catch (e: Exception) {
-                        Log.e(TAG, "Addon '${addon.name}' fetch hatası: ${e.message}")
+                        errorType = "EXCEPTION: ${e.javaClass.simpleName} - ${e.message}"
+                        Log.e(TAG, "Addon '${addon.name}' fetch hatası: $errorType")
                         emptyList()
                     }
                 } ?: run {
+                    errorType = "TIMEOUT (${PER_ADDON_TIMEOUT_MS}ms)"
                     Log.w(TAG, "Addon '${addon.name}' ${PER_ADDON_TIMEOUT_MS}ms timeout")
                     emptyList()
                 }
+
+                val targetCbState = circuitBreakers.getOrPut(manifestUrl) { CircuitBreakerState() }
+                if (querySuccess) {
+                    targetCbState.failureCount = 0
+                } else {
+                    targetCbState.failureCount += 1
+                    targetCbState.lastFailureTimeMs = System.currentTimeMillis()
+                    Log.w(TAG, "Addon '${addon.name}' failure registered ($errorType). Failure count: ${targetCbState.failureCount}/3")
+                }
+
                 subtitles
             }
         }

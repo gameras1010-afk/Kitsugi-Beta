@@ -147,6 +147,48 @@ internal object CsEpisodeMatcher {
             Log.d(TAG, "Tek bölüm fallback kullanıldı")
         }
 
+        // Fallback 6: season matched, but exact episode number match failed (e.g. continuous numbering on episode field like ep=11 for S2E1).
+        // Use the relative index within the matched season's episodes in preferred bucket.
+        if (match == null && preferredEpisodes.isNotEmpty()) {
+            val sameSeasonEps = preferredEpisodes.filter { ep ->
+                val rawSeason = getEpisodeSeason(ep)
+                if (treatSeason1AsTarget) {
+                    rawSeason == null || rawSeason == 1
+                } else {
+                    (rawSeason ?: 1) == season
+                }
+            }
+            if (sameSeasonEps.isNotEmpty()) {
+                val sortedEps = sameSeasonEps.sortedBy { getEpisodeNumber(it) ?: 0 }
+                val idx = episode - 1
+                if (idx in sortedEps.indices) {
+                    match = sortedEps[idx]
+                    Log.d(TAG, "Anime (preferred): season-index fallback (continuous/mismatch): S${season}[${idx}] → ep=$episode (actual epNum=${getEpisodeNumber(match)})")
+                }
+            }
+        }
+
+        // Fallback 7: season matched, but exact episode number match failed (e.g. continuous numbering on episode field like ep=11 for S2E1).
+        // Use the relative index within the matched season's episodes across all buckets.
+        if (match == null && allEpisodes.isNotEmpty()) {
+            val sameSeasonEps = allEpisodes.filter { ep ->
+                val rawSeason = getEpisodeSeason(ep)
+                if (treatSeason1AsTarget) {
+                    rawSeason == null || rawSeason == 1
+                } else {
+                    (rawSeason ?: 1) == season
+                }
+            }
+            if (sameSeasonEps.isNotEmpty()) {
+                val sortedEps = sameSeasonEps.sortedBy { getEpisodeNumber(it) ?: 0 }
+                val idx = episode - 1
+                if (idx in sortedEps.indices) {
+                    match = sortedEps[idx]
+                    Log.d(TAG, "Anime (all): season-index fallback (continuous/mismatch): S${season}[${idx}] → ep=$episode (actual epNum=${getEpisodeNumber(match)})")
+                }
+            }
+        }
+
         return match?.let { getEpisodeData(it) }
     }
 
@@ -242,6 +284,27 @@ internal object CsEpisodeMatcher {
                         match = sameSeasonEps[idx]
                         Log.d(TAG, "TvSeries: season-based index fallback (episode null): S${season}[${idx}] → ep=$episode")
                     }
+                }
+            }
+        }
+
+        // Fallback 6: season matched, but exact episode number match failed (e.g. continuous numbering on episode field like ep=11 for S2E1).
+        // Use the relative index within the matched season's episodes.
+        if (match == null && response.episodes.isNotEmpty()) {
+            val sameSeasonEps = response.episodes.filter { ep ->
+                val rawSeason = getEpisodeSeason(ep)
+                if (treatSeason1AsTarget) {
+                    rawSeason == null || rawSeason == 1
+                } else {
+                    (rawSeason ?: 1) == season
+                }
+            }
+            if (sameSeasonEps.isNotEmpty()) {
+                val sortedEps = sameSeasonEps.sortedBy { getEpisodeNumber(it) ?: 0 }
+                val idx = episode - 1
+                if (idx in sortedEps.indices) {
+                    match = sortedEps[idx]
+                    Log.d(TAG, "TvSeries: season-index fallback (continuous/mismatch): S${season}[${idx}] → ep=$episode (actual epNum=${getEpisodeNumber(match)})")
                 }
             }
         }

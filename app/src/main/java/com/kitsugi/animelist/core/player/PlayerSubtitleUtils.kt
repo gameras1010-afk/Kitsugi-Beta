@@ -174,18 +174,16 @@ object PlayerSubtitleUtils {
     ): SubtitleInput? {
         if (subtitles.isEmpty()) return null
 
-        // 1. Dahili (gömülü) Türkçe
-        subtitles.firstOrNull { !it.isExternal && isTurkishLang(it.lang) }?.let { return it }
-
-        // 2. Harici/addon Türkçe
-        subtitles.firstOrNull { it.isExternal && isTurkishLang(it.lang) }?.let { return it }
-
-        // 3. Kullanıcı tercih listesi sırasıyla
+        // Tercih sırasına göre dilleri gez, her dil için önce dahili (internal) sonra harici (external)
         for (lang in preferredLangs) {
-            subtitles.firstOrNull { matchesLanguageCode(it.lang, lang) }?.let { return it }
+            subtitles.firstOrNull { !it.isExternal && matchesLanguageCode(it.lang, lang) }?.let { return it }
+            subtitles.firstOrNull { it.isExternal && matchesLanguageCode(it.lang, lang) }?.let { return it }
         }
 
-        // 4. Fallback: ilk altyazı
+        // Fallback 1: Dahili olan ilk altyazı
+        subtitles.firstOrNull { !it.isExternal }?.let { return it }
+
+        // Fallback 2: Herhangi ilk altyazı
         return subtitles.firstOrNull()
     }
 
@@ -193,10 +191,10 @@ object PlayerSubtitleUtils {
      * MPV track snapshot altyazılarından en iyi parçanın ID'sini seçer.
      *
      * Öncelik sırası:
-     *  1. Dahili (isExternal=false) Türkçe altyazı parçası
-     *  2. Harici (isExternal=true) Türkçe altyazı parçası
-     *  3. Kullanıcı tercih listesindeki ilk eşleşme
-     *  4. İlk mevcut parça (fallback)
+     *  1. Kullanıcı tercih listesindeki diller için sırayla Dahili (isExternal=false)
+     *  2. Kullanıcı tercih listesindeki diller için sırayla Harici (isExternal=true)
+     *  3. Dahili ilk mevcut parça
+     *  4. Herhangi ilk mevcut parça (fallback)
      *
      * @param subtitleTracks MPV track snapshot altyazı listesi (MpvTrack)
      * @param preferredLangs Kullanıcı tercih dil listesi
@@ -207,18 +205,16 @@ object PlayerSubtitleUtils {
     ): com.kitsugi.animelist.core.player.engine.MpvTrack? {
         if (subtitleTracks.isEmpty()) return null
 
-        // 1. Dahili Türkçe
-        subtitleTracks.firstOrNull { !it.isExternal && isTurkishLang(it.language) }?.let { return it }
-
-        // 2. Harici Türkçe
-        subtitleTracks.firstOrNull { it.isExternal && isTurkishLang(it.language) }?.let { return it }
-
-        // 3. Kullanıcı tercih listesi
+        // Tercih sırasına göre dilleri gez, her dil için önce dahili sonra harici
         for (lang in preferredLangs) {
-            subtitleTracks.firstOrNull { matchesLanguageCode(it.language ?: "", lang) }?.let { return it }
+            subtitleTracks.firstOrNull { !it.isExternal && matchesLanguageCode(it.language ?: "", lang) }?.let { return it }
+            subtitleTracks.firstOrNull { it.isExternal && matchesLanguageCode(it.language ?: "", lang) }?.let { return it }
         }
 
-        // 4. Fallback
+        // Fallback 1: Dahili olan ilk altyazı
+        subtitleTracks.firstOrNull { !it.isExternal }?.let { return it }
+
+        // Fallback 2
         return subtitleTracks.firstOrNull()
     }
 

@@ -1595,7 +1595,7 @@ object CsStreamRunner {
                         .newCall(headRequest).execute()
                     val code = response.code
                     response.close()
-                    val alive = code in 200..299 || code == 301 || code == 302 || code == 403
+                    val alive = code in 200..299 || code == 301 || code == 302 || code == 403 || code == 405 || code == 400 || code == 429 || code in 500..599
                     Log.d(TAG, "[${api.name}] HEAD ${if (alive) "✅" else "❌"} HTTP $code: ${url.take(80)}")
                     alive
                 } catch (cancel: kotlinx.coroutines.CancellationException) {

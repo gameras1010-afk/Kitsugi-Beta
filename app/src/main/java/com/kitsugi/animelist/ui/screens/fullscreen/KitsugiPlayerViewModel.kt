@@ -119,6 +119,23 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
     private val _currentSubtitles = MutableStateFlow<List<SubtitleInput>>(emptyList())
     val currentSubtitles: StateFlow<List<SubtitleInput>> = _currentSubtitles.asStateFlow()
 
+    enum class SubtitleSearchStatus {
+        IDLE,
+        LOADING,
+        SUCCESS,
+        EMPTY
+    }
+
+    sealed interface SubtitleEvent {
+        object LoadFailed : SubtitleEvent
+    }
+
+    private val _subtitleSearchStatus = MutableStateFlow(SubtitleSearchStatus.IDLE)
+    val subtitleSearchStatus: StateFlow<SubtitleSearchStatus> = _subtitleSearchStatus.asStateFlow()
+
+    private val _subtitleEvents = kotlinx.coroutines.flow.MutableSharedFlow<SubtitleEvent>()
+    val subtitleEvents: kotlinx.coroutines.flow.SharedFlow<SubtitleEvent> = _subtitleEvents
+
     private val _currentTitle = MutableStateFlow("")
     val currentTitle: StateFlow<String> = _currentTitle.asStateFlow()
 
@@ -1391,6 +1408,7 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
         val isMovieType = _isMovie.value || (currentS == 0 && currentEp <= 1)
 
         viewModelScope.launch {
+            _subtitleSearchStatus.value = SubtitleSearchStatus.LOADING
             try {
                 var resolvedIds = com.kitsugi.animelist.data.remote.KitsugiIdResolver.resolveIds(currentMalId, currentAniList, tmdbId)
                 var imdbId = resolvedIds.imdbId
@@ -1474,8 +1492,18 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
                         } catch (_: Exception) { null }
                     }
                 val cleanedFilename = guessedFilename?.substringBefore("\n")?.substringBefore("\r")?.trim()
+                val mediaTitle = animeTitle.trim()
+                val isTitleInFilename = !cleanedFilename.isNullOrBlank() && mediaTitle.isNotBlank() && cleanedFilename.lowercase().contains(mediaTitle.lowercase())
+                val finalFilename = if (isTitleInFilename) {
+                    cleanedFilename
+                } else if (mediaTitle.isNotBlank()) {
+                    val suffix = if (resolvedMovieType) "" else " - S${currentS.toString().padStart(2, '0')}E${currentEp.toString().padStart(2, '0')}"
+                    "$mediaTitle$suffix.mkv"
+                } else {
+                    cleanedFilename
+                }
 
-                Log.d("KitsugiPlayerViewModel", "Fetching subtitles for queries: $queries, filename=$cleanedFilename")
+                Log.d("KitsugiPlayerViewModel", "Fetching subtitles for queries: $queries, filename=$finalFilename (original=$cleanedFilename)")
 
                 val subRepo = com.kitsugi.animelist.data.repository.SubtitleRepositoryImpl(context)
                 // Tüm query'ler için paralel sorgu — IMDB + kitsu + title hepsi aynı anda
@@ -1488,7 +1516,7 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
                                     id = query.id,
                                     videoUrl = _currentVideoUrl.value,
                                     videoHeaders = _currentHeaders.value,
-                                    filename = cleanedFilename,
+                                    filename = finalFilename,
                                     aniListId = currentAniList,
                                     animeTitle = animeTitle,
                                     episode = currentEp
@@ -1546,9 +1574,16 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
                         )
                         _currentSubtitles.value = sorted
                         Log.d("KitsugiPlayerViewModel", "Altyaz\u0131lar y\u00fcklendi: toplam=${sorted.size} (${processedSubs.size} yeni)")
+                        _subtitleSearchStatus.value = SubtitleSearchStatus.SUCCESS
+                    } else {
+                        Log.d("KitsugiPlayerViewModel", "Altyaz\u0131 bulunamad\u0131 veya i\u015flenemedi.")
+                        _subtitleSearchStatus.value = SubtitleSearchStatus.EMPTY
+                        _subtitleEvents.emit(SubtitleEvent.LoadFailed)
                     }
             } catch (e: Exception) {
                 Log.e("KitsugiPlayerViewModel", "Failed to fetch auto subtitles", e)
+                _subtitleSearchStatus.value = SubtitleSearchStatus.EMPTY
+                _subtitleEvents.emit(SubtitleEvent.LoadFailed)
             }
         }
     }

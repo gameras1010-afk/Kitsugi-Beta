@@ -404,7 +404,7 @@ class AddonStreamClient {
                 val filename = dlResponse.data.filename ?: "sub.zip"
                 
                 // Download and unzip to local cache
-                val localUrl = downloadAndUnzipSubtitle(context, downloadUrl, subId, filename)
+                val localUrl = downloadAndUnzipSubtitle(context, downloadUrl, subId, filename, episode, animeTitle)
                 if (localUrl != null) {
                     subItems.add(
                         SubtitleResponseItem(
@@ -446,11 +446,88 @@ class AddonStreamClient {
         return ep in numbers
     }
 
+    private fun matchesEpisodeInFileName(fileName: String, targetEp: Int, mediaTitle: String?): Boolean {
+        val nameWithoutExt = fileName.substringBeforeLast(".").lowercase()
+        val mediaTitleLower = mediaTitle?.lowercase() ?: ""
+
+        // 1. Strip common media specs and hash tags
+        val cleaned = nameWithoutExt
+            .replace(Regex("""\[[0-9a-fA-F]{8}\]"""), "")
+            .replace(Regex("""\b(240|360|480|576|720|1080|2160)p?\b"""), "")
+            .replace(Regex("""\b(h|x)?26[45]\b"""), "")
+            .replace(Regex("""\b10bit\b|\b8bit\b|\bhevc\b|\bhdr\b"""), "")
+            .replace(Regex("""\b(19\d{2}|20\d{2})\b"""), "")
+
+        // Extract numbers and their counts in title and filename to avoid matching title specs as episode
+        val digitRegex = Regex("""\d+""")
+        val titleNumbers = digitRegex.findAll(mediaTitleLower).mapNotNull { it.value.toIntOrNull() }.toList()
+        val filenameNumbers = digitRegex.findAll(cleaned).mapNotNull { it.value.toIntOrNull() }.toList()
+
+        fun isCandidate(num: Int): Boolean {
+            if (!titleNumbers.contains(num)) {
+                return true
+            }
+            val titleCount = titleNumbers.count { it == num }
+            val filenameCount = filenameNumbers.count { it == num }
+            return filenameCount > titleCount
+        }
+
+        // Cascade 1: Season & Episode pattern (e.g. S01E05, S1E5)
+        val seRegex = Regex("""\bs(?:eason)?\s*(\d+)\s*e(?:pisode)?\s*(\d+)\b""")
+        val seMatch = seRegex.find(cleaned)
+        if (seMatch != null) {
+            val valEp = seMatch.groupValues[2].toIntOrNull()
+            if (valEp != null && isCandidate(valEp)) {
+                return valEp == targetEp
+            }
+        }
+
+        val xRegex = Regex("""\b(\d+)\s*x\s*(\d+)\b""")
+        val xMatch = xRegex.find(cleaned)
+        if (xMatch != null) {
+            val valEp = xMatch.groupValues[2].toIntOrNull()
+            if (valEp != null && isCandidate(valEp)) {
+                return valEp == targetEp
+            }
+        }
+
+        // Cascade 2: Explicit episode prefix (e.g. Ep 05, Bölüm 05)
+        val epPrefixRegex = Regex("""\b(?:ep(?:isode)?|bölüm|e|ep\.)\s*#?(\d+)\b""")
+        val epPrefixMatch = epPrefixRegex.find(cleaned)
+        if (epPrefixMatch != null) {
+            val valEp = epPrefixMatch.groupValues[1].toIntOrNull()
+            if (valEp != null && isCandidate(valEp)) {
+                return valEp == targetEp
+            }
+        }
+
+        // Cascade 3: Bracketed/Delimited Numbers (e.g. [05], (05), - 05)
+        val bracketRegex = Regex("""\[(\d+)\]|\((\d+)\)|\s-\s(\d+)\b""")
+        val bracketMatches = bracketRegex.findAll(cleaned)
+        for (m in bracketMatches) {
+            val valStr = m.groupValues.drop(1).firstOrNull { it.isNotEmpty() }
+            val valEp = valStr?.toIntOrNull()
+            if (valEp != null && isCandidate(valEp)) {
+                return valEp == targetEp
+            }
+        }
+
+        // Cascade 4: Standalone numbers
+        val candidates = filenameNumbers.filter { isCandidate(it) }
+        if (candidates.contains(targetEp)) {
+            return true
+        }
+
+        return false
+    }
+
     private fun downloadAndUnzipSubtitle(
         context: android.content.Context,
         downloadUrl: String,
         subId: Long,
-        filename: String
+        filename: String,
+        targetEp: Int?,
+        mediaTitle: String?
     ): String? {
         try {
             val cacheDir = java.io.File(context.cacheDir, "anisub_subs/$subId")
@@ -458,12 +535,21 @@ class AddonStreamClient {
                 cacheDir.mkdirs()
             }
             
-            // If we already extracted subtitles for this subId, find and return it
-            val files = cacheDir.listFiles()
-            if (files != null && files.isNotEmpty()) {
-                val subFile = files.firstOrNull { it.name.endsWith(".ass") || it.name.endsWith(".srt") || it.name.endsWith(".vtt") }
-                if (subFile != null) {
-                    return "file://${subFile.absolutePath}"
+            // Check cache first
+            val existingFiles = cacheDir.listFiles()
+            if (existingFiles != null && existingFiles.isNotEmpty()) {
+                val subFiles = existingFiles.filter { it.name.endsWith(".ass") || it.name.endsWith(".srt") || it.name.endsWith(".vtt") }
+                if (subFiles.isNotEmpty()) {
+                    if (targetEp != null) {
+                        val matched = subFiles.firstOrNull { matchesEpisodeInFileName(it.name, targetEp, mediaTitle) }
+                        if (matched != null) {
+                            return "file://${matched.absolutePath}"
+                        }
+                    }
+                    val fallbackFile = subFiles.firstOrNull()
+                    if (fallbackFile != null) {
+                        return "file://${fallbackFile.absolutePath}"
+                    }
                 }
             }
 
@@ -478,23 +564,21 @@ class AddonStreamClient {
             
             val bytes = response.body?.bytes() ?: return null
             
-            // Extract from ZIP
+            // Extract ALL files from ZIP
             val zipIn = java.util.zip.ZipInputStream(java.io.ByteArrayInputStream(bytes))
             var entry = zipIn.nextEntry
-            var extractedFile: java.io.File? = null
+            val extractedFiles = mutableListOf<java.io.File>()
             
             while (entry != null) {
                 if (!entry.isDirectory) {
                     val entryName = entry.name.lowercase()
                     if (entryName.endsWith(".ass") || entryName.endsWith(".srt") || entryName.endsWith(".vtt")) {
-                        // Get clean file name without folder structure
                         val cleanName = java.io.File(entry.name).name
                         val targetFile = java.io.File(cacheDir, cleanName)
                         targetFile.outputStream().use { out ->
                             zipIn.copyTo(out)
                         }
-                        extractedFile = targetFile
-                        break // Just take the first valid subtitle file in the zip
+                        extractedFiles.add(targetFile)
                     }
                 }
                 zipIn.closeEntry()
@@ -502,7 +586,17 @@ class AddonStreamClient {
             }
             zipIn.close()
             
-            return extractedFile?.let { "file://${it.absolutePath}" }
+            if (extractedFiles.isNotEmpty()) {
+                if (targetEp != null) {
+                    val matched = extractedFiles.firstOrNull { matchesEpisodeInFileName(it.name, targetEp, mediaTitle) }
+                    if (matched != null) {
+                        return "file://${matched.absolutePath}"
+                    }
+                }
+                return "file://${extractedFiles.first().absolutePath}"
+            }
+            
+            return null
         } catch (e: Exception) {
             Log.e("AddonStreamClient", "Error downloading/unzipping subtitle from $downloadUrl", e)
             return null
