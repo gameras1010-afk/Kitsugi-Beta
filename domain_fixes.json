@@ -1,14 +1,14 @@
 {
   "_comment": "Kitsugi Eklenti Domain Listesi — GitHub Actions + AI tarafından otomatik güncellenir.",
   "_format": "eklentiAdi (küçük harf) → güncel ana URL",
-  "_updated": "2026-08-04 05:48 UTC",
+  "_updated": "2026-08-05 05:47 UTC",
   "_stats": {
-    "total": 68,
+    "total": 67,
     "added": 0,
-    "removed": 4,
+    "removed": 1,
     "changed": 0,
     "ai_assisted": 0,
-    "blocked": 181
+    "blocked": 182
   },
   "domains": {
     "altiyuzaltmisaltifilmizle": "https://666filmizle.site",
@@ -59,7 +59,6 @@
     "rarfilmm": "https://rarefilmm.com",
     "recTV": "https://a.prectv70.lol/api",
     "rectv": "https://a.prectv70.lol",
-    "seicode": "https://seiwatch.net",
     "selcukflix": "https://selcukflix.co",
     "setfilmizle": "https://www.setfilmizle.uk",
     "sezonlukdizi": "https://sezonlukdizi.cc",
@@ -212,6 +211,7 @@
     "rouvideo",
     "rule34video",
     "rusporn",
+    "seicode",
     "sexfilm",
     "sextb",
     "simpcity",
