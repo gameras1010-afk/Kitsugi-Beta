@@ -17,8 +17,10 @@ object AddonPresets {
     val DEFAULT_SUBTITLE_ADDONS = listOf(
         "https://opensubtitles-v3.strem.io",
         "https://yts-subtitles.strem.io",
-        // TurkceAltyazi.org – Türkçe altyazı birincil kaynağı (v1.1.1 canlı doğrulandı 2026-07-16)
-        "https://5a0d1888fa64-turkcealtyaziorg.baby-beamup.club"
+        // TurkceAltyazi.org – Türkçe altyazı birincil kaynağı (v1.2.3 canlı doğrulandı 2026-08-05)
+        "https://turkcealtyaziorg-stremio-addon.mycodelab.com.tr/addon",
+        // AniSub.co – Türkçe anime altyazı eklentisi (Doğrudan entegre 2026-08-05)
+        "https://anisub.co/manifest.json"
     )
 
     /**
@@ -26,7 +28,8 @@ object AddonPresets {
      * ayrıca kullanılan grubu temsil eder – UI filtreleme vb. için referans).
      */
     val TR_SUBTITLE_ADDONS = listOf(
-        "https://5a0d1888fa64-turkcealtyaziorg.baby-beamup.club"
+        "https://turkcealtyaziorg-stremio-addon.mycodelab.com.tr/addon",
+        "https://anisub.co/manifest.json"
     )
 }
 

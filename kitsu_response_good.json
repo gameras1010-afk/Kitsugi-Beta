@@ -1,0 +1,241 @@
+﻿{
+    "data":  [
+                 {
+                     "id":  "46064",
+                     "type":  "animeCharacters",
+                     "links":  {
+                                   "self":  "https://kitsu.io/api/edge/anime-characters/46064"
+                               },
+                     "attributes":  {
+                                        "createdAt":  null,
+                                        "updatedAt":  null,
+                                        "role":  "main"
+                                    },
+                     "relationships":  {
+                                           "anime":  {
+                                                         "links":  {
+                                                                       "self":  "https://kitsu.io/api/edge/anime-characters/46064/relationships/anime",
+                                                                       "related":  "https://kitsu.io/api/edge/anime-characters/46064/anime"
+                                                                   }
+                                                     },
+                                           "character":  {
+                                                             "links":  {
+                                                                           "self":  "https://kitsu.io/api/edge/anime-characters/46064/relationships/character",
+                                                                           "related":  "https://kitsu.io/api/edge/anime-characters/46064/character"
+                                                                       },
+                                                             "data":  {
+                                                                          "type":  "characters",
+                                                                          "id":  "410"
+                                                                      }
+                                                         },
+                                           "castings":  {
+                                                            "links":  {
+                                                                          "self":  "https://kitsu.io/api/edge/anime-characters/46064/relationships/castings",
+                                                                          "related":  "https://kitsu.io/api/edge/anime-characters/46064/castings"
+                                                                      }
+                                                        }
+                                       }
+                 },
+                 {
+                     "id":  "46065",
+                     "type":  "animeCharacters",
+                     "links":  {
+                                   "self":  "https://kitsu.io/api/edge/anime-characters/46065"
+                               },
+                     "attributes":  {
+                                        "createdAt":  null,
+                                        "updatedAt":  null,
+                                        "role":  "main"
+                                    },
+                     "relationships":  {
+                                           "anime":  {
+                                                         "links":  {
+                                                                       "self":  "https://kitsu.io/api/edge/anime-characters/46065/relationships/anime",
+                                                                       "related":  "https://kitsu.io/api/edge/anime-characters/46065/anime"
+                                                                   }
+                                                     },
+                                           "character":  {
+                                                             "links":  {
+                                                                           "self":  "https://kitsu.io/api/edge/anime-characters/46065/relationships/character",
+                                                                           "related":  "https://kitsu.io/api/edge/anime-characters/46065/character"
+                                                                       },
+                                                             "data":  {
+                                                                          "type":  "characters",
+                                                                          "id":  "406"
+                                                                      }
+                                                         },
+                                           "castings":  {
+                                                            "links":  {
+                                                                          "self":  "https://kitsu.io/api/edge/anime-characters/46065/relationships/castings",
+                                                                          "related":  "https://kitsu.io/api/edge/anime-characters/46065/castings"
+                                                                      }
+                                                        }
+                                       }
+                 }
+             ],
+    "included":  [
+                     {
+                         "id":  "410",
+                         "type":  "characters",
+                         "links":  {
+                                       "self":  "https://kitsu.io/api/edge/characters/410"
+                                   },
+                         "attributes":  {
+                                            "createdAt":  "2013-02-20T18:49:32.268Z",
+                                            "updatedAt":  "2021-09-25T07:38:35.646Z",
+                                            "slug":  "brook",
+                                            "names":  {
+                                                          "en":  "Brook",
+                                                          "ja_jp":  "ãã«ãã¯"
+                                                      },
+                                            "canonicalName":  "Brook",
+                                            "otherNames":  [
+                                                               "Dead Bones",
+                                                               "Soul King"
+                                                           ],
+                                            "name":  "Brook",
+                                            "malId":  5627,
+                                            "description":  "Age: 88; 90 Birthdate: April 3; Aries Height: 2m 66cm (8\u00278Â½\") Affiliation: Straw Hat Pirates (previously; Rumbar Pirates) Position: Musician, Swordsman Devil Fruit: Yomi Yomi no Mi (Revive Revive Fruit) Type: Paramecia Bounty: 83,000,000 (previously: 33,000,000)   Brook known as the \"Gentleman Skeleton\", is a pirate inhabiting the Florian Triangle region of the Grand Line. Although he claims to be a gentleman, and talks in the dialect of one, Brook\u0027s etiquette has severely degenerated over the course of his isolation. He has awful table manners: he shouts for food while waiting to be served, asks to swap plates with people who have larger servings than he does and eating so messily his entire face is stained. He is also extremely flatulent after meals, but says \"excuse me\" so as to be \"gentlemanly.\" He also loves to tell odd, bone-themed jokes, as well as melodramatic tales, and is very perverted, asking to see Nami and Robin\u0027s underwear upon meeting them.   He\u0027s a skilled musician (something Luffy has always wanted in his crew since the beginning), fond of playing the violin. Due to his light weight he can not only jump to incredible heights but can run on water by moving his legs furiously. He uses a shikomizue as his main weapon; with it, he is able to make swift iaidÃ\u0085ï¿½ attacks that the enemy cannot notice.",
+                                            "image":  {
+                                                          "tiny":  "https://media.kitsu.app/character/410/image/tiny-c2c586b3c1d3893270137af8a712b629.jpeg",
+                                                          "large":  "https://media.kitsu.app/character/410/image/large-455586e1536b3d972a0d44da4067e346.jpeg",
+                                                          "small":  "https://media.kitsu.app/character/410/image/small-86ba7e9d4885fbc0a4d68beace877c02.jpeg",
+                                                          "medium":  "https://media.kitsu.app/character/410/image/medium-1d3cf8757d06e8df113928a4e073a6eb.jpeg",
+                                                          "original":  "https://media.kitsu.app/characters/images/410/original.jpg",
+                                                          "meta":  {
+                                                                       "dimensions":  {
+                                                                                          "tiny":  {
+                                                                                                       "width":  100,
+                                                                                                       "height":  120
+                                                                                                   },
+                                                                                          "large":  {
+                                                                                                        "width":  500,
+                                                                                                        "height":  600
+                                                                                                    },
+                                                                                          "small":  {
+                                                                                                        "width":  200,
+                                                                                                        "height":  240
+                                                                                                    },
+                                                                                          "medium":  {
+                                                                                                         "width":  300,
+                                                                                                         "height":  360
+                                                                                                     }
+                                                                                      }
+                                                                   }
+                                                      }
+                                        },
+                         "relationships":  {
+                                               "primaryMedia":  {
+                                                                    "links":  {
+                                                                                  "self":  "https://kitsu.io/api/edge/characters/410/relationships/primary-media",
+                                                                                  "related":  "https://kitsu.io/api/edge/characters/410/primary-media"
+                                                                              }
+                                                                },
+                                               "castings":  {
+                                                                "links":  {
+                                                                              "self":  "https://kitsu.io/api/edge/characters/410/relationships/castings",
+                                                                              "related":  "https://kitsu.io/api/edge/characters/410/castings"
+                                                                          }
+                                                            },
+                                               "mediaCharacters":  {
+                                                                       "links":  {
+                                                                                     "self":  "https://kitsu.io/api/edge/characters/410/relationships/media-characters",
+                                                                                     "related":  "https://kitsu.io/api/edge/characters/410/media-characters"
+                                                                                 }
+                                                                   },
+                                               "quotes":  {
+                                                              "links":  {
+                                                                            "self":  "https://kitsu.io/api/edge/characters/410/relationships/quotes",
+                                                                            "related":  "https://kitsu.io/api/edge/characters/410/quotes"
+                                                                        }
+                                                          }
+                                           }
+                     },
+                     {
+                         "id":  "406",
+                         "type":  "characters",
+                         "links":  {
+                                       "self":  "https://kitsu.io/api/edge/characters/406"
+                                   },
+                         "attributes":  {
+                                            "createdAt":  "2013-02-20T18:49:31.953Z",
+                                            "updatedAt":  "2021-09-25T07:38:22.289Z",
+                                            "slug":  "franky",
+                                            "names":  {
+                                                          "en":  "Franky",
+                                                          "ja_jp":  "ãã©ã³ã­ã¼"
+                                                      },
+                                            "canonicalName":  "Franky",
+                                            "otherNames":  [
+                                                               "Cyborg",
+                                                               "Cutty Flam",
+                                                               "Bakanky"
+                                                           ],
+                                            "name":  "Franky",
+                                            "malId":  64,
+                                            "description":  "Name: Franky Age: 34; 36 Birthdate: March 9 Zodiac Sign: Pisces Height: 225 cm (7\u00274Â½\") Affiliation: Straw Hat Pirates (previously; Franky Family, Tom\u0027s Workers) Position: Shipwright Devil Fruit: none Bounty: 94,000,000 (previously: 44,000,000)   Franky is a 34 year old cyborg who is the shipwright of the Straw Hat Pirates and their second most recently recruited member. He first appeared in the Water 7 arc. Franky is one of \"Tom\u0027s Workers\", with original name \"Cutty Flam.\"  Franky\u0027s dream is to build a ship that would travel to the end of the Grand Line. This is the ship that the Straw Hats are currently riding, but his dream is not yet achieved until they make it to the end.  Franky usually acts tough and is quickly angered, but he is also very emotional when it comes to sad tales and often bursts into large tears, or on some occasions, plays a song. His most distinguishable personality trait is his flamboyant attitude. He frequently shouts the word \u0027SUPER\u0027 when he\u0027s in a positive mood, or adds it into his speech. He also has a signature pose which he uses very often.  Franky is quick to defend other people (e.g. Franky Family, Nico Robin) and take action if his friends are harmed. He is also quick in making friends, allies, and comrades with even the most unlikely of individuals. Because of this, he is seen as a \u0027big brother\u0027 figure. Monkey D. Luffy bears similar qualities (with the exception of engaging in unnecessary fights) and because of this, despite the disputes the two had in the past, both grew to respect each other during the events of the Enies Lobby Arc.",
+                                            "image":  {
+                                                          "tiny":  "https://media.kitsu.app/character/406/image/tiny-7fa13226bae167e422e608bf09ed23b1.jpeg",
+                                                          "large":  "https://media.kitsu.app/character/406/image/large-0482be9c5de9b225248b4147eae6d9c3.jpeg",
+                                                          "small":  "https://media.kitsu.app/character/406/image/small-dbfdf84c191dd024249a638254d80391.jpeg",
+                                                          "medium":  "https://media.kitsu.app/character/406/image/medium-cc15b9f3226c88a7a56f461461843846.jpeg",
+                                                          "original":  "https://media.kitsu.app/characters/images/406/original.jpg",
+                                                          "meta":  {
+                                                                       "dimensions":  {
+                                                                                          "tiny":  {
+                                                                                                       "width":  100,
+                                                                                                       "height":  120
+                                                                                                   },
+                                                                                          "large":  {
+                                                                                                        "width":  500,
+                                                                                                        "height":  600
+                                                                                                    },
+                                                                                          "small":  {
+                                                                                                        "width":  200,
+                                                                                                        "height":  240
+                                                                                                    },
+                                                                                          "medium":  {
+                                                                                                         "width":  300,
+                                                                                                         "height":  360
+                                                                                                     }
+                                                                                      }
+                                                                   }
+                                                      }
+                                        },
+                         "relationships":  {
+                                               "primaryMedia":  {
+                                                                    "links":  {
+                                                                                  "self":  "https://kitsu.io/api/edge/characters/406/relationships/primary-media",
+                                                                                  "related":  "https://kitsu.io/api/edge/characters/406/primary-media"
+                                                                              }
+                                                                },
+                                               "castings":  {
+                                                                "links":  {
+                                                                              "self":  "https://kitsu.io/api/edge/characters/406/relationships/castings",
+                                                                              "related":  "https://kitsu.io/api/edge/characters/406/castings"
+                                                                          }
+                                                            },
+                                               "mediaCharacters":  {
+                                                                       "links":  {
+                                                                                     "self":  "https://kitsu.io/api/edge/characters/406/relationships/media-characters",
+                                                                                     "related":  "https://kitsu.io/api/edge/characters/406/media-characters"
+                                                                                 }
+                                                                   },
+                                               "quotes":  {
+                                                              "links":  {
+                                                                            "self":  "https://kitsu.io/api/edge/characters/406/relationships/quotes",
+                                                                            "related":  "https://kitsu.io/api/edge/characters/406/quotes"
+                                                                        }
+                                                          }
+                                           }
+                     }
+                 ],
+    "meta":  {
+                 "count":  593
+             },
+    "links":  {
+                  "first":  "https://kitsu.io/api/edge/anime-characters?filter%5BanimeId%5D=12\u0026include=character\u0026page%5Blimit%5D=2\u0026page%5Boffset%5D=0",
+                  "next":  "https://kitsu.io/api/edge/anime-characters?filter%5BanimeId%5D=12\u0026include=character\u0026page%5Blimit%5D=2\u0026page%5Boffset%5D=2",
+                  "last":  "https://kitsu.io/api/edge/anime-characters?filter%5BanimeId%5D=12\u0026include=character\u0026page%5Blimit%5D=2\u0026page%5Boffset%5D=591"
+              }
+}

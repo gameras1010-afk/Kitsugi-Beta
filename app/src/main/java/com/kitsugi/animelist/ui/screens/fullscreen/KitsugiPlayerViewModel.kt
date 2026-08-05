@@ -1392,20 +1392,59 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
 
         viewModelScope.launch {
             try {
-                val resolvedIds = com.kitsugi.animelist.data.remote.KitsugiIdResolver.resolveIds(currentMalId, currentAniList, tmdbId)
-                val imdbId = resolvedIds.imdbId
-                val kitsuId = resolvedIds.kitsuId
+                var resolvedIds = com.kitsugi.animelist.data.remote.KitsugiIdResolver.resolveIds(currentMalId, currentAniList, tmdbId)
+                var imdbId = resolvedIds.imdbId
+                var kitsuId = resolvedIds.kitsuId
 
-                val type = if (isMovieType) "movie" else "series"
-                val queryIds = mutableListOf<String>()
+                var resolvedMovieType = isMovieType
+                if (imdbId.isNullOrBlank() && kitsuId == null && animeTitle.isNotBlank()) {
+                    Log.d("KitsugiPlayerViewModel", "Subtitle resolution fallback: Searching TMDB for title '$animeTitle'")
+                    val tmdbSearchClient = com.kitsugi.animelist.data.remote.TmdbApiClient()
+                    val searchResults = tmdbSearchClient.search(animeTitle)
+                    val bestMatch = searchResults.firstOrNull { result ->
+                        if (isMovieType) result.type == com.kitsugi.animelist.model.MediaType.Movie
+                        else result.type == com.kitsugi.animelist.model.MediaType.TvShow
+                    } ?: searchResults.firstOrNull()
+
+                    if (bestMatch != null) {
+                        resolvedMovieType = bestMatch.type == com.kitsugi.animelist.model.MediaType.Movie
+                        Log.d("KitsugiPlayerViewModel", "Fallback found match on TMDB: id=${bestMatch.tmdbId}, type=${bestMatch.type}, title=${bestMatch.title}")
+                        val fallbackResolved = com.kitsugi.animelist.data.remote.KitsugiIdResolver.resolveIds(
+                            malId = null,
+                            aniListId = null,
+                            tmdbId = bestMatch.tmdbId,
+                            mediaType = bestMatch.type
+                        )
+                        if (!fallbackResolved.imdbId.isNullOrBlank()) {
+                            imdbId = fallbackResolved.imdbId
+                            Log.d("KitsugiPlayerViewModel", "Fallback successfully resolved IMDb ID: $imdbId")
+                        }
+                        if (fallbackResolved.kitsuId != null) {
+                            kitsuId = fallbackResolved.kitsuId
+                        }
+                    }
+                }
+
+                data class SubtitleQuery(val type: String, val id: String)
+                val queries = mutableListOf<SubtitleQuery>()
 
                 // 1. IMDB ID varsa ekle (en yaygın format, çoğu addon destekler)
                 if (!imdbId.isNullOrBlank()) {
-                    queryIds.add(if (isMovieType) imdbId else "$imdbId:$currentS:$currentEp")
+                    if (resolvedMovieType) {
+                        queries.add(SubtitleQuery("movie", imdbId))
+                    } else {
+                        queries.add(SubtitleQuery("series", "$imdbId:$currentS:$currentEp"))
+                        queries.add(SubtitleQuery("movie", imdbId))
+                    }
                 }
                 // 2. Kitsu ID varsa ekle (anime-specific eklentiler için)
                 if (kitsuId != null) {
-                    queryIds.add(if (isMovieType) "kitsu:$kitsuId" else "kitsu:$kitsuId:$currentEp")
+                    if (resolvedMovieType) {
+                        queries.add(SubtitleQuery("movie", "kitsu:$kitsuId"))
+                    } else {
+                        queries.add(SubtitleQuery("series", "kitsu:$kitsuId:$currentEp"))
+                        queries.add(SubtitleQuery("movie", "kitsu:$kitsuId"))
+                    }
                 }
                 // 3. Anime başlığı ile PARALEL arama — her zaman eklenir.
                 // Bazı altyazı eklentileri (türkçealtyazi.org gibi) isim aramasını da
@@ -1413,15 +1452,18 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
                 // 0 maliyetle çalışır çünkü diğer sorgularla zaten paralel atılıyor.
                 val titleQuery = animeTitle.trim().takeIf { it.isNotBlank() }
                 if (titleQuery != null) {
-                    queryIds.add(if (isMovieType) titleQuery else "$titleQuery:$currentS:$currentEp")
+                    if (resolvedMovieType) {
+                        queries.add(SubtitleQuery("movie", titleQuery))
+                    } else {
+                        queries.add(SubtitleQuery("series", "$titleQuery:$currentS:$currentEp"))
+                        queries.add(SubtitleQuery("movie", titleQuery))
+                    }
                 }
 
-                if (queryIds.isEmpty()) {
+                if (queries.isEmpty()) {
                     Log.w("KitsugiPlayerViewModel", "Altyazı atlandı: ID ve başlık çözümlenemedi (malId=$currentMalId, aniListId=$currentAniList).")
                     return@launch
                 }
-
-                Log.d("KitsugiPlayerViewModel", "Altyazı sorgulama: queryIds=$queryIds, type=$type (imdb=$imdbId, kitsu=$kitsuId, title=$titleQuery)")
 
                 val selectedSource = _currentStreamSources.value.getOrNull(_currentSourceIndex.value)
                 val guessedFilename = selectedSource?.title?.takeIf { it.isNotBlank() }
@@ -1433,23 +1475,26 @@ class KitsugiPlayerViewModel(application: Application) : AndroidViewModel(applic
                     }
                 val cleanedFilename = guessedFilename?.substringBefore("\n")?.substringBefore("\r")?.trim()
 
-                Log.d("KitsugiPlayerViewModel", "Fetching subtitles: queryIds=$queryIds, type=$type, filename=$cleanedFilename")
+                Log.d("KitsugiPlayerViewModel", "Fetching subtitles for queries: $queries, filename=$cleanedFilename")
 
                 val subRepo = com.kitsugi.animelist.data.repository.SubtitleRepositoryImpl(context)
-                // Tüm queryId'ler için paralel sorgu — IMDB + kitsu + title hepsi aynı anda
+                // Tüm query'ler için paralel sorgu — IMDB + kitsu + title hepsi aynı anda
                 val remoteSubs = kotlinx.coroutines.coroutineScope {
-                    queryIds.map { queryId ->
+                    queries.map { query ->
                         async(kotlinx.coroutines.Dispatchers.IO) {
                             try {
                                 subRepo.getSubtitles(
-                                    type = type,
-                                    id = queryId,
+                                    type = query.type,
+                                    id = query.id,
                                     videoUrl = _currentVideoUrl.value,
                                     videoHeaders = _currentHeaders.value,
-                                    filename = cleanedFilename
+                                    filename = cleanedFilename,
+                                    aniListId = currentAniList,
+                                    animeTitle = animeTitle,
+                                    episode = currentEp
                                 )
                             } catch (e: Exception) {
-                                Log.e("KitsugiPlayerViewModel", "Failed to fetch subtitles for queryId=$queryId", e)
+                                Log.e("KitsugiPlayerViewModel", "Failed to fetch subtitles for queryId=${query.id} type=${query.type}", e)
                                 emptyList()
                             }
                         }

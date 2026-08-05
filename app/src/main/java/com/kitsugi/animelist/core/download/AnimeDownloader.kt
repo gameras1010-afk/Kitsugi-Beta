@@ -196,7 +196,10 @@ class AnimeDownloader(private val context: Context) {
                                     id = queryId,
                                     videoUrl = download.url,
                                     videoHeaders = download.requestHeaders,
-                                    filename = cleanedFilename
+                                    filename = cleanedFilename,
+                                    aniListId = dAniListId,
+                                    animeTitle = download.animeTitle,
+                                    episode = download.episode
                                 )
                                 remoteSubs.addAll(subs)
                             } catch (e: Exception) {

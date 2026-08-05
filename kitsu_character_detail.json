@@ -1,0 +1,79 @@
+﻿{
+    "data":  {
+                 "id":  "410",
+                 "type":  "characters",
+                 "links":  {
+                               "self":  "https://kitsu.io/api/edge/characters/410"
+                           },
+                 "attributes":  {
+                                    "createdAt":  "2013-02-20T18:49:32.268Z",
+                                    "updatedAt":  "2021-09-25T07:38:35.646Z",
+                                    "slug":  "brook",
+                                    "names":  {
+                                                  "en":  "Brook",
+                                                  "ja_jp":  "ãã«ãã¯"
+                                              },
+                                    "canonicalName":  "Brook",
+                                    "otherNames":  [
+                                                       "Dead Bones",
+                                                       "Soul King"
+                                                   ],
+                                    "name":  "Brook",
+                                    "malId":  5627,
+                                    "description":  "Age: 88; 90 Birthdate: April 3; Aries Height: 2m 66cm (8\u00278Â½\") Affiliation: Straw Hat Pirates (previously; Rumbar Pirates) Position: Musician, Swordsman Devil Fruit: Yomi Yomi no Mi (Revive Revive Fruit) Type: Paramecia Bounty: 83,000,000 (previously: 33,000,000)   Brook known as the \"Gentleman Skeleton\", is a pirate inhabiting the Florian Triangle region of the Grand Line. Although he claims to be a gentleman, and talks in the dialect of one, Brook\u0027s etiquette has severely degenerated over the course of his isolation. He has awful table manners: he shouts for food while waiting to be served, asks to swap plates with people who have larger servings than he does and eating so messily his entire face is stained. He is also extremely flatulent after meals, but says \"excuse me\" so as to be \"gentlemanly.\" He also loves to tell odd, bone-themed jokes, as well as melodramatic tales, and is very perverted, asking to see Nami and Robin\u0027s underwear upon meeting them.   He\u0027s a skilled musician (something Luffy has always wanted in his crew since the beginning), fond of playing the violin. Due to his light weight he can not only jump to incredible heights but can run on water by moving his legs furiously. He uses a shikomizue as his main weapon; with it, he is able to make swift iaidÃ\u0085ï¿½ attacks that the enemy cannot notice.",
+                                    "image":  {
+                                                  "tiny":  "https://media.kitsu.app/character/410/image/tiny-c2c586b3c1d3893270137af8a712b629.jpeg",
+                                                  "large":  "https://media.kitsu.app/character/410/image/large-455586e1536b3d972a0d44da4067e346.jpeg",
+                                                  "small":  "https://media.kitsu.app/character/410/image/small-86ba7e9d4885fbc0a4d68beace877c02.jpeg",
+                                                  "medium":  "https://media.kitsu.app/character/410/image/medium-1d3cf8757d06e8df113928a4e073a6eb.jpeg",
+                                                  "original":  "https://media.kitsu.app/characters/images/410/original.jpg",
+                                                  "meta":  {
+                                                               "dimensions":  {
+                                                                                  "tiny":  {
+                                                                                               "width":  100,
+                                                                                               "height":  120
+                                                                                           },
+                                                                                  "large":  {
+                                                                                                "width":  500,
+                                                                                                "height":  600
+                                                                                            },
+                                                                                  "small":  {
+                                                                                                "width":  200,
+                                                                                                "height":  240
+                                                                                            },
+                                                                                  "medium":  {
+                                                                                                 "width":  300,
+                                                                                                 "height":  360
+                                                                                             }
+                                                                              }
+                                                           }
+                                              }
+                                },
+                 "relationships":  {
+                                       "primaryMedia":  {
+                                                            "links":  {
+                                                                          "self":  "https://kitsu.io/api/edge/characters/410/relationships/primary-media",
+                                                                          "related":  "https://kitsu.io/api/edge/characters/410/primary-media"
+                                                                      }
+                                                        },
+                                       "castings":  {
+                                                        "links":  {
+                                                                      "self":  "https://kitsu.io/api/edge/characters/410/relationships/castings",
+                                                                      "related":  "https://kitsu.io/api/edge/characters/410/castings"
+                                                                  }
+                                                    },
+                                       "mediaCharacters":  {
+                                                               "links":  {
+                                                                             "self":  "https://kitsu.io/api/edge/characters/410/relationships/media-characters",
+                                                                             "related":  "https://kitsu.io/api/edge/characters/410/media-characters"
+                                                                         }
+                                                           },
+                                       "quotes":  {
+                                                      "links":  {
+                                                                    "self":  "https://kitsu.io/api/edge/characters/410/relationships/quotes",
+                                                                    "related":  "https://kitsu.io/api/edge/characters/410/quotes"
+                                                                }
+                                                  }
+                                   }
+             }
+}

@@ -319,9 +319,11 @@ fun ApiResultDetailPage(
     val leftPanelFocusRequester = remember { FocusRequester() }
     val tabBarFocusRequester = remember { FocusRequester() }
 
-    // Yeni bir sonuç'a geçildiğinde (geri tuşuyla aynı sayfaya dönüldüğünde dahil) tab’ı sıfırla
+    // Yeni bir sonuç'a geçildiğinde tab'ı sıfırla — geri tuşuyla dönüşlerde SIFIRLAMAZ.
+    var lastProcessedTrigger by rememberSaveable { mutableStateOf(0) }
     LaunchedEffect(pageResetTrigger) {
-        if (pageResetTrigger > 0) {
+        if (pageResetTrigger > 0 && pageResetTrigger != lastProcessedTrigger) {
+            lastProcessedTrigger = pageResetTrigger
             pagerState.scrollToPage(0)
         }
     }

@@ -167,7 +167,8 @@ data class KitsugiCharacterDetail(
     val voiceActors: List<KitsugiVoiceActor> = emptyList(),
     val mediaAppearances: List<KitsugiCharacterMediaAppearance> = emptyList(),
     val isFavourite: Boolean = false,
-    val aniListId: Int? = null
+    val aniListId: Int? = null,
+    val source: String = "jikan"
 )
 
 data class KitsugiStaff(

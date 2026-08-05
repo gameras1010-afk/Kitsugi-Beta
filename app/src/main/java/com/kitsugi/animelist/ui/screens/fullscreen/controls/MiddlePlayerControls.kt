@@ -1,8 +1,15 @@
 package com.kitsugi.animelist.ui.screens.fullscreen.controls
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -35,6 +42,13 @@ import com.kitsugi.animelist.ui.screens.fullscreen.controls.components.ControlsB
 import com.kitsugi.animelist.ui.theme.KitsugiColors
 import kotlin.math.abs
 
+private enum class MiddleControlState {
+    Seek,
+    Loading,
+    PlayPause,
+    Hidden
+}
+
 @Composable
 fun MiddlePlayerControls(
     hasPrevious: Boolean,
@@ -53,6 +67,15 @@ fun MiddlePlayerControls(
     exit: ExitTransition,
     modifier: Modifier = Modifier,
 ) {
+    val currentState = remember(gestureSeekAmount, showLoadingCircle, controlsShown, areControlsLocked) {
+        when {
+            gestureSeekAmount != null -> MiddleControlState.Seek
+            showLoadingCircle -> MiddleControlState.Loading
+            controlsShown && !areControlsLocked -> MiddleControlState.PlayPause
+            else -> MiddleControlState.Hidden
+        }
+    }
+
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -74,53 +97,66 @@ fun MiddlePlayerControls(
         }
 
         val interaction = remember { MutableInteractionSource() }
-        when {
-            gestureSeekAmount != null -> {
-                val current = gestureSeekAmount.first
-                val diff = gestureSeekAmount.second
-                Text(
-                    text = "${if (diff >= 0) "+" else "-"}${prettyTime(abs(diff))} [${prettyTime(current + diff)}]",
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        color = Color.White,
-                        shadow = Shadow(Color.Black, blurRadius = 5f),
-                    ),
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                )
-            }
-
-            (isLoading || isLoadingEpisode) && showLoadingCircle -> {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(96.dp),
-                    color = KitsugiColors.AccentBlue,
-                    strokeWidth = 6.dp
-                )
-            }
-
-            else -> {
-                AnimatedVisibility(
-                    visible = controlsShown && !areControlsLocked,
-                    enter = enter,
-                    exit = exit,
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(96.dp)
-                            .clip(CircleShape)
-                            .clickable(
-                                interactionSource = interaction,
-                                indication = ripple(),
-                                onClick = onPlayPauseClick,
-                            )
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = if (paused) Icons.Filled.PlayArrow else Icons.Filled.Pause,
-                            contentDescription = null,
-                            modifier = Modifier.size(64.dp),
-                            tint = Color.White
+        AnimatedContent(
+            targetState = currentState,
+            transitionSpec = {
+                (fadeIn(animationSpec = androidx.compose.animation.core.tween(220)) +
+                 scaleIn(initialScale = 0.8f, animationSpec = androidx.compose.animation.core.tween(220)))
+                    .togetherWith(
+                        fadeOut(animationSpec = androidx.compose.animation.core.tween(220)) +
+                        scaleOut(targetScale = 0.8f, animationSpec = androidx.compose.animation.core.tween(220))
+                    )
+            },
+            label = "MiddleControlsTransition"
+        ) { state ->
+            Box(
+                modifier = Modifier.size(96.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                when (state) {
+                    MiddleControlState.Seek -> {
+                        val current = gestureSeekAmount?.first ?: 0
+                        val diff = gestureSeekAmount?.second ?: 0
+                        Text(
+                            text = "${if (diff >= 0) "+" else "-"}${prettyTime(abs(diff))} [${prettyTime(current + diff)}]",
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                color = Color.White,
+                                shadow = Shadow(Color.Black, blurRadius = 5f),
+                            ),
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
                         )
+                    }
+                    MiddleControlState.Loading -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(80.dp),
+                            color = KitsugiColors.AccentBlue,
+                            strokeWidth = 4.dp
+                        )
+                    }
+                    MiddleControlState.PlayPause -> {
+                        Box(
+                            modifier = Modifier
+                                .size(96.dp)
+                                .clip(CircleShape)
+                                .clickable(
+                                    interactionSource = interaction,
+                                    indication = ripple(),
+                                    onClick = onPlayPauseClick,
+                                )
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = if (paused) Icons.Filled.PlayArrow else Icons.Filled.Pause,
+                                contentDescription = null,
+                                modifier = Modifier.size(64.dp),
+                                tint = Color.White
+                            )
+                        }
+                    }
+                    MiddleControlState.Hidden -> {
+                        Spacer(modifier = Modifier.size(96.dp))
                     }
                 }
             }

@@ -45,6 +45,42 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     private var searchHistoryEnabledState = true
     private var searchJob: Job? = null
 
+    private data class TabSearchState(
+        val query: String = "",
+        val results: List<JikanSearchResult> = emptyList(),
+        val hasSearched: Boolean = false,
+        val errorMessage: String? = null
+    )
+
+    private val stateCache = mutableMapOf<String, TabSearchState>()
+
+    private fun getTabKey(platform: SearchPlatform, mediaType: MediaType): String {
+        return when (platform) {
+            SearchPlatform.TMDB -> "TMDB"
+            SearchPlatform.CS3 -> "CS3"
+            else -> when (mediaType) {
+                MediaType.Manga -> "MANGA"
+                else -> "ANIME"
+            }
+        }
+    }
+
+    private fun saveCurrentStateToCache() {
+        val currentState = _uiState.value
+        val key = getTabKey(currentState.selectedPlatform, currentState.selectedMediaType)
+        stateCache[key] = TabSearchState(
+            query = currentState.query,
+            results = currentState.results,
+            hasSearched = currentState.hasSearched,
+            errorMessage = currentState.errorMessage
+        )
+    }
+
+    private fun loadStateFromCache(platform: SearchPlatform, mediaType: MediaType): TabSearchState {
+        val key = getTabKey(platform, mediaType)
+        return stateCache[key] ?: TabSearchState()
+    }
+
     init {
         viewModelScope.launch {
             settingsDataStore.settingsFlow.collect { settings ->
@@ -61,37 +97,66 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
 
     fun setQuery(value: String) {
         _uiState.update { it.copy(query = value) }
+        saveCurrentStateToCache()
     }
 
     fun setMediaType(value: MediaType) {
+        saveCurrentStateToCache()
         val currentPlatform = _uiState.value.selectedPlatform
         val targetPlatform = if (value == MediaType.Manga && currentPlatform == SearchPlatform.TMDB) {
             SearchPlatform.All
         } else {
             currentPlatform
         }
+        val cached = loadStateFromCache(targetPlatform, value)
         _uiState.update { 
             it.copy(
                 selectedMediaType = value,
-                selectedPlatform = targetPlatform
+                selectedPlatform = targetPlatform,
+                query = cached.query,
+                results = cached.results,
+                hasSearched = cached.hasSearched,
+                errorMessage = cached.errorMessage
             )
         }
-        search()
+        if (!cached.hasSearched && cached.query.isNotBlank()) {
+            search()
+        }
     }
 
     fun setPlatform(value: SearchPlatform) {
-        _uiState.update { it.copy(selectedPlatform = value) }
-        search()
+        saveCurrentStateToCache()
+        val cached = loadStateFromCache(value, _uiState.value.selectedMediaType)
+        _uiState.update {
+            it.copy(
+                selectedPlatform = value,
+                query = cached.query,
+                results = cached.results,
+                hasSearched = cached.hasSearched,
+                errorMessage = cached.errorMessage
+            )
+        }
+        if (!cached.hasSearched && cached.query.isNotBlank()) {
+            search()
+        }
     }
 
     fun setPlatformAndMediaType(platform: SearchPlatform, mediaType: MediaType) {
+        saveCurrentStateToCache()
+        val cached = loadStateFromCache(platform, mediaType)
         _uiState.update {
             it.copy(
                 selectedPlatform = platform,
-                selectedMediaType = mediaType
+                selectedMediaType = mediaType,
+                query = cached.query,
+                results = cached.results,
+                hasSearched = cached.hasSearched,
+                errorMessage = cached.errorMessage
             )
         }
-        search()
+        if (!cached.hasSearched && cached.query.isNotBlank()) {
+            search()
+        }
     }
 
     fun setFilterSheetOpen(isOpen: Boolean) {
@@ -487,6 +552,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                         errorMessage = if (results.isEmpty()) "Sonuç bulunamadı." else null
                     )
                 }
+                saveCurrentStateToCache()
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -496,6 +562,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                         errorMessage = e.message ?: "Arama sırasında bir hata oluştu."
                     )
                 }
+                saveCurrentStateToCache()
             }
         }
     }
@@ -753,21 +820,8 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                     }
                 }
                 SearchPlatform.CS3 -> {
-                    val targetApiName = state.selectedPluginApiName
-                    val rawResults = if (targetApiName != null) {
-                        // Seçili tek eklentide ara
-                        val api = com.lagradost.cloudstream3.APIHolder.allProviders
-                            .firstOrNull { it.name == targetApiName }
-                        if (api != null) {
-                            com.kitsugi.animelist.data.cloudstream.CsStreamRunner.safeSearch(api, queryText)
-                                .map { api to it }
-                        } else {
-                            com.kitsugi.animelist.data.cloudstream.CsStreamRunner.searchAllAddons(getApplication(), queryText)
-                        }
-                    } else {
-                        // Tüm aktif eklentilerde ara
-                        com.kitsugi.animelist.data.cloudstream.CsStreamRunner.searchAllAddons(getApplication(), queryText)
-                    }
+                    // Her zaman tüm aktif eklentilerde ara
+                    val rawResults = com.kitsugi.animelist.data.cloudstream.CsStreamRunner.searchAllAddons(getApplication(), queryText)
                     rawResults.map { (api, response) ->
                         JikanSearchResult(
                             malId = response.url.hashCode(),
@@ -815,6 +869,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
 
     fun clearResults() {
         _uiState.update { it.copy(results = emptyList(), hasSearched = false, errorMessage = null) }
+        saveCurrentStateToCache()
     }
 
     /**
@@ -830,6 +885,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                 errorMessage = null
             )
         }
+        saveCurrentStateToCache()
     }
 
     /**
@@ -838,16 +894,21 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
      * [apiName] null ise ve [keepPlatformCs3] false ise, platform All (Tümü) olur.
      */
     fun setSelectedPlugin(apiName: String?, keepPlatformCs3: Boolean = false) {
+        saveCurrentStateToCache()
+        val targetPlatform = if (keepPlatformCs3 || apiName != null) SearchPlatform.CS3 else SearchPlatform.All
+        val cached = loadStateFromCache(targetPlatform, _uiState.value.selectedMediaType)
         _uiState.update {
             it.copy(
                 selectedPluginApiName = apiName,
-                selectedPlatform = if (keepPlatformCs3 || apiName != null) SearchPlatform.CS3 else SearchPlatform.All,
-                // Arama geçmişini temizle, boş sayfa göster
-                query = "",
-                results = emptyList(),
-                hasSearched = false,
-                errorMessage = null
+                selectedPlatform = targetPlatform,
+                query = cached.query,
+                results = cached.results,
+                hasSearched = cached.hasSearched,
+                errorMessage = cached.errorMessage
             )
+        }
+        if (!cached.hasSearched && cached.query.isNotBlank()) {
+            search()
         }
     }
 }

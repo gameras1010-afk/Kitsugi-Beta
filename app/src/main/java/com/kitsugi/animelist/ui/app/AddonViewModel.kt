@@ -82,6 +82,7 @@ class AddonViewModel(application: Application) : AndroidViewModel(application) {
                                 url.contains("opensubtitles") -> "OpenSubtitles"
                                 url.contains("yts") -> "YTS Subtitles"
                                 url.contains("turkcealtyaziorg") -> "TurkceAltyazi.org"
+                                url.contains("anisub.co") -> "AniSub.co"
                                 else -> "Subtitle Addon"
                             },
                             description = "Sistem Altyazı Eklentisi",
@@ -105,6 +106,13 @@ class AddonViewModel(application: Application) : AndroidViewModel(application) {
         }
         if (deprecatedV2 != null) {
             addonDao.deleteAddon(deprecatedV2)
+        }
+
+        val deprecatedTurkceAltyazi = addonDao.getAllAddons().find {
+            it.manifestUrl.contains("turkcealtyaziorg.baby-beamup.club", ignoreCase = true)
+        }
+        if (deprecatedTurkceAltyazi != null) {
+            addonDao.deleteAddon(deprecatedTurkceAltyazi)
         }
 
         val all = addonDao.getAllAddons()

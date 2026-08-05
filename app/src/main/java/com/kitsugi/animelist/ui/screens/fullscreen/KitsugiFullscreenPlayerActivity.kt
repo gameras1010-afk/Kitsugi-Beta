@@ -78,6 +78,7 @@ class KitsugiFullscreenPlayerActivity : ComponentActivity() {
         const val EXTRA_IS_MOVIE    = "extra_is_movie"
         const val EXTRA_CS3_URL     = "extra_cs3_url"
         const val EXTRA_CS3_API_NAME = "extra_cs3_api_name"
+        const val EXTRA_RESUME_POSITION = "extra_resume_position"
 
         @Volatile
         var tempStreamSources: List<StreamSource>? = null
@@ -122,7 +123,8 @@ class KitsugiFullscreenPlayerActivity : ComponentActivity() {
             cast: List<MetaCastMember> = emptyList(),
             isMovie: Boolean = false,
             cs3Url: String? = null,
-            cs3ApiName: String? = null
+            cs3ApiName: String? = null,
+            resumePositionMs: Long = 0L
         ) {
             tempSubtitles = subtitles
             tempStreamSources = allSources
@@ -154,6 +156,7 @@ class KitsugiFullscreenPlayerActivity : ComponentActivity() {
                     startYear?.let { putExtra(EXTRA_START_YEAR, it) }
                     description?.let { putExtra(EXTRA_DESCRIPTION, it) }
                     putExtra(EXTRA_IS_MOVIE, isMovie)
+                    putExtra(EXTRA_RESUME_POSITION, resumePositionMs)
                     
                     val gson = com.google.gson.Gson()
                     if (subtitles.isNotEmpty()) {
@@ -165,12 +168,6 @@ class KitsugiFullscreenPlayerActivity : ComponentActivity() {
                     if (cast.isNotEmpty()) {
                         putExtra(EXTRA_CAST_JSON, gson.toJson(cast))
                     }
-                    // FLAG_ACTIVITY_NEW_TASK KALDIRILDI:
-                    // KitsugiStreamActivity zaten aynı task içinde çalışıyor.
-                    // Bu flag, singleTop launchMode ile birleşince Android'i mevcut
-                    // player instance'ını yeniden kullanmaya/yok etmeye zorluyordu.
-                    // Bu da LeftCompositionCancellationException → activity kapanması
-                    // → kullanıcının home ekranına atılması sorununa neden oluyordu.
                 }
             )
         }
@@ -288,6 +285,7 @@ class KitsugiFullscreenPlayerActivity : ComponentActivity() {
         val isMovie = intent.getBooleanExtra(EXTRA_IS_MOVIE, false)
         val cs3Url = intent.getStringExtra(EXTRA_CS3_URL)
         val cs3ApiName = intent.getStringExtra(EXTRA_CS3_API_NAME)
+        val resumePosition = intent.getLongExtra(EXTRA_RESUME_POSITION, 0L)
 
         val castList: List<MetaCastMember> = tempCast ?: run {
             val castJson = intent.getStringExtra(EXTRA_CAST_JSON)
@@ -349,6 +347,7 @@ class KitsugiFullscreenPlayerActivity : ComponentActivity() {
                     isMovie          = isMovie,
                     cs3Url           = cs3Url,
                     cs3ApiName       = cs3ApiName,
+                    resumePosition   = resumePosition,
                     onBack           = { finish() }
                 )
             }

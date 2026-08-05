@@ -142,7 +142,8 @@ fun WatchHistoryScreen(
                                     posterUrl = entry.posterUrl,
                                     isMovie = entry.isMovie,
                                     cs3Url = entry.cs3Url,
-                                    cs3ApiName = entry.cs3ApiName
+                                    cs3ApiName = entry.cs3ApiName,
+                                    resumePositionMs = entry.positionMs
                                 )
                             } else {
                                 // ── Geri dönüş: tüm kaynakları tara ────────────────────────

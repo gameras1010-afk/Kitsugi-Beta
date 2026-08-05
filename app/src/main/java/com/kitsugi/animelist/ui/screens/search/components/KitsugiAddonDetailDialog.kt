@@ -453,7 +453,7 @@ private fun DetailContent(
                                     cs3Url = loadResponse.url,
                                     cs3ApiName = api.name
                                 )
-                                onDismissRequest()
+                                // Dialog'u kapatma — stream'den geri gelince bilgi sayfası açık kalsın
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = accentColor),
                             shape = RoundedCornerShape(8.dp),
@@ -519,7 +519,7 @@ private fun DetailContent(
                                         cs3Url = loadResponse.url,
                                         cs3ApiName = api.name
                                     )
-                                    onDismissRequest()
+                                    // Dialog'u kapatma — stream'den geri gelince bilgi sayfası açık kalsın
                                 }
                         ) {
                             Column(

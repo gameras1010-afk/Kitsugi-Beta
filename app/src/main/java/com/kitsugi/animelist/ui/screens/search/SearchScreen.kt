@@ -310,113 +310,32 @@ fun SearchScreen(
                         }
                     }
 
-                    // Eklenti Seç butonu — seçili eklenti varsa vurgu rengi
+                    // Eklenti Seç butonu — eklentiler platformu aktifse vurgu rengi
+                    val isCs3Active = uiState.selectedPlatform == SearchPlatform.CS3
                     IconButton(
                         onClick = { showPluginPicker = true },
                         modifier = Modifier
                             .size(56.dp)
                             .clip(RoundedCornerShape(22.dp))
                             .background(
-                                if (selectedPluginApiName != null)
+                                if (isCs3Active)
                                     accentColor.copy(alpha = 0.18f)
                                 else KitsugiColors.Surface
                             )
                             .border(
-                                width = if (selectedPluginApiName != null) 1.5.dp else 1.dp,
-                                color = if (selectedPluginApiName != null) accentColor else KitsugiColors.Border,
+                                width = if (isCs3Active) 1.5.dp else 1.dp,
+                                color = if (isCs3Active) accentColor else KitsugiColors.Border,
                                 shape = RoundedCornerShape(22.dp)
                             )
                     ) {
                         Icon(
                             imageVector = Icons.Default.Extension,
                             contentDescription = "Eklenti Seç",
-                            tint = if (selectedPluginApiName != null) accentColor else KitsugiColors.TextMuted
+                            tint = if (isCs3Active) accentColor else KitsugiColors.TextMuted
                         )
                     }
                 }
                 Spacer(modifier = Modifier.height(10.dp))
-
-                // ── Seçili Eklenti Chip'i ─────────────────────────────────
-                AnimatedVisibility(
-                    visible = selectedPluginApiName != null,
-                    enter = fadeIn() + expandVertically(),
-                    exit = fadeOut() + shrinkVertically()
-                ) {
-                    if (selectedPluginApiName != null) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            // Chip
-                            Row(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(20.dp))
-                                    .background(accentColor.copy(alpha = 0.15f))
-                                    .border(1.dp, accentColor.copy(alpha = 0.4f), RoundedCornerShape(20.dp))
-                                    .padding(start = 12.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Extension,
-                                    contentDescription = null,
-                                    tint = accentColor,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Text(
-                                    text = selectedPluginApiName,
-                                    color = accentColor,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    maxLines = 1
-                                )
-                                // Keşfet butonu
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(accentColor.copy(alpha = 0.25f))
-                                        .tvClickable(shape = RoundedCornerShape(10.dp)) {
-                                            onAddonExploreOpenChange(true)
-                                        }
-                                        .padding(horizontal = 8.dp, vertical = 3.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    androidx.compose.material3.Text(
-                                        text = "Keşfet →",
-                                        color = accentColor,
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                                // X butonu
-                                Box(
-                                    modifier = Modifier
-                                        .size(22.dp)
-                                        .clip(RoundedCornerShape(11.dp))
-                                        .background(accentColor.copy(alpha = 0.2f))
-                                        .tvClickable(shape = RoundedCornerShape(11.dp)) {
-                                            viewModel.setSelectedPlugin(null)
-                                        },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Eklentiyi Sıfırla",
-                                        tint = accentColor,
-                                        modifier = Modifier.size(12.dp)
-                                    )
-                                }
-                            }
-                            Text(
-                                text = "Bu eklentide ara",
-                                color = KitsugiColors.TextMuted,
-                                fontSize = 12.sp
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-                }
             }
 
             // Search Type Selection (Anime, Manga, TMDB)
@@ -759,7 +678,10 @@ fun SearchScreen(
     if (addonExploreOpen && exploreApi != null) {
         AddonExploreDialog(
             api = exploreApi,
-            onDismissRequest = { onAddonExploreOpenChange(false) },
+            onDismissRequest = {
+                onAddonExploreOpenChange(false)
+                viewModel.setSelectedPlugin(null, keepPlatformCs3 = true)
+            },
             onSeeAllClick = onSeeAllAddonSection?.let { cb ->
                 { title, mainPageData, horizontalImages, initialItems ->
                     cb(exploreApi.name, title, mainPageData, horizontalImages, initialItems)

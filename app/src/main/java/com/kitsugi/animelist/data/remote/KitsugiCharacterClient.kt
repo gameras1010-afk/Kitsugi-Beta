@@ -585,6 +585,74 @@ class KitsugiCharacterClient {
                         tmdbRes
                     }
                 }
+                "kitsu" -> {
+                    val kitsuDetail = runCatching {
+                        val request = okhttp3.Request.Builder()
+                            .url("https://kitsu.io/api/edge/characters/$characterId")
+                            .header("Accept", "application/vnd.api+json")
+                            .header("User-Agent", "Kitsugi/1.0 (Android)")
+                            .build()
+                        val responseBody = com.kitsugi.animelist.core.network.KitsugiHttpClient.client.newCall(request).execute().use { response ->
+                            if (!response.isSuccessful) throw java.io.IOException("HTTP error ${response.code}")
+                            response.body?.string() ?: ""
+                        }
+                        val root = JSONObject(responseBody)
+                        val data = root.optJSONObject("data") ?: return@runCatching null
+                        val attrs = data.optJSONObject("attributes") ?: return@runCatching null
+                        val name = attrs.optString("name", attrs.optString("canonicalName", "Bilinmeyen"))
+                        val description = attrs.optNullableString("description")?.cleanApiText()
+                        val imageObj = attrs.optJSONObject("image")
+                        val imageUrl = imageObj?.optString("original")
+                            ?: imageObj?.optString("large")
+                            ?: imageObj?.optString("medium")
+                        val malId = attrs.optInt("malId", 0)
+
+                        KitsuCharacterParsed(name, description, imageUrl, malId)
+                    }.getOrNull()
+
+                    if (kitsuDetail != null && kitsuDetail.malId > 0) {
+                        val jikanDetail = runCatching {
+                            fetchCharacterDetail("jikan", kitsuDetail.malId)
+                        }.getOrNull()
+                        if (jikanDetail != null) {
+                            jikanDetail
+                        } else {
+                            KitsugiCharacterDetail(
+                                id = characterId,
+                                name = kitsuDetail.name,
+                                nativeName = null,
+                                alternativeNames = emptyList(),
+                                imageUrl = kitsuDetail.imageUrl,
+                                gender = null,
+                                age = null,
+                                birthday = null,
+                                bloodType = null,
+                                biography = kitsuDetail.description,
+                                voiceActors = emptyList(),
+                                mediaAppearances = emptyList(),
+                                source = "kitsu"
+                            )
+                        }
+                    } else if (kitsuDetail != null) {
+                        KitsugiCharacterDetail(
+                            id = characterId,
+                            name = kitsuDetail.name,
+                            nativeName = null,
+                            alternativeNames = emptyList(),
+                            imageUrl = kitsuDetail.imageUrl,
+                            gender = null,
+                            age = null,
+                            birthday = null,
+                            bloodType = null,
+                            biography = kitsuDetail.description,
+                            voiceActors = emptyList(),
+                            mediaAppearances = emptyList(),
+                            source = "kitsu"
+                        )
+                    } else {
+                        null
+                    }
+                }
                 else -> null
             }
         }
@@ -767,3 +835,12 @@ class KitsugiCharacterClient {
         }.getOrNull()
     }
 }
+
+/** Geçici parse sonucu — fetchCharacterDetail içinde Kitsu API yanıtını taşır. */
+private data class KitsuCharacterParsed(
+    val name: String,
+    val description: String?,
+    val imageUrl: String?,
+    val malId: Int
+)
+

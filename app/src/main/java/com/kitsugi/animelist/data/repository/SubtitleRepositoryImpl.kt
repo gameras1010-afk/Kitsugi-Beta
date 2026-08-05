@@ -51,7 +51,10 @@ class SubtitleRepositoryImpl(private val context: Context) {
         id: String,
         videoUrl: String? = null,
         videoHeaders: Map<String, String>? = null,
-        filename: String? = null
+        filename: String? = null,
+        aniListId: Int? = null,
+        animeTitle: String? = null,
+        episode: Int? = null
     ): List<Subtitle> = coroutineScope {
 
         val normalizedType = if (type.equals("tv", ignoreCase = true)) "series" else type.lowercase()
@@ -128,10 +131,14 @@ class SubtitleRepositoryImpl(private val context: Context) {
                 val subtitles = withTimeoutOrNull(PER_ADDON_TIMEOUT_MS) {
                     try {
                         val items = addonClient.fetchSubtitles(
+                            context = context,
                             manifestUrl = addon.manifestUrl,
                             type = normalizedType,
                             id = id,
-                            extraParams = extraParams.ifEmpty { null }
+                            extraParams = extraParams.ifEmpty { null },
+                            aniListId = aniListId,
+                            animeTitle = animeTitle,
+                            episode = episode
                         )
                         Log.d(TAG, "Addon '${addon.name}': ${items.size} altyazı döndü")
                         items.mapNotNull { item ->

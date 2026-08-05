@@ -252,9 +252,13 @@ fun MediaEntryDetailPage(
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
     val selectedTab = pagerState.currentPage
 
-    // Yeni bir entry'ye geçildiğinde (geri tuşuyla aynı sayfaya dönüldüğünde dahil) tab’ı sıfırla
+    // Yeni bir entry'ye geçildiğinde tab'ı sıfırla — geri tuşuyla dönüşlerde SIFIRLAMAZ.
+    // lastProcessedTrigger, Composition'da yaşayan son işlenmiş trigger değerini saklar.
+    // Sayfa yeniden kompoze edildiğinde (back-stack pop) değer değişmediği için sıfırlama olmaz.
+    var lastProcessedTrigger by rememberSaveable { mutableStateOf(0) }
     LaunchedEffect(pageResetTrigger) {
-        if (pageResetTrigger > 0) {
+        if (pageResetTrigger > 0 && pageResetTrigger != lastProcessedTrigger) {
+            lastProcessedTrigger = pageResetTrigger
             pagerState.scrollToPage(0)
         }
     }

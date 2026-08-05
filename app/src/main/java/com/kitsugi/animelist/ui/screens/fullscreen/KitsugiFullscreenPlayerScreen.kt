@@ -116,6 +116,7 @@ fun KitsugiFullscreenPlayerScreen(
     isMovie: Boolean = false,
     cs3Url: String? = null,
     cs3ApiName: String? = null,
+    resumePosition: Long = 0L,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -366,7 +367,7 @@ fun KitsugiFullscreenPlayerScreen(
     var hasCheckedResume by remember(mediaIdForHistory, currentEpisode, currentAddonName) { mutableStateOf(false) }
 
     LaunchedEffect(mediaIdForHistory, currentEpisode, currentAddonName) {
-        savedPos = viewModel.getSavedPosition(mediaIdForHistory, currentEpisode, currentAddonName)
+        savedPos = if (resumePosition > 0L) resumePosition else viewModel.getSavedPosition(mediaIdForHistory, currentEpisode, currentAddonName)
     }
 
     fun playEpisode(targetEp: Int) {
@@ -554,6 +555,7 @@ fun KitsugiFullscreenPlayerScreen(
                 var isPlayingState by remember { mutableStateOf(true) }
                 var isBufferingState by remember { mutableStateOf(false) }
                 var isPlaybackEnded by remember { mutableStateOf(false) }
+                var isEngineReady by remember(mediaIdForHistory, currentEpisode, currentAddonName) { mutableStateOf(false) }
                 
                 var aspectFeedback by remember { mutableStateOf<String?>(null) }
 
@@ -663,19 +665,7 @@ fun KitsugiFullscreenPlayerScreen(
                                 isPlaybackEnded = false
                                 duration = playerEngine.duration.coerceAtLeast(0L)
                                 Log.d("KitsugiPlayerDebug", "Player READY: duration=$duration, savedPos=$savedPos")
-                                // Only show resume dialog if saved position is >= 10s AND not near end
-                                // savedPos < 10000ms (10s) → treat as "not started yet", skip dialog
-                                if ((savedPos ?: 0L) >= 10_000L && !hasCheckedResume) {
-                                    hasCheckedResume = true
-                                    if ((savedPos ?: 0L) < duration - 10_000L) {
-                                        playerEngine.pause()
-                                        pendingResumePos = savedPos ?: 0L
-                                        showResumeDialog = true
-                                    }
-                                } else if (!hasCheckedResume) {
-                                    // savedPos < 10s — mark as checked without pause/dialog
-                                    hasCheckedResume = true
-                                }
+                                isEngineReady = true
                                 playerEngine.setPlaybackSpeed(playbackSpeed)
                                 val mpvEngine = playerEngine as? com.kitsugi.animelist.core.player.engine.MpvPlayerEngine
                                 mpvEngine?.mpvView?.mpv?.setPropertyInt("user-data/current-anime/intro-length", viewModel.getAnimeSkipIntroLength())
@@ -763,6 +753,7 @@ fun KitsugiFullscreenPlayerScreen(
                 LaunchedEffect(playerEngine, prepareKey) {
                     val safeVideoUrl = source?.videoUrl ?: return@LaunchedEffect
                     isPlaybackEnded = false
+                    isEngineReady = false
                     Log.d("KitsugiPlayerDebug", "LaunchedEffect(source) prepare() starting. url=$safeVideoUrl")
                     PlayerLogger.logPlaybackStart(
                         context   = context,
@@ -790,6 +781,18 @@ fun KitsugiFullscreenPlayerScreen(
                         qualityValue = activeSource?.qualityValue
                     )
                     Log.d("KitsugiPlayer", "prepare() ÇAĞRILDI: url=$safeVideoUrl addon=${currentAddonName} startPos=$startPos")
+                }
+
+                LaunchedEffect(savedPos, isEngineReady) {
+                    val pos = savedPos
+                    if (pos != null && isEngineReady && !hasCheckedResume) {
+                        hasCheckedResume = true
+                        if (pos >= 10_000L && pos < duration - 10_000L) {
+                            playerEngine.pause()
+                            pendingResumePos = pos
+                            showResumeDialog = true
+                        }
+                    }
                 }
 
                 var seekFeedback  by remember { mutableStateOf<String?>(null) }

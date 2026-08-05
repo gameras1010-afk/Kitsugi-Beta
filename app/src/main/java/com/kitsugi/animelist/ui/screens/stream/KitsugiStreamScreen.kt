@@ -188,17 +188,21 @@ fun KitsugiStreamScreen(
     // ── Player launcher ───────────────────────────────────────────────────────
     val launchPlayer = remember(context, allStreams, streamPrefs, onLaunchExternalPlayer, description, castList) {
         { source: StreamSource, resolvedUrl: String, engine: String ->
+            val watchHistoryAnimeId = if (aniListId != null) aniListId.toString()
+                                      else if (malId != null) malId.toString()
+                                      else if (!cs3Url.isNullOrBlank()) cs3Url.hashCode().toString()
+                                      else title.hashCode().toString()
+
+            val historyEntry = com.kitsugi.animelist.data.local.WatchHistoryManager.history.value.find {
+                it.animeId == watchHistoryAnimeId && it.episode == episode
+            }
+            val resumePositionMs = historyEntry?.positionMs ?: 0L
             val streamKey = (source.infoHash ?: resolvedUrl).hashCode().toString()
-            val resumePositionMs = streamPrefs.getLong(KitsugiStreamActivity.KEY_POS_PFX + streamKey, 0L)
 
             // ── İzleme geçmişine kaydet ─────────────────────────────────────
             com.kitsugi.animelist.data.local.WatchHistoryManager.record(
                 com.kitsugi.animelist.data.model.WatchHistoryEntry(
-                    // animeId: cs3Url.hashCode() kullan (heartbeat ile aynı anahtar)
-                    animeId = if (aniListId != null) aniListId.toString()
-                              else if (malId != null) malId.toString()
-                              else if (!cs3Url.isNullOrBlank()) cs3Url.hashCode().toString()
-                              else title.hashCode().toString(),
+                    animeId = watchHistoryAnimeId,
                     animeTitle = title,
                     posterUrl = source.thumbnailUrl.takeIf { !it.isNullOrBlank() } ?: posterUrl,
                     episode = episode,
@@ -230,7 +234,8 @@ fun KitsugiStreamScreen(
                     startYear = startYear, description = description, cast = castList,
                     isMovie = isMovie,
                     cs3Url = cs3Url,
-                    cs3ApiName = cs3ApiName
+                    cs3ApiName = cs3ApiName,
+                    resumePositionMs = resumePositionMs
                 )
             } else {
                 if (onLaunchExternalPlayer != null) {
@@ -252,7 +257,8 @@ fun KitsugiStreamScreen(
                         startYear = startYear, description = description, cast = castList,
                         isMovie = isMovie,
                         cs3Url = cs3Url,
-                        cs3ApiName = cs3ApiName
+                        cs3ApiName = cs3ApiName,
+                        resumePositionMs = resumePositionMs
                     )
                 }
             }

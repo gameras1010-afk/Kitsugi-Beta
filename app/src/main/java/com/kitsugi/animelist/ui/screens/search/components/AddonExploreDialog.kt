@@ -3,6 +3,7 @@ package com.kitsugi.animelist.ui.screens.search.components
 
 import android.util.Log
 import androidx.compose.animation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,6 +11,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -54,6 +57,7 @@ import com.lagradost.cloudstream3.MainAPI
 import com.lagradost.cloudstream3.MainPageRequest
 import com.lagradost.cloudstream3.SearchResponse
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentHashMap
@@ -142,8 +146,8 @@ fun AddonExploreDialog(
         }
     }
 
-    val heroItem = remember(homeLists) {
-        homeLists.firstOrNull { it.list.isNotEmpty() }?.list?.firstOrNull()
+    val heroItems = remember(homeLists) {
+        homeLists.firstOrNull { it.list.isNotEmpty() }?.list?.take(8) ?: emptyList()
     }
     val isBlocked = remember(api.name) { CsPluginStatusTracker.isBlocked(api.name) }
     val isCfProtected = remember(api.name) {
@@ -234,15 +238,13 @@ fun AddonExploreDialog(
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(bottom = 32.dp)
                         ) {
-                            // Hero banner (full-width, no top padding — it sits behind search bar)
+                            // Hero banner carousel (full-width, no top padding — sits behind search bar)
                             item(key = "hero") {
-                                AddonHeroBanner(
-                                    item = heroItem,
+                                AddonHeroBannerCarousel(
+                                    items = heroItems,
                                     apiName = api.name,
-                                    onPlayClick = {
-                                        heroItem?.let { item ->
-                                            activeDetailUrl = item.url
-                                        }
+                                    onItemClick = { item ->
+                                        activeDetailUrl = item.url
                                     }
                                 )
                             }
@@ -320,25 +322,101 @@ fun AddonExploreDialog(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Hero Banner — CS3 Ana Sayfa Hero
+// Hero Banner Carousel — CS3 Ana Sayfa Hero (otomatik kaydırmalı vitrin)
 // ─────────────────────────────────────────────────────────────────────────────
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun AddonHeroBanner(
-    item: SearchResponse?,
+private fun AddonHeroBannerCarousel(
+    items: List<SearchResponse>,
     apiName: String,
-    onPlayClick: () -> Unit
+    onItemClick: (SearchResponse) -> Unit
 ) {
-    val accentColor = LocalKitsugiAccent.current
-    val context = LocalContext.current
+    if (items.isEmpty()) {
+        // Boş durum
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(390.dp)
+                .background(KitsugiColors.Surface)
+        )
+        return
+    }
+
+    val pagerState = rememberPagerState(pageCount = { items.size })
+    val scope = rememberCoroutineScope()
+
+    // 5 saniyede bir otomatik sayfa geçişi
+    LaunchedEffect(pagerState) {
+        while (true) {
+            delay(5000L)
+            val nextPage = (pagerState.currentPage + 1) % items.size
+            pagerState.animateScrollToPage(nextPage)
+        }
+    }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(390.dp)
     ) {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize()
+        ) { page ->
+            val item = items[page]
+            AddonHeroBannerPage(
+                item = item,
+                apiName = apiName,
+                onItemClick = { onItemClick(item) }
+            )
+        }
+
+        // Alt sayfa göstergesi (indicator dots)
+        if (items.size > 1) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                repeat(items.size) { index ->
+                    val isSelected = pagerState.currentPage == index
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(
+                                if (isSelected) Color.White
+                                else Color.White.copy(alpha = 0.35f)
+                            )
+                            .size(if (isSelected) 7.dp else 5.dp)
+                            .clickable {
+                                scope.launch { pagerState.animateScrollToPage(index) }
+                            }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AddonHeroBannerPage(
+    item: SearchResponse,
+    apiName: String,
+    onItemClick: () -> Unit
+) {
+    val accentColor = LocalKitsugiAccent.current
+    val context = LocalContext.current
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable { onItemClick() }   // Banner'a tıklayınca bilgi sayfası
+    ) {
         // Poster görseli
-        if (item != null && !item.posterUrl.isNullOrBlank()) {
+        if (!item.posterUrl.isNullOrBlank()) {
             val imageReq = remember(item.posterUrl) {
                 coil.request.ImageRequest.Builder(context)
                     .data(item.posterUrl)
@@ -423,38 +501,45 @@ private fun AddonHeroBanner(
                 .padding(horizontal = 20.dp, vertical = 18.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (item != null) {
-                Text(
-                    text = item.name,
-                    color = Color.White,
-                    fontSize = 21.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(bottom = 14.dp)
-                )
-                // Buton satırı: Ekle | ▶ Oynat | Bilgi
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(20.dp),
-                    verticalAlignment = Alignment.CenterVertically
+            Text(
+                text = item.name,
+                color = Color.White,
+                fontSize = 21.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(bottom = 14.dp)
+            )
+            // Buton satırı: Ekle | ▶ Oynat | Bilgi
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                HeroIconButton(
+                    icon = { Icon(Icons.Default.Add, null, tint = Color.White, modifier = Modifier.size(22.dp)) },
+                    label = "Ekle"
+                ) { /* İleride listeye ekle */ }
+
+                // Birincil "Oynat" butonu — beyaz arka plan, siyah yazı
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Color.White)
+                        .clickable { onItemClick() }
+                        .padding(horizontal = 26.dp, vertical = 10.dp)
                 ) {
-                    HeroIconButton(icon = { Icon(Icons.Default.Add, null, tint = Color.White, modifier = Modifier.size(22.dp)) }, label = "Ekle") {}
-                    // Birincil "Oynat" butonu — beyaz arka plan, siyah yazı
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(Color.White)
-                            .clickable { onPlayClick() }
-                            .padding(horizontal = 26.dp, vertical = 10.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Icon(Icons.Rounded.PlayArrow, null, tint = Color.Black, modifier = Modifier.size(20.dp))
-                            Text("Oynat", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        }
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Icon(Icons.Rounded.PlayArrow, null, tint = Color.Black, modifier = Modifier.size(20.dp))
+                        Text("Oynat", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     }
-                    HeroIconButton(icon = { Icon(Icons.Default.Info, null, tint = Color.White, modifier = Modifier.size(22.dp)) }, label = "Bilgi") {}
                 }
+
+                // Bilgi butonu — tıklayınca detay sayfası açar
+                HeroIconButton(
+                    icon = { Icon(Icons.Default.Info, null, tint = Color.White, modifier = Modifier.size(22.dp)) },
+                    label = "Bilgi"
+                ) { onItemClick() }
             }
         }
     }
