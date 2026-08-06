@@ -23,6 +23,7 @@ sealed interface DetailScreen {
     data object Notifications : DetailScreen
     data object Downloads : DetailScreen
     data object WatchHistory : DetailScreen
+    data object PluginPicker : DetailScreen
 }
 
 sealed interface AppStateKey {
@@ -51,6 +52,7 @@ sealed interface AppStateKey {
     data class Notifications(override val depth: Int) : AppStateKey
     data class Downloads(override val depth: Int) : AppStateKey
     data class WatchHistory(override val depth: Int) : AppStateKey
+    data class PluginPicker(override val depth: Int) : AppStateKey
 }
 
 /**

@@ -1,33 +1,55 @@
-# Kitsugi-Beta v2.4.143 — Sürüm Notları
-
-Bu Sürümde; Türkçe altyazı alma, otomatik altyazı seçimi, sıkıştırılmış paket/batch altyazı çözme ve oynatıcı altyazı öncelik hiyerarşisi kararlı hale getirilerek kapsamlı bir şekilde güncellendi.
+# Kitsugi-Beta — Sürüm Notları / Release Notes
 
 ---
 
-### 🌐 Türkçe Altyazı Eklentileri & Otomatik Geçiş
+## 🇹🇷 Türkçe
 
-- **AltyaziDB Entegrasyonu:** Çalışmayan eski `TurkceAltyazi.org` eklentisi varsayılan eklentilerden kaldırılarak yerine kararlı çalışan **AltyaziDB** (`https://altyazidb.online`) eklendi. Eski veritabanı kayıtları otomatik temizlendi.
-- **AniSub.co Kararlılığı:** Animeler için ana Türkçe altyazı kaynağı olan AniSub.co entegrasyonu güçlendirildi.
-- **Eklenti Devre Kesici (Circuit Breaker):** Zaman aşımı yaşayan veya çöken altyazı eklentileri (`SubtitleRepositoryImpl.kt`), 3 ardışık başarısızlık durumunda 5 dakika boyunca sorgulanmaz (bypass edilir). Bu sayede oynatıcının takılması veya dondurulması tamamen önlenir.
+### 🔍 Arama Motoru — Jikan & Kitsu Fallback Desteği
 
----
-
-### 📦 Paket (Batch/Zip) Altyazı Ayıklama & Çakışma Önleyici Eşleştirme
-
-- **Toplu Zip/Rar Ayıklama:** Zip formatında inen paket altyazıların (`AddonStreamClient.kt`) sadece ilk dosyasını ayıklama hatası giderildi. Artık paketteki tüm altyazı dosyaları ayıklanır.
-- **Çakışma Önleyici Gelişmiş Eşleştirme:** Dosya isimlerindeki gürültüler (çözünürlük, CRC hash, yıl vb.) temizlendikten sonra, oynatılan bölümün numarası özel bir algoritma ile tespit edilir. 
-  - *Mob Psycho 100*, *3-gatsu no Lion*, *5-toubun no Hanayome* gibi isminde sayı içeren anime başlıklarında, isimdeki sayılarla bölüm numarasının çakışması matematiksel olarak engellenmiştir.
-- **Önbellek Desteği:** Bir sezonun toplu altyazı paketi indirildiğinde sonraki bölüme geçildiğinde internetten tekrar indirme yapılmaz, önbellekteki doğru bölümün dosyası anında oynatıcıya yüklenir.
+- **MAL (Jikan) Fallback:** MAL araması başarısız olduğunda sistem otomatik olarak **Shikimori** API'sine geçer. Shikimori'den dönen `Double` türündeki skor değerleri, `Int` aralığına (`0–10`) dönüştürülerek tip uyumsuzluk hatası giderildi.
+- **AniList Fallback:** AniList araması başarısız olduğunda sistem otomatik olarak **Kitsu.io** API'sine geçer. `KitsuExploreClient` içine `searchAnime` fonksiyonu eklenerek Kitsu arama desteği hayata geçirildi.
+- **"Tümü" Modu Kapsamlı Fallback:** `SearchPlatform.All` (Tümü) modunda her iki kaynak için de zincirli fallback çalışır; hiçbir arama sonuçsuz kalmaz.
 
 ---
 
-### 🎬 Oynatıcı Öncelik Yönetimi & İsimle Arama
+### 🖥️ Ayarlar Sayfası — Tam Ekran Panel Geçişi
 
-- **Dahili > Harici Önceliği:** Oynatıcı motorunda (`Media3PlayerEngine.kt`, `PlayerSubtitleUtils.kt`), video kaynağına gömülü olan (dahili) Türkçe altyazılar, harici eklentilerden gelen dosyalara göre her zaman öncelikli olarak seçilir.
-- **İsimle Arama Fallback:** Video akışının dosya adı anlamsız karakterler içeriyorsa, altyazı eklentilerinin veritabanında doğru altyazıyı bulabilmesi için temizlenmiş anime başlığı ve bölüm numarasından oluşan anlamlı bir dosya adı (örn. `Attack on Titan - S01E01.mkv`) simüle edilir.
+Ayarlar sayfasındaki tüm alttan açılan pencereler (bottom sheet) artık **tam ekran dialog** olarak açılıyor. Önceki davranışta pencereler ekranın yalnızca %85–95'ini kaplıyor ve aşağı sürükleyerek kapatılabiliyordu; bu durum yanlışlıkla kapanmalara yol açıyordu.
+
+**Tam ekrana geçirilen paneller:**
+- 🎨 Tercihler & Tema Ayarları
+- ⚙️ Sistem & Veri Ayarları
+- 🔗 Entegrasyon Ayarları (TMDB, MDBList, AniSkip, Fanart.tv)
+- 🧩 Eklenti & Akış Ayarları (Stremio, Cloudstream, Manga)
+- 🎬 Oynatıcı Ayarları
+- 👤 Hesap Bağlantıları
+- 💬 Geri Bildirim Formu
+
+**Dokunulmayan sheet'ler** (hafif, bağlamsal): Arama filtreleri, tür seçiciler, poster seçenekleri, akış seçici vb. eskisi gibi bottom sheet olarak açılmaya devam eder.
 
 ---
 
-### 💬 UI Geri Bildirimi
+## 🇬🇧 English
 
-- **Altyazı Bulunamadı Uyarısı:** Otomatik altyazı arama işlemi bittiğinde hiçbir Türkçe altyazı bulunamaz veya indirilemezse oynatıcı ekranında kullanıcıya bir uyarı mesajı (Toast) gösterilir.
+### 🔍 Search Engine — Jikan & Kitsu Fallback Support
+
+- **MAL (Jikan) Fallback:** When a MAL search fails, the system automatically falls back to the **Shikimori** API. A `Double`-to-`Int` score coercion fix (`0–10` range) was applied to resolve a type mismatch compilation error in `KitsugiShikimoriClient`.
+- **AniList Fallback:** When an AniList search fails, the system automatically falls back to **Kitsu.io**. A `searchAnime` function was added to `KitsuExploreClient` to enable Kitsu as a search source.
+- **"All" Mode Cascaded Fallback:** In `SearchPlatform.All` mode, both MAL and AniList deferred blocks now include their respective fallback sources, ensuring no search query returns empty results.
+
+---
+
+### 🖥️ Settings — Full-Screen Panel Navigation
+
+All bottom sheets in the Settings section are now rendered as **full-screen Dialogs**. Previously, panels covered only 85–95% of the screen and could be accidentally dismissed by swiping down.
+
+**Panels migrated to full-screen:**
+- 🎨 Preferences & Theme Settings
+- ⚙️ System & Data Settings
+- 🔗 Integration Settings (TMDB, MDBList, AniSkip, Fanart.tv)
+- 🧩 Addons & Stream Settings (Stremio, Cloudstream, Manga)
+- 🎬 Player Settings
+- 👤 Account Connections
+- 💬 Feedback Form
+
+**Unaffected sheets** (lightweight, contextual): Search filters, genre/tag pickers, poster options, stream selector, etc. remain as bottom sheets.

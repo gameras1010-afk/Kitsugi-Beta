@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -66,6 +67,9 @@ val LocalDismissAnimated = staticCompositionLocalOf<() -> Unit> { {} }
  * [sheetGesturesEnabled]: ModalBottomSheet gesture'larını (swipe-to-dismiss dahil) tamamen
  * kontrol etmek için. HorizontalPager içeren sheet'lerde false veya dinamik geçirilmeli.
  *
+ * [fullScreen]: true olduğunda mobilde tam ekran Dialog olarak gösterilir (BottomSheet yerine).
+ * Ayarlar sayfaları gibi içerik yoğun paneller için önerilir.
+ *
  * Usage: replace ModalBottomSheet { ... } with KitsugiSheetOrDialog(onDismiss = ...) { ... }
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,6 +78,7 @@ fun KitsugiSheetOrDialog(
     onDismiss: () -> Unit,
     heightFraction: Float = 0.9f,
     fillMaxHeight: Boolean = false,
+    fullScreen: Boolean = false,
     innerScrollState: LazyListState? = null,
     innerGridScrollState: LazyGridState? = null,
     innerColumnScrollState: androidx.compose.foundation.ScrollState? = null,
@@ -120,6 +125,33 @@ fun KitsugiSheetOrDialog(
                         .clip(KitsugiTvTokens.Shapes.dialog)
                         .background(KitsugiColors.Surface)
                         .padding(bottom = 8.dp),
+                    content = content
+                )
+            }
+        }
+    } else if (fullScreen) {
+        // ── Full-screen Dialog mode (for settings pages) ──────────────────────
+        val dismissAnimated = remember(onDismiss) { onDismiss }
+
+        androidx.activity.compose.BackHandler {
+            onDismiss()
+        }
+
+        Dialog(
+            onDismissRequest = onDismiss,
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false,
+                dismissOnBackPress = true,
+                dismissOnClickOutside = false,
+                decorFitsSystemWindows = false
+            )
+        ) {
+            CompositionLocalProvider(LocalDismissAnimated provides dismissAnimated) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(KitsugiColors.Surface)
+                        .navigationBarsPadding(),
                     content = content
                 )
             }

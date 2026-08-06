@@ -44,7 +44,6 @@ import com.kitsugi.animelist.model.MediaType
 import com.kitsugi.animelist.ui.components.KitsugiEmptyState
 import com.kitsugi.animelist.ui.components.KitsugiShimmerSearchResultList
 import com.kitsugi.animelist.ui.screens.search.components.AddonExploreDialog
-import com.kitsugi.animelist.ui.screens.search.components.PluginPickerBottomSheet
 import com.kitsugi.animelist.ui.screens.search.composables.KitsugiSearchCountryChip
 import com.kitsugi.animelist.ui.screens.search.composables.KitsugiSearchDateChip
 import com.kitsugi.animelist.ui.screens.search.composables.KitsugiSearchEpChDurationChip
@@ -74,7 +73,9 @@ fun SearchScreen(
     // Eklenti Keşfet dialogı state'i — AnimatedContent geçişlerinde
     // yerel remember sıfırlanmaması için dışarıdan yönetilir (navState)
     addonExploreOpen: Boolean = false,
-    onAddonExploreOpenChange: (Boolean) -> Unit = {}
+    onAddonExploreOpenChange: (Boolean) -> Unit = {},
+    // Eklenti Portalı tam ekran navigasyonu
+    onOpenPluginPicker: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val accentColor = LocalKitsugiAccent.current
@@ -89,7 +90,6 @@ fun SearchScreen(
     var openTmdbFormatDialog by remember { mutableStateOf(false) }
     var openTmdbGenreDialog by remember { mutableStateOf(false) }
     var openAddonSearchDialog by rememberSaveable { mutableStateOf(false) }
-    var showPluginPicker by remember { mutableStateOf(false) }
     var activeDetailCs3Item by remember { mutableStateOf<JikanSearchResult?>(null) }
 
     // Seçili eklentinin keşfet dialogunu aç/kapat
@@ -313,7 +313,7 @@ fun SearchScreen(
                     // Eklenti Seç butonu — eklentiler platformu aktifse vurgu rengi
                     val isCs3Active = uiState.selectedPlatform == SearchPlatform.CS3
                     IconButton(
-                        onClick = { showPluginPicker = true },
+                        onClick = { onOpenPluginPicker() },
                         modifier = Modifier
                             .size(56.dp)
                             .clip(RoundedCornerShape(22.dp))
@@ -660,18 +660,7 @@ fun SearchScreen(
         )
     }
 
-    // ── Plugin Picker BottomSheet ─────────────────────────────────────────
-    if (showPluginPicker) {
-        PluginPickerBottomSheet(
-            onDismissRequest = { showPluginPicker = false },
-            onPluginSelected = { apiName ->
-                viewModel.setSelectedPlugin(apiName, keepPlatformCs3 = true)
-                showPluginPicker = false
-                // Eklenti seçilince anında Keşfet ekranını aç
-                if (apiName != null) onAddonExploreOpenChange(true)
-            }
-        )
-    }
+    // Plugin picker is now handled via full-screen navigation (PluginPickerScreen)
 
     // ── Eklentiye Özel Keşfet (tam ekran dialog) ──────────────────────────
     val exploreApi = selectedPluginApi

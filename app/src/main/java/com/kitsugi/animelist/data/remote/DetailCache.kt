@@ -13,13 +13,13 @@ object DetailCache {
 
     // ─── MAL ID → TMDB ID mapping ────────────────────────────────────────────
     // Negative keys = AniList IDs (stored as -aniListId)
-    val malToTmdbCache = ConcurrentHashMap<Int, Int?>()
+    val malToTmdbCache = java.util.Collections.synchronizedMap(HashMap<Int, Int?>())
 
     // ─── TMDB ID → TVDB ID mapping ───────────────────────────────────────────
-    val tmdbToTvdbCache = ConcurrentHashMap<Int, Int?>()
+    val tmdbToTvdbCache = java.util.Collections.synchronizedMap(HashMap<Int, Int?>())
 
     // ─── TMDB ID → Logo URL mapping ──────────────────────────────────────────
-    val logoCache = ConcurrentHashMap<Int, String?>()
+    val logoCache = java.util.Collections.synchronizedMap(HashMap<Int, String?>())
 
     // ─── TMDB (tmdbId, season) → episode DTOs ────────────────────────────────
     data class TmdbEpisodeDtoCached(

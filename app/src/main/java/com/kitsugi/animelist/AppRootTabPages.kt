@@ -266,7 +266,8 @@ private fun SearchTabPage(ctx: TabPagesContext) {
             // Tam ekran grid açılırken dialog state'ini koru — geri gelince yeniden açılır
         },
         addonExploreOpen = ctx.navState.addonExploreOpen,
-        onAddonExploreOpenChange = { open -> ctx.navState.addonExploreOpen = open }
+        onAddonExploreOpenChange = { open -> ctx.navState.addonExploreOpen = open },
+        onOpenPluginPicker = { ctx.navState.navigateToDetail(com.kitsugi.animelist.DetailScreen.PluginPicker) }
     )
 }
 

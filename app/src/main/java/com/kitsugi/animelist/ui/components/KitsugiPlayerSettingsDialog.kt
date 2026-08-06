@@ -212,7 +212,7 @@ fun KitsugiPlayerSettingsDialog(
 
     KitsugiSheetOrDialog(
         onDismiss = onDismiss,
-        heightFraction = 0.95f,
+        fullScreen = true,
         innerScrollState = activeScrollState
     ) {
         Column(

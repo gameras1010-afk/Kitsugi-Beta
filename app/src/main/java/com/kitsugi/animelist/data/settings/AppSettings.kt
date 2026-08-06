@@ -89,6 +89,8 @@ data class AppSettings(
     // Açıklama Otomatik Çevirisi: Türkçe veri bulunamazsa Google Translate devreye girer
     val autoTranslateEnabled: Boolean = false,
     val preferredTranslator: String = "DEFAULT",
+    val translateSourceLanguage: String = "auto",
+    val translateTargetLanguage: String = "tr",
     // TV ana sayfa yerleşim düzeni (classic / modern / grid)
     val selectedHomeLayoutId: String = "classic",
     // AFR (Auto Frame Rate) ayarları

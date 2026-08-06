@@ -866,6 +866,7 @@ fun AppRoot(
                     activeScreen is DetailScreen.Notifications -> AppStateKey.Notifications(depth = currentDepth)
                     activeScreen is DetailScreen.Downloads -> AppStateKey.Downloads(depth = currentDepth)
                     activeScreen is DetailScreen.WatchHistory -> AppStateKey.WatchHistory(depth = currentDepth)
+                    activeScreen is DetailScreen.PluginPicker -> AppStateKey.PluginPicker(depth = currentDepth)
                     else                         -> AppStateKey.Tab(selectedTab)
                 }
 
@@ -1145,6 +1146,17 @@ private fun AppNavigationContent(
                     state = key.state,
                     onBackClick = { navState.addonFullScreenGridState = null }
                 )
+            }
+
+            is AppStateKey.PluginPicker -> {
+                navState.stateHolder.SaveableStateProvider(key = "plugin_picker_${key.depth}") {
+                    com.kitsugi.animelist.ui.screens.search.PluginPickerScreen(
+                        onBackClick = { navState.popDetailStack() },
+                        searchViewModel = searchViewModel,
+                        navState = navState,
+                        onOpenApiDetail = onOpenApiDetail
+                    )
+                }
             }
 
             is AppStateKey.MangaReader,

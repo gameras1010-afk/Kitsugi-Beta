@@ -229,7 +229,7 @@ fun ApiResultDetailPage(
         if (detail != null) {
             result.copy(
                 title = if (result.title.isBlank() || result.title == "Yükleniyor...") (detail.title ?: result.title) else result.title,
-                imageUrl = result.imageUrl ?: detail.imageUrl,
+                imageUrl = if (!detail.imageUrl.isNullOrBlank()) detail.imageUrl else result.imageUrl,
                 score = result.score ?: detail.score,
                 year = result.year ?: detail.year,
                 total = result.total ?: detail.total,

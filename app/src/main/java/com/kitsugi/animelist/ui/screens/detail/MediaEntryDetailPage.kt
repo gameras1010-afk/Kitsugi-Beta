@@ -167,7 +167,6 @@ fun MediaEntryDetailPage(
     val accentColor = LocalKitsugiAccent.current
     val isTv = LocalIsTv.current
     val isTvDevice = com.kitsugi.animelist.ui.theme.LocalIsTvDevice.current
-    val externalUrl = buildExternalUrl(entry)
     val apiClient = remember { JikanApiClient() }
 
     val isSourceAniList = entry.source.lowercase() == "anilist"
@@ -213,6 +212,23 @@ fun MediaEntryDetailPage(
     // Galeri (fanart.tv) arka planda yüklenirken sayfa zaten açık kalır.
     val isLoading = detailLoading
 
+    val displayEntry = remember(entry, detailState, resolvedTmdbId) {
+        val detail = detailState
+        if (detail != null) {
+            entry.copy(
+                title = if (entry.title.isBlank() || entry.title == "Yükleniyor...") (detail.title ?: entry.title) else entry.title,
+                imageUrl = if (!detail.imageUrl.isNullOrBlank()) detail.imageUrl else entry.imageUrl,
+                total = entry.total ?: detail.total,
+                isAdult = entry.isAdult || detail.isAdult,
+                tmdbId = entry.tmdbId ?: detail.tmdbId ?: resolvedTmdbId
+            )
+        } else {
+            entry
+        }
+    }
+
+    val externalUrl = remember(displayEntry) { buildExternalUrl(displayEntry) }
+
     val onMediaClick: (Int, String, String) -> Unit = { mediaId, mediaType, mediaSource ->
         val searchType = mediaType.parseToMediaType()
         val searchResult = JikanSearchResult(
@@ -243,8 +259,8 @@ fun MediaEntryDetailPage(
     val tabBarFocusRequester = remember { FocusRequester() }
 
     // State for tabs
-    val isAnime = entry.type == MediaType.Anime
-    val hasTvEpisodes = isAnime || entry.type == MediaType.TvShow
+    val isAnime = displayEntry.type == MediaType.Anime
+    val hasTvEpisodes = isAnime || displayEntry.type == MediaType.TvShow
     val tabs = buildList {
         addAll(listOf("Bilgi", "Resimler", "Karakterler", "Ekip", "Öneriler", "İlişkiler", "Grafikler", "Yorumlar"))
         if (hasTvEpisodes) add("Bölümler")
@@ -264,8 +280,8 @@ fun MediaEntryDetailPage(
     }
 
     // Call loadTab when tab changes
-    LaunchedEffect(entry.id, selectedTab, detailState?.realMalId, detailState?.tmdbId, resolvedTmdbId, detailState == null) {
-        viewModel.loadTab(selectedTab, entry, detailState?.realMalId)
+    LaunchedEffect(displayEntry.id, selectedTab, detailState?.realMalId, detailState?.tmdbId, resolvedTmdbId, detailState == null) {
+        viewModel.loadTab(selectedTab, displayEntry, detailState?.realMalId)
     }
 
     // Propagate original synopsis back to UI if requested
@@ -278,11 +294,11 @@ fun MediaEntryDetailPage(
 
     KitsugiPageEnter {
         DetailPageScaffold(
-            title = entry.title,
+            title = displayEntry.title,
             isLoading = isLoading,
             isError = !detailLoading && detailState == null,
             isRefreshing = detailLoading,
-            onRefresh = { viewModel.loadEntry(entry, showAnimeLogos, forceRefresh = true) },
+            onRefresh = { viewModel.loadEntry(displayEntry, showAnimeLogos, forceRefresh = true) },
             onBackClick = onBackClick,
             tabs = tabs,
             pagerState = pagerState,
@@ -290,24 +306,24 @@ fun MediaEntryDetailPage(
             tabListState = tabListState,
             loadingScreen = {
                 KitsugiCinematicLoadingScreen(
-                    title = entry.title,
-                    imageUrl = entry.imageUrl,
+                    title = displayEntry.title,
+                    imageUrl = displayEntry.imageUrl,
                     onBackClick = onBackClick,
                     logoUrl = if (showAnimeLogos) logoUrl else null,
-                    isAdult = entry.isAdult,
+                    isAdult = displayEntry.isAdult,
                     blurAdultMedia = blurAdultMedia
                 )
             },
             errorScreen = {
                 DataUnavailableScreen(
-                    title = entry.title,
+                    title = displayEntry.title,
                     onBackClick = onBackClick,
-                    onRetryClick = { viewModel.loadEntry(entry, showAnimeLogos, forceRefresh = true) }
+                    onRetryClick = { viewModel.loadEntry(displayEntry, showAnimeLogos, forceRefresh = true) }
                 )
             },
             leftPanel = { lpFocus, tbFocus ->
                 EntryDetailLeftPanel(
-                    entry = entry,
+                    entry = displayEntry,
                     detailState = detailState,
                     logoUrl = logoUrl,
                     galleryItems = galleryItems,
@@ -323,7 +339,7 @@ fun MediaEntryDetailPage(
                     onEditClick = onEditClick,
                     onDeleteClick = onDeleteClick,
                     onReadMangaClick = onReadMangaClick,
-                    onUnlinkMangaClick = { viewModel.deleteMangaMapping(entry.id) },
+                    onUnlinkMangaClick = { viewModel.deleteMangaMapping(displayEntry.id) },
                     onGalleryOpen = { items, idx ->
                         activeGalleryItems = items
                         activeGalleryIndex = idx
@@ -335,9 +351,9 @@ fun MediaEntryDetailPage(
             },
             floatingHeaderActions = {
                 IconButton(onClick = {
-                    val mediaId = entry.malId ?: entry.id
-                    val url = com.kitsugi.animelist.utils.ShareUtils.buildMediaUrl(entry.source, mediaId, entry.type)
-                    com.kitsugi.animelist.utils.ShareUtils.shareText(context, entry.title, url)
+                    val mediaId = displayEntry.malId ?: displayEntry.id
+                    val url = com.kitsugi.animelist.utils.ShareUtils.buildMediaUrl(displayEntry.source, mediaId, displayEntry.type)
+                    com.kitsugi.animelist.utils.ShareUtils.shareText(context, displayEntry.title, url)
                 }) {
                     Icon(
                         imageVector = Icons.Rounded.Share,
@@ -360,9 +376,9 @@ fun MediaEntryDetailPage(
                 if (showFavouriteButton) {
                     IconButton(onClick = onToggleFavoriteClick) {
                         Icon(
-                            imageVector = if (entry.isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                            contentDescription = if (entry.isFavorite) "Favoriden Çıkar" else "Favori Yap",
-                            tint = if (entry.isFavorite) accentColor else KitsugiColors.TextSecondary
+                            imageVector = if (displayEntry.isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                            contentDescription = if (displayEntry.isFavorite) "Favoriden Çıkar" else "Favori Yap",
+                            tint = if (displayEntry.isFavorite) accentColor else KitsugiColors.TextSecondary
                         )
                     }
                 }
@@ -370,7 +386,7 @@ fun MediaEntryDetailPage(
             portraitTopItems = { _, lpFocus, tbFocus ->
                 item(key = "hero") {
                     EntryDetailLeftPanel(
-                        entry = entry,
+                        entry = displayEntry,
                         detailState = detailState,
                         logoUrl = logoUrl,
                         galleryItems = galleryItems,
@@ -386,7 +402,7 @@ fun MediaEntryDetailPage(
                         onEditClick = onEditClick,
                         onDeleteClick = onDeleteClick,
                         onReadMangaClick = onReadMangaClick,
-                        onUnlinkMangaClick = { viewModel.deleteMangaMapping(entry.id) },
+                        onUnlinkMangaClick = { viewModel.deleteMangaMapping(displayEntry.id) },
                         onGalleryOpen = { items, idx ->
                             activeGalleryItems = items
                             activeGalleryIndex = idx
@@ -401,7 +417,7 @@ fun MediaEntryDetailPage(
                 when (page) {
                     0 -> {
                         EntryDetailOverviewTab(
-                            entry = entry,
+                            entry = displayEntry,
                             detail = detailState,
                             synopsisState = synopsisState,
                             originalSynopsis = originalSynopsis,
@@ -522,9 +538,9 @@ fun MediaEntryDetailPage(
                     6 -> StatsTabContent(state = statsState)
                     7 -> ReviewsTabContent(
                         state = reviewsState,
-                        source = entry.source,
-                        externalId = entry.malId ?: 0,
-                        mediaType = entry.type,
+                        source = displayEntry.source,
+                        externalId = displayEntry.malId ?: 0,
+                        mediaType = displayEntry.type,
                         apiClient = apiClient,
                         titleLanguage = titleLanguage,
                         onUserProfileClick = onUserProfileClick,
@@ -532,13 +548,13 @@ fun MediaEntryDetailPage(
                     )
                     8 -> {
                         EntryDetailEpisodesTab(
-                            entry = entry,
+                            entry = displayEntry,
                             detailState = detailState,
                             state = episodesState,
                             episodeRatings = episodeRatings,
                             targetSeason = targetSeason,
                             onSeasonSelected = { newSeason ->
-                                viewModel.setTargetSeason(newSeason, entry)
+                                viewModel.setTargetSeason(newSeason, displayEntry)
                             },
                             onEpisodeOptionsRequested = { episode ->
                                 activeEpisodeForOptions = episode
@@ -555,29 +571,29 @@ fun MediaEntryDetailPage(
             KitsugiImageGalleryDialog(
                 galleryItems = activeGalleryItems,
                 initialIndex = activeGalleryIndex,
-                title = entry.title,
+                title = displayEntry.title,
                 onDismiss = { activeGalleryItems = emptyList() }
             )
         }
 
         activeEpisodeForOptions?.let { ep ->
-            val entryMalId = if (entry.source.lowercase() == "anilist") entry.malId else entry.id
-            val entryAniListId = if (entry.source.lowercase() == "anilist") entry.id else null
+            val entryMalId = if (displayEntry.source.lowercase() == "anilist") displayEntry.malId else displayEntry.id
+            val entryAniListId = if (displayEntry.source.lowercase() == "anilist") displayEntry.id else null
             KitsugiEpisodeOptionsDialog(
-                animeTitle = entry.title,
+                animeTitle = displayEntry.title,
                 episodeNumber = ep.episodeNumber,
                 episodeTitle = ep.title,
                 originalUrl = ep.url,
                 siteName = ep.site,
                 malId = entryMalId,
                 aniListId = entryAniListId,
-                tmdbId = entry.tmdbId ?: detailState?.tmdbId ?: resolvedTmdbId,
-                posterUrl = entry.imageUrl,
+                tmdbId = displayEntry.tmdbId ?: detailState?.tmdbId ?: resolvedTmdbId,
+                posterUrl = displayEntry.imageUrl,
                 titleEnglish = detailState?.titleEnglish,
                 titleRomaji = detailState?.titleRomaji,
                 titleNative = detailState?.titleNative,
-                startYear = entry.year,
-                isMovie = entry.type == com.kitsugi.animelist.model.MediaType.Movie,
+                startYear = displayEntry.year,
+                isMovie = displayEntry.type == com.kitsugi.animelist.model.MediaType.Movie,
                 seasonNumber = ep.seasonNumber ?: targetSeason,
                 onDismiss = { activeEpisodeForOptions = null }
             )

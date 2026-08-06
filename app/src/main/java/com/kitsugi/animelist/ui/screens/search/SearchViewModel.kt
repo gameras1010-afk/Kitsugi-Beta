@@ -615,62 +615,100 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         return runCatching {
             when (state.selectedPlatform) {
                 SearchPlatform.MAL -> {
-                    var res = apiClient.searchMALOnly(
-                        query = queryText,
-                        mediaType = state.selectedMediaType,
-                        showAdultContent = showAdult,
-                        status = jikanStatus,
-                        format = jikanFormat,
-                        genreId = jikanGenreId,
-                        sort = jikanSort,
-                        orderBy = jikanOrderBy
-                    )
+                    // MAL/Jikan araması — hata veya boş sonuç durumunda Shikimori fallback
+                    var res = runCatching {
+                        apiClient.searchMALOnly(
+                            query = queryText,
+                            mediaType = state.selectedMediaType,
+                            showAdultContent = showAdult,
+                            status = jikanStatus,
+                            format = jikanFormat,
+                            genreId = jikanGenreId,
+                            sort = jikanSort,
+                            orderBy = jikanOrderBy
+                        )
+                    }.getOrElse { emptyList() }
+
+                    // Fallback sorguları — Jikan üzerinde dene
                     if (res.isEmpty()) {
                         for (fb in fallbacks) {
-                            res = apiClient.searchMALOnly(
-                                query = fb, mediaType = state.selectedMediaType,
-                                showAdultContent = showAdult, status = jikanStatus,
-                                format = jikanFormat, genreId = jikanGenreId,
-                                sort = jikanSort, orderBy = jikanOrderBy
-                            )
+                            res = runCatching {
+                                apiClient.searchMALOnly(
+                                    query = fb, mediaType = state.selectedMediaType,
+                                    showAdultContent = showAdult, status = jikanStatus,
+                                    format = jikanFormat, genreId = jikanGenreId,
+                                    sort = jikanSort, orderBy = jikanOrderBy
+                                )
+                            }.getOrElse { emptyList() }
                             if (res.isNotEmpty()) break
                         }
+                    }
+
+                    // Shikimori fallback — Jikan tamamen boşsa veya hata verdiyse
+                    if (res.isEmpty()) {
+                        android.util.Log.w("SearchViewModel", "MAL/Jikan boş, Shikimori fallback devrede: $queryText")
+                        val shiRes = runCatching {
+                            if (state.selectedMediaType == MediaType.Manga) {
+                                com.kitsugi.animelist.data.remote.KitsugiShikimoriClient.searchManga(queryText)
+                            } else {
+                                com.kitsugi.animelist.data.remote.KitsugiShikimoriClient.searchAnime(queryText)
+                            }
+                        }.getOrElse { emptyList() }
+                        if (shiRes.isNotEmpty()) res = shiRes
                     }
                     res
                 }
                 SearchPlatform.AniList -> {
-                    var res = apiClient.searchAniList(
-                        query = queryText,
-                        mediaType = state.selectedMediaType,
-                        showAdultContent = showAdult,
-                        status = aniListStatus,
-                        format = aniListFormat,
-                        season = state.season?.apiValue,
-                        genres = aniListGenres,
-                        excludedGenres = aniListExcludedGenres,
-                        tags = aniListTags,
-                        minYear = state.startYear,
-                        maxYear = state.endYear,
-                        minScore = state.minScore,
-                        maxScore = state.maxScore,
-                        sort = aniListSort,
-                        country = aniListCountry,
-                        sources = aniListSources
-                    )
+                    // AniList araması — hata veya boş sonuçta Kitsu fallback
+                    var res = runCatching {
+                        apiClient.searchAniList(
+                            query = queryText,
+                            mediaType = state.selectedMediaType,
+                            showAdultContent = showAdult,
+                            status = aniListStatus,
+                            format = aniListFormat,
+                            season = state.season?.apiValue,
+                            genres = aniListGenres,
+                            excludedGenres = aniListExcludedGenres,
+                            tags = aniListTags,
+                            minYear = state.startYear,
+                            maxYear = state.endYear,
+                            minScore = state.minScore,
+                            maxScore = state.maxScore,
+                            sort = aniListSort,
+                            country = aniListCountry,
+                            sources = aniListSources
+                        )
+                    }.getOrElse { emptyList() }
+
+                    // Fallback sorgular — AniList üzerinde dene
                     if (res.isEmpty()) {
                         for (fb in fallbacks) {
-                            res = apiClient.searchAniList(
-                                query = fb, mediaType = state.selectedMediaType,
-                                showAdultContent = showAdult, status = aniListStatus,
-                                format = aniListFormat, season = state.season?.apiValue,
-                                genres = aniListGenres, excludedGenres = aniListExcludedGenres,
-                                tags = aniListTags, minYear = state.startYear,
-                                maxYear = state.endYear, minScore = state.minScore,
-                                maxScore = state.maxScore, sort = aniListSort,
-                                country = aniListCountry, sources = aniListSources
-                            )
+                            res = runCatching {
+                                apiClient.searchAniList(
+                                    query = fb, mediaType = state.selectedMediaType,
+                                    showAdultContent = showAdult, status = aniListStatus,
+                                    format = aniListFormat, season = state.season?.apiValue,
+                                    genres = aniListGenres, excludedGenres = aniListExcludedGenres,
+                                    tags = aniListTags, minYear = state.startYear,
+                                    maxYear = state.endYear, minScore = state.minScore,
+                                    maxScore = state.maxScore, sort = aniListSort,
+                                    country = aniListCountry, sources = aniListSources
+                                )
+                            }.getOrElse { emptyList() }
                             if (res.isNotEmpty()) break
                         }
+                    }
+
+                    // Kitsu fallback — AniList tamamen boşsa veya hata verdiyse
+                    if (res.isEmpty()) {
+                        android.util.Log.w("SearchViewModel", "AniList boş, Kitsu fallback devrede: $queryText")
+                        res = runCatching<List<JikanSearchResult>> {
+                            com.kitsugi.animelist.data.remote.KitsuExploreClient.searchAnime(
+                                query = queryText,
+                                mediaType = state.selectedMediaType
+                            )
+                        }.getOrElse { emptyList() }
                     }
                     res
                 }
@@ -716,10 +754,28 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                                         if (res.isNotEmpty()) break
                                     }
                                 }
+                                // Shikimori fallback — Jikan boş/hata verdiyse Tümü sekmesinde de kurtar
+                                if (res.isEmpty()) {
+                                    val shiRes = runCatching {
+                                        if (state.selectedMediaType == MediaType.Manga) {
+                                            com.kitsugi.animelist.data.remote.KitsugiShikimoriClient.searchManga(queryText)
+                                        } else {
+                                            com.kitsugi.animelist.data.remote.KitsugiShikimoriClient.searchAnime(queryText)
+                                        }
+                                    }.getOrElse { emptyList() }
+                                    if (shiRes.isNotEmpty()) res = shiRes
+                                }
                                 res
                             }.getOrElse { e ->
                                 if (e is kotlinx.coroutines.CancellationException) throw e
-                                emptyList()
+                                // Jikan tamamen çöktüyse bile en azından Shikimori'yi burada da deneyelim (runCatching dışındaki genel hatalarda)
+                                runCatching {
+                                    if (state.selectedMediaType == MediaType.Manga) {
+                                        com.kitsugi.animelist.data.remote.KitsugiShikimoriClient.searchManga(queryText)
+                                    } else {
+                                        com.kitsugi.animelist.data.remote.KitsugiShikimoriClient.searchAnime(queryText)
+                                    }
+                                }.getOrElse { emptyList() }
                             }
                         }
                         val aniListDeferred = async {
@@ -757,10 +813,25 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                                         if (res.isNotEmpty()) break
                                     }
                                 }
+                                // Kitsu fallback — AniList boş/hata verdiyse Tümü sekmesinde de kurtar
+                                if (res.isEmpty()) {
+                                    val kitRes = runCatching<List<JikanSearchResult>> {
+                                        com.kitsugi.animelist.data.remote.KitsuExploreClient.searchAnime(
+                                            query = queryText,
+                                            mediaType = state.selectedMediaType
+                                        )
+                                    }.getOrElse { emptyList() }
+                                    if (kitRes.isNotEmpty()) res = kitRes
+                                }
                                 res
                             }.getOrElse { e ->
                                 if (e is kotlinx.coroutines.CancellationException) throw e
-                                emptyList()
+                                runCatching<List<JikanSearchResult>> {
+                                    com.kitsugi.animelist.data.remote.KitsuExploreClient.searchAnime(
+                                        query = queryText,
+                                        mediaType = state.selectedMediaType
+                                    )
+                                }.getOrElse { emptyList() }
                             }
                         }
                         val tmdbDeferred = async {

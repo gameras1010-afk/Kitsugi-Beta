@@ -266,12 +266,14 @@ class KitsugiDetailClient {
                     val mergedStudios = if (finalDetail.studios.isNotEmpty()) finalDetail.studios else trMeta.studios
                     val mergedProducers = if (finalDetail.producers.isNotEmpty()) finalDetail.producers else trMeta.producers
                     val mergedRating = if (!finalDetail.rating.isNullOrBlank()) finalDetail.rating else trMeta.rating
+                    val updatedImageUrl = if (!trMeta.imageUrl.isNullOrBlank()) trMeta.imageUrl else finalDetail.imageUrl
                     finalDetail = finalDetail.copy(
                         synopsis = updatedSynopsis,
                         title = updatedTitle,
                         titleEnglish = updatedTitleEnglish,
                         genres = updatedGenres,
                         tmdbId = resolvedTmdbId ?: finalDetail.tmdbId,
+                        imageUrl = updatedImageUrl,
                         pictures = combinedPictures,
                         studios = mergedStudios,
                         producers = mergedProducers,

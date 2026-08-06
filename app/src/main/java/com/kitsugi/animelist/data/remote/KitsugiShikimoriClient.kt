@@ -13,6 +13,106 @@ object KitsugiShikimoriClient {
     private const val TAG = "KitsugiShikimoriClient"
     private const val BASE_URL = "https://shikimori.one/api"
 
+    // ─── Arama fonksiyonları ───────────────────────────────────────────────
+
+    /**
+     * Shikimori REST API üzerinden anime araması.
+     * MAL/Jikan sunucusu hata verdiğinde fallback olarak kullanılır.
+     */
+    suspend fun searchAnime(query: String, limit: Int = 20): List<JikanSearchResult> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val encoded = java.net.URLEncoder.encode(query, "UTF-8")
+                val url = URL("$BASE_URL/animes?search=$encoded&limit=$limit&order=popularity")
+                Log.d(TAG, "Shikimori searchAnime: $url")
+                val response = KitsugiApiBase.executeGetRequest(url) ?: return@runCatching emptyList()
+                val array = JSONArray(response)
+                val results = mutableListOf<JikanSearchResult>()
+                for (i in 0 until array.length()) {
+                    val item = array.optJSONObject(i) ?: continue
+                    val id = item.optInt("id")
+                    if (id <= 0) continue
+                    val title = item.optString("russian").ifBlank { item.optString("name", "") }
+                    val relativeImg = item.optJSONObject("image")?.optString("original")
+                    val imageUrl = relativeImg?.let { if (it.startsWith("/")) "https://shikimori.one$it" else it }
+                    val kind = item.optString("kind", "tv")
+                    val score = item.optString("score", "0").toDoubleOrNull()?.toInt()?.coerceIn(0, 10)
+                    val year = item.optString("aired_on", "").take(4).toIntOrNull()
+                    val episodes = item.optInt("episodes").takeIf { it > 0 }
+                    val mediaType = when (kind) {
+                        "movie" -> com.kitsugi.animelist.model.MediaType.Movie
+                        "manga", "novel", "manhwa", "manhua", "one_shot", "doujin" -> com.kitsugi.animelist.model.MediaType.Manga
+                        else -> com.kitsugi.animelist.model.MediaType.Anime
+                    }
+                    results.add(
+                        JikanSearchResult(
+                            malId = id,
+                            title = title,
+                            subtitle = kind.uppercase(),
+                            type = mediaType,
+                            total = episodes,
+                            score = score,
+                            isAdult = false,
+                            imageUrl = imageUrl,
+                            year = year,
+                            source = "shikimori"
+                        )
+                    )
+                }
+                results
+            }.getOrElse { err ->
+                Log.e(TAG, "Shikimori searchAnime exception: ${err.message}", err)
+                emptyList()
+            }
+        }
+
+    /**
+     * Shikimori REST API üzerinden manga araması.
+     */
+    suspend fun searchManga(query: String, limit: Int = 20): List<JikanSearchResult> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val encoded = java.net.URLEncoder.encode(query, "UTF-8")
+                val url = URL("$BASE_URL/mangas?search=$encoded&limit=$limit&order=popularity")
+                Log.d(TAG, "Shikimori searchManga: $url")
+                val response = KitsugiApiBase.executeGetRequest(url) ?: return@runCatching emptyList()
+                val array = JSONArray(response)
+                val results = mutableListOf<JikanSearchResult>()
+                for (i in 0 until array.length()) {
+                    val item = array.optJSONObject(i) ?: continue
+                    val id = item.optInt("id")
+                    if (id <= 0) continue
+                    val title = item.optString("russian").ifBlank { item.optString("name", "") }
+                    val relativeImg = item.optJSONObject("image")?.optString("original")
+                    val imageUrl = relativeImg?.let { if (it.startsWith("/")) "https://shikimori.one$it" else it }
+                    val kind = item.optString("kind", "manga")
+                    val score = item.optString("score", "0").toDoubleOrNull()?.toInt()?.coerceIn(0, 10)
+                    val year = item.optString("aired_on", "").take(4).toIntOrNull()
+                    val chapters = item.optInt("chapters").takeIf { it > 0 }
+                    results.add(
+                        JikanSearchResult(
+                            malId = id,
+                            title = title,
+                            subtitle = kind.uppercase(),
+                            type = com.kitsugi.animelist.model.MediaType.Manga,
+                            total = chapters,
+                            score = score,
+                            isAdult = false,
+                            imageUrl = imageUrl,
+                            year = year,
+                            source = "shikimori"
+                        )
+                    )
+                }
+                results
+            }.getOrElse { err ->
+                Log.e(TAG, "Shikimori searchManga exception: ${err.message}", err)
+                emptyList()
+            }
+        }
+
+    // ─── Karakter / Ekip fonksiyonları ────────────────────────────────────
+
     suspend fun fetchCharacters(
         mediaType: MediaType,
         externalId: Int

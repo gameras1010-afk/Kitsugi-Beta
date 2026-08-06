@@ -2,6 +2,7 @@ package com.kitsugi.animelist.data.local
 
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import java.net.HttpURLConnection
@@ -11,7 +12,8 @@ import okhttp3.Request
 import java.security.MessageDigest
 
 class TranslationManager(context: Context) {
-    private val db = KitsugiDatabase.getDatabase(context.applicationContext)
+    private val dbContext = context.applicationContext
+    private val db = KitsugiDatabase.getDatabase(dbContext)
     private val dao = db.translationCacheDao()
 
     /**
@@ -33,7 +35,15 @@ class TranslationManager(context: Context) {
         return words.count { it in turkishWords } >= 2
     }
 
-    suspend fun translateTo(text: String?, targetLang: String): String = withContext(Dispatchers.IO) {
+    suspend fun translate(text: String?): String = withContext(Dispatchers.IO) {
+        if (text.isNullOrBlank()) return@withContext ""
+        val settings = com.kitsugi.animelist.data.settings.SettingsDataStore(dbContext).settingsFlow.first()
+        val sourceLang = settings.translateSourceLanguage
+        val targetLang = settings.translateTargetLanguage
+        translateTo(text, sourceLang, targetLang)
+    }
+
+    suspend fun translateTo(text: String?, sourceLang: String, targetLang: String): String = withContext(Dispatchers.IO) {
         if (text.isNullOrBlank()) return@withContext ""
         
         val trimmed = text.trim()
@@ -41,7 +51,7 @@ class TranslationManager(context: Context) {
         // Metin zaten Türkçeyse çevirme — gereksiz API çağrısını önle
         if (targetLang == "tr" && isLikelyTurkish(trimmed)) return@withContext trimmed
 
-        val hash = md5(trimmed + "_" + targetLang)
+        val hash = md5(trimmed + "_" + sourceLang + "_" + targetLang)
 
         // 1. Check local Room database cache
         val cached = runCatching { dao.getTranslation(hash) }.getOrNull()
@@ -50,7 +60,7 @@ class TranslationManager(context: Context) {
         }
 
         // 2. If not cached, fetch translation from Google Translate
-        val translated = fetchFromGoogle(trimmed, targetLang)
+        val translated = fetchFromGoogle(trimmed, sourceLang, targetLang)
         
         // 3. Cache the success response in DB
         if (translated.isNotBlank() && translated != trimmed) {
@@ -63,13 +73,15 @@ class TranslationManager(context: Context) {
         return@withContext trimmed
     }
 
+    suspend fun translateTo(text: String?, targetLang: String): String = translateTo(text, "auto", targetLang)
+
     suspend fun translateToTurkish(text: String?): String = translateTo(text, "tr")
 
     suspend fun translateToEnglish(text: String?): String = translateTo(text, "en")
 
-    private fun fetchFromGoogle(text: String, targetLang: String): String {
+    private fun fetchFromGoogle(text: String, sourceLang: String, targetLang: String): String {
         return try {
-            val urlStr = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=" + targetLang + "&dt=t&q=" + 
+            val urlStr = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=" + sourceLang + "&tl=" + targetLang + "&dt=t&q=" + 
                     URLEncoder.encode(text, "UTF-8")
             val request = Request.Builder()
                 .url(urlStr)

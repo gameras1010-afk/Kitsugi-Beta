@@ -134,7 +134,7 @@ fun KitsugiAddonsSettingsDialog(
 
     KitsugiSheetOrDialog(
         onDismiss = onDismiss,
-        heightFraction = 0.93f,
+        fullScreen = true,
         innerScrollState = activeListState,
         sheetGesturesEnabled = false
     ) {

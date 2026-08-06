@@ -63,6 +63,8 @@ fun KitsugiPreferencesSettingsDialog(
     onHomeLayoutSelected: (String) -> Unit,
     onAutoTranslateEnabledChanged: (Boolean) -> Unit,
     onPreferredTranslatorSelected: (String) -> Unit = {},
+    onTranslateSourceLanguageSelected: (String) -> Unit = {},
+    onTranslateTargetLanguageSelected: (String) -> Unit = {},
     onDismiss: () -> Unit,
     onAppLanguageSelected: (String) -> Unit = {},
     onFixedNavBarChanged: (Boolean) -> Unit = {},
@@ -98,7 +100,7 @@ fun KitsugiPreferencesSettingsDialog(
 
     KitsugiSheetOrDialog(
         onDismiss = onDismiss,
-        heightFraction = 0.85f,
+        fullScreen = true,
         innerColumnScrollState = activeScrollState,
         sheetGesturesEnabled = false
     ) {
@@ -205,6 +207,8 @@ fun KitsugiPreferencesSettingsDialog(
                         onHideScoresChanged = onHideScoresChanged,
                         onAutoTranslateEnabledChanged = onAutoTranslateEnabledChanged,
                         onPreferredTranslatorSelected = onPreferredTranslatorSelected,
+                        onTranslateSourceLanguageSelected = onTranslateSourceLanguageSelected,
+                        onTranslateTargetLanguageSelected = onTranslateTargetLanguageSelected,
                         onAiringNotificationsChanged = onAiringNotificationsChanged,
                         onAniListNotificationsChanged = onAniListNotificationsChanged,
                         onMalNotificationsChanged = onMalNotificationsChanged,
@@ -593,6 +597,8 @@ private fun ListScoreTab(
     onHideScoresChanged: (Boolean) -> Unit,
     onAutoTranslateEnabledChanged: (Boolean) -> Unit,
     onPreferredTranslatorSelected: (String) -> Unit = {},
+    onTranslateSourceLanguageSelected: (String) -> Unit = {},
+    onTranslateTargetLanguageSelected: (String) -> Unit = {},
     onAiringNotificationsChanged: (Boolean) -> Unit = {},
     onAniListNotificationsChanged: (Boolean) -> Unit = {},
     onMalNotificationsChanged: (Boolean) -> Unit = {},
@@ -905,6 +911,182 @@ private fun ListScoreTab(
                     },
                     confirmButton = {
                         TextButton(onClick = { showTranslatorDialog = false }) {
+                            Text("Kapat", color = accentColor, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                )
+            }
+
+            val translateSourceLanguages = listOf(
+                KitsugiChoiceOption(id = "auto", title = "Otomatik (Algıla)", description = ""),
+                KitsugiChoiceOption(id = "tr", title = "Türkçe", description = ""),
+                KitsugiChoiceOption(id = "en", title = "İngilizce", description = ""),
+                KitsugiChoiceOption(id = "ja", title = "Japonca", description = ""),
+                KitsugiChoiceOption(id = "ko", title = "Korece", description = ""),
+                KitsugiChoiceOption(id = "zh", title = "Çince", description = ""),
+                KitsugiChoiceOption(id = "de", title = "Almanca", description = ""),
+                KitsugiChoiceOption(id = "fr", title = "Fransızca", description = ""),
+                KitsugiChoiceOption(id = "es", title = "İspanyolca", description = ""),
+                KitsugiChoiceOption(id = "ru", title = "Rusça", description = ""),
+                KitsugiChoiceOption(id = "it", title = "İtalyanca", description = ""),
+                KitsugiChoiceOption(id = "pt", title = "Portekizce", description = "")
+            )
+
+            val translateTargetLanguages = listOf(
+                KitsugiChoiceOption(id = "tr", title = "Türkçe", description = ""),
+                KitsugiChoiceOption(id = "en", title = "İngilizce", description = ""),
+                KitsugiChoiceOption(id = "ja", title = "Japonca", description = ""),
+                KitsugiChoiceOption(id = "ko", title = "Korece", description = ""),
+                KitsugiChoiceOption(id = "zh", title = "Çince", description = ""),
+                KitsugiChoiceOption(id = "de", title = "Almanca", description = ""),
+                KitsugiChoiceOption(id = "fr", title = "Fransızca", description = ""),
+                KitsugiChoiceOption(id = "es", title = "İspanyolca", description = ""),
+                KitsugiChoiceOption(id = "ru", title = "Rusça", description = ""),
+                KitsugiChoiceOption(id = "it", title = "İtalyanca", description = ""),
+                KitsugiChoiceOption(id = "pt", title = "Portekizce", description = "")
+            )
+
+            var showSourceLangDialog by remember { mutableStateOf(false) }
+            var showTargetLangDialog by remember { mutableStateOf(false) }
+
+            KitsugiSettingsDivider()
+
+            KitsugiSettingsListItem(
+                title = "Çeviri Kaynak Dili",
+                description = "Çevrilecek metnin kaynak dilini seçin",
+                value = translateSourceLanguages.find { it.id == appSettings.translateSourceLanguage }?.title ?: "Otomatik (Algıla)",
+                icon = Icons.Rounded.Translate,
+                iconColor = accentColor,
+                onClick = { showSourceLangDialog = true }
+            )
+
+            if (showSourceLangDialog) {
+                AlertDialog(
+                    onDismissRequest = { showSourceLangDialog = false },
+                    containerColor = KitsugiColors.surface,
+                    title = {
+                        Text(
+                            text = "Çeviri Kaynak Dili",
+                            color = KitsugiColors.textPrimary,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    text = {
+                        Column(
+                            modifier = Modifier.verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            translateSourceLanguages.forEach { option ->
+                                val isSelected = option.id == appSettings.translateSourceLanguage
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(if (isSelected) KitsugiColors.surfaceSoft else Color.Transparent)
+                                        .tvClickable(shape = RoundedCornerShape(12.dp)) {
+                                            onTranslateSourceLanguageSelected(option.id)
+                                            showSourceLangDialog = false
+                                        }
+                                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    RadioButton(
+                                        selected = isSelected,
+                                        onClick = {
+                                            onTranslateSourceLanguageSelected(option.id)
+                                            showSourceLangDialog = false
+                                        },
+                                        colors = RadioButtonDefaults.colors(
+                                            selectedColor = accentColor,
+                                            unselectedColor = KitsugiColors.textMuted
+                                        )
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = option.title,
+                                        color = KitsugiColors.textPrimary,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showSourceLangDialog = false }) {
+                            Text("Kapat", color = accentColor, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                )
+            }
+
+            KitsugiSettingsDivider()
+
+            KitsugiSettingsListItem(
+                title = "Çeviri Hedef Dili",
+                description = "Metinlerin çevrileceği hedef dili seçin",
+                value = translateTargetLanguages.find { it.id == appSettings.translateTargetLanguage }?.title ?: "Türkçe",
+                icon = Icons.Rounded.Translate,
+                iconColor = accentColor,
+                onClick = { showTargetLangDialog = true }
+            )
+
+            if (showTargetLangDialog) {
+                AlertDialog(
+                    onDismissRequest = { showTargetLangDialog = false },
+                    containerColor = KitsugiColors.surface,
+                    title = {
+                        Text(
+                            text = "Çeviri Hedef Dili",
+                            color = KitsugiColors.textPrimary,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    text = {
+                        Column(
+                            modifier = Modifier.verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            translateTargetLanguages.forEach { option ->
+                                val isSelected = option.id == appSettings.translateTargetLanguage
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(if (isSelected) KitsugiColors.surfaceSoft else Color.Transparent)
+                                        .tvClickable(shape = RoundedCornerShape(12.dp)) {
+                                            onTranslateTargetLanguageSelected(option.id)
+                                            showTargetLangDialog = false
+                                        }
+                                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    RadioButton(
+                                        selected = isSelected,
+                                        onClick = {
+                                            onTranslateTargetLanguageSelected(option.id)
+                                            showTargetLangDialog = false
+                                        },
+                                        colors = RadioButtonDefaults.colors(
+                                            selectedColor = accentColor,
+                                            unselectedColor = KitsugiColors.textMuted
+                                        )
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = option.title,
+                                        color = KitsugiColors.textPrimary,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showTargetLangDialog = false }) {
                             Text("Kapat", color = accentColor, fontWeight = FontWeight.Bold)
                         }
                     }

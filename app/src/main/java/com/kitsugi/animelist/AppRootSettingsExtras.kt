@@ -354,6 +354,10 @@ internal fun SettingsContext.buildSettingsParams() =
             onAutoTranslateEnabledChanged = { onAutoTranslateEnabledChanged(it) },
             preferredTranslator = appSettings.preferredTranslator,
             onPreferredTranslatorSelected = { onPreferredTranslatorSelected(it) },
+            translateSourceLanguage = appSettings.translateSourceLanguage,
+            onTranslateSourceLanguageSelected = { onTranslateSourceLanguageSelected(it) },
+            translateTargetLanguage = appSettings.translateTargetLanguage,
+            onTranslateTargetLanguageSelected = { onTranslateTargetLanguageSelected(it) },
             onOpenStats = { onOpenStats() },
             onOpenFavourites = { onOpenFavourites() },
             onOpenAbout = { onOpenAbout() },
@@ -784,6 +788,14 @@ internal fun SettingsContext.onAutoTranslateEnabledChanged(enabled: Boolean) {
 
 internal fun SettingsContext.onPreferredTranslatorSelected(translator: String) {
     coroutineScope.launch { settingsDataStore.setPreferredTranslator(translator) }
+}
+
+internal fun SettingsContext.onTranslateSourceLanguageSelected(lang: String) {
+    coroutineScope.launch { settingsDataStore.setTranslateSourceLanguage(lang) }
+}
+
+internal fun SettingsContext.onTranslateTargetLanguageSelected(lang: String) {
+    coroutineScope.launch { settingsDataStore.setTranslateTargetLanguage(lang) }
 }
 
 internal fun SettingsContext.onThemeModeSelected(mode: String) {

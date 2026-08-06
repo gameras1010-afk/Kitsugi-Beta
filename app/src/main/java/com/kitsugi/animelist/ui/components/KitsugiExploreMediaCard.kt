@@ -127,20 +127,24 @@ fun KitsugiExploreMediaCard(
 
                     val rankNumber = result.rank ?: rankIndex
                     if (rankNumber != null) {
+                        val isTopRank = rankNumber == 1
                         Box(
                             modifier = Modifier
                                 .align(Alignment.TopStart)
-                                .padding(5.dp)
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(LocalKitsugiAccent.current.copy(alpha = 0.88f))
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                .clip(RoundedCornerShape(bottomEnd = 10.dp))
+                                .background(
+                                    if (isTopRank) Color(0xFFFFD700).copy(alpha = 0.92f)
+                                    else Color.Black.copy(alpha = 0.72f)
+                                )
+                                .padding(horizontal = 6.dp, vertical = 3.dp)
                         ) {
                             Text(
                                 text = "#$rankNumber",
-                                color = KitsugiColors.Background,
+                                color = if (isTopRank) Color.Black else Color.White,
                                 style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 9.sp
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 9.sp,
+                                letterSpacing = 0.5.sp
                             )
                         }
                     }
@@ -262,20 +266,24 @@ fun KitsugiExploreMediaCard(
 
                     val rankNumber = result.rank ?: rankIndex
                     if (rankNumber != null) {
+                        val isTopRank = rankNumber == 1
                         Box(
                             modifier = Modifier
                                 .align(Alignment.TopStart)
-                                .padding(5.dp)
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(LocalKitsugiAccent.current.copy(alpha = 0.88f))
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                .clip(RoundedCornerShape(bottomEnd = 10.dp))
+                                .background(
+                                    if (isTopRank) Color(0xFFFFD700).copy(alpha = 0.92f)
+                                    else Color.Black.copy(alpha = 0.72f)
+                                )
+                                .padding(horizontal = 6.dp, vertical = 3.dp)
                         ) {
                             Text(
                                 text = "#$rankNumber",
-                                color = KitsugiColors.Background,
+                                color = if (isTopRank) Color.Black else Color.White,
                                 style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 9.sp
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 9.sp,
+                                letterSpacing = 0.5.sp
                             )
                         }
                     }
@@ -401,20 +409,24 @@ fun KitsugiExploreMediaCard(
 
                     val rankNumber = result.rank ?: rankIndex
                     if (rankNumber != null) {
+                        val isTopRank = rankNumber == 1
                         Box(
                             modifier = Modifier
                                 .align(Alignment.TopStart)
-                                .padding(6.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(LocalKitsugiAccent.current.copy(alpha = 0.88f))
-                                .padding(horizontal = 7.dp, vertical = 3.dp)
+                                .clip(RoundedCornerShape(bottomEnd = 10.dp))
+                                .background(
+                                    if (isTopRank) Color(0xFFFFD700).copy(alpha = 0.92f)
+                                    else Color.Black.copy(alpha = 0.72f)
+                                )
+                                .padding(horizontal = 6.dp, vertical = 3.dp)
                         ) {
                             Text(
                                 text = "#$rankNumber",
-                                color = KitsugiColors.Background,
+                                color = if (isTopRank) Color.Black else Color.White,
                                 style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 10.sp
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 9.sp,
+                                letterSpacing = 0.5.sp
                             )
                         }
                     }

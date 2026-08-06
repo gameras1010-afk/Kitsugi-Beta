@@ -34,6 +34,18 @@ object KitsuExploreClient {
     private const val KITSU_ID_OFFSET = 300_000_000
 
     // ── Public API ───────────────────────────────────────────────────────────
+    
+    /** Kitsu API üzerinden anime/manga araması (AniList için fallback) */
+    suspend fun searchAnime(query: String, mediaType: MediaType, limit: Int = 20): List<JikanSearchResult> =
+        withContext(Dispatchers.IO) {
+            val endpoint = when (mediaType) {
+                MediaType.Anime, MediaType.Movie, MediaType.TvShow -> "anime"
+                MediaType.Manga -> "manga"
+            }
+            val encoded = URLEncoder.encode(query, "UTF-8")
+            val url = "$BASE/$endpoint?filter[text]=$encoded&page[limit]=$limit"
+            fetchList(url, mediaType)
+        }
 
     /** En popüler animeler (userCount'a göre sıralı) */
     suspend fun topAnime(limit: Int = 20): List<JikanSearchResult> =

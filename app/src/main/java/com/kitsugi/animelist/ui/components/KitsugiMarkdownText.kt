@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
+import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,6 +30,7 @@ import com.mikepenz.markdown.coil3.Coil3ImageTransformerImpl
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.markdownColor
 import com.mikepenz.markdown.m3.markdownTypography
+import kotlinx.coroutines.launch
 
 /**
  * Rich markdown renderer for AniList/MAL bio and comment text.
@@ -259,6 +261,11 @@ fun InteractiveSpoilerSheet(
     spoilerText: String,
     onDismiss: () -> Unit,
 ) {
+    var currentText by remember(spoilerText) { mutableStateOf(spoilerText) }
+    var isTranslating by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
     KitsugiSheetOrDialog(onDismiss = onDismiss) {
         Column(
             modifier = Modifier
@@ -269,27 +276,66 @@ fun InteractiveSpoilerSheet(
             val accent = LocalKitsugiAccent.current
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Rounded.Visibility,
-                    contentDescription = null,
-                    tint = accent,
-                    modifier = Modifier.size(20.dp)
-                )
-                Text(
-                    text = "Spoiler İçerik",
-                    color = accent,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Visibility,
+                        contentDescription = null,
+                        tint = accent,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = "Spoiler İçerik",
+                        color = accent,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+
+                IconButton(
+                    onClick = {
+                        if (!isTranslating) {
+                            coroutineScope.launch {
+                                isTranslating = true
+                                val translationManager = com.kitsugi.animelist.data.local.TranslationManager(context)
+                                val translated = translationManager.translate(currentText)
+                                if (translated.isNotBlank()) {
+                                    currentText = translated
+                                }
+                                isTranslating = false
+                            }
+                        }
+                    },
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    if (isTranslating) {
+                        CircularProgressIndicator(
+                            color = accent,
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Rounded.Translate,
+                            contentDescription = "Çevir",
+                            tint = accent,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
             }
             HorizontalDivider(color = KitsugiColors.Border)
             Spacer(Modifier.height(16.dp))
             // Render spoiler content itself with full markdown support
             KitsugiMarkdownText(
-                text = spoilerText,
+                text = currentText,
                 modifier = Modifier.fillMaxWidth(),
             )
         }

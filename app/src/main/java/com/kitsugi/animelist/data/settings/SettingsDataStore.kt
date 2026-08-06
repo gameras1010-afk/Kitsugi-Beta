@@ -110,6 +110,8 @@ class SettingsDataStore(
         // Açıklama Otomatik Çevirisi
         val AutoTranslateEnabled = booleanPreferencesKey("auto_translate_enabled")
         val PreferredTranslator = stringPreferencesKey("preferred_translator")
+        val TranslateSourceLanguage = stringPreferencesKey("translate_source_language")
+        val TranslateTargetLanguage = stringPreferencesKey("translate_target_language")
         // TV ana sayfa yerleşim düzeni (classic / modern / grid)
         val SelectedHomeLayoutId = stringPreferencesKey("selected_home_layout_id")
         val FrameRateMatchingMode = stringPreferencesKey("frame_rate_matching_mode")
@@ -315,6 +317,8 @@ class SettingsDataStore(
                     animeSkipClientId = preferences[Keys.AnimeSkipClientId] ?: "",
                     autoTranslateEnabled = preferences[Keys.AutoTranslateEnabled] ?: false,
                     preferredTranslator = preferences[Keys.PreferredTranslator] ?: "DEFAULT",
+                    translateSourceLanguage = preferences[Keys.TranslateSourceLanguage] ?: "auto",
+                    translateTargetLanguage = preferences[Keys.TranslateTargetLanguage] ?: "tr",
                     selectedHomeLayoutId = preferences[Keys.SelectedHomeLayoutId] ?: "classic",
                     frameRateMatchingMode = runCatching {
                         com.kitsugi.animelist.data.settings.FrameRateMatchingMode.valueOf(
@@ -916,6 +920,14 @@ class SettingsDataStore(
 
     suspend fun setPreferredTranslator(translator: String) {
         context.settingsDataStore.edit { it[Keys.PreferredTranslator] = translator }
+    }
+
+    suspend fun setTranslateSourceLanguage(lang: String) {
+        context.settingsDataStore.edit { it[Keys.TranslateSourceLanguage] = lang }
+    }
+
+    suspend fun setTranslateTargetLanguage(lang: String) {
+        context.settingsDataStore.edit { it[Keys.TranslateTargetLanguage] = lang }
     }
 
     suspend fun setSelectedHomeLayoutId(layoutId: String) {

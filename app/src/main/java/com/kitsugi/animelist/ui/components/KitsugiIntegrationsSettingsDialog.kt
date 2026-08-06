@@ -129,7 +129,7 @@ fun KitsugiIntegrationsSettingsDialog(
 
     KitsugiSheetOrDialog(
         onDismiss = onDismiss,
-        heightFraction = 0.85f,
+        fullScreen = true,
         innerColumnScrollState = activeScrollState,
         sheetGesturesEnabled = false
     ) {

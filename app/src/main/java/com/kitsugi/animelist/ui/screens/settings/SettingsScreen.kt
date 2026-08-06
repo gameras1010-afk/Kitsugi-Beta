@@ -445,7 +445,8 @@ private fun SettingsPreferencesDialogWrapper(
     val localSettings = remember(
         general.selectedThemeId, general.themeMode, general.amoledBlack, general.customAccentColor, general.defaultTab,
         general.showAdultContent, general.blurAdultMedia, general.showAnimeLogos, general.selectedListLayoutId, general.selectedHomeLayoutId,
-        general.titleLanguage, general.scoreFormat, general.hideScores, integrations.autoTranslateEnabled, integrations.preferredTranslator, general.appLanguage, general.fixedNavBar,
+        general.titleLanguage, general.scoreFormat, general.hideScores, integrations.autoTranslateEnabled, integrations.preferredTranslator,
+        integrations.translateSourceLanguage, integrations.translateTargetLanguage, general.appLanguage, general.fixedNavBar,
         general.airingNotificationsEnabled, general.splashAnimationEnabled, general.splashSoundEnabled,
         general.mangaReadingMode, general.mangaColorFilter, general.mangaFitMode, general.mangaBrightness,
         general.aniListNotificationsEnabled, general.malNotificationsEnabled, general.simklNotificationsEnabled, general.notificationInterval
@@ -466,6 +467,8 @@ private fun SettingsPreferencesDialogWrapper(
             hideScores = general.hideScores,
             autoTranslateEnabled = integrations.autoTranslateEnabled,
             preferredTranslator = integrations.preferredTranslator,
+            translateSourceLanguage = integrations.translateSourceLanguage,
+            translateTargetLanguage = integrations.translateTargetLanguage,
             appLanguage = general.appLanguage,
             fixedNavBar = general.fixedNavBar,
             airingNotificationsEnabled = general.airingNotificationsEnabled,
@@ -499,6 +502,8 @@ private fun SettingsPreferencesDialogWrapper(
         onHomeLayoutSelected = general.onHomeLayoutSelected,
         onAutoTranslateEnabledChanged = integrations.onAutoTranslateEnabledChanged,
         onPreferredTranslatorSelected = integrations.onPreferredTranslatorSelected,
+        onTranslateSourceLanguageSelected = integrations.onTranslateSourceLanguageSelected,
+        onTranslateTargetLanguageSelected = integrations.onTranslateTargetLanguageSelected,
         onAppLanguageSelected = general.onAppLanguageSelected,
         onFixedNavBarChanged = general.onFixedNavBarChanged,
         onAiringNotificationsChanged = general.onAiringNotificationsChanged,
