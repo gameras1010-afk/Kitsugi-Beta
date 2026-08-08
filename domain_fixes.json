@@ -1,14 +1,14 @@
 {
   "_comment": "Kitsugi Eklenti Domain Listesi — GitHub Actions + AI tarafından otomatik güncellenir.",
   "_format": "eklentiAdi (küçük harf) → güncel ana URL",
-  "_updated": "2026-08-07 04:56 UTC",
+  "_updated": "2026-08-08 04:11 UTC",
   "_stats": {
-    "total": 67,
+    "total": 66,
     "added": 0,
-    "removed": 0,
+    "removed": 1,
     "changed": 0,
     "ai_assisted": 0,
-    "blocked": 182
+    "blocked": 183
   },
   "domains": {
     "altiyuzaltmisaltifilmizle": "https://666filmizle.site",
@@ -68,7 +68,6 @@
     "tranimaci": "https://tranimaci.com",
     "tranimeci": "https://tranimaci.com",
     "tranimeizle": "https://www.tranimeizle.io",
-    "trasyalog": "https://asyalog.com",
     "trdiziizle": "https://www.trdiziizle.tv",
     "turkanime": "https://www.turkanime.tv",
     "tvdiziler": "https://tvdiziler.tv",
@@ -227,6 +226,7 @@
     "thotdeep",
     "torrentfilm",
     "torrential",
+    "trasyalog",
     "tubepornclassic",
     "turkdizileri",
     "turkhub",
