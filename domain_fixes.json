@@ -1,17 +1,16 @@
 {
   "_comment": "Kitsugi Eklenti Domain Listesi — GitHub Actions + AI tarafından otomatik güncellenir.",
   "_format": "eklentiAdi (küçük harf) → güncel ana URL",
-  "_updated": "2026-08-21 03:51 UTC",
+  "_updated": "2026-08-22 03:42 UTC",
   "_stats": {
-    "total": 62,
+    "total": 61,
     "added": 0,
-    "removed": 0,
+    "removed": 1,
     "changed": 0,
     "ai_assisted": 0,
-    "blocked": 170
+    "blocked": 171
   },
   "domains": {
-    "altiyuzaltmisaltifilmizle": "https://666filmizle.site",
     "animecix": "https://animecix.tv",
     "animeler": "https://animeler.pw",
     "animeytx": "https://animeyt.cc",
@@ -83,6 +82,7 @@
     "aki",
     "allclassicporn",
     "allpornstream",
+    "altiyuzaltmisaltifilmizle",
     "animeav",
     "animeworld",
     "asyaanimeleri",
