@@ -1,14 +1,14 @@
 {
   "_comment": "Kitsugi Eklenti Domain Listesi — GitHub Actions + AI tarafından otomatik güncellenir.",
   "_format": "eklentiAdi (küçük harf) → güncel ana URL",
-  "_updated": "2026-08-23 03:51 UTC",
+  "_updated": "2026-08-24 03:55 UTC",
   "_stats": {
     "total": 61,
     "added": 0,
     "removed": 0,
     "changed": 0,
     "ai_assisted": 0,
-    "blocked": 171
+    "blocked": 172
   },
   "domains": {
     "animecix": "https://animecix.tv",
@@ -177,6 +177,7 @@
     "notmik",
     "ok",
     "onscreens",
+    "onshort",
     "oppaistream",
     "perfectgirls",
     "perverzija",
