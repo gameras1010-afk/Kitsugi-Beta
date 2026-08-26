@@ -1,14 +1,14 @@
 {
   "_comment": "Kitsugi Eklenti Domain Listesi — GitHub Actions + AI tarafından otomatik güncellenir.",
   "_format": "eklentiAdi (küçük harf) → güncel ana URL",
-  "_updated": "2026-08-25 03:49 UTC",
+  "_updated": "2026-08-26 03:54 UTC",
   "_stats": {
-    "total": 61,
+    "total": 60,
     "added": 0,
-    "removed": 0,
+    "removed": 1,
     "changed": 0,
     "ai_assisted": 0,
-    "blocked": 172
+    "blocked": 173
   },
   "domains": {
     "animecix": "https://animecix.tv",
@@ -43,7 +43,6 @@
     "filmmakinesi": "https://filmmakinesi.to",
     "filmmodu": "https://www.filmmodu.one",
     "filmzal": "https://filmzal.me",
-    "fullhdfilm": "https://fullhdfilm.pro",
     "fullhdfilmizlesene": "https://www.fullhdfilmizlesene.mx",
     "hdfilmcehennemi": "https://www.hdfilmcehennemi.nl",
     "hdfilmdelisi": "https://hdfilmdelisi.one",
@@ -131,6 +130,7 @@
     "freepornvideos",
     "freeuseporn",
     "full4kizle",
+    "fullhdfilm",
     "fullhdfilmi̇zlede",
     "fullraces",
     "fyptt",
