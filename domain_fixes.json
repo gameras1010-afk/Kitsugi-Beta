@@ -1,9 +1,9 @@
 {
   "_comment": "Kitsugi Eklenti Domain Listesi — GitHub Actions + AI tarafından otomatik güncellenir.",
   "_format": "eklentiAdi (küçük harf) → güncel ana URL",
-  "_updated": "2026-09-08 07:53 UTC",
+  "_updated": "2026-09-09 07:56 UTC",
   "_stats": {
-    "total": 59,
+    "total": 58,
     "added": 0,
     "removed": 1,
     "changed": 0,
@@ -12,7 +12,6 @@
   },
   "domains": {
     "animecix": "https://animecix.tv",
-    "animeler": "https://animeler.pw",
     "animeytx": "https://animeyt.cc",
     "animpow": "https://animpow.com",
     "anizium": "https://api.anizium.co",
