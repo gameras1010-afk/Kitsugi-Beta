@@ -1,14 +1,14 @@
 {
   "_comment": "Kitsugi Eklenti Domain Listesi — GitHub Actions + AI tarafından otomatik güncellenir.",
   "_format": "eklentiAdi (küçük harf) → güncel ana URL",
-  "_updated": "2026-09-10 07:55 UTC",
+  "_updated": "2026-09-11 07:52 UTC",
   "_stats": {
-    "total": 58,
+    "total": 57,
     "added": 0,
-    "removed": 0,
+    "removed": 1,
     "changed": 0,
     "ai_assisted": 0,
-    "blocked": 174
+    "blocked": 175
   },
   "domains": {
     "animecix": "https://animecix.tv",
@@ -39,7 +39,6 @@
     "filmbip": "https://filmbip.com",
     "filmekseni": "https://filmekseni.vip",
     "filmhane": "https://www.filmhane.shop",
-    "filmmakinesi": "https://filmmakinesi.to",
     "filmmodu": "https://www.filmmodu.one",
     "fullhdfilmizlesene": "https://www.fullhdfilmizlesene.mx",
     "hdfilmcehennemi": "https://www.hdfilmcehennemi.nl",
@@ -121,6 +120,7 @@
     "filmizleilk",
     "filmi̇zlesene",
     "filmkovasi",
+    "filmmakinesi",
     "fitnakedgirls",
     "flixlatam",
     "footballia",
