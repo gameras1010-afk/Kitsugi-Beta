@@ -1,11 +1,11 @@
 {
   "_comment": "Kitsugi Eklenti Domain Listesi — GitHub Actions + AI tarafından otomatik güncellenir.",
   "_format": "eklentiAdi (küçük harf) → güncel ana URL",
-  "_updated": "2026-09-14 08:38 UTC",
+  "_updated": "2026-09-15 08:27 UTC",
   "_stats": {
-    "total": 57,
+    "total": 56,
     "added": 0,
-    "removed": 0,
+    "removed": 1,
     "changed": 0,
     "ai_assisted": 0,
     "blocked": 175
@@ -28,7 +28,6 @@
     "dizifilmorg": "https://dizifilm.life",
     "dizigecesi": "https://dizigecesi.com",
     "dizikorea": "https://dizikorea3.com",
-    "dizilife": "https://dizi73.life",
     "dizilla": "https://dizillahd.com",
     "dizimom": "https://www.dizimom.rest",
     "dizipal": "https://dizipal.bid",
