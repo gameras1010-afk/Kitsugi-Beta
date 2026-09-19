@@ -1,14 +1,14 @@
 {
   "_comment": "Kitsugi Eklenti Domain Listesi — GitHub Actions + AI tarafından otomatik güncellenir.",
   "_format": "eklentiAdi (küçük harf) → güncel ana URL",
-  "_updated": "2026-09-18 08:01 UTC",
+  "_updated": "2026-09-19 07:52 UTC",
   "_stats": {
     "total": 56,
     "added": 0,
     "removed": 0,
     "changed": 0,
     "ai_assisted": 0,
-    "blocked": 174
+    "blocked": 175
   },
   "domains": {
     "animecix": "https://animecix.tv",
@@ -201,6 +201,7 @@
     "sextb",
     "simpcity",
     "sokuja",
+    "spankbang",
     "streamed",
     "subsplease",
     "supercartoons",
