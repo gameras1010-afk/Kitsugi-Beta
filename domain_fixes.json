@@ -1,14 +1,14 @@
 {
   "_comment": "Kitsugi Eklenti Domain Listesi — GitHub Actions + AI tarafından otomatik güncellenir.",
   "_format": "eklentiAdi (küçük harf) → güncel ana URL",
-  "_updated": "2026-09-22 08:19 UTC",
+  "_updated": "2026-09-23 08:21 UTC",
   "_stats": {
-    "total": 55,
+    "total": 53,
     "added": 0,
-    "removed": 0,
+    "removed": 2,
     "changed": 0,
     "ai_assisted": 0,
-    "blocked": 177
+    "blocked": 179
   },
   "domains": {
     "animecix": "https://animecix.tv",
@@ -51,7 +51,6 @@
     "recTV": "https://a.prectv70.lol/api",
     "rectv": "https://a.prectv70.lol",
     "selcukflix": "https://selcukflix.co",
-    "sezonlukdizi": "https://sezonlukdizi.cc",
     "sinemacx": "https://www.sinema.gg",
     "sinewix": "https://ydfvfdizipanel.ru",
     "sinezy": "https://sinezy.to",
@@ -62,7 +61,6 @@
     "turkanime": "https://www.turkanime.tv",
     "tvdiziler": "https://tvdiziler.tv",
     "webdramaturkey": "https://webdramaturkey2.com",
-    "webteizle": "https://webteizle3.xyz",
     "wfilmizle": "https://www.wfilmizle.pw",
     "yabancidizi": "https://yabancidizi.news",
     "yts": "https://yts.gg"
@@ -199,6 +197,7 @@
     "setfilmizle",
     "sexfilm",
     "sextb",
+    "sezonlukdizi",
     "simpcity",
     "sokuja",
     "spankbang",
@@ -226,6 +225,7 @@
     "watchwrestling",
     "wcoflix",
     "webdramaturkey2",
+    "webteizle",
     "wfilmi̇zle",
     "whoreshub",
     "wumaobi",
