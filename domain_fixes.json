@@ -1,14 +1,14 @@
 {
   "_comment": "Kitsugi Eklenti Domain Listesi — GitHub Actions + AI tarafından otomatik güncellenir.",
   "_format": "eklentiAdi (küçük harf) → güncel ana URL",
-  "_updated": "2026-09-24 08:13 UTC",
+  "_updated": "2026-09-25 08:36 UTC",
   "_stats": {
     "total": 49,
     "added": 0,
-    "removed": 4,
+    "removed": 0,
     "changed": 0,
     "ai_assisted": 0,
-    "blocked": 181
+    "blocked": 182
   },
   "domains": {
     "animecix": "https://animecix.tv",
@@ -98,6 +98,7 @@
     "domlepen",
     "doramaslatinox",
     "dubbindo",
+    "effedupmovies",
     "efukt",
     "epawg",
     "eporner",
