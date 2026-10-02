@@ -1,14 +1,14 @@
 {
   "_comment": "Kitsugi Eklenti Domain Listesi — GitHub Actions + AI tarafından otomatik güncellenir.",
   "_format": "eklentiAdi (küçük harf) → güncel ana URL",
-  "_updated": "2026-10-01 09:50 UTC",
+  "_updated": "2026-10-02 09:27 UTC",
   "_stats": {
-    "total": 47,
+    "total": 46,
     "added": 0,
-    "removed": 0,
+    "removed": 1,
     "changed": 0,
     "ai_assisted": 0,
-    "blocked": 182
+    "blocked": 183
   },
   "domains": {
     "animecix": "https://animecix.tv",
@@ -20,7 +20,6 @@
     "asyawatch": "https://asyawatch.com",
     "belgeselx": "https://belgeselx.com",
     "cizgimax": "https://cizgimax.online",
-    "cizgivedizi": "https://cizgivedizi.com",
     "ddizi": "https://www.ddizi.im",
     "diziasia": "https://diziasia.com",
     "diziasya": "https://api.diziasya.com",
@@ -81,6 +80,7 @@
     "camwh",
     "canlitv",
     "chatrubate",
+    "cizgivedizi",
     "cloudbate",
     "collectionofbestporn",
     "coomer",
