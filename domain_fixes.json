@@ -1,14 +1,14 @@
 {
   "_comment": "Kitsugi Eklenti Domain Listesi — GitHub Actions + AI tarafından otomatik güncellenir.",
   "_format": "eklentiAdi (küçük harf) → güncel ana URL",
-  "_updated": "2026-10-24 07:56 UTC",
+  "_updated": "2026-10-25 08:10 UTC",
   "_stats": {
     "total": 42,
     "added": 0,
     "removed": 0,
     "changed": 0,
     "ai_assisted": 0,
-    "blocked": 180
+    "blocked": 181
   },
   "domains": {
     "animecix": "https://animecix.tv",
@@ -228,6 +228,7 @@
     "xprime",
     "xrares",
     "xvideos",
+    "xxxtime",
     "yablom",
     "yereldiziler",
     "yerelprogramlar",
