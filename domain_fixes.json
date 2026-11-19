@@ -1,11 +1,11 @@
 {
   "_comment": "Kitsugi Eklenti Domain Listesi — GitHub Actions + AI tarafından otomatik güncellenir.",
   "_format": "eklentiAdi (küçük harf) → güncel ana URL",
-  "_updated": "2026-11-18 11:15 UTC",
+  "_updated": "2026-11-19 11:13 UTC",
   "_stats": {
-    "total": 40,
+    "total": 39,
     "added": 0,
-    "removed": 0,
+    "removed": 1,
     "changed": 0,
     "ai_assisted": 0,
     "blocked": 183
@@ -28,7 +28,6 @@
     "dizipod": "https://dizipod.com",
     "diziyou": "https://www.diziyou.one",
     "dramaizle": "https://dramaflix.cc",
-    "filmekseni": "https://filmekseni.vip",
     "filmmodu": "https://www.filmmodu.one",
     "fullhdfilmizlesene": "https://www.fullhdfilmizlesene.mx",
     "hdfilmcehennemi": "https://www.hdfilmcehennemi.nl",
